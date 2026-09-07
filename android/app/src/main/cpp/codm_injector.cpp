@@ -157,8 +157,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
     std::vector<std::pair<std::string,std::string>> keys={
         {"HipfireSpread","0"},{"HipfireSpreadScale","0"},{"AR_SpreadZero","1"},
-        {"SMG_HipfireBurst","1"},{"Shotgun_ZeroPelletRNG","1"},
-        {"Pistol_TriggerZeroDeadzone","1"},{"LMG_RecoilCeiling","0"},
+        {"NoScope50mOnly","1"},{"NoScopeAimbotMaxRange","50"},{"NoScopeMaxRange","50"},
+        {"NoScope50mHeadLock","1"},{"NoScopeHeadshot50m","1"},{"NoScopeAimLock50m","1"},
+        {"NoScopeSpread50m","0"},{"NoScopeAimMagnetism50m","3"},{"NoScopeCrosshairAccuracy50m","1.0"},
+        {"HipfireLock50m","1"},{"HipfireHeadLock50m","1"},{"CQBAutoHeadshot50m","1"},
+        {"ExtremeHipfireLock50m","1"},{"NoScopeMagicBullet50m","1"},
+        {"CQBEnemySnap360","1"},{"HipfireHeadTrackingMax","1"},{"Shotgun_ZeroPelletRNG","1"},
+        {"ShotgunPelletSpreadScale","0"},{"ShotgunTightChokeMod","1"},
+        {"SlideHipfireAccuracy","1.0"},{"JumpHipfireSpread","0"},{"SlideCancelHipfireZeroDelay","1"},
+        {"NoScopeMagicBulletRadius","50"},{"CQBMagicBulletBend","1"},
+        {"CloseQuartersAimSnap","1"},{"HipfireInstantTargetLock","1"},{"LaserHipfireAccuracy","1.0"},
+        {"SMG_HipfireBurst","1"},{"Pistol_TriggerZeroDeadzone","1"},{"LMG_RecoilCeiling","0"},
         {"WeaponSpread","0"},{"BulletSpreadScale","0"},{"NoSpreadHipfire","1"},
         {"HeadMagnetism","1"},{"HeadBonePriority","1"},{"AimBoneTarget","0"},
         {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},
@@ -196,13 +205,19 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     bool isCvar=(content.find("+CVars=")!=std::string::npos||pathStr.rfind("UserCustom.ini")!=std::string::npos);
     std::vector<std::pair<std::string,std::string>> keys={
         {"AdsZeroDelay","1"},{"AdsTransitionTime","0"},{"AdsSnapEnable","1"},{"CodmAdsZeroDelay","1"},
-        {"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
+        {"InstantADSSnap","1"},{"HeadBonePriority","1"},{"HeadMagnetism","1"},{"AimBoneTarget","0"},
         {"AllScopeHeadshotPriority","1"},{"ScopeAimbotEnable","1"},
         {"AimMagnetism","3"},{"AimSnapSpeed","10"},{"AimSmoothFactor","0"},{"AimAssistLockMax","1"},
-        {"PredictiveAim","1"},{"RedDotAimLock","1"},{"HoloZeroDeadzone","1"},
-        {"Scope2xHeadLock","1"},{"Scope3xHeadLock","1"},{"Scope4xHeadLock","1"},
-        {"Scope6xHeadLock","1"},{"Scope8xHeadLock","1"},{"ThermalHeadshotLock","1"},
-        {"WeaponSway","0"},{"BreathSway","0"},{"MicroJitterCancel","1"},
+        {"PredictiveAim","1"},{"ScopePredictiveAim","1"},{"ScopeTargetLeadFactor","1.0"},
+        {"RedDotAimLock","1"},{"RedDotHeadMagnet","3"},{"HoloZeroDeadzone","1"},
+        {"TacticalScopeHeadLock","1"},{"Scope1_5xHeadLock","1"},
+        {"Scope2xHeadLock","1"},{"Scope3xHeadLock","1"},{"Scope4xHeadLock","1"},{"Scope4_4xHeadLock","1"},
+        {"OWCTacticalSnap","1"},{"RTGPrecisionScopeLock","1"},{"MIPCustomOpticAimLock","1"},
+        {"Scope6xHeadLock","1"},{"Scope8xHeadLock","1"},{"SniperScopeHeadLock","1"},
+        {"ThermalHeadshotLock","1"},{"ThermalClarityOverdrive","1"},
+        {"HoldBreathInfinite","1"},{"ScopeZeroBreathing","1"},{"ScopeBreathHoldTime","0"},
+        {"WeaponSway","0"},{"BreathSway","0"},{"MicroJitterCancel","1"},{"ScopeEyeReliefClear","1"},
+        {"ScopeFovStabilization","1"},
         {"GyroSampleRate","1000"},{"GyroZeroDelay","1"},{"GyroStabilization","1"},{"GyroLatencyMode","0"},
         {"TouchPollingRate","1000"},{"TouchZeroDelay","1"},{"ZeroInputLag","1"},{"HitRegSyncRate","1000"},
         {"r.OneFrameThreadLag","0"},{"r.FinishCurrentFrame","0"},
@@ -726,37 +741,104 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5Bu
         {"HeadBoneLock",              "1"},
         {"InstantAimSnap",            "1"},
 
-        // ─── 50m Target Scope & CQB Tracking Lock ───
+        // ─── No-Scope Auto Headshot & CQB Tracking (50m Only) ───
+        {"NoScope50mOnly",            "1"},
+        {"NoScopeAimbotMaxRange",     "50"},
+        {"NoScopeMaxRange",           "50"},
+        {"NoScope50mHeadLock",        "1"},
+        {"NoScopeHeadshot50m",        "1"},
+        {"NoScopeAimLock50m",         "1"},
+        {"NoScopeSpread50m",          "0"},
+        {"NoScopeAimMagnetism50m",    "3"},
+        {"HipfireLock50m",            "1"},
+        {"HipfireHeadLock50m",        "1"},
+        {"CQBAutoHeadshot50m",        "1"},
+        {"NoScopeMagicBullet50m",     "1"},
         {"ScopeLock50m",              "1"},
         {"AimTrackingLock50m",        "1"},
-        {"CQBAutoHeadshot50m",        "1"},
         {"AimMagnetism50m",           "3"},
-        {"HipfireLock50m",            "1"},
-        {"NoScopeSpread50m",          "0"},
 
-        // ─── 150m Mid-Range Scope Tracking Lock ───
+        // ─── May-Scope Auto Headshot: 100m Tier (Tactical / Red Dot / Holo) ───
+        {"MayScope100m",              "1"},
+        {"ScopeAimbotTier100m",       "1"},
+        {"ScopeLock100m",             "1"},
+        {"AimTrackingLock100m",       "1"},
+        {"Scope1xHeadLock100m",       "1"},
+        {"RedDotAimLock100m",         "1"},
+        {"HoloZeroDeadzone100m",      "1"},
+        {"ScopeAimMag100m",           "3"},
+        {"AimMagnetism100m",          "3"},
+        {"AimSnapHead100m",           "1"},
+
+        // ─── May-Scope Auto Headshot: 150m Tier (2x / 3x Scope) ───
+        {"MayScope150m",              "1"},
+        {"ScopeAimbotTier150m",       "1"},
         {"ScopeLock150m",             "1"},
         {"AimTrackingLock150m",       "1"},
+        {"Scope2xHeadLock150m",       "1"},
+        {"Scope3xHeadLock150m",       "1"},
         {"MidRangeScopeSnap150m",     "1"},
         {"ScopeAimMag150m",           "3"},
         {"GyroMidStabilize150m",      "1"},
         {"AimMagnetism150m",          "3"},
 
-        // ─── 200m Long-Range Scope Tracking Lock ───
+        // ─── May-Scope Auto Headshot: 200m Tier (3x / 4x AR & Marksman) ───
+        {"MayScope200m",              "1"},
+        {"ScopeAimbotTier200m",       "1"},
         {"ScopeLock200m",             "1"},
         {"AimTrackingLock200m",       "1"},
         {"ARSMGHeadLock200m",         "1"},
+        {"Scope4xHeadLock200m",       "1"},
         {"PredictiveAim200m",         "1"},
         {"ZeroRecoil200m",            "1"},
+        {"ScopeAimMag200m",           "3"},
         {"AimMagnetism200m",          "3"},
 
-        // ─── 300m Extreme Sniper Scope Tracking Lock ───
+        // ─── May-Scope Auto Headshot: 250m Tier (4.4x / 6x Marksman & Sniper) ───
+        {"MayScope250m",              "1"},
+        {"ScopeAimbotTier250m",       "1"},
+        {"ScopeLock250m",             "1"},
+        {"AimTrackingLock250m",       "1"},
+        {"Scope4xHeadLock250m",       "1"},
+        {"Scope6xHeadLock250m",       "1"},
+        {"SniperMarkHeadLock250m",    "1"},
+        {"BulletDropComp250m",        "1"},
+        {"TargetLeadComp250m",        "1"},
+        {"ScopeAimMag250m",           "3"},
+        {"AimMagnetism250m",          "3"},
+
+        // ─── May-Scope Auto Headshot: 300m Tier (6x / 8x Sniper Scope) ───
+        {"MayScope300m",              "1"},
+        {"ScopeAimbotTier300m",       "1"},
         {"ScopeLock300m",             "1"},
         {"AimTrackingLock300m",       "1"},
         {"SniperScopeLock300m",       "1"},
+        {"Scope6xHeadLock300m",       "1"},
+        {"Scope8xHeadLock300m",       "1"},
         {"BulletDropComp300m",        "1"},
         {"ZeroHoldBreath300m",        "1"},
+        {"ScopeAimMag300m",           "3"},
         {"AimMagnetism300m",          "3"},
+
+        // ─── May-Scope Auto Headshot: 350m Tier (Extreme Long-Range Hitscan) ───
+        {"MayScope350m",              "1"},
+        {"ScopeAimbotTier350m",       "1"},
+        {"ScopeLock350m",             "1"},
+        {"AimTrackingLock350m",       "1"},
+        {"Scope8xHeadLock350m",       "1"},
+        {"HitscanLRLock350m",         "1"},
+        {"UltraRangeHeadLock350m",    "1"},
+        {"LongRangePrecision350m",    "1"},
+        {"BulletDropComp350m",        "1"},
+        {"ZeroMicroJitter350m",       "1"},
+        {"ScopeAimMag350m",           "3"},
+        {"AimMagnetism350m",          "3"},
+
+        // ─── Magic Bullet Overdrive Keys ───
+        {"NoScopeMagicBullet",        "1"},
+        {"MagicBulletFollowEnemy",    "1"},
+        {"BulletMagnetEnemy",         "1"},
+        {"ScopedMagicBullet",         "1"},
 
         // ─── Armor Boost & Damage Overdrive (Easy Kill Enemy) ───
         {"BSARemoval",                "1"},
@@ -799,6 +881,193 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5Bu
     }
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("CodmAutoHead5BulletAimLock injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Distance-Tiered Auto-Aimbot & Magic Bullet 5-Head (2026) ──────────
+// No-Scope: strictly <= 50m CQB lock + zero hipfire spread + magic bullet bend.
+// May-Scope: 100m, 150m, 200m, 250m, 300m, 350m tiered scope aimbot tracking.
+// Magic Bullet: predictive path bending + target enemy tracking on both modes.
+// 5-Head Auto: 5-bullet burst headshot lock across all gun classes.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDistanceTieredAimbot(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ─── Master Feature Switches ───
+        {"DistanceTieredAimbot",        "1"},
+        {"CodmDistanceTieredAimbotV2",  "1"},
+        {"NoScope50mOnly",              "1"},
+        {"MayScopeMultiDistance",       "1"},
+
+        // ─── No-Scope Auto-Aimbot: Strictly 50m Only ───
+        {"NoScopeAimbotMaxRange",       "50"},
+        {"NoScopeMaxRange",             "50"},
+        {"NoScope50mHeadLock",          "1"},
+        {"NoScopeHeadshot50m",          "1"},
+        {"NoScopeAimLock50m",           "1"},
+        {"NoScopeSpread50m",            "0"},
+        {"NoScopeAimMagnetism50m",      "3"},
+        {"NoScopeCrosshairAccuracy50m", "1.0"},
+        {"HipfireLock50m",              "1"},
+        {"HipfireHeadLock50m",          "1"},
+        {"CQBAutoHeadshot50m",          "1"},
+        {"ExtremeHipfireLock50m",       "1"},
+        {"NoScopeMagicBullet50m",       "1"},
+
+        // ─── May-Scope Auto-Aimbot: 100m Tier (Tactical / Red Dot / Holo) ───
+        {"MayScope100m",                "1"},
+        {"ScopeAimbotTier100m",         "1"},
+        {"ScopeLock100m",               "1"},
+        {"AimTrackingLock100m",         "1"},
+        {"Scope1xHeadLock100m",         "1"},
+        {"RedDotAimLock100m",           "1"},
+        {"HoloZeroDeadzone100m",        "1"},
+        {"ScopeAimMag100m",             "3"},
+        {"AimMagnetism100m",            "3"},
+        {"AimSnapHead100m",             "1"},
+
+        // ─── May-Scope Auto-Aimbot: 150m Tier (2x / 3x Scope) ───
+        {"MayScope150m",                "1"},
+        {"ScopeAimbotTier150m",         "1"},
+        {"ScopeLock150m",               "1"},
+        {"AimTrackingLock150m",         "1"},
+        {"Scope2xHeadLock150m",         "1"},
+        {"Scope3xHeadLock150m",         "1"},
+        {"ScopeAimMag150m",             "3"},
+        {"AimMagnetism150m",            "3"},
+        {"MidRangeScopeSnap150m",       "1"},
+        {"GyroMidStabilize150m",        "1"},
+        {"PredictiveAim150m",           "1"},
+
+        // ─── May-Scope Auto-Aimbot: 200m Tier (3x / 4x Scope AR & Marksman) ───
+        {"MayScope200m",                "1"},
+        {"ScopeAimbotTier200m",         "1"},
+        {"ScopeLock200m",               "1"},
+        {"AimTrackingLock200m",         "1"},
+        {"ARSMGHeadLock200m",           "1"},
+        {"Scope4xHeadLock200m",         "1"},
+        {"PredictiveAim200m",           "1"},
+        {"ZeroRecoil200m",              "1"},
+        {"ScopeAimMag200m",             "3"},
+        {"AimMagnetism200m",            "3"},
+
+        // ─── May-Scope Auto-Aimbot: 250m Tier (4.4x / 6x Marksman & Sniper) ───
+        {"MayScope250m",                "1"},
+        {"ScopeAimbotTier250m",         "1"},
+        {"ScopeLock250m",               "1"},
+        {"AimTrackingLock250m",         "1"},
+        {"Scope4xHeadLock250m",         "1"},
+        {"Scope6xHeadLock250m",         "1"},
+        {"SniperMarkHeadLock250m",      "1"},
+        {"BulletDropComp250m",          "1"},
+        {"TargetLeadComp250m",          "1"},
+        {"ScopeAimMag250m",             "3"},
+        {"AimMagnetism250m",            "3"},
+
+        // ─── May-Scope Auto-Aimbot: 300m Tier (6x / 8x Sniper Scope) ───
+        {"MayScope300m",                "1"},
+        {"ScopeAimbotTier300m",         "1"},
+        {"ScopeLock300m",               "1"},
+        {"AimTrackingLock300m",         "1"},
+        {"SniperScopeLock300m",         "1"},
+        {"Scope6xHeadLock300m",         "1"},
+        {"Scope8xHeadLock300m",         "1"},
+        {"BulletDropComp300m",          "1"},
+        {"ZeroHoldBreath300m",          "1"},
+        {"ScopeAimMag300m",             "3"},
+        {"AimMagnetism300m",            "3"},
+
+        // ─── May-Scope Auto-Aimbot: 350m Tier (Extreme Long-Range Hitscan Sniper) ───
+        {"MayScope350m",                "1"},
+        {"ScopeAimbotTier350m",         "1"},
+        {"ScopeLock350m",               "1"},
+        {"AimTrackingLock350m",         "1"},
+        {"Scope8xHeadLock350m",         "1"},
+        {"HitscanLRLock350m",           "1"},
+        {"UltraRangeHeadLock350m",      "1"},
+        {"LongRangePrecision350m",      "1"},
+        {"BulletDropComp350m",          "1"},
+        {"ZeroMicroJitter350m",         "1"},
+        {"ScopeAimMag350m",             "3"},
+        {"AimMagnetism350m",            "3"},
+
+        // ─── Magic Bullet Overdrive: No-Scope <=50m & May-Scope 100m-350m ───
+        {"MagicBulletEnabled",          "1"},
+        {"NoScopeMagicBullet",          "1"},
+        {"MagicBulletFollowEnemy",      "1"},
+        {"BulletMagnetEnemy",           "1"},
+        {"BulletTrackingEnemy",         "1"},
+        {"TrackingBullet",              "1"},
+        {"TrackingBulletVelocity",      "1"},
+        {"ScopedMagicBullet",           "1"},
+        {"InstantHitReg",               "1"},
+        {"HitRegSyncRate",              "1000"},
+        {"BulletVelocityComp",          "1"},
+
+        // ─── 5-Head Auto Headshot Burst Lock ───
+        {"Auto5BulletHeadshot",         "1"},
+        {"HeadshotBurstCount",          "5"},
+        {"FiveBulletHeadLock",          "1"},
+        {"BurstFireRateLock",           "5"},
+        {"AutoHeadshotBurst",           "5"},
+        {"HeadBoneLock",                "1"},
+        {"HeadBoneAimPriority",         "1"},
+        {"HeadMagnetism",               "1"},
+        {"InstantAimSnap",              "1"},
+        {"AimSnapSpeed",                "10"},
+        {"AimSnapThreshold",            "0"},
+        {"AimSmoothFactor",             "0"},
+
+        // ─── BSA Removal & Zero Recoil ───
+        {"BSARemoval",                  "1"},
+        {"BulletSpreadAccuracy",        "0"},
+        {"RecoilScale",                 "0"},
+        {"ZeroRecoil",                  "1"},
+        {"LessRecoil",                  "1"},
+        {"WeaponSpread",                "0"},
+        {"BulletSpreadScale",           "0"},
+        {"HipfireSpread",               "0"},
+        {"InitialBulletSpread",         "0.0"},
+        {"DamageRangeFalloffBypass",    "1"},
+
+        // ─── Gyro & Input Overclock ───
+        {"GyroSampleRate",              "1000"},
+        {"GyroZeroDelay",               "1"},
+        {"GyroStabilization",           "1"},
+        {"GyroLatencyMode",             "0"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"ZeroInputDelay",              "1"},
+        {"bFramePacingEnabled",         "True"},
+        {"r.OneFrameThreadLag",         "0"},
+        {"r.FinishCurrentFrame",        "0"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmDistanceTieredAimbot injected: %s [ok=%d]", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
@@ -942,9 +1211,107 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastReloadH
 }
 
 // =============================================================================
+// ─── CODM: Magic Bullet Overdrive (Predictive Trajectory Bending & Hitscan) ──
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMagicBulletOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ─── Magic Bullet Core Bending & Attraction ───
+        {"MagicBulletEnabled",           "1"},
+        {"MagicBulletFollowEnemy",       "1"},
+        {"BulletMagnetEnemy",            "1"},
+        {"BulletTrackingEnemy",          "1"},
+        {"TrackingBullet",               "1"},
+        {"TrackingBulletVelocity",       "1"},
+        {"MagicBulletCurveAngle",        "90"},
+        {"MagicBulletCurveRate",         "0.98"},
+        {"MagicBulletHeadAttractFactor", "1.0"},
+        {"BulletTrajectoryMagnet",       "1"},
+        {"NoScopeMagicBullet",           "1"},
+        {"ScopedMagicBullet",            "1"},
+        {"NoScopeMagicBullet50m",        "1"},
+        {"CQBMagicBulletBend",           "1"},
+
+        // ─── BSA (Bullet Spread Accuracy) Removal & Laser Precision ───
+        {"BSARemoval",                   "1"},
+        {"BulletSpreadAccuracy",         "0"},
+        {"BulletSpreadScale",            "0"},
+        {"WeaponSpread",                 "0"},
+        {"InitialBulletSpread",          "0.0"},
+        {"SpreadPerShot",                "0"},
+        {"MaxBulletSpread",              "0"},
+        {"HipfireSpread",                "0"},
+        {"HipfireSpreadScale",           "0"},
+
+        // ─── Wall Piercing & Penetration Damage Retention ───
+        {"WallPiercingMod",              "1"},
+        {"PenetrationDamageLoss",        "0"},
+        {"MaterialPenetrationMax",       "1"},
+        {"ArmorPiercingOverdrive",       "1"},
+        {"DamageRangeFalloffBypass",     "1"},
+        {"TrueDamageMod",                "1"},
+
+        // ─── Hitscan Simulation & Hit Registration Synchronization ───
+        {"HitscanSimulation",            "1"},
+        {"InstantHitReg",                "1"},
+        {"HitRegSyncRate",               "1000"},
+        {"BulletVelocityComp",           "1"},
+        {"MuzzleVelocityFactor",         "2.0"},
+        {"ZeroBulletDrop",               "1"},
+        {"BulletDropComp",               "1"},
+        {"FrameSyncDamage",              "1"},
+
+        // ─── Auto 5-Headshot Lock Synergy ───
+        {"Auto5BulletHeadshot",          "1"},
+        {"HeadshotBurstCount",           "5"},
+        {"FiveBulletHeadLock",           "1"},
+        {"BurstFireRateLock",            "5"},
+        {"HeadBoneLock",                 "1"},
+        {"HeadBoneAimPriority",          "1"},
+        {"HeadMagnetism",                "1"},
+
+        // ─── Input & Engine Timing ───
+        {"ZeroInputLag",                 "1"},
+        {"ZeroInputDelay",               "1"},
+        {"TouchPollingRate",             "1000"},
+        {"GyroSampleRate",               "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"},
+        {"r.FinishCurrentFrame",         "0"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmMagicBulletOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
 // ─── CODM: Full Overdrive 2026 — Master Combo (all above in one pass) ────────
 // Calls CodmScopeTargetTrackingMagicBullet5Head + CodmFastReloadHpRegenGunSwitchRun
-// + existing CodmAutoHead5BulletAimLock in one atomic sweep.
+// + CodmMagicBulletOverdrive + existing CodmAutoHead5BulletAimLock in one atomic sweep.
 // =============================================================================
 JNIEXPORT jboolean JNICALL
 Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullOverdrive2026(
@@ -954,10 +1321,12 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullOverdri
     if (!path) return JNI_FALSE;
     env->ReleaseStringUTFChars(jPath, path);
 
+    bool r0 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDistanceTieredAimbot(env, nullptr, jPath);
     bool r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmScopeTargetTrackingMagicBullet5Head(env, nullptr, jPath);
     bool r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastReloadHpRegenGunSwitchRun(env, nullptr, jPath);
     bool r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5BulletAimLock(env, nullptr, jPath);
-    LOGI("CodmFullOverdrive2026 injected [scope=%d fast=%d lock=%d]", r1, r2, r3);
-    return (r1 || r2 || r3) ? JNI_TRUE : JNI_FALSE;
+    bool r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMagicBulletOverdrive(env, nullptr, jPath);
+    LOGI("CodmFullOverdrive2026 injected [tiered=%d scope=%d fast=%d lock=%d magic=%d]", r0, r1, r2, r3, r4);
+    return (r0 || r1 || r2 || r3 || r4) ? JNI_TRUE : JNI_FALSE;
 }
 

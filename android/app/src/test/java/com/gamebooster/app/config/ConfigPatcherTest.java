@@ -756,5 +756,208 @@ public class ConfigPatcherTest {
             tempXml.delete();
         }
     }
+
+    @Test
+    public void testPubgmIpadViewFovKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_ipad_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmIpadViewFov105(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("r.DefaultFOV=105"));
+            assertTrue(content.contains("r.CameraFOV=105"));
+            assertTrue(content.contains("IpadViewMode=1"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmFootstepAudioClarityKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_audio_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmFootstepAudioVisualizerClarity(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("au.Spatialization=1"));
+            assertTrue(content.contains("au.LowPassFilter=0"));
+            assertTrue(content.contains("FootstepDistanceBoost=2.0"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmNoGrassFoliageClarityKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_grass_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmNoGrassFoliageClarity(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("foliage.DensityScale=0.1"));
+            assertTrue(content.contains("r.Grass.DensityScale=0.1"));
+            assertTrue(content.contains("ClearSightDistance=500"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmZeroDelayGyroRawInputKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_gyro_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmZeroDelayGyroRawInput1000Hz(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("r.GyroscopeDelay=0"));
+            assertTrue(content.contains("r.GyroSampleRate=1000"));
+            assertTrue(content.contains("TouchPollingRate=1000"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testPubgmFpsTiersResolution() {
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(60));
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(90));
+        assertEquals(120, FpsUnlockTier.resolveTargetFps(120));
+        assertEquals(144, FpsUnlockTier.resolveTargetFps(144));
+        assertEquals(165, FpsUnlockTier.resolveTargetFps(165));
+        assertEquals(185, FpsUnlockTier.resolveTargetFps(185));
+        assertEquals(185, FpsUnlockTier.resolveTargetFps(240));
+
+        assertEquals(7, FpsUnlockTier.fromFps(120).level);
+        assertEquals(8, FpsUnlockTier.fromFps(144).level);
+        assertEquals(9, FpsUnlockTier.fromFps(165).level);
+        assertEquals(10, FpsUnlockTier.fromFps(185).level);
+    }
+
+    @Test
+    public void testPubgmDistanceTieredAimbotKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("pubgm_tiered_aimbot_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmDistanceTieredAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            // No scope 50m only
+            assertTrue(content.contains("NoScope50mOnly=1"));
+            assertTrue(content.contains("NoScopeAimbotMaxRange=50"));
+            assertTrue(content.contains("CQBAutoHeadshot50m=1"));
+            // May scope 100, 150, 200, 250, 300, 350m
+            assertTrue(content.contains("ScopeAimbotTier100m=1"));
+            assertTrue(content.contains("ScopeAimbotTier150m=1"));
+            assertTrue(content.contains("ScopeAimbotTier200m=1"));
+            assertTrue(content.contains("ScopeAimbotTier250m=1"));
+            assertTrue(content.contains("ScopeAimbotTier300m=1"));
+            assertTrue(content.contains("ScopeAimbotTier350m=1"));
+            // Magic bullet
+            assertTrue(content.contains("MagicBulletFollowEnemy=1"));
+            assertTrue(content.contains("BulletMagnetEnemy=1"));
+            assertTrue(content.contains("BulletTrackingEnemy=1"));
+            // 5 head auto bullet
+            assertTrue(content.contains("Auto5BulletHeadshot=1"));
+            assertTrue(content.contains("FiveBulletHeadLock=1"));
+            assertTrue(content.contains("BurstFireRateLock=5"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testCodmDistanceTieredAimbotKeys() throws java.io.IOException {
+        java.io.File tempJson = java.io.File.createTempFile("codm_tiered_aimbot_", ".json");
+        try {
+            java.nio.file.Files.write(tempJson.toPath(), "{}".getBytes());
+            boolean ok = NativeConfigInjector.injectCodmDistanceTieredAimbot(tempJson.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempJson.toPath()));
+            // No scope 50m only
+            assertTrue(content.contains("NoScope50mOnly"));
+            assertTrue(content.contains("NoScopeAimbotMaxRange"));
+            assertTrue(content.contains("CQBAutoHeadshot50m"));
+            // May scope 100, 150, 200, 250, 300, 350m
+            assertTrue(content.contains("ScopeAimbotTier100m"));
+            assertTrue(content.contains("ScopeAimbotTier150m"));
+            assertTrue(content.contains("ScopeAimbotTier200m"));
+            assertTrue(content.contains("ScopeAimbotTier250m"));
+            assertTrue(content.contains("ScopeAimbotTier300m"));
+            assertTrue(content.contains("ScopeAimbotTier350m"));
+            // Magic bullet
+            assertTrue(content.contains("MagicBulletFollowEnemy"));
+            assertTrue(content.contains("BulletMagnetEnemy"));
+            assertTrue(content.contains("BulletTrackingEnemy"));
+            // 5 head auto bullet
+            assertTrue(content.contains("Auto5BulletHeadshot"));
+            assertTrue(content.contains("FiveBulletHeadLock"));
+            assertTrue(content.contains("BurstFireRateLock"));
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    @Test
+    public void testCodmMagicBulletOverdriveKeys() throws java.io.IOException {
+        java.io.File tempJson = java.io.File.createTempFile("codm_magic_bullet_", ".json");
+        try {
+            java.nio.file.Files.write(tempJson.toPath(), "{}".getBytes());
+            boolean ok = NativeConfigInjector.injectCodmMagicBulletOverdrive(tempJson.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempJson.toPath()));
+            assertTrue(content.contains("MagicBulletEnabled"));
+            assertTrue(content.contains("MagicBulletFollowEnemy"));
+            assertTrue(content.contains("BulletMagnetEnemy"));
+            assertTrue(content.contains("MagicBulletCurveAngle"));
+            assertTrue(content.contains("BSARemoval"));
+            assertTrue(content.contains("WallPiercingMod"));
+            assertTrue(content.contains("PenetrationDamageLoss"));
+            assertTrue(content.contains("InstantHitReg"));
+            assertTrue(content.contains("HitRegSyncRate"));
+            assertTrue(content.contains("Auto5BulletHeadshot"));
+            assertTrue(content.contains("FiveBulletHeadLock"));
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    @Test
+    public void testCodmAllScopeAimbotExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("codm_allscope_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectCodmAllScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("InstantADSSnap=1"));
+            assertTrue(content.contains("RedDotHeadMagnet=3"));
+            assertTrue(content.contains("TacticalScopeHeadLock=1"));
+            assertTrue(content.contains("Scope4_4xHeadLock=1"));
+            assertTrue(content.contains("OWCTacticalSnap=1"));
+            assertTrue(content.contains("HoldBreathInfinite=1"));
+            assertTrue(content.contains("ScopeZeroBreathing=1"));
+            assertTrue(content.contains("ThermalHeadshotLock=1"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testCodmNoScopeAimbotExpandedKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("codm_noscope_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectCodmNoScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("NoScope50mOnly=1"));
+            assertTrue(content.contains("NoScopeAimbotMaxRange=50"));
+            assertTrue(content.contains("CQBAutoHeadshot50m=1"));
+            assertTrue(content.contains("CQBEnemySnap360=1"));
+            assertTrue(content.contains("ShotgunPelletSpreadScale=0"));
+            assertTrue(content.contains("SlideHipfireAccuracy=1.0"));
+            assertTrue(content.contains("NoScopeMagicBulletRadius=50"));
+            assertTrue(content.contains("CQBMagicBulletBend=1"));
+        } finally {
+            tempIni.delete();
+        }
+    }
 }
 

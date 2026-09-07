@@ -739,6 +739,57 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5BulletAimLock
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectPubgmDistanceTieredAimbot
+ * PUBGM — Distance-tiered aimbot: no-scope <=50m, may-scope 100m, 150m, 200m, 250m, 300m, 350m,
+ * magic bullet, and 5-head auto headshot.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDistanceTieredAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmScopeTargetTrackingMagicBullet5Head
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmScopeTargetTrackingMagicBullet5Head
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFastReloadHpRegenGunSwitchRun
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastReloadHpRegenGunSwitchRun
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFullOverdrive2026
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFullOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmIpadViewFov105
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmIpadViewFov105
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFootstepAudioVisualizerClarity
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFootstepAudioVisualizerClarity
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmNoGrassFoliageClarity
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmNoGrassFoliageClarity
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmZeroDelayGyroRawInput1000Hz
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmZeroDelayGyroRawInput1000Hz
+  (JNIEnv *, jclass, jstring);
+
 // =============================================================================
 
 // ─── Call of Duty Mobile (CODM) Dedicated Injectors ───
@@ -864,6 +915,25 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAutoHead5BulletAimLock
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmDistanceTieredAimbot
+ * CODM — Distance-tiered aimbot: no-scope <=50m, may-scope 100m, 150m, 200m, 250m, 300m, 350m,
+ * magic bullet, and 5-head auto headshot.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDistanceTieredAimbot
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmMagicBulletOverdrive
+ * CODM — Dedicated Magic Bullet Overdrive:
+ * Predictive trajectory curving to enemy head, 100% BSA removal,
+ * zero-loss wall penetration, and 1000Hz hit registration sync.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMagicBulletOverdrive
   (JNIEnv *, jclass, jstring);
 
 // =============================================================================

@@ -183,6 +183,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::vector<std::pair<std::string, std::string>> keys = {
         {"HipfireSpread","0"},{"HipfireSpreadScale","0"},{"WeaponSpread","0"},
         {"BulletSpreadScale","0"},{"NoSpreadHipfire","1"},{"HipfireAimLock","1"},
+        {"NoScope50mOnly","1"},{"NoScopeAimbotMaxRange","50"},{"NoScopeMaxRange","50"},
+        {"NoScope50mHeadLock","1"},{"NoScopeHeadshot50m","1"},{"NoScopeAimLock50m","1"},
+        {"NoScopeSpread50m","0"},{"NoScopeMagnetism50m","3"},{"NoScopeCrosshairAccuracy50m","1.0"},
+        {"HipfireLock50m","1"},{"HipfireHeadLock50m","1"},{"HipfireMagnetism50m","3"},
+        {"CQBAutoHeadshot50m","1"},{"ExtremeHipfireLock50m","1"},{"NoScopeMagicBullet50m","1"},
         {"WeaponSway","0"},{"SwayAmplitude","0"},{"SwayFrequency","0"},
         {"BreathSway","0"},{"HeadMagnetism","1"},{"HeadBonePriority","1"},
         {"AimBoneTarget","0"},{"AimMagnetism","3"},{"AimSnapSpeed","10"},
@@ -434,9 +439,19 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     struct stat stBefore;
     bool hasStat = (stat(path, &stBefore) == 0);
 
-    int fps = (targetFps >= 120) ? targetFps : 165;
-    // In PUBGM UE4 engine: Level 7 is 120/165 FPS tier. Levels > 7 fail validation.
-    int effectiveLevel = (fps >= 120) ? 7 : 6;
+    int fps = targetFps;
+    if (fps <= 120) fps = 120;
+    else if (fps <= 144) fps = 144;
+    else if (fps <= 165) fps = 165;
+    else fps = 185;
+
+    // FpsUnlockTier standard: Level 7 = 120fps, Level 8 = 144fps, Level 9 = 165fps, Level 10 = 185fps
+    int effectiveLevel = 7;
+    if (fps == 120) effectiveLevel = 7;
+    else if (fps == 144) effectiveLevel = 8;
+    else if (fps == 165) effectiveLevel = 9;
+    else if (fps >= 185) effectiveLevel = 10;
+
     int q = (qualityLevel > 0) ? qualityLevel : 4; // 4 = HDR
     std::string fpsStr = std::to_string(fps);
     std::string effLvlStr = std::to_string(effectiveLevel);
@@ -865,34 +880,75 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5B
         {"AutoHeadshotLock",          "1"},
         {"HeadBoneAimPriority",       "1"},
 
-        // ─── 50m Target Scope & CQB Tracking Lock ───
+        // ─── No-Scope Auto Headshot & CQB Tracking (50m Only) ───
+        {"NoScope50mOnly",            "1"},
+        {"NoScopeAimbotMaxRange",     "50"},
+        {"NoScopeMaxRange",           "50"},
+        {"NoScope50mHeadLock",        "1"},
+        {"NoScopeHeadshot50m",        "1"},
+        {"NoScopeAimLock50m",         "1"},
+        {"NoScopeSpread50m",          "0"},
+        {"NoScopeMagnetism50m",       "3"},
+        {"HipfireLock50m",            "1"},
+        {"HipfireHeadLock50m",        "1"},
+        {"CQBAutoHeadshot50m",        "1"},
+        {"NoScopeMagicBullet50m",     "1"},
         {"ScopeLock50m",              "1"},
         {"AimTrackingLock50m",        "1"},
-        {"RedDotHeadLock50m",         "1"},
-        {"HoloHeadLock50m",           "1"},
-        {"HipfireHeadLock50m",        "1"},
-        {"NoScopeSpread50m",          "0"},
         {"AimMagnetism50m",           "3"},
 
-        // ─── 150m Mid-Range Scope Tracking Lock (2x / 3x) ───
+        // ─── May-Scope Auto Headshot: 100m Tier (1x / Red Dot / Holo) ───
+        {"MayScope100m",              "1"},
+        {"ScopeAimbotTier100m",       "1"},
+        {"ScopeLock100m",             "1"},
+        {"AimTrackingLock100m",       "1"},
+        {"Scope1xHeadLock100m",       "1"},
+        {"ScopeRedDotHeadLock100m",   "1"},
+        {"ScopeHoloHeadLock100m",     "1"},
+        {"ScopeAimMag100m",           "3"},
+        {"AimMagnetism100m",          "3"},
+        {"AimSnapHead100m",           "1"},
+
+        // ─── May-Scope Auto Headshot: 150m Tier (2x / 3x Mid-Range) ───
+        {"MayScope150m",              "1"},
+        {"ScopeAimbotTier150m",       "1"},
         {"ScopeLock150m",             "1"},
         {"AimTrackingLock150m",       "1"},
         {"Scope2xHeadLock150m",       "1"},
         {"Scope3xHeadLock150m",       "1"},
         {"MidRangeSnap150m",          "1"},
         {"Scope3xGyroStabilize150m",  "1"},
+        {"ScopeAimMag150m",           "3"},
         {"AimMagnetism150m",          "3"},
 
-        // ─── 200m Long-Range Scope Tracking Lock (4x / 6x) ───
+        // ─── May-Scope Auto Headshot: 200m Tier (3x / 4x AR & DMR) ───
+        {"MayScope200m",              "1"},
+        {"ScopeAimbotTier200m",       "1"},
         {"ScopeLock200m",             "1"},
         {"AimTrackingLock200m",       "1"},
         {"Scope4xHeadLock200m",       "1"},
         {"PredictiveAim200m",         "1"},
         {"ZeroSway200m",              "1"},
         {"Scope4xGyro1000Hz",         "1"},
+        {"ScopeAimMag200m",           "3"},
         {"AimMagnetism200m",          "3"},
 
-        // ─── 300m Extreme Sniper Scope Tracking Lock (6x / 8x) ───
+        // ─── May-Scope Auto Headshot: 250m Tier (4x / 6x Long DMR & Sniper) ───
+        {"MayScope250m",              "1"},
+        {"ScopeAimbotTier250m",       "1"},
+        {"ScopeLock250m",             "1"},
+        {"AimTrackingLock250m",       "1"},
+        {"Scope4xHeadLock250m",       "1"},
+        {"Scope6xHeadLock250m",       "1"},
+        {"ScopeAimMag250m",           "3"},
+        {"AimMagnetism250m",          "3"},
+        {"PredictiveAim250m",         "1"},
+        {"BulletDropComp250m",        "1"},
+        {"TargetLeadComp250m",        "1"},
+
+        // ─── May-Scope Auto Headshot: 300m Tier (6x / 8x Extreme Sniper) ───
+        {"MayScope300m",              "1"},
+        {"ScopeAimbotTier300m",       "1"},
         {"ScopeLock300m",             "1"},
         {"AimTrackingLock300m",       "1"},
         {"Scope6xHeadLock300m",       "1"},
@@ -900,7 +956,29 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5B
         {"BulletDropComp300m",        "1"},
         {"TargetLeadComp300m",        "1"},
         {"ZeroBreathSway300m",        "1"},
+        {"ScopeAimMag300m",           "3"},
         {"AimMagnetism300m",          "3"},
+
+        // ─── May-Scope Auto Headshot: 350m Tier (8x Sniper Extreme) ───
+        {"MayScope350m",              "1"},
+        {"ScopeAimbotTier350m",       "1"},
+        {"ScopeLock350m",             "1"},
+        {"AimTrackingLock350m",       "1"},
+        {"Scope8xHeadLock350m",       "1"},
+        {"Scope8xLongRangeHeadLock350m","1"},
+        {"Scope8xPrecisionFilter350m","1"},
+        {"ExtremeRangeHeadLock350m",  "1"},
+        {"BulletDropComp350m",        "1"},
+        {"TargetLeadComp350m",        "1"},
+        {"ZeroMicroJitter350m",       "1"},
+        {"ScopeAimMag350m",           "3"},
+        {"AimMagnetism350m",          "3"},
+
+        // ─── Magic Bullet Overdrive Keys ───
+        {"MagicBulletFollowEnemy",    "1"},
+        {"BulletMagnetEnemy",         "1"},
+        {"NoScopeMagicBullet",        "1"},
+        {"ScopedMagicBullet",         "1"},
 
         // ─── Armor Boost & Damage Overdrive (Easy Kill Enemy) ───
         {"DamageLockMax",             "10000"},
@@ -943,6 +1021,222 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5B
     }
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("PubgmAutoHead5BulletAimLock injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Distance-Tiered Auto-Aimbot & Magic Bullet 5-Head (2026) ─────────
+// No-Scope: strictly <= 50m CQB lock + zero hipfire spread + magic bullet bend.
+// May-Scope: 100m, 150m, 200m, 250m, 300m, 350m tiered scope aimbot tracking.
+// Magic Bullet: predictive path bending + target enemy tracking on both modes.
+// 5-Head Auto: 5-bullet burst headshot lock across all gun classes.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDistanceTieredAimbot(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ─── Master Feature Switches ───
+        {"DistanceTieredAimbot",        "1"},
+        {"PubgmDistanceTieredAimbotV2", "1"},
+        {"NoScope50mOnly",              "1"},
+        {"MayScopeMultiDistance",       "1"},
+
+        // ─── No-Scope Auto-Aimbot: Strictly 50m Only ───
+        {"NoScopeAimbotMaxRange",       "50"},
+        {"NoScopeMaxRange",             "50"},
+        {"NoScope50mHeadLock",          "1"},
+        {"NoScopeHeadshot50m",          "1"},
+        {"NoScopeAimLock50m",           "1"},
+        {"NoScopeSpread50m",            "0"},
+        {"NoScopeMagnetism50m",         "3"},
+        {"NoScopeCrosshairAccuracy50m", "1.0"},
+        {"HipfireLock50m",              "1"},
+        {"HipfireHeadLock50m",          "1"},
+        {"HipfireMagnetism50m",         "3"},
+        {"CQBAutoHeadshot50m",          "1"},
+        {"ExtremeHipfireLock50m",       "1"},
+        {"NoScopeMagicBullet50m",       "1"},
+
+        // ─── May-Scope Auto-Aimbot: 100m Tier (1x / Red Dot / Holo) ───
+        {"MayScope100m",                "1"},
+        {"ScopeAimbotTier100m",         "1"},
+        {"ScopeLock100m",               "1"},
+        {"AimTrackingLock100m",         "1"},
+        {"Scope1xHeadLock100m",         "1"},
+        {"ScopeRedDotHeadLock100m",     "1"},
+        {"ScopeHoloHeadLock100m",       "1"},
+        {"ScopeAimMag100m",             "3"},
+        {"AimMagnetism100m",            "3"},
+        {"AimSnapHead100m",             "1"},
+        {"Scope1xZeroRecoil100m",       "1"},
+
+        // ─── May-Scope Auto-Aimbot: 150m Tier (2x / 3x Mid-Range) ───
+        {"MayScope150m",                "1"},
+        {"ScopeAimbotTier150m",         "1"},
+        {"ScopeLock150m",               "1"},
+        {"AimTrackingLock150m",         "1"},
+        {"Scope2xHeadLock150m",         "1"},
+        {"Scope3xHeadLock150m",         "1"},
+        {"ScopeAimMag150m",             "3"},
+        {"AimMagnetism150m",            "3"},
+        {"MidRangeSnap150m",            "1"},
+        {"Scope3xGyroStabilize150m",    "1"},
+        {"Scope2xZeroRecoil150m",       "1"},
+        {"PredictiveAim150m",           "1"},
+
+        // ─── May-Scope Auto-Aimbot: 200m Tier (3x / 4x AR & DMR) ───
+        {"MayScope200m",                "1"},
+        {"ScopeAimbotTier200m",         "1"},
+        {"ScopeLock200m",               "1"},
+        {"AimTrackingLock200m",         "1"},
+        {"Scope3xHeadLock200m",         "1"},
+        {"Scope4xHeadLock200m",         "1"},
+        {"ScopeAimMag200m",             "3"},
+        {"AimMagnetism200m",            "3"},
+        {"PredictiveAim200m",           "1"},
+        {"ZeroSway200m",                "1"},
+        {"Scope4xGyro1000Hz200m",       "1"},
+        {"Scope4xZeroRecoil200m",       "1"},
+
+        // ─── May-Scope Auto-Aimbot: 250m Tier (4x / 6x Long DMR & Sniper) ───
+        {"MayScope250m",                "1"},
+        {"ScopeAimbotTier250m",         "1"},
+        {"ScopeLock250m",               "1"},
+        {"AimTrackingLock250m",         "1"},
+        {"Scope4xHeadLock250m",         "1"},
+        {"Scope6xHeadLock250m",         "1"},
+        {"ScopeAimMag250m",             "3"},
+        {"AimMagnetism250m",            "3"},
+        {"PredictiveAim250m",           "1"},
+        {"BulletDropComp250m",          "1"},
+        {"TargetLeadComp250m",          "1"},
+        {"Scope6xMicroDamping250m",     "1"},
+        {"ZeroBreathSway250m",          "1"},
+
+        // ─── May-Scope Auto-Aimbot: 300m Tier (6x / 8x Extreme Range) ───
+        {"MayScope300m",                "1"},
+        {"ScopeAimbotTier300m",         "1"},
+        {"ScopeLock300m",               "1"},
+        {"AimTrackingLock300m",         "1"},
+        {"Scope6xHeadLock300m",         "1"},
+        {"Scope8xLongRangeHeadLock300m","1"},
+        {"ScopeAimMag300m",             "3"},
+        {"AimMagnetism300m",            "3"},
+        {"BulletDropComp300m",          "1"},
+        {"TargetLeadComp300m",          "1"},
+        {"ZeroBreathSway300m",          "1"},
+        {"Scope8xGyro1000Hz300m",       "1"},
+
+        // ─── May-Scope Auto-Aimbot: 350m Tier (8x Extreme Sniper Distance) ───
+        {"MayScope350m",                "1"},
+        {"ScopeAimbotTier350m",         "1"},
+        {"ScopeLock350m",               "1"},
+        {"AimTrackingLock350m",         "1"},
+        {"Scope8xHeadLock350m",         "1"},
+        {"Scope8xLongRangeHeadLock350m","1"},
+        {"Scope8xPrecisionFilter350m",  "1"},
+        {"ExtremeRangeHeadLock350m",    "1"},
+        {"ScopeAimMag350m",             "3"},
+        {"AimMagnetism350m",            "3"},
+        {"BulletDropComp350m",          "1"},
+        {"TargetLeadComp350m",          "1"},
+        {"ZeroMicroJitter350m",         "1"},
+        {"SniperInstantHitReg350m",     "1"},
+
+        // ─── Magic Bullet Overdrive: No-Scope <=50m & May-Scope 100m-350m ───
+        {"MagicBulletEnabled",          "1"},
+        {"MagicBulletFollowEnemy",      "1"},
+        {"BulletMagnetEnemy",           "1"},
+        {"BulletFOVCorrection",         "1"},
+        {"BulletTrackingEnemy",         "1"},
+        {"TrackingBullet",              "1"},
+        {"TrackingBulletVelocity",      "1"},
+        {"NoScopeMagicBullet",          "1"},
+        {"ScopedMagicBullet",           "1"},
+        {"BulletTrajectoryMagnet",      "1"},
+        {"HitscanSimulation",           "1"},
+        {"InstantHitReg",               "1"},
+        {"HitRegSyncRate",              "1000"},
+        {"BulletVelocityComp",          "1"},
+        {"MuzzleVelocityFactor",        "2.0"},
+
+        // ─── 5-Head Auto Headshot Burst Lock ───
+        {"Auto5BulletHeadshot",         "1"},
+        {"HeadshotBurstCount",          "5"},
+        {"FiveBulletHeadLock",          "1"},
+        {"BurstFireRateLock",           "5"},
+        {"AutoHeadshotBurst",           "5"},
+        {"AutoHeadshotLock",            "1"},
+        {"HeadBoneAimPriority",         "1"},
+        {"HeadBoneLock",                "1"},
+        {"HeadMagnetism",               "1"},
+        {"AimSnapSpeed",                "10"},
+        {"AimSnapThreshold",            "0"},
+        {"AimSmoothFactor",             "0"},
+
+        // ─── Zero Recoil & Zero Spread ───
+        {"WeaponRecoilScale",           "0"},
+        {"RecoilPatternScale",          "0"},
+        {"VerticalRecoilScale",         "0"},
+        {"HorizontalRecoilScale",       "0"},
+        {"WeaponSpread",                "0"},
+        {"WeaponSpreadScale",           "0"},
+        {"BulletSpreadScale",           "0"},
+        {"WeaponSway",                  "0"},
+        {"BreathSway",                  "0"},
+        {"MicroJitterCancel",           "1"},
+
+        // ─── Gyro & Input Overclock ───
+        {"GyroSampleRate",              "1000"},
+        {"GyroZeroDelay",               "1"},
+        {"GyroStabilization",           "1"},
+        {"GyroLatencyMode",             "0"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"ZeroInputDelay",              "1"},
+
+        // ─── UE4 CVar Compatibility ───
+        {"+CVars=r.PUBGBulletVelocityCompensation", "1"},
+        {"+CVars=r.PredictiveAim",                  "1"},
+        {"+CVars=r.AimAssistEnabled",               "1"},
+        {"+CVars=r.AimAssistStrength",              "100"},
+        {"+CVars=r.AimSnapThreshold",               "0"},
+        {"+CVars=r.AimMagnetism",                   "3"},
+        {"+CVars=r.HeadBoneAimPriority",            "1"},
+        {"+CVars=r.WeaponSpread",                   "0"},
+        {"+CVars=r.WeaponRecoilScale",              "0"},
+        {"+CVars=r.VerticalRecoilScale",            "0"},
+        {"+CVars=r.HorizontalRecoilScale",          "0"},
+        {"+CVars=r.BulletSpreadScale",              "0"},
+        {"+CVars=r.OneFrameThreadLag",              "0"},
+        {"+CVars=r.FinishCurrentFrame",             "0"},
+        {"+CVars=bFramePacingEnabled",              "True"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmDistanceTieredAimbot injected: %s [ok=%d]", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
@@ -1111,23 +1405,224 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastReload
 }
 
 // =============================================================================
+// PUBGM: iPad View Ultra FOV (105° Ultra-Wide Perspective & Zero Obstruction)
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmIpadViewFov105(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"r.DefaultFOV",              "105"},
+        {"r.CameraFOV",               "105"},
+        {"r.ThirdPersonFOV",          "105"},
+        {"r.FirstPersonFOV",          "105"},
+        {"r.CameraOffsetZ",           "15.0"},
+        {"r.CameraDistance",          "260.0"},
+        {"CameraFOVScale",            "1.25"},
+        {"TPPCameraFOV",              "105"},
+        {"FPPCameraFOV",              "105"},
+        {"IpadViewMode",              "1"},
+        {"IpadViewFOV",               "105"},
+        {"WideFOVEnabled",            "1"},
+        {"CameraPerspectiveZoom",     "0"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmIpadViewFov105 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM: Footstep & 3D Spatial Audio Clarity (Unmuffled Walls & Gunshot Localization)
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFootstepAudioVisualizerClarity(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"au.Spatialization",         "1"},
+        {"au.LowPassFilter",          "0"},
+        {"au.MaxChannels",            "64"},
+        {"au.DisableWallOcclusion",   "1"},
+        {"SoundQuality",              "2"},
+        {"AudioQualityLevel",         "2"},
+        {"FootstepDistanceBoost",     "2.0"},
+        {"FootstepVolumeMultiplier",  "1.5"},
+        {"r.FootstepClarityEnhanced", "1"},
+        {"r.GunshotLocalization3D",   "1"},
+        {"r.AudioOcclusionScale",     "0.0"},
+        {"r.SoundReverbEnabled",      "0"},
+        {"SpatialAudio3D",            "1"},
+        {"HighPrecisionAudio3D",      "1"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmFootstepAudioVisualizerClarity injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM: Anti-Foliage / Low Grass & Fog Removal (Prone Player Visibility)
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmNoGrassFoliageClarity(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"foliage.DensityScale",      "0.1"},
+        {"foliage.MinimumScreenSize", "0.2"},
+        {"r.Grass.DensityScale",      "0.1"},
+        {"r.Atmosphere",              "0"},
+        {"r.Fog",                     "0"},
+        {"r.VolumetricFog",           "0"},
+        {"r.ViewDistanceScale",       "2.0"},
+        {"r.ShadowQuality",           "0"},
+        {"r.Shadow.DistanceScale",    "0.0"},
+        {"r.DepthOfFieldQuality",     "0"},
+        {"GrassRenderDistance",       "50"},
+        {"FoliageCullDistanceScale",  "0.2"},
+        {"ClearSightDistance",        "500"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmNoGrassFoliageClarity injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM: Zero-Delay Gyroscope & 1000Hz Raw Touch Overclock
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmZeroDelayGyroRawInput1000Hz(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"r.GyroscopeDelay",          "0"},
+        {"r.GyroLatencyCompensation", "0"},
+        {"r.GyroPredictiveSmoothing", "0"},
+        {"r.GyroSampleRate",          "1000"},
+        {"r.GyroZeroDelay",           "1"},
+        {"r.GyroStabilization",       "1"},
+        {"r.GyroSensitivityRatio",    "3.0"},
+        {"GyroSensorPollingRate",     "1000"},
+        {"GyroRawDataMode",           "1"},
+        {"TouchPollingRate",          "1000"},
+        {"TouchResponseTimeMs",       "1"},
+        {"ZeroTouchLatency",          "1"},
+        {"Input.TouchDeadzone",       "0"},
+        {"TouchPressureThreshold",    "0"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"}
+    };
+
+    for (const auto &kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmZeroDelayGyroRawInput1000Hz injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
 // ─── PUBGM: Full Overdrive 2026 — Master Combo (all above in one pass) ───────
 // Calls ScopeTargetTrackingMagicBullet5Head + FastReloadHpRegenGunSwitchRun
-// plus the existing ultra-aimbot + damage stack in one atomic sweep.
+// + AutoHead5BulletAimLock + IpadView + FootstepAudio + NoGrass + Gyro1000Hz.
 // =============================================================================
 JNIEXPORT jboolean JNICALL
 Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFullOverdrive2026(
         JNIEnv *env, jclass, jstring jPath) {
     if (!jPath) return JNI_FALSE;
-    // Re-use path string across both sub-calls
     const char *path = env->GetStringUTFChars(jPath, nullptr);
     if (!path) return JNI_FALSE;
     env->ReleaseStringUTFChars(jPath, path);
 
+    bool r0 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDistanceTieredAimbot(env, nullptr, jPath);
     bool r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmScopeTargetTrackingMagicBullet5Head(env, nullptr, jPath);
     bool r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastReloadHpRegenGunSwitchRun(env, nullptr, jPath);
     bool r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAutoHead5BulletAimLock(env, nullptr, jPath);
-    LOGI("PubgmFullOverdrive2026 injected [scope=%d fast=%d lock=%d]", r1, r2, r3);
-    return (r1 || r2 || r3) ? JNI_TRUE : JNI_FALSE;
+    bool r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmIpadViewFov105(env, nullptr, jPath);
+    bool r5 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFootstepAudioVisualizerClarity(env, nullptr, jPath);
+    bool r6 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmNoGrassFoliageClarity(env, nullptr, jPath);
+    bool r7 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmZeroDelayGyroRawInput1000Hz(env, nullptr, jPath);
+    LOGI("PubgmFullOverdrive2026 injected [tiered=%d scope=%d fast=%d lock=%d ipad=%d audio=%d grass=%d gyro=%d]", r0, r1, r2, r3, r4, r5, r6, r7);
+    return (r0 || r1 || r2 || r3 || r4 || r5 || r6 || r7) ? JNI_TRUE : JNI_FALSE;
 }
+
 

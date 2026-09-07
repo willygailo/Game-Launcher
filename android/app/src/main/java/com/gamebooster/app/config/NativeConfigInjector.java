@@ -259,13 +259,20 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbFiveHeroNoDelayComboBoost(String path);
 
     // ─── PUBGM: 2026 Overdrive Pack ──────────────────────────────────────────
+    public static native boolean nativeInjectPubgmDistanceTieredAimbot(String path);
     public static native boolean nativeInjectPubgmScopeTargetTrackingMagicBullet5Head(String path);
     public static native boolean nativeInjectPubgmFastReloadHpRegenGunSwitchRun(String path);
     public static native boolean nativeInjectPubgmFullOverdrive2026(String path);
+    public static native boolean nativeInjectPubgmIpadViewFov105(String path);
+    public static native boolean nativeInjectPubgmFootstepAudioVisualizerClarity(String path);
+    public static native boolean nativeInjectPubgmNoGrassFoliageClarity(String path);
+    public static native boolean nativeInjectPubgmZeroDelayGyroRawInput1000Hz(String path);
 
     // ─── CODM: 2026 Overdrive Pack ───────────────────────────────────────────
+    public static native boolean nativeInjectCodmDistanceTieredAimbot(String path);
     public static native boolean nativeInjectCodmScopeTargetTrackingMagicBullet5Head(String path);
     public static native boolean nativeInjectCodmFastReloadHpRegenGunSwitchRun(String path);
+    public static native boolean nativeInjectCodmMagicBulletOverdrive(String path);
     public static native boolean nativeInjectCodmFullOverdrive2026(String path);
 
     // ─── MLBB: 2026 New Cheat Pack — 10 JNI Declarations ────────────────────
@@ -1413,18 +1420,62 @@ public class NativeConfigInjector {
 
     public static boolean injectCodmNoScopeAimbot(String path) {
         if (path == null) return false;
+        ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try { if (nativeInjectCodmNoScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
-        return injectAimAssistLockMax(path);
+        String[] keys = {
+            "HipfireSpread=0", "HipfireSpreadScale=0", "AR_SpreadZero=1",
+            "NoScope50mOnly=1", "NoScopeAimbotMaxRange=50", "NoScopeMaxRange=50",
+            "NoScope50mHeadLock=1", "NoScopeHeadshot50m=1", "NoScopeAimLock50m=1",
+            "NoScopeSpread50m=0", "NoScopeAimMagnetism50m=3", "NoScopeCrosshairAccuracy50m=1.0",
+            "HipfireLock50m=1", "HipfireHeadLock50m=1", "CQBAutoHeadshot50m=1",
+            "ExtremeHipfireLock50m=1", "NoScopeMagicBullet50m=1",
+            "CQBEnemySnap360=1", "HipfireHeadTrackingMax=1", "Shotgun_ZeroPelletRNG=1",
+            "ShotgunPelletSpreadScale=0", "ShotgunTightChokeMod=1",
+            "SlideHipfireAccuracy=1.0", "JumpHipfireSpread=0", "SlideCancelHipfireZeroDelay=1",
+            "NoScopeMagicBulletRadius=50", "CQBMagicBulletBend=1",
+            "CloseQuartersAimSnap=1", "HipfireInstantTargetLock=1", "LaserHipfireAccuracy=1.0",
+            "SMG_HipfireBurst=1", "Pistol_TriggerZeroDeadzone=1", "LMG_RecoilCeiling=0",
+            "WeaponSpread=0", "BulletSpreadScale=0", "NoSpreadHipfire=1",
+            "HeadMagnetism=1", "HeadBonePriority=1", "AimBoneTarget=0",
+            "AimMagnetism=3", "AimSnapSpeed=10", "AimSmoothFactor=0",
+            "AimAssistLockMax=1", "HipfireHeadLock=1", "CodmNoScopeAimbot=1",
+            "InstantAimSnap=1", "WeaponSway=0", "SwayAmplitude=0", "BreathSway=0",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "GyroLatencyMode=0",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "HitRegSyncRate=1000", "FrameSyncDamage=1",
+            "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmNoScopeAimbot]");
     }
 
     public static boolean injectCodmAllScopeAimbot(String path) {
         if (path == null) return false;
+        ensureParentDirectory(path);
         if (sNativeLibraryLoaded) {
             try { if (nativeInjectCodmAllScopeAimbot(path)) return true; } catch (Throwable ignored) {}
         }
-        return injectScopeAimCalibration(path);
+        String[] keys = {
+            "AdsZeroDelay=1", "AdsTransitionTime=0", "AdsSnapEnable=1", "CodmAdsZeroDelay=1",
+            "InstantADSSnap=1", "HeadBonePriority=1", "HeadMagnetism=1", "AimBoneTarget=0",
+            "AllScopeHeadshotPriority=1", "ScopeAimbotEnable=1",
+            "AimMagnetism=3", "AimSnapSpeed=10", "AimSmoothFactor=0", "AimAssistLockMax=1",
+            "PredictiveAim=1", "ScopePredictiveAim=1", "ScopeTargetLeadFactor=1.0",
+            "RedDotAimLock=1", "RedDotHeadMagnet=3", "HoloZeroDeadzone=1",
+            "TacticalScopeHeadLock=1", "Scope1_5xHeadLock=1",
+            "Scope2xHeadLock=1", "Scope3xHeadLock=1", "Scope4xHeadLock=1", "Scope4_4xHeadLock=1",
+            "OWCTacticalSnap=1", "RTGPrecisionScopeLock=1", "MIPCustomOpticAimLock=1",
+            "Scope6xHeadLock=1", "Scope8xHeadLock=1", "SniperScopeHeadLock=1",
+            "ThermalHeadshotLock=1", "ThermalClarityOverdrive=1",
+            "HoldBreathInfinite=1", "ScopeZeroBreathing=1", "ScopeBreathHoldTime=0",
+            "WeaponSway=0", "BreathSway=0", "MicroJitterCancel=1", "ScopeEyeReliefClear=1",
+            "ScopeFovStabilization=1",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "GyroLatencyMode=0",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "HitRegSyncRate=1000",
+            "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmAllScopeAimbot]");
     }
 
     public static boolean injectCodmLongRangeHeadshot(String path) {
@@ -2617,10 +2668,24 @@ public class NativeConfigInjector {
         String[] keys = {
             "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "AutoHeadshotBurst=5", "FiveBulletHeadLock=1",
             "BurstFireRateLock=5", "AutoHeadshotLock=1", "HeadBoneAimPriority=1",
-            "ScopeLock50m=1", "AimTrackingLock50m=1", "RedDotHeadLock50m=1", "HoloHeadLock50m=1", "HipfireHeadLock50m=1", "NoScopeSpread50m=0", "AimMagnetism50m=3",
-            "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1", "Scope3xHeadLock150m=1", "MidRangeSnap150m=1", "Scope3xGyroStabilize150m=1", "AimMagnetism150m=3",
-            "ScopeLock200m=1", "AimTrackingLock200m=1", "Scope4xHeadLock200m=1", "PredictiveAim200m=1", "ZeroSway200m=1", "Scope4xGyro1000Hz=1", "AimMagnetism200m=3",
-            "ScopeLock300m=1", "AimTrackingLock300m=1", "Scope6xHeadLock300m=1", "Scope8xLongRangeHeadLock300m=1", "BulletDropComp300m=1", "TargetLeadComp300m=1", "ZeroBreathSway300m=1", "AimMagnetism300m=3",
+            "NoScope50mOnly=1", "NoScopeAimbotMaxRange=50", "NoScopeMaxRange=50", "NoScope50mHeadLock=1",
+            "NoScopeHeadshot50m=1", "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "NoScopeMagnetism50m=3",
+            "HipfireLock50m=1", "HipfireHeadLock50m=1", "CQBAutoHeadshot50m=1", "NoScopeMagicBullet50m=1",
+            "ScopeLock50m=1", "AimTrackingLock50m=1", "AimMagnetism50m=3",
+            "MayScope100m=1", "ScopeLock100m=1", "AimTrackingLock100m=1", "Scope1xHeadLock100m=1",
+            "ScopeRedDotHeadLock100m=1", "ScopeHoloHeadLock100m=1", "ScopeAimMag100m=3", "AimMagnetism100m=3", "AimSnapHead100m=1",
+            "MayScope150m=1", "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1",
+            "Scope3xHeadLock150m=1", "MidRangeSnap150m=1", "Scope3xGyroStabilize150m=1", "ScopeAimMag150m=3", "AimMagnetism150m=3",
+            "MayScope200m=1", "ScopeLock200m=1", "AimTrackingLock200m=1", "Scope4xHeadLock200m=1",
+            "PredictiveAim200m=1", "ZeroSway200m=1", "Scope4xGyro1000Hz=1", "ScopeAimMag200m=3", "AimMagnetism200m=3",
+            "MayScope250m=1", "ScopeLock250m=1", "AimTrackingLock250m=1", "Scope4xHeadLock250m=1",
+            "Scope6xHeadLock250m=1", "ScopeAimMag250m=3", "AimMagnetism250m=3", "PredictiveAim250m=1", "BulletDropComp250m=1", "TargetLeadComp250m=1",
+            "MayScope300m=1", "ScopeLock300m=1", "AimTrackingLock300m=1", "Scope6xHeadLock300m=1",
+            "Scope8xLongRangeHeadLock300m=1", "BulletDropComp300m=1", "TargetLeadComp300m=1", "ZeroBreathSway300m=1", "ScopeAimMag300m=3", "AimMagnetism300m=3",
+            "MayScope350m=1", "ScopeLock350m=1", "AimTrackingLock350m=1", "Scope8xHeadLock350m=1",
+            "Scope8xLongRangeHeadLock350m=1", "Scope8xPrecisionFilter350m=1", "ExtremeRangeHeadLock350m=1",
+            "BulletDropComp350m=1", "TargetLeadComp350m=1", "ZeroMicroJitter350m=1", "ScopeAimMag350m=3", "AimMagnetism350m=3",
+            "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1", "NoScopeMagicBullet=1", "ScopedMagicBullet=1",
             "DamageLockMax=10000", "DamageBoost=10000", "PhysicalDefense=10000", "ArmorRating=10000", "DamageReduction=0.90",
             "TrueDamageMod=1", "InstantHitReg=1", "HitRegSyncRate=1000", "BulletTrackingEnemy=1",
             "WeaponRecoilScale=0", "WeaponSpreadScale=0", "RecoilZero=1", "LessRecoil=1",
@@ -2640,10 +2705,23 @@ public class NativeConfigInjector {
         String[] keys = {
             "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "AutoHeadshotBurst=5", "FiveBulletHeadLock=1",
             "BurstFireRateLock=5", "HeadBoneLock=1", "InstantAimSnap=1",
-            "ScopeLock50m=1", "AimTrackingLock50m=1", "CQBAutoHeadshot50m=1", "AimMagnetism50m=3", "HipfireLock50m=1", "NoScopeSpread50m=0",
-            "ScopeLock150m=1", "AimTrackingLock150m=1", "MidRangeScopeSnap150m=1", "ScopeAimMag150m=3", "GyroMidStabilize150m=1", "AimMagnetism150m=3",
-            "ScopeLock200m=1", "AimTrackingLock200m=1", "ARSMGHeadLock200m=1", "PredictiveAim200m=1", "ZeroRecoil200m=1", "AimMagnetism200m=3",
-            "ScopeLock300m=1", "AimTrackingLock300m=1", "SniperScopeLock300m=1", "BulletDropComp300m=1", "ZeroHoldBreath300m=1", "AimMagnetism300m=3",
+            "NoScope50mOnly=1", "NoScopeAimbotMaxRange=50", "NoScopeMaxRange=50", "NoScope50mHeadLock=1",
+            "NoScopeHeadshot50m=1", "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "NoScopeAimMagnetism50m=3",
+            "HipfireLock50m=1", "HipfireHeadLock50m=1", "CQBAutoHeadshot50m=1", "NoScopeMagicBullet50m=1",
+            "ScopeLock50m=1", "AimTrackingLock50m=1", "AimMagnetism50m=3",
+            "MayScope100m=1", "ScopeLock100m=1", "AimTrackingLock100m=1", "Scope1xHeadLock100m=1",
+            "RedDotAimLock100m=1", "HoloZeroDeadzone100m=1", "ScopeAimMag100m=3", "AimMagnetism100m=3", "AimSnapHead100m=1",
+            "MayScope150m=1", "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1",
+            "Scope3xHeadLock150m=1", "MidRangeScopeSnap150m=1", "ScopeAimMag150m=3", "GyroMidStabilize150m=1", "AimMagnetism150m=3",
+            "MayScope200m=1", "ScopeLock200m=1", "AimTrackingLock200m=1", "ARSMGHeadLock200m=1",
+            "Scope4xHeadLock200m=1", "PredictiveAim200m=1", "ZeroRecoil200m=1", "ScopeAimMag200m=3", "AimMagnetism200m=3",
+            "MayScope250m=1", "ScopeLock250m=1", "AimTrackingLock250m=1", "Scope4xHeadLock250m=1",
+            "Scope6xHeadLock250m=1", "SniperMarkHeadLock250m=1", "BulletDropComp250m=1", "TargetLeadComp250m=1", "ScopeAimMag250m=3", "AimMagnetism250m=3",
+            "MayScope300m=1", "ScopeLock300m=1", "AimTrackingLock300m=1", "SniperScopeLock300m=1",
+            "Scope6xHeadLock300m=1", "Scope8xHeadLock300m=1", "BulletDropComp300m=1", "ZeroHoldBreath300m=1", "ScopeAimMag300m=3", "AimMagnetism300m=3",
+            "MayScope350m=1", "ScopeLock350m=1", "AimTrackingLock350m=1", "Scope8xHeadLock350m=1",
+            "HitscanLRLock350m=1", "UltraRangeHeadLock350m=1", "LongRangePrecision350m=1", "BulletDropComp350m=1", "ZeroMicroJitter350m=1", "ScopeAimMag350m=3", "AimMagnetism350m=3",
+            "NoScopeMagicBullet=1", "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1", "ScopedMagicBullet=1",
             "BSARemoval=1", "BulletSpreadAccuracy=0", "RecoilScale=0", "ZeroRecoil=1", "LessRecoil=1", "WeaponSpread=0",
             "DamageLockMax=10000", "DamageBoost=10000", "PhysicalDefense=10000", "ArmorRating=10000", "DamageReduction=0.90",
             "TrueDamageMod=1", "InstantHitReg=1", "HitRegSyncRate=1000", "BulletTrackingEnemy=1",
@@ -2730,6 +2808,134 @@ public class NativeConfigInjector {
         return ConfigFileHelper.patchKeys(path, keys, "[PubgmFastReloadHpRegenGunSwitchRun]");
     }
 
+    public static boolean injectPubgmIpadViewFov105(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmIpadViewFov105(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "+CVars=r.DefaultFOV=105", "+CVars=r.CameraFOV=105", "+CVars=r.ThirdPersonFOV=105",
+            "+CVars=r.FirstPersonFOV=105", "+CVars=r.CameraOffsetZ=15.0", "+CVars=r.CameraDistance=260.0",
+            "CameraFOVScale=1.25", "TPPCameraFOV=105", "FPPCameraFOV=105", "IpadViewMode=1",
+            "IpadViewFOV=105", "WideFOVEnabled=1", "CameraPerspectiveZoom=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmIpadViewFov105]");
+    }
+
+    public static boolean injectPubgmFootstepAudioVisualizerClarity(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmFootstepAudioVisualizerClarity(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "au.Spatialization=1", "au.LowPassFilter=0", "au.MaxChannels=64",
+            "au.DisableWallOcclusion=1", "SoundQuality=2", "AudioQualityLevel=2",
+            "FootstepDistanceBoost=2.0", "FootstepVolumeMultiplier=1.5",
+            "+CVars=r.FootstepClarityEnhanced=1", "+CVars=r.GunshotLocalization3D=1",
+            "+CVars=r.AudioOcclusionScale=0.0", "+CVars=r.SoundReverbEnabled=0",
+            "SpatialAudio3D=1", "HighPrecisionAudio3D=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmFootstepAudioClarity]");
+    }
+
+    public static boolean injectPubgmNoGrassFoliageClarity(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmNoGrassFoliageClarity(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "+CVars=foliage.DensityScale=0.1", "+CVars=foliage.MinimumScreenSize=0.2",
+            "+CVars=r.Grass.DensityScale=0.1", "+CVars=r.Atmosphere=0", "+CVars=r.Fog=0",
+            "+CVars=r.VolumetricFog=0", "+CVars=r.ViewDistanceScale=2.0", "+CVars=r.ShadowQuality=0",
+            "+CVars=r.Shadow.DistanceScale=0.0", "+CVars=r.DepthOfFieldQuality=0",
+            "GrassRenderDistance=50", "FoliageCullDistanceScale=0.2", "ClearSightDistance=500"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmNoGrassFoliageClarity]");
+    }
+
+    public static boolean injectPubgmZeroDelayGyroRawInput1000Hz(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmZeroDelayGyroRawInput1000Hz(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "+CVars=r.GyroscopeDelay=0", "+CVars=r.GyroLatencyCompensation=0",
+            "+CVars=r.GyroPredictiveSmoothing=0", "+CVars=r.GyroSampleRate=1000",
+            "+CVars=r.GyroZeroDelay=1", "+CVars=r.GyroStabilization=1",
+            "+CVars=r.GyroSensitivityRatio=3.0", "GyroSensorPollingRate=1000",
+            "GyroRawDataMode=1", "TouchPollingRate=1000", "TouchResponseTimeMs=1",
+            "ZeroTouchLatency=1", "Input.TouchDeadzone=0", "TouchPressureThreshold=0",
+            "+CVars=r.OneFrameThreadLag=0", "+CVars=r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmZeroDelayGyroRawInput1000Hz]");
+    }
+
+    public static boolean injectPubgmDistanceTieredAimbot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmDistanceTieredAimbot(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DistanceTieredAimbot=1", "PubgmDistanceTieredAimbotV2=1", "NoScope50mOnly=1", "MayScopeMultiDistance=1",
+            "NoScopeAimbotMaxRange=50", "NoScopeMaxRange=50", "NoScope50mHeadLock=1", "NoScopeHeadshot50m=1",
+            "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "NoScopeMagnetism50m=3", "NoScopeCrosshairAccuracy50m=1.0",
+            "HipfireLock50m=1", "HipfireHeadLock50m=1", "HipfireMagnetism50m=3", "CQBAutoHeadshot50m=1",
+            "ExtremeHipfireLock50m=1", "NoScopeMagicBullet50m=1",
+            "MayScope100m=1", "ScopeAimbotTier100m=1", "ScopeLock100m=1", "AimTrackingLock100m=1", "Scope1xHeadLock100m=1",
+            "ScopeRedDotHeadLock100m=1", "ScopeHoloHeadLock100m=1", "ScopeAimMag100m=3", "AimMagnetism100m=3",
+            "AimSnapHead100m=1", "Scope1xZeroRecoil100m=1",
+            "MayScope150m=1", "ScopeAimbotTier150m=1", "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1",
+            "Scope3xHeadLock150m=1", "ScopeAimMag150m=3", "AimMagnetism150m=3", "MidRangeSnap150m=1",
+            "Scope3xGyroStabilize150m=1", "Scope2xZeroRecoil150m=1", "PredictiveAim150m=1",
+            "MayScope200m=1", "ScopeAimbotTier200m=1", "ScopeLock200m=1", "AimTrackingLock200m=1", "Scope3xHeadLock200m=1",
+            "Scope4xHeadLock200m=1", "ScopeAimMag200m=3", "AimMagnetism200m=3", "PredictiveAim200m=1",
+            "ZeroSway200m=1", "Scope4xGyro1000Hz200m=1", "Scope4xZeroRecoil200m=1",
+            "MayScope250m=1", "ScopeAimbotTier250m=1", "ScopeLock250m=1", "AimTrackingLock250m=1", "Scope4xHeadLock250m=1",
+            "Scope6xHeadLock250m=1", "ScopeAimMag250m=3", "AimMagnetism250m=3", "PredictiveAim250m=1",
+            "BulletDropComp250m=1", "TargetLeadComp250m=1", "Scope6xMicroDamping250m=1", "ZeroBreathSway250m=1",
+            "MayScope300m=1", "ScopeAimbotTier300m=1", "ScopeLock300m=1", "AimTrackingLock300m=1", "Scope6xHeadLock300m=1",
+            "Scope8xLongRangeHeadLock300m=1", "ScopeAimMag300m=3", "AimMagnetism300m=3", "BulletDropComp300m=1",
+            "TargetLeadComp300m=1", "ZeroBreathSway300m=1", "Scope8xGyro1000Hz300m=1",
+            "MayScope350m=1", "ScopeAimbotTier350m=1", "ScopeLock350m=1", "AimTrackingLock350m=1", "Scope8xHeadLock350m=1",
+            "Scope8xLongRangeHeadLock350m=1", "Scope8xPrecisionFilter350m=1", "ExtremeRangeHeadLock350m=1",
+            "ScopeAimMag350m=3", "AimMagnetism350m=3", "BulletDropComp350m=1", "TargetLeadComp350m=1",
+            "ZeroMicroJitter350m=1", "SniperInstantHitReg350m=1",
+            "MagicBulletEnabled=1", "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1", "BulletFOVCorrection=1",
+            "BulletTrackingEnemy=1", "TrackingBullet=1", "TrackingBulletVelocity=1", "NoScopeMagicBullet=1",
+            "ScopedMagicBullet=1", "BulletTrajectoryMagnet=1", "HitscanSimulation=1", "InstantHitReg=1",
+            "HitRegSyncRate=1000", "BulletVelocityComp=1", "MuzzleVelocityFactor=2.0",
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "FiveBulletHeadLock=1", "BurstFireRateLock=5",
+            "AutoHeadshotBurst=5", "AutoHeadshotLock=1", "HeadBoneAimPriority=1", "HeadBoneLock=1",
+            "HeadMagnetism=1", "AimSnapSpeed=10", "AimSnapThreshold=0", "AimSmoothFactor=0",
+            "WeaponRecoilScale=0", "RecoilPatternScale=0", "VerticalRecoilScale=0", "HorizontalRecoilScale=0",
+            "WeaponSpread=0", "WeaponSpreadScale=0", "BulletSpreadScale=0", "WeaponSway=0",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "ZeroInputDelay=1",
+            "+CVars=r.PUBGBulletVelocityCompensation=1", "+CVars=r.PredictiveAim=1",
+            "+CVars=r.AimAssistEnabled=1", "+CVars=r.AimAssistStrength=100", "+CVars=r.AimSnapThreshold=0",
+            "+CVars=r.AimMagnetism=3", "+CVars=r.HeadBoneAimPriority=1", "+CVars=r.WeaponSpread=0",
+            "+CVars=r.WeaponRecoilScale=0", "+CVars=r.VerticalRecoilScale=0", "+CVars=r.HorizontalRecoilScale=0",
+            "+CVars=r.BulletSpreadScale=0", "+CVars=r.OneFrameThreadLag=0", "+CVars=r.FinishCurrentFrame=0",
+            "+CVars=bFramePacingEnabled=True"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmDistanceTieredAimbot]");
+    }
+
     public static boolean injectPubgmFullOverdrive2026(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
@@ -2738,10 +2944,15 @@ public class NativeConfigInjector {
                 if (nativeInjectPubgmFullOverdrive2026(path)) return true;
             } catch (Throwable ignored) {}
         }
+        boolean r0 = injectPubgmDistanceTieredAimbot(path);
         boolean r1 = injectPubgmScopeTargetTrackingMagicBullet5Head(path);
         boolean r2 = injectPubgmFastReloadHpRegenGunSwitchRun(path);
         boolean r3 = injectPubgmAutoHead5BulletAimLock(path);
-        return r1 || r2 || r3;
+        boolean r4 = injectPubgmIpadViewFov105(path);
+        boolean r5 = injectPubgmFootstepAudioVisualizerClarity(path);
+        boolean r6 = injectPubgmNoGrassFoliageClarity(path);
+        boolean r7 = injectPubgmZeroDelayGyroRawInput1000Hz(path);
+        return r0 || r1 || r2 || r3 || r4 || r5 || r6 || r7;
     }
 
     // ─── CODM 2026 Overdrive Pack Wrappers ───────────────────────────────────
@@ -2790,6 +3001,82 @@ public class NativeConfigInjector {
         return ConfigFileHelper.patchKeys(path, keys, "[CodmFastReloadHpRegenGunSwitchRun]");
     }
 
+    public static boolean injectCodmDistanceTieredAimbot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmDistanceTieredAimbot(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DistanceTieredAimbot=1", "CodmDistanceTieredAimbotV2=1", "NoScope50mOnly=1", "MayScopeMultiDistance=1",
+            "NoScopeAimbotMaxRange=50", "NoScopeMaxRange=50", "NoScope50mHeadLock=1", "NoScopeHeadshot50m=1",
+            "NoScopeAimLock50m=1", "NoScopeSpread50m=0", "NoScopeAimMagnetism50m=3", "NoScopeCrosshairAccuracy50m=1.0",
+            "HipfireLock50m=1", "HipfireHeadLock50m=1", "CQBAutoHeadshot50m=1", "ExtremeHipfireLock50m=1",
+            "NoScopeMagicBullet50m=1",
+            "MayScope100m=1", "ScopeAimbotTier100m=1", "ScopeLock100m=1", "AimTrackingLock100m=1", "Scope1xHeadLock100m=1",
+            "RedDotAimLock100m=1", "HoloZeroDeadzone100m=1", "ScopeAimMag100m=3", "AimMagnetism100m=3", "AimSnapHead100m=1",
+            "MayScope150m=1", "ScopeAimbotTier150m=1", "ScopeLock150m=1", "AimTrackingLock150m=1", "Scope2xHeadLock150m=1",
+            "Scope3xHeadLock150m=1", "ScopeAimMag150m=3", "AimMagnetism150m=3", "MidRangeScopeSnap150m=1",
+            "GyroMidStabilize150m=1", "PredictiveAim150m=1",
+            "MayScope200m=1", "ScopeAimbotTier200m=1", "ScopeLock200m=1", "AimTrackingLock200m=1", "ARSMGHeadLock200m=1",
+            "Scope4xHeadLock200m=1", "PredictiveAim200m=1", "ZeroRecoil200m=1", "ScopeAimMag200m=3", "AimMagnetism200m=3",
+            "MayScope250m=1", "ScopeAimbotTier250m=1", "ScopeLock250m=1", "AimTrackingLock250m=1", "Scope4xHeadLock250m=1",
+            "Scope6xHeadLock250m=1", "SniperMarkHeadLock250m=1", "BulletDropComp250m=1", "TargetLeadComp250m=1",
+            "ScopeAimMag250m=3", "AimMagnetism250m=3",
+            "MayScope300m=1", "ScopeAimbotTier300m=1", "ScopeLock300m=1", "AimTrackingLock300m=1", "SniperScopeLock300m=1",
+            "Scope6xHeadLock300m=1", "Scope8xHeadLock300m=1", "BulletDropComp300m=1", "ZeroHoldBreath300m=1",
+            "ScopeAimMag300m=3", "AimMagnetism300m=3",
+            "MayScope350m=1", "ScopeAimbotTier350m=1", "ScopeLock350m=1", "AimTrackingLock350m=1", "Scope8xHeadLock350m=1",
+            "HitscanLRLock350m=1", "UltraRangeHeadLock350m=1", "LongRangePrecision350m=1", "BulletDropComp350m=1",
+            "ZeroMicroJitter350m=1", "ScopeAimMag350m=3", "AimMagnetism350m=3",
+            "MagicBulletEnabled=1", "NoScopeMagicBullet=1", "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1",
+            "BulletTrackingEnemy=1", "TrackingBullet=1", "TrackingBulletVelocity=1", "ScopedMagicBullet=1",
+            "InstantHitReg=1", "HitRegSyncRate=1000", "BulletVelocityComp=1",
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "FiveBulletHeadLock=1", "BurstFireRateLock=5",
+            "AutoHeadshotBurst=5", "HeadBoneLock=1", "HeadBoneAimPriority=1", "HeadMagnetism=1",
+            "InstantAimSnap=1", "AimSnapSpeed=10", "AimSnapThreshold=0", "AimSmoothFactor=0",
+            "BSARemoval=1", "BulletSpreadAccuracy=0", "RecoilScale=0", "ZeroRecoil=1", "LessRecoil=1",
+            "WeaponSpread=0", "BulletSpreadScale=0", "HipfireSpread=0", "InitialBulletSpread=0.0",
+            "DamageRangeFalloffBypass=1",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "GyroLatencyMode=0",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "ZeroInputDelay=1",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmDistanceTieredAimbot]");
+    }
+
+    public static boolean injectCodmMagicBulletOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmMagicBulletOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MagicBulletEnabled=1", "MagicBulletFollowEnemy=1", "BulletMagnetEnemy=1",
+            "BulletTrackingEnemy=1", "TrackingBullet=1", "TrackingBulletVelocity=1",
+            "MagicBulletCurveAngle=90", "MagicBulletCurveRate=0.98", "MagicBulletHeadAttractFactor=1.0",
+            "BulletTrajectoryMagnet=1", "NoScopeMagicBullet=1", "ScopedMagicBullet=1",
+            "NoScopeMagicBullet50m=1", "CQBMagicBulletBend=1",
+            "BSARemoval=1", "BulletSpreadAccuracy=0", "BulletSpreadScale=0",
+            "WeaponSpread=0", "InitialBulletSpread=0.0", "SpreadPerShot=0", "MaxBulletSpread=0",
+            "HipfireSpread=0", "HipfireSpreadScale=0",
+            "WallPiercingMod=1", "PenetrationDamageLoss=0", "MaterialPenetrationMax=1",
+            "ArmorPiercingOverdrive=1", "DamageRangeFalloffBypass=1", "TrueDamageMod=1",
+            "HitscanSimulation=1", "InstantHitReg=1", "HitRegSyncRate=1000",
+            "BulletVelocityComp=1", "MuzzleVelocityFactor=2.0", "ZeroBulletDrop=1", "BulletDropComp=1",
+            "FrameSyncDamage=1",
+            "Auto5BulletHeadshot=1", "HeadshotBurstCount=5", "FiveBulletHeadLock=1",
+            "BurstFireRateLock=5", "HeadBoneLock=1", "HeadBoneAimPriority=1", "HeadMagnetism=1",
+            "ZeroInputLag=1", "ZeroInputDelay=1", "TouchPollingRate=1000", "GyroSampleRate=1000",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmMagicBulletOverdrive]");
+    }
+
     public static boolean injectCodmFullOverdrive2026(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
@@ -2798,10 +3085,12 @@ public class NativeConfigInjector {
                 if (nativeInjectCodmFullOverdrive2026(path)) return true;
             } catch (Throwable ignored) {}
         }
+        boolean r0 = injectCodmDistanceTieredAimbot(path);
         boolean r1 = injectCodmScopeTargetTrackingMagicBullet5Head(path);
         boolean r2 = injectCodmFastReloadHpRegenGunSwitchRun(path);
         boolean r3 = injectCodmAutoHead5BulletAimLock(path);
-        return r1 || r2 || r3;
+        boolean r4 = injectCodmMagicBulletOverdrive(path);
+        return r0 || r1 || r2 || r3 || r4;
     }
 
     // ─── MLBB 2026 New Cheat Pack Wrappers ───────────────────────────────────

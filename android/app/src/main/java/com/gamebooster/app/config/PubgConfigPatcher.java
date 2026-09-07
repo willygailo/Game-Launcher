@@ -197,6 +197,12 @@ public class PubgConfigPatcher {
         return patched > 0;
     }
 
+    // ─── UltraExtreme 120fps SuperSmooth Patch ───────────────────────────────
+
+    public static boolean patchUltraExtreme120(String packageName) {
+        return patchForTier(packageName, FpsUnlockTier.FPS_120);
+    }
+
     // ─── UltraExtreme 144fps SuperSmooth Patch ───────────────────────────────
 
     public static boolean patchUltraExtreme144(String packageName) {
@@ -785,11 +791,26 @@ public class PubgConfigPatcher {
         for (String path : paths) {
             NativeConfigInjector.injectPubgmAutoHead5BulletAimLock(path);
         }
+        try { applyPubgmDistanceTieredAimbot(packageName); } catch (Throwable ignored) {}
         try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
         try { applyPubgmAllWeaponMaxDamage2026(packageName); } catch (Throwable ignored) {}
         try { applyPubgmUltraAimbot2026(packageName); } catch (Throwable ignored) {}
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
-        Log.i(TAG, "PUBGM AutoHead 5-Bullet Aim Lock & 50m-300m Scope Tracking applied for " + packageName);
+        Log.i(TAG, "PUBGM AutoHead 5-Bullet Aim Lock & 50m-350m Scope Tracking applied for " + packageName);
+    }
+
+    /**
+     * PUBGM — Distance Tiered Aimbot + Magic Bullet + 5-Head Burst Lock.
+     * No-scope strictly <= 50m max. Scope-on tiered across 100m, 150m, 200m, 250m, 300m, 350m.
+     * Predictive magic bullet bending and 5-bullet headshot burst.
+     */
+    public static void applyPubgmDistanceTieredAimbot(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmDistanceTieredAimbot(path);
+        }
+        Log.i(TAG, "PUBGM DistanceTieredAimbot applied for " + packageName);
     }
 
     /**
@@ -818,21 +839,75 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM FastReloadHpRegenGunSwitchRun applied for " + packageName);
     }
 
+    public static void applyIpadViewFov(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmIpadViewFov105(path);
+        }
+        Log.i(TAG, "PUBGM IpadViewFov105 applied for " + packageName);
+    }
+
+    public static void applyFootstepAudioClarity(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmFootstepAudioVisualizerClarity(path);
+        }
+        Log.i(TAG, "PUBGM FootstepAudioClarity applied for " + packageName);
+    }
+
+    public static void applyNoGrassFoliageClarity(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmNoGrassFoliageClarity(path);
+        }
+        Log.i(TAG, "PUBGM NoGrassFoliageClarity applied for " + packageName);
+    }
+
+    public static void applyZeroDelayGyro1000Hz(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgmZeroDelayGyroRawInput1000Hz(path);
+        }
+        Log.i(TAG, "PUBGM ZeroDelayGyro1000Hz applied for " + packageName);
+    }
+
     /**
      * PUBGM — Full Overdrive 2026 master combo.
      * Fires ScopeTargetTrackingMagicBullet5Head + FastReloadHpRegenGunSwitchRun
-     * + AutoHead5BulletAimLock + AllScopeTieredHeadshot + DamageLockMax in one sweep.
+     * + AutoHead5BulletAimLock + IpadView + FootstepAudio + NoGrass + Gyro1000Hz
+     * + AllScopeTieredHeadshot + DamageLockMax in one sweep.
      */
     public static void applyPubgmFullOverdrive2026(String packageName) {
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectPubgmFullOverdrive2026(path);
         }
+        try { applyPubgmDistanceTieredAimbot(packageName); } catch (Throwable ignored) {}
+        try { applyIpadViewFov(packageName); } catch (Throwable ignored) {}
+        try { applyFootstepAudioClarity(packageName); } catch (Throwable ignored) {}
+        try { applyNoGrassFoliageClarity(packageName); } catch (Throwable ignored) {}
+        try { applyZeroDelayGyro1000Hz(packageName); } catch (Throwable ignored) {}
         try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
         try { applyPubgmAllWeaponMaxDamage2026(packageName); } catch (Throwable ignored) {}
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
         try { applyDamageLockMax(packageName); } catch (Throwable ignored) {}
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "PUBGM FullOverdrive2026 applied for " + packageName);
+    }
+
+    /**
+     * Master Suite 2026: Complete single-pass atomic injection combining
+     * Overdrive, FPS Unlock (120-185 FPS), Combat Magnetism, and Clear Sight.
+     */
+    public static void applyPubgmMasterSuite2026(String packageName, int targetFps) {
+        if (packageName == null) return;
+        final int resolvedFps = FpsUnlockTier.resolveTargetFps(targetFps);
+        patchForTier(packageName, FpsUnlockTier.fromFps(resolvedFps));
+        applyPubgmFullOverdrive2026(packageName);
+        Log.i(TAG, "PUBGM MasterSuite2026 (" + resolvedFps + " FPS) applied for " + packageName);
     }
 }

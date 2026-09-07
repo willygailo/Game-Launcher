@@ -74,6 +74,7 @@ public class CodmConfigPatcher {
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
             NativeConfigInjector.injectCodmBsaRemovalRangeOverdrive(path);
             NativeConfigInjector.injectCodmFastLoadShaderBypass(path);
+            NativeConfigInjector.injectCodmMagicBulletOverdrive(path);
         }
     }
 
@@ -1103,11 +1104,26 @@ public class CodmConfigPatcher {
         for (String path : paths) {
             NativeConfigInjector.injectCodmAutoHead5BulletAimLock(path);
         }
+        try { applyCodmDistanceTieredAimbot(packageName); } catch (Throwable ignored) {}
         try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
         try { applyCodmMaxDamageAllWeapon2026(packageName); } catch (Throwable ignored) {}
         try { applyCodmUltraConfigCheat2026(packageName); } catch (Throwable ignored) {}
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}
-        Log.i(TAG, "CODM AutoHead 5-Bullet Aim Lock & 50m-300m Scope Tracking applied for " + packageName);
+        Log.i(TAG, "CODM AutoHead 5-Bullet Aim Lock & 50m-350m Scope Tracking applied for " + packageName);
+    }
+
+    /**
+     * CODM — Distance Tiered Aimbot + Magic Bullet + 5-Head Burst Lock.
+     * No-scope strictly <= 50m max. Scope-on tiered across 100m, 150m, 200m, 250m, 300m, 350m.
+     * Predictive magic bullet bending and 5-bullet headshot burst.
+     */
+    public static void applyCodmDistanceTieredAimbot(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmDistanceTieredAimbot(path);
+        }
+        Log.i(TAG, "CODM DistanceTieredAimbot applied for " + packageName);
     }
 
     /**
@@ -1137,15 +1153,32 @@ public class CodmConfigPatcher {
     }
 
     /**
+     * CODM — Magic Bullet Overdrive (2026).
+     * Predictive trajectory curving to enemy head, 100% BSA removal,
+     * zero-loss wall penetration, and 1000Hz hit registration sync.
+     */
+    public static void applyCodmMagicBulletOverdrive(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmMagicBulletOverdrive(path);
+        }
+        Log.i(TAG, "CODM MagicBulletOverdrive applied for " + packageName);
+    }
+
+    /**
      * CODM — Full Overdrive 2026 master combo.
      * Fires CodmScopeTargetTrackingMagicBullet5Head + CodmFastReloadHpRegenGunSwitchRun
-     * + CodmAutoHead5BulletAimLock + AllScopeTieredHeadshot + DamageLockMax in one sweep.
+     * + CodmAutoHead5BulletAimLock + CodmDistanceTieredAimbot + CodmMagicBulletOverdrive
+     * + AllScopeTieredHeadshot + DamageLockMax in one sweep.
      */
     public static void applyCodmFullOverdrive2026(String packageName) {
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectCodmFullOverdrive2026(path);
         }
+        try { applyCodmMagicBulletOverdrive(packageName); } catch (Throwable ignored) {}
+        try { applyCodmDistanceTieredAimbot(packageName); } catch (Throwable ignored) {}
         try { applyAllScopeTieredHeadshot(packageName); } catch (Throwable ignored) {}
         try { applyCodmMaxDamageAllWeapon2026(packageName); } catch (Throwable ignored) {}
         try { applyDamage10000AttackSpeedMax(packageName); } catch (Throwable ignored) {}

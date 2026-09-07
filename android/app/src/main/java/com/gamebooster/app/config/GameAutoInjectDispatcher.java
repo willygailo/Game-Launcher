@@ -307,6 +307,14 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyFastLoadAsyncStreaming(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAutoHead5BulletAimLock(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmDistanceTieredAimbot(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyScopeTargetTrackingMagicBullet5Head(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyFastReloadHpRegenGunSwitchRun(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyIpadViewFov(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyFootstepAudioClarity(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyNoGrassFoliageClarity(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyZeroDelayGyro1000Hz(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmFullOverdrive2026(pkg); } catch (Throwable ignored) {}
     }
 
 
@@ -350,6 +358,11 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyFastLoadShaderBypass(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAutoHead5BulletAimLock(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmDistanceTieredAimbot(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyScopeTargetTrackingMagicBullet5Head(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyFastReloadHpRegenGunSwitchRun(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmMagicBulletOverdrive(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmFullOverdrive2026(pkg); } catch (Throwable ignored) {}
     }
 
 
