@@ -29,8 +29,9 @@ public class BootReceiver extends BroadcastReceiver {
         if (context == null || intent == null) return;
         String action = intent.getAction();
 
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action) || "android.intent.action.LOCKED_BOOT_COMPLETED".equals(action)) {
             try {
+                GameBoosterService.start(context);
                 ShizukuManager.registerBinderListeners();
                 ShizukuKeepAliveWatchdog.getInstance().startWatchdog(context);
                 ShizukuConnectionManager.getInstance().start();

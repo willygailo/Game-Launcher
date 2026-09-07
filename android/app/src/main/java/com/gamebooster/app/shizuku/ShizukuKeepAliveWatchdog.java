@@ -259,19 +259,26 @@ public class ShizukuKeepAliveWatchdog {
         } catch (Throwable ignored) {}
 
         // ─── 2. Battery Optimization, Doze Mode & Standby Bucket Immunity ───
-        // Whitelist Shizuku from Doze mode (deviceidle)
-        cmds.add("dumpsys deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null");
-        cmds.add("cmd deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null");
+        // Whitelist both Shizuku and Game Booster from Doze mode (deviceidle)
+        cmds.add("dumpsys deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null; cmd deviceidle whitelist +" + SHIZUKU_PKG + " 2>/dev/null");
+        cmds.add("dumpsys deviceidle whitelist +com.gamebooster.app 2>/dev/null; cmd deviceidle whitelist +com.gamebooster.app 2>/dev/null");
 
-        // Pin Shizuku App Standby Bucket to ACTIVE (Bucket 10) so Android never treats it as RARE/RESTRICTED
-        cmds.add("am set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null");
-        cmds.add("cmd activity set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null");
+        // Pin both App Standby Buckets to ACTIVE (Bucket 10) so Android never treats them as RARE/RESTRICTED
+        cmds.add("am set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null; cmd activity set-standby-bucket " + SHIZUKU_PKG + " active 2>/dev/null");
+        cmds.add("am set-standby-bucket com.gamebooster.app active 2>/dev/null; cmd activity set-standby-bucket com.gamebooster.app active 2>/dev/null");
 
-        // Grant continuous background execution AppOps
+        // Grant continuous background execution & auto-start AppOps (bypasses Xiaomi/HyperOS, Samsung, ColorOS)
         cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_IN_BACKGROUND allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " START_FOREGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set " + SHIZUKU_PKG + " AUTO_START allow 2>/dev/null");
         cmds.add("cmd appops set " + SHIZUKU_PKG + " SYSTEM_ALERT_WINDOW allow 2>/dev/null");
+
+        cmds.add("cmd appops set com.gamebooster.app RUN_IN_BACKGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set com.gamebooster.app RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set com.gamebooster.app START_FOREGROUND allow 2>/dev/null");
+        cmds.add("cmd appops set com.gamebooster.app AUTO_START allow 2>/dev/null");
+        cmds.add("cmd appops set com.gamebooster.app WAKE_LOCK allow 2>/dev/null");
 
         // Whitelist from network policy background restrictions
         cmds.add("cmd netpolicy add restrict-background-whitelist " + SHIZUKU_PKG + " 2>/dev/null");
@@ -288,16 +295,22 @@ public class ShizukuKeepAliveWatchdog {
         cmds.add("cmd power set-mode 0 1 2>/dev/null");
 
         // ─── 4. Wireless Debugging & Wi-Fi Power Saving Keep-Alive ───
-        cmds.add("settings put global adb_wifi_enabled 1 2>/dev/null");
-        cmds.add("settings put global wifi_sleep_policy 2 2>/dev/null");
-        cmds.add("cmd settings put global adb_allowed_connection_time 0 2>/dev/null");
-        cmds.add("settings put global adb_authorization_timeout 0 2>/dev/null");
-        cmds.add("settings put global wifi_wakeup_available 1 2>/dev/null");
-        cmds.add("settings put global wifi_wakeup_enabled 1 2>/dev/null");
+        cmds.add("settings put global adb_wifi_enabled 1 2>/dev/null; " +
+                "settings put global wifi_sleep_policy 2 2>/dev/null; " +
+                "cmd settings put global adb_allowed_connection_time 0 2>/dev/null; " +
+                "settings put global adb_authorization_timeout 0 2>/dev/null; " +
+                "setprop persist.adb.wifi 1 2>/dev/null; " +
+                "setprop persist.adb.nonblocking_ffs 0 2>/dev/null; " +
+                "setprop persist.sys.usb.config adb 2>/dev/null; " +
+                "settings put global wifi_wakeup_available 1 2>/dev/null; " +
+                "settings put global wifi_wakeup_enabled 1 2>/dev/null");
 
-        // ─── 5. Root Auto-Resurrect Fallback (if rooted and daemon died) ───
-        cmds.add("if ! pgrep -f 'shizuku_server' >/dev/null 2>&1 && [ -x /data/adb/shizuku/shizuku_starter ]; then " +
-                "/data/adb/shizuku/shizuku_starter & fi 2>/dev/null");
+        // ─── 5. Auto-Resurrect Fallback (Root & Storage Starter) ───
+        cmds.add("if ! pgrep -f 'shizuku_server' >/dev/null 2>&1; then " +
+                "if [ -x /data/adb/shizuku/shizuku_starter ]; then /data/adb/shizuku/shizuku_starter & fi; " +
+                "if [ -f /sdcard/Android/data/moe.shizuku.privileged.api/starter ]; then sh /sdcard/Android/data/moe.shizuku.privileged.api/starter & fi; " +
+                "if [ -f /storage/emulated/0/Android/data/moe.shizuku.privileged.api/starter ]; then sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/starter & fi; " +
+                "fi 2>/dev/null");
 
         return cmds;
     }
@@ -365,7 +378,14 @@ public class ShizukuKeepAliveWatchdog {
                 refreshOomScoreOnly();
             } else {
                 // Binder is genuinely not responding after active recovery
-                Log.w(TAG, "Heartbeat: Shizuku binder not responding — notifying ConnectionManager");
+                Log.w(TAG, "Heartbeat: Shizuku binder not responding — attempting active auto-resurrection");
+                try {
+                    if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                        com.gamebooster.app.engine.ShellExecutor.executeCommand(
+                                "if [ -x /data/adb/shizuku/shizuku_starter ]; then /data/adb/shizuku/shizuku_starter & fi; " +
+                                "if [ -f /sdcard/Android/data/moe.shizuku.privileged.api/starter ]; then sh /sdcard/Android/data/moe.shizuku.privileged.api/starter & fi");
+                    }
+                } catch (Throwable ignored) {}
                 ShizukuConnectionManager.getInstance().onBinderDead();
             }
         } catch (Throwable t) {

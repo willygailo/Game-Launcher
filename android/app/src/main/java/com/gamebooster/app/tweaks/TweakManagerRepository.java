@@ -1054,7 +1054,7 @@ public class TweakManagerRepository {
             } catch (Throwable ignored) {}
         }
 
-        AppExecutors.getInstance().executeCommand(() -> {
+        AppExecutors.getInstance().executeSettings(() -> {
             int appliedCount = applyAllSupportedTweaks(context);
             if (listener != null) {
                 AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(appliedCount));
@@ -1087,7 +1087,7 @@ public class TweakManagerRepository {
     }
 
     public static void revertAllTweaksAsync(Context context, OnBatchCompleteListener listener) {
-        AppExecutors.getInstance().executeCommand(() -> {
+        AppExecutors.getInstance().executeSettings(() -> {
             int revertedCount = revertAllTweaks(context);
             if (listener != null) {
                 AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(revertedCount));
@@ -1097,7 +1097,7 @@ public class TweakManagerRepository {
 
     public static void restoreAppliedTweaksAsync(Context context) {
         if (context == null) return;
-        AppExecutors.getInstance().executeCommand(() -> {
+        AppExecutors.getInstance().executeSettings(() -> {
             EngineMode mode = CommandExecutor.getActiveEngineMode();
             if (mode == EngineMode.READ_ONLY && !com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) return;
 

@@ -13,6 +13,7 @@ public class AppExecutors {
     private static final AppExecutors INSTANCE = new AppExecutors();
 
     private final ExecutorService commandIO;
+    private final ExecutorService settingsIO;
     private final ExecutorService scanIO;
     private final Handler mainThread;
 
@@ -22,6 +23,14 @@ public class AppExecutors {
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
                 r.run();
             }, "GameBooster-CommandIO");
+            t.setDaemon(true);
+            return t;
+        });
+        this.settingsIO = Executors.newFixedThreadPool(4, r -> {
+            Thread t = new Thread(() -> {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                r.run();
+            }, "GameBooster-SettingsIO");
             t.setDaemon(true);
             return t;
         });
@@ -47,6 +56,17 @@ public class AppExecutors {
                 runnable.run();
             } catch (Throwable t) {
                 Log.e(TAG, "Command execution error: " + t.getMessage(), t);
+            }
+        });
+    }
+
+    public void executeSettings(Runnable runnable) {
+        if (runnable == null) return;
+        settingsIO.execute(() -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                Log.e(TAG, "Settings execution error: " + t.getMessage(), t);
             }
         });
     }

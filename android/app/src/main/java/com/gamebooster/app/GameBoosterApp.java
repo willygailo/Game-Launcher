@@ -58,6 +58,13 @@ public class GameBoosterApp extends Application {
             Log.w(TAG, "Shizuku early initialization error: " + t.getMessage());
         }
 
+        // 2.2 Launch Permanent Keep-Alive Foreground Service
+        try {
+            com.gamebooster.app.services.GameBoosterService.start(this);
+        } catch (Throwable t) {
+            Log.w(TAG, "GameBoosterService early start error: " + t.getMessage());
+        }
+
         // 3. Pre-warm background engines on dedicated worker thread (Zero Main-Thread Block)
         final Context appCtx = getApplicationContext();
         AppExecutors.getInstance().executeCommand(() -> {
