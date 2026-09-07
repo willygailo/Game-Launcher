@@ -15,5 +15,12 @@
     "java.import.gradle.version": "8.13",
     "java.import.gradle.wrapper.enabled": true,
     "java.import.gradle.user.home": "/home/willygailo/.gradle",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "java.jdt.ls.androidSupport.enabled": true,
+    "java.import.gradle.enabled": true,
+    "java.project.sourcePaths": [
+        "android/app/src/main/java",
+        "android/app/src/test/java"
+    ]
 }

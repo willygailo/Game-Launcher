@@ -90,6 +90,7 @@ android {
 
     sourceSets {
         main {
+            java.srcDirs = ['src/main/java']
             res.srcDirs = [
                 'src/main/res',
                 'src/main/res-layouts/activities',
@@ -105,6 +106,9 @@ android {
                 'src/main/res-drawables/nav'
             ]
             jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+        test {
+            java.srcDirs = ['src/test/java']
         }
     }
 
