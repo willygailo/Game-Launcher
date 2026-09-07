@@ -268,6 +268,17 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmFastReloadHpRegenGunSwitchRun(String path);
     public static native boolean nativeInjectCodmFullOverdrive2026(String path);
 
+    // ─── MLBB: 2026 New Cheat Pack — 10 JNI Declarations ────────────────────
+    public static native boolean nativeInjectMlbbJoycePunchWallCombo(String path);
+    public static native boolean nativeInjectMlbbNataliaSilentAssassin(String path);
+    public static native boolean nativeInjectMlbbKarinDashSlashCombo(String path);
+    public static native boolean nativeInjectMlbbLeomordNightmareRide(String path);
+    public static native boolean nativeInjectMlbbLyliaSuperBounce(String path);
+    public static native boolean nativeInjectMlbbAntiCCImmunity(String path);
+    public static native boolean nativeInjectMlbbTowerMinionsOverdrive(String path);
+    public static native boolean nativeInjectMlbbMapAwarenessOverdrive(String path);
+    public static native boolean nativeInjectMlbbFastGoldExpOverdrive(String path);
+    public static native boolean nativeInjectMlbbFullOverdrive2026(String path);
 
     public static native boolean nativeInjectSilentAimbot(String path);
 
@@ -2786,6 +2797,190 @@ public class NativeConfigInjector {
         boolean r2 = injectCodmFastReloadHpRegenGunSwitchRun(path);
         boolean r3 = injectCodmAutoHead5BulletAimLock(path);
         return r1 || r2 || r3;
+    }
+
+    // ─── MLBB 2026 New Cheat Pack Wrappers ───────────────────────────────────
+
+    public static boolean injectMlbbJoycePunchWallCombo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbJoycePunchWallCombo(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "JoyPunchBurstSpeed=10", "JoyZeroWallDelay=1", "JoyDashChainMax=1",
+            "JoyInstantSkill=1", "JoySkillZeroCD=1", "JoyPunchDamageMax=10000",
+            "JoyWallJumpAuto=1", "JoyEnergyZeroCost=1",
+            "DamageLockMax=1", "SkillZeroDelay=1", "SkillZeroCooldown=1",
+            "EnergyRegenBoost=1000", "ZeroEnergyCost=1", "HeroLock=1",
+            "SkillSmartAim=1", "AimMagnetism=3", "HitRegSyncRate=1000",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "AnimationCancelFast=1", "ScreenShake=0", "bFramePacingEnabled=True",
+            "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbJoycePunchWallCombo]");
+    }
+
+    public static boolean injectMlbbNataliaSilentAssassin(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbNataliaSilentAssassin(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "NataliaStealthMax=1", "NataliaStealthDuration=999", "NataliaSilentStep=1",
+            "NataliaClawBurstZeroDelay=1", "NataliaCritStrikeMax=1", "NataliaCritRate=100",
+            "NataliaFollowEnemy=1", "NataliaAssassinInstant=1", "NataliaEnergyZeroCost=1",
+            "CritRateBoost=100", "CritDamageMultiplier=3.0", "DamageLockMax=1",
+            "SkillZeroDelay=1", "SkillZeroCooldown=1", "ZeroEnergyCost=1",
+            "HeroLock=1", "SkillSmartAim=1", "AimMagnetism=3", "PenetrationBoost=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "AnimationCancelFast=1", "bFramePacingEnabled=True",
+            "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbNataliaSilentAssassin]");
+    }
+
+    public static boolean injectMlbbKarinDashSlashCombo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbKarinDashSlashCombo(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "KarinDashZeroCD=1", "KarinTripleSlashInstant=1", "KarinSwordBurstMax=10000",
+            "KarinDashChainMax=1", "KarinSkillZeroDelay=1", "KarinEnergyZeroCost=1",
+            "KarinCritDamageBoost=3.0", "KarinPhysicalPen=1",
+            "DamageLockMax=10000", "PenetrationBoost=10000", "CritRateBoost=100",
+            "CritDamageMultiplier=3.0", "SkillZeroDelay=1", "SkillZeroCooldown=1",
+            "ZeroEnergyCost=1", "AnimationCancelFast=1", "HeroLock=1", "SkillSmartAim=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbKarinDashSlashCombo]");
+    }
+
+    public static boolean injectMlbbLeomordNightmareRide(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbLeomordNightmareRide(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "LeomordMountInstant=1", "LeomordNightmareSpeedMax=1", "LeomordRideDamageMax=10000",
+            "LeomordSkillZeroDelay=1", "LeomordChargeAuto=1", "LeomordEnergyZeroCost=1",
+            "LeomordNightmareHP=10000", "LeomordMountZeroDelay=1",
+            "DamageLockMax=10000", "PhysicalDamageBase=2500", "SkillZeroDelay=1",
+            "SkillZeroCooldown=1", "ZeroEnergyCost=1", "AnimationCancelFast=1",
+            "MovementSpeedBoost=1", "HeroLock=1", "SkillSmartAim=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbLeomordNightmareRide]");
+    }
+
+    public static boolean injectMlbbLyliaSuperBounce(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbLyliaSuperBounce(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "LyliaBallBounceMax=10000", "LyliaSkillZeroDelay=1", "LyliaBombStacksInfinite=1",
+            "LyliaUltResetInstant=1", "LyliaMagicPen=1", "LyliaMagicDamageMax=10000",
+            "LyliaEnergyZeroCost=1", "LyliaGloomBounceAuto=1",
+            "MagicDamageBase=2500", "DamageLockMax=10000", "CritRateBoost=100",
+            "SkillZeroDelay=1", "SkillZeroCooldown=1", "ZeroEnergyCost=1",
+            "ZeroManaCost=1", "InfiniteEnergy=1", "AnimationCancelFast=1",
+            "HeroLock=1", "SkillSmartAim=1", "HitRegSyncRate=1000",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbLyliaSuperBounce]");
+    }
+
+    public static boolean injectMlbbAntiCCImmunity(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbAntiCCImmunity(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "CCImmunity=1", "StunDuration=0", "SlowDuration=0", "SilenceDuration=0",
+            "KnockbackDuration=0", "RootDuration=0", "FearDuration=0", "AirborneDuration=0",
+            "AntiInterrupt=1", "DisableDebuff=1", "CCResistMax=1", "AirborneResist=1",
+            "PhysicalDefense=10000", "MagicDefense=10000", "ArmorBoost=10000",
+            "DamageReduction=0.90", "PassiveShieldRegen=1",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbAntiCCImmunity]");
+    }
+
+    public static boolean injectMlbbTowerMinionsOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbTowerMinionsOverdrive(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AllyTowerDamageMax=10000", "AllyTowerAttackSpeed=10", "AllyTowerRange=10000",
+            "AllyTowerInstantKill=1", "TowerAggro=1", "InhibitorRespawnZero=1",
+            "AllyMinionDamageMax=10000", "SuperMinionHP=10000", "SuperMinionArmor=10000",
+            "MinionSpeedMax=1", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0",
+            "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbTowerMinionsOverdrive]");
+    }
+
+    public static boolean injectMlbbMapAwarenessOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbMapAwarenessOverdrive(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MinimapRevealFull=1", "EnemyVisionRangeMax=1", "FogOfWarReveal=1",
+            "BushDetectionAlways=1", "EnemyPositionReveal=1", "WardsPlacedMax=1",
+            "MapHackVision=1", "EnemyMinimap=1", "VisionRangeMax=10000",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbMapAwarenessOverdrive]");
+    }
+
+    public static boolean injectMlbbFastGoldExpOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbFastGoldExpOverdrive(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "GoldPerSecondMax=1", "GoldBonusPerKill=10000", "GoldBonusPerAssist=5000",
+            "EXPGainRateMax=1", "EXPShareRangeMax=1", "LastHitWindowMax=1",
+            "BountyGoldBoost=10000", "JungleGoldMax=1", "LaneGoldMax=1", "TowerGoldMax=1",
+            "bFramePacingEnabled=True", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastGoldExpOverdrive]");
+    }
+
+    public static boolean injectMlbbFullOverdrive2026(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbFullOverdrive2026(path)) return true; } catch (Throwable ignored) {}
+        }
+        // Java fallback: chain all 9 sub-wrappers + existing overdrive
+        boolean r1  = injectMlbbJoycePunchWallCombo(path);
+        boolean r2  = injectMlbbNataliaSilentAssassin(path);
+        boolean r3  = injectMlbbKarinDashSlashCombo(path);
+        boolean r4  = injectMlbbLeomordNightmareRide(path);
+        boolean r5  = injectMlbbLyliaSuperBounce(path);
+        boolean r6  = injectMlbbAntiCCImmunity(path);
+        boolean r7  = injectMlbbTowerMinionsOverdrive(path);
+        boolean r8  = injectMlbbMapAwarenessOverdrive(path);
+        boolean r9  = injectMlbbFastGoldExpOverdrive(path);
+        boolean r10 = injectMlbbAllHeroOverdrive(path);
+        boolean r11 = injectDamageLockMax(path);
+        return r1 || r2 || r3 || r4 || r5 || r6 || r7 || r8 || r9 || r10 || r11;
     }
 
     private static void ensureParentDirectory(String path) {

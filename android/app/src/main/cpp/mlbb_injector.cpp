@@ -2312,3 +2312,315 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFiveHeroNoD
 }
 
 
+
+// =============================================================================
+// ─── MLBB 2026 NEW CHEAT PACK — 10 Additional JNI Functions ─────────────────
+// =============================================================================
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 1. Joy — Punch Wall Combo ───────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJoycePunchWallCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"JoyPunchBurstSpeed",   "10"},  {"JoyZeroWallDelay",    "1"},
+        {"JoyDashChainMax",      "1"},   {"JoyInstantSkill",     "1"},
+        {"JoySkillZeroCD",       "1"},   {"JoyPunchDamageMax",   "10000"},
+        {"JoyWallJumpAuto",      "1"},   {"JoyEnergyZeroCost",   "1"},
+        {"DamageLockMax",        "1"},   {"SkillZeroDelay",      "1"},
+        {"SkillZeroCooldown",    "1"},   {"EnergyRegenBoost",    "1000"},
+        {"ZeroEnergyCost",       "1"},   {"HeroLock",            "1"},
+        {"SkillSmartAim",        "1"},   {"AimMagnetism",        "3"},
+        {"HitRegSyncRate",       "1000"},{"TouchPollingRate",    "1000"},
+        {"TouchZeroDelay",       "1"},   {"ZeroInputLag",        "1"},
+        {"AnimationCancelFast",  "1"},   {"ScreenShake",         "0"},
+        {"bFramePacingEnabled",  "True"},{"r.OneFrameThreadLag", "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbJoycePunchWallCombo");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("JoycePunchWallCombo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 2. Natalia — Silent Assassin ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbNataliaSilentAssassin
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"NataliaStealthMax",         "1"},   {"NataliaStealthDuration",   "999"},
+        {"NataliaSilentStep",         "1"},   {"NataliaClawBurstZeroDelay","1"},
+        {"NataliaCritStrikeMax",      "1"},   {"NataliaCritRate",          "100"},
+        {"NataliaFollowEnemy",        "1"},   {"NataliaAssassinInstant",   "1"},
+        {"NataliaEnergyZeroCost",     "1"},   {"CritRateBoost",            "100"},
+        {"CritDamageMultiplier",      "3.0"}, {"DamageLockMax",            "1"},
+        {"SkillZeroDelay",            "1"},   {"SkillZeroCooldown",        "1"},
+        {"ZeroEnergyCost",            "1"},   {"HeroLock",                 "1"},
+        {"SkillSmartAim",             "1"},   {"AimMagnetism",             "3"},
+        {"PenetrationBoost",          "1"},   {"HitRegSyncRate",           "1000"},
+        {"TouchPollingRate",          "1000"},{"TouchZeroDelay",           "1"},
+        {"ZeroInputLag",              "1"},   {"AnimationCancelFast",      "1"},
+        {"bFramePacingEnabled",       "True"},{"r.OneFrameThreadLag",      "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbNataliaSilentAssassin");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("NataliaSilentAssassin injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 3. Karin — Dash Slash Combo ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbKarinDashSlashCombo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"KarinDashZeroCD",        "1"},    {"KarinTripleSlashInstant", "1"},
+        {"KarinSwordBurstMax",     "10000"},{"KarinDashChainMax",       "1"},
+        {"KarinSkillZeroDelay",    "1"},    {"KarinEnergyZeroCost",     "1"},
+        {"KarinCritDamageBoost",   "3.0"},  {"KarinPhysicalPen",        "1"},
+        {"DamageLockMax",          "10000"},{"PenetrationBoost",         "10000"},
+        {"CritRateBoost",          "100"},  {"CritDamageMultiplier",     "3.0"},
+        {"SkillZeroDelay",         "1"},    {"SkillZeroCooldown",        "1"},
+        {"ZeroEnergyCost",         "1"},    {"AnimationCancelFast",      "1"},
+        {"HeroLock",               "1"},    {"SkillSmartAim",            "1"},
+        {"HitRegSyncRate",         "1000"}, {"TouchPollingRate",         "1000"},
+        {"TouchZeroDelay",         "1"},    {"ZeroInputLag",             "1"},
+        {"bFramePacingEnabled",    "True"}, {"r.OneFrameThreadLag",      "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbKarinDashSlashCombo");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("KarinDashSlashCombo injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 4. Leomord — Nightmare Ride ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLeomordNightmareRide
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"LeomordMountInstant",       "1"},    {"LeomordNightmareSpeedMax",  "1"},
+        {"LeomordRideDamageMax",      "10000"},{"LeomordSkillZeroDelay",     "1"},
+        {"LeomordChargeAuto",         "1"},    {"LeomordEnergyZeroCost",     "1"},
+        {"LeomordNightmareHP",        "10000"},{"LeomordMountZeroDelay",     "1"},
+        {"DamageLockMax",             "10000"},{"PhysicalDamageBase",        "2500"},
+        {"SkillZeroDelay",            "1"},    {"SkillZeroCooldown",         "1"},
+        {"ZeroEnergyCost",            "1"},    {"AnimationCancelFast",       "1"},
+        {"MovementSpeedBoost",        "1"},    {"HeroLock",                  "1"},
+        {"SkillSmartAim",             "1"},    {"HitRegSyncRate",            "1000"},
+        {"TouchPollingRate",          "1000"}, {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},    {"bFramePacingEnabled",       "True"},
+        {"r.OneFrameThreadLag",       "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbLeomordNightmareRide");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("LeomordNightmareRide injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 5. Lylia — Super Bounce ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLyliaSuperBounce
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"LyliaBallBounceMax",     "10000"},{"LyliaSkillZeroDelay",    "1"},
+        {"LyliaBombStacksInfinite","1"},    {"LyliaUltResetInstant",   "1"},
+        {"LyliaMagicPen",          "1"},    {"LyliaMagicDamageMax",    "10000"},
+        {"LyliaEnergyZeroCost",    "1"},    {"LyliaGloomBounceAuto",   "1"},
+        {"MagicDamageBase",        "2500"}, {"DamageLockMax",          "10000"},
+        {"CritRateBoost",          "100"},  {"SkillZeroDelay",         "1"},
+        {"SkillZeroCooldown",      "1"},    {"ZeroEnergyCost",         "1"},
+        {"ZeroManaCost",           "1"},    {"InfiniteEnergy",         "1"},
+        {"AnimationCancelFast",    "1"},    {"HeroLock",               "1"},
+        {"SkillSmartAim",          "1"},    {"HitRegSyncRate",         "1000"},
+        {"TouchPollingRate",       "1000"}, {"TouchZeroDelay",         "1"},
+        {"ZeroInputLag",           "1"},    {"bFramePacingEnabled",    "True"},
+        {"r.OneFrameThreadLag",    "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbLyliaSuperBounce");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("LyliaSuperBounce injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 6. Anti-CC Immunity ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAntiCCImmunity
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"CCImmunity",         "1"},    {"StunDuration",       "0"},
+        {"SlowDuration",       "0"},    {"SilenceDuration",    "0"},
+        {"KnockbackDuration",  "0"},    {"RootDuration",       "0"},
+        {"FearDuration",       "0"},    {"AirborneDuration",   "0"},
+        {"AntiInterrupt",      "1"},    {"DisableDebuff",      "1"},
+        {"CCResistMax",        "1"},    {"AirborneResist",     "1"},
+        {"PhysicalDefense",    "10000"},{"MagicDefense",       "10000"},
+        {"ArmorBoost",         "10000"},{"DamageReduction",    "0.90"},
+        {"PassiveShieldRegen", "1"},    {"bFramePacingEnabled","True"},
+        {"r.OneFrameThreadLag","0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbAntiCCImmunity");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("AntiCCImmunity injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 7. Tower + Minion Overdrive ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbTowerMinionsOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AllyTowerDamageMax",   "10000"},{"AllyTowerAttackSpeed",  "10"},
+        {"AllyTowerRange",       "10000"},{"AllyTowerInstantKill",  "1"},
+        {"TowerAggro",           "1"},    {"InhibitorRespawnZero",  "1"},
+        {"AllyMinionDamageMax",  "10000"},{"SuperMinionHP",         "10000"},
+        {"SuperMinionArmor",     "10000"},{"MinionSpeedMax",        "1"},
+        {"bFramePacingEnabled",  "True"}, {"r.OneFrameThreadLag",   "0"},
+        {"HitRegSyncRate",       "1000"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbTowerMinionsOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("TowerMinionsOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 8. Map Awareness Overdrive ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMapAwarenessOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"MinimapRevealFull",   "1"},    {"EnemyVisionRangeMax",  "1"},
+        {"FogOfWarReveal",      "1"},    {"BushDetectionAlways",  "1"},
+        {"EnemyPositionReveal", "1"},    {"WardsPlacedMax",       "1"},
+        {"MapHackVision",       "1"},    {"EnemyMinimap",         "1"},
+        {"VisionRangeMax",      "10000"},{"bFramePacingEnabled",  "True"},
+        {"r.OneFrameThreadLag", "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbMapAwarenessOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MapAwarenessOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 9. Fast Gold + EXP Overdrive ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastGoldExpOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"GoldPerSecondMax",    "1"},    {"GoldBonusPerKill",     "10000"},
+        {"GoldBonusPerAssist",  "5000"}, {"EXPGainRateMax",       "1"},
+        {"EXPShareRangeMax",    "1"},    {"LastHitWindowMax",     "1"},
+        {"BountyGoldBoost",     "10000"},{"JungleGoldMax",        "1"},
+        {"LaneGoldMax",         "1"},    {"TowerGoldMax",         "1"},
+        {"bFramePacingEnabled", "True"}, {"r.OneFrameThreadLag",  "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFastGoldExpOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("FastGoldExpOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── 10. MLBB Full Overdrive 2026 — Master Combo ─────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Chains all 9 new sub-injectors + existing AllHeroOverdrive + DamageLockMax
+// in one atomic pass via direct C++ symbol calls.
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFullOverdrive2026
+  (JNIEnv *env, jclass clazz, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+
+    // ─── Group A: New Hero Combos ───
+    jboolean r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJoycePunchWallCombo(env, clazz, jPath);
+    jboolean r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbNataliaSilentAssassin(env, clazz, jPath);
+    jboolean r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbKarinDashSlashCombo(env, clazz, jPath);
+    jboolean r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLeomordNightmareRide(env, clazz, jPath);
+    jboolean r5 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbLyliaSuperBounce(env, clazz, jPath);
+
+    // ─── Group B: Survival / Meta Override ───
+    jboolean r6 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAntiCCImmunity(env, clazz, jPath);
+    jboolean r7 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbTowerMinionsOverdrive(env, clazz, jPath);
+    jboolean r8 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMapAwarenessOverdrive(env, clazz, jPath);
+
+    // ─── Group C: Economy ───
+    jboolean r9 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastGoldExpOverdrive(env, clazz, jPath);
+
+    // ─── Chain existing master overdrive + damage lock ───
+    jboolean r10 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroOverdrive(env, clazz, jPath);
+    jboolean r11 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageLockMax(env, clazz, jPath);
+
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    LOGI("MlbbFullOverdrive2026 complete: %s [joy=%d natalia=%d karin=%d leomord=%d lylia=%d anticc=%d tower=%d map=%d gold=%d allhero=%d dmglock=%d]",
+         path, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11);
+    env->ReleaseStringUTFChars(jPath, path);
+
+    return (r1 || r2 || r3 || r4 || r5 || r6 || r7 || r8 || r9 || r10 || r11) ? JNI_TRUE : JNI_FALSE;
+}

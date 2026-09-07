@@ -1,5 +1,6 @@
 package com.gamebooster.app.shizuku;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -74,6 +75,7 @@ public class ShizukuManager {
      * Actively queries moe.shizuku.privileged.api.shizuku provider to retrieve the live binder.
      * Bypasses passive waiting and guarantees instant reconnection (<5ms) after exiting games.
      */
+    @SuppressLint("RestrictedApi")
     public static boolean activelyFetchAndAttachBinder(Context context) {
         if (context == null) return false;
         try {

@@ -1044,6 +1044,125 @@ public class MlbbConfigPatcher {
         try { applyAllHeroBoostAndArmor(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB 5-Hero No-Delay Combo Boost (Fanny, Gusion, Ling, Haya, All-Hero) applied for " + packageName);
     }
+
+    // =========================================================================
+    // ─── MLBB 2026 New Cheat Pack — 10 apply* dispatch methods ───────────────
+    // =========================================================================
+
+    /** MLBB — Joy: instant punch burst, zero wall-climb delay, max dash chains. */
+    public static void applyJoycePunchWallCombo(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbJoycePunchWallCombo(path);
+        }
+        Log.i(TAG, "MLBB JoycePunchWallCombo applied for " + packageName);
+    }
+
+    /** MLBB — Natalia: max stealth, claw burst zero delay, 100% crit, enemy tracking. */
+    public static void applyNataliaSilentAssassin(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbNataliaSilentAssassin(path);
+        }
+        Log.i(TAG, "MLBB NataliaSilentAssassin applied for " + packageName);
+    }
+
+    /** MLBB — Karin: zero dash CD, triple slash instant, max sword burst damage. */
+    public static void applyKarinDashSlashCombo(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbKarinDashSlashCombo(path);
+        }
+        Log.i(TAG, "MLBB KarinDashSlashCombo applied for " + packageName);
+    }
+
+    /** MLBB — Leomord: instant mount summon, nightmare max speed + damage, zero skill delay. */
+    public static void applyLeomordNightmareRide(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbLeomordNightmareRide(path);
+        }
+        Log.i(TAG, "MLBB LeomordNightmareRide applied for " + packageName);
+    }
+
+    /** MLBB — Lylia: max ball bounce damage, zero skill delay, infinite bomb stacks. */
+    public static void applyLyliaSuperBounce(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbLyliaSuperBounce(path);
+        }
+        Log.i(TAG, "MLBB LyliaSuperBounce applied for " + packageName);
+    }
+
+    /** MLBB — Anti-CC: all stun/slow/silence/knockback/root/fear/airborne durations = 0. */
+    public static void applyAntiCCImmunity(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbAntiCCImmunity(path);
+        }
+        Log.i(TAG, "MLBB AntiCCImmunity applied for " + packageName);
+    }
+
+    /** MLBB — Tower + Minion Overdrive: max tower damage/speed, super minion HP/armor. */
+    public static void applyTowerMinionsOverdrive(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbTowerMinionsOverdrive(path);
+        }
+        Log.i(TAG, "MLBB TowerMinionsOverdrive applied for " + packageName);
+    }
+
+    /** MLBB — Map Awareness: full minimap reveal, fog-of-war remove, bush detection. */
+    public static void applyMapAwarenessOverdrive(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbMapAwarenessOverdrive(path);
+        }
+        Log.i(TAG, "MLBB MapAwarenessOverdrive applied for " + packageName);
+    }
+
+    /** MLBB — Fast Gold + EXP: gold/s max, EXP rate max, kill gold max, last-hit window max. */
+    public static void applyFastGoldExpOverdrive(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFastGoldExpOverdrive(path);
+        }
+        Log.i(TAG, "MLBB FastGoldExpOverdrive applied for " + packageName);
+    }
+
+    /**
+     * MLBB 2026 Full Overdrive — Master combo.
+     * Chains all 9 new cheat modules + AllHeroOverdrive + DamageLockMax + AntiLog in one pass.
+     */
+    public static void applyMlbbFullOverdrive2026(String packageName) {
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectMlbbFullOverdrive2026(path);
+        }
+        // Dispatch via individual apply* for completeness (Java fallback path)
+        try { applyJoycePunchWallCombo(packageName);    } catch (Throwable ignored) {}
+        try { applyNataliaSilentAssassin(packageName);  } catch (Throwable ignored) {}
+        try { applyKarinDashSlashCombo(packageName);    } catch (Throwable ignored) {}
+        try { applyLeomordNightmareRide(packageName);   } catch (Throwable ignored) {}
+        try { applyLyliaSuperBounce(packageName);       } catch (Throwable ignored) {}
+        try { applyAntiCCImmunity(packageName);         } catch (Throwable ignored) {}
+        try { applyTowerMinionsOverdrive(packageName);  } catch (Throwable ignored) {}
+        try { applyMapAwarenessOverdrive(packageName);  } catch (Throwable ignored) {}
+        try { applyFastGoldExpOverdrive(packageName);   } catch (Throwable ignored) {}
+        try { applyAllHeroOverdrive(packageName);       } catch (Throwable ignored) {}
+        try { applyDamageLockMax(packageName);          } catch (Throwable ignored) {}
+        try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB FullOverdrive2026 master combo applied for " + packageName);
+    }
 }
 
 
