@@ -2892,3 +2892,170 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return (r1 || r2 || r3 || r4 || r5) ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── MLBB: Map Hack + Vision Glitch Overdrive (NEW 2026) ─────────────────────
+// Injects vision/fog-of-war bypass, global radar reveal, and stealth flags.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMapHackGlitch(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"FogOfWarEnabled",           "0"},
+        {"FogOfWarBypass",            "1"},
+        {"MinimapRevealAll",          "1"},
+        {"GlobalRadarReveal",         "1"},
+        {"EnemyVisibilityRadius",     "99999"},
+        {"InvisibilityDetect",        "1"},
+        {"StealthBypass",             "1"},
+        {"VisionGlitchMode",          "1"},
+        {"VisionRangeOverride",       "99999"},
+        {"BushReveal",                "1"},
+        {"WardReveal",                "1"},
+        {"InvisDuration",             "0"},
+        {"ObstacleTransparency",      "0"},
+        {"WallTransparency",          "0"},
+        {"SkillRangeReveal",          "1"},
+        {"MapOpacity",                "1"},
+        {"RadarRange",                "99999"},
+        {"MapHackMode",               "1"},
+        {"VisionUpdateRate",          "1000"},
+        {"TouchPollingRate",          "1000"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbMapHackGlitch");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbMapHackGlitch injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Armor Penetration Overdrive (NEW 2026) ────────────────────────────
+// Injects armor/magic penetration, defense bypass, shield shred, and
+// true damage — covering all damage types (physical, magic, true).
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorPenetrationOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        // Physical pen
+        {"ArmorPenetration",          "1000"},
+        {"PhysicalPenetration",       "1000"},
+        {"ArmorPiercing",             "1"},
+        {"FixedArmorPen",             "1000"},
+        {"PercentArmorPen",           "100"},
+        // Magic pen
+        {"MagicPenetration",          "1000"},
+        {"FixedMagicPen",             "1000"},
+        {"PercentMagicPen",           "100"},
+        // Shield / defense bypass
+        {"DefenseBypass",             "1"},
+        {"ShieldBreaker",             "1"},
+        {"ShieldPierce",              "1000"},
+        {"ShieldShredPercent",        "100"},
+        // True damage
+        {"TrueDamage",                "1000"},
+        {"TrueDamageBoost",           "1000"},
+        // Crit
+        {"CritRateBoost",             "1"},
+        {"CritDamageBoost",           "1000"},
+        {"CritChance",                "100"},
+        // Lifesteal
+        {"LifestealBoost",            "1000"},
+        {"SpellVampBoost",            "1000"},
+        // Engine sync
+        {"HitRegSyncRate",            "1000"},
+        {"FrameSyncDamage",           "1"},
+        {"TouchPollingRate",          "1000"},
+        {"r.OneFrameThreadLag",       "0"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbArmorPenetrationOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbArmorPenetrationOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Global Damage Overdrive — All Heroes / All Skill Types (NEW 2026) ──
+// Maximizes output for: auto-attacks, skills, burst windows, DoT, AoE,
+// summoned unit damage. Also enables hero-global damage keys covering
+// Ling AutoSword boost, Fanny energy overflow, Gusion instant burst.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbGlobalDamageOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        // ── Global damage ──
+        {"DamageLockMax",              "1000"},
+        {"DamageMultiplier",           "1000"},
+        {"EffectiveDPSMode",           "3"},
+        {"AutoAttackDamageBoost",      "1000"},
+        {"SkillDamageBoost",           "1000"},
+        {"BurstDamageBoost",           "1000"},
+        {"DotDamageBoost",             "1000"},
+        {"AoEDamageBoost",             "1000"},
+        {"SummonDamageBoost",          "1000"},
+        {"ExecuteDamageThreshold",     "1000"},
+        // ── Penetration shortcuts ──
+        {"ArmorPenetration",           "1000"},
+        {"MagicPenetration",           "1000"},
+        {"TrueDamage",                 "1000"},
+        {"CritRateBoost",              "1"},
+        {"CritDamageBoost",            "1000"},
+        {"PenetrationBoost",           "1"},
+        // ── Ling: AutoSword damage boost ──
+        {"LingDamageMultiplier",       "1000"},
+        {"LingAutoSwordDamage",        "1000"},
+        {"LingComboSpeed",             "10"},
+        {"LingSkillChainWindow",       "1"},
+        {"LingWallJumpDelay",          "0"},
+        // ── Fanny: Energy overflow + boost ──
+        {"FannyEnergyBoost",           "1000"},
+        {"FannyEnergyRegen",           "1000"},
+        {"FannyInfiniteEnergy",        "1"},
+        {"FannyEnergyCapacity",        "9999"},
+        {"FannyEnergyDecayRate",       "0"},
+        {"FannyCableMagnetism",        "1000"},
+        {"FannySkillChainEnable",      "1"},
+        {"FannyDamageBoost",           "1000"},
+        // ── Gusion: No-delay burst ──
+        {"GusionCastDelay",            "0"},
+        {"GusionSkillDelay",           "0"},
+        {"GusionComboWindowMs",        "1"},
+        {"GusionDaggerReturn",         "0"},
+        {"GusionInstantBurst",         "1"},
+        {"GusionAnimCancel",           "1"},
+        {"GusionDaggerTrack",          "1"},
+        {"GusionDamageBoost",          "1000"},
+        // ── Engine sync ──
+        {"SkillAutoChain",             "1"},
+        {"SkillAutoCombo",             "1"},
+        {"HitRegSyncRate",             "1000"},
+        {"FrameSyncDamage",            "1"},
+        {"TouchPollingRate",           "1000"},
+        {"TouchZeroDelay",             "1"},
+        {"ZeroInputLag",               "1"},
+        {"r.OneFrameThreadLag",        "0"},
+        {"r.FinishCurrentFrame",       "0"},
+        {"bFramePacingEnabled",        "True"},
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbGlobalDamageOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbGlobalDamageOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
+

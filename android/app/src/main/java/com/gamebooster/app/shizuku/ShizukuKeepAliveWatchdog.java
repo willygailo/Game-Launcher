@@ -36,7 +36,12 @@ public class ShizukuKeepAliveWatchdog {
 
     public static final String SHIZUKU_PKG = "moe.shizuku.privileged.api";
     private static final long HEARTBEAT_INTERVAL_MS = 3_000L; // Fast 3-second health check
+    private static final long HEARTBEAT_INTERVAL_ANDROID16_MS = 12_000L; // 12s on Android 16+ to prevent binder throttling
     private static final long FAST_CHECK_INTERVAL_MS = 1_500L;
+
+    private static long getEffectiveHeartbeatIntervalMs() {
+        return OsVersionGuard.isAndroid16OrAbove() ? HEARTBEAT_INTERVAL_ANDROID16_MS : HEARTBEAT_INTERVAL_MS;
+    }
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     private final AtomicBoolean isShieldingActive = new AtomicBoolean(false);
@@ -84,7 +89,8 @@ public class ShizukuKeepAliveWatchdog {
         acquireLocks(context);
 
         if (isRunning.compareAndSet(false, true)) {
-            Log.i(TAG, "Starting Shizuku Keep-Alive Watchdog daemon...");
+            int sdkInt = OsVersionGuard.getReliableSdkInt();
+            Log.i(TAG, "Starting Shizuku Keep-Alive Watchdog daemon on " + OsVersionGuard.getOsVersionName() + " (SDK " + sdkInt + "), heartbeat interval: " + getEffectiveHeartbeatIntervalMs() + "ms...");
 
             watchdogThread = new HandlerThread("ShizukuWatchdogThread", Process.THREAD_PRIORITY_BACKGROUND);
             watchdogThread.start();
@@ -96,7 +102,7 @@ public class ShizukuKeepAliveWatchdog {
                     if (!isRunning.get()) return;
                     performHeartbeatCheck();
                     if (watchdogHandler != null && isRunning.get()) {
-                        watchdogHandler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+                        watchdogHandler.postDelayed(this, getEffectiveHeartbeatIntervalMs());
                     }
                 }
             };

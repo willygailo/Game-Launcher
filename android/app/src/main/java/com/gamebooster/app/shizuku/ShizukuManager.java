@@ -98,8 +98,13 @@ public class ShizukuManager {
                 try {
                     reply.setClassLoader(BinderContainer.class.getClassLoader());
                     BinderContainer container;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER", BinderContainer.class);
+                    // Reliable multi-version parcel extraction for Android 13/14/15/16
+                    if (OsVersionGuard.isAndroid13OrAbove()) {
+                        try {
+                            container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER", BinderContainer.class);
+                        } catch (Throwable tCompat) {
+                            container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER");
+                        }
                     } else {
                         container = reply.getParcelable("moe.shizuku.privileged.api.intent.extra.BINDER");
                     }

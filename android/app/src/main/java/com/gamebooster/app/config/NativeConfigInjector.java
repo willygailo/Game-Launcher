@@ -306,6 +306,21 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectFarlightJetpackZeroCooldown(String path);
     public static native boolean nativeInjectStandoff2Tick128ZeroSpread(String path);
 
+    // ─── PUBGM: 2026 Expansion ───────────────────────────────────────────────
+    public static native boolean nativeInjectPubgmBulletTracking5Burst(String path);
+    public static native boolean nativeInjectPubgmDamageBoostArmor(String path);
+    public static native boolean nativeInjectPubgmAimAssistOverdrive(String path);
+
+    // ─── CODM: 2026 Expansion ────────────────────────────────────────────────
+    public static native boolean nativeInjectCodmBulletTracking5Burst(String path);
+    public static native boolean nativeInjectCodmDamageBoostArmor(String path);
+    public static native boolean nativeInjectCodmAllScopeAimbotOverdrive(String path);
+
+    // ─── MLBB: 2026 Expansion ────────────────────────────────────────────────
+    public static native boolean nativeInjectMlbbMapHackGlitch(String path);
+    public static native boolean nativeInjectMlbbArmorPenetrationOverdrive(String path);
+    public static native boolean nativeInjectMlbbGlobalDamageOverdrive(String path);
+
     /**
      * Executes single-pass atomic batch injection for a map of key-value overrides.
      */

@@ -1434,6 +1434,36 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbJungleMasterGodSuite
   (JNIEnv *, jclass, jstring);
 
+/*
+ * PUBGM 2026 Expansion
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmBulletTracking5Burst
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamageBoostArmor
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAimAssistOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * CODM 2026 Expansion
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmBulletTracking5Burst
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDamageBoostArmor
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeAimbotOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * MLBB 2026 Expansion
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMapHackGlitch
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbArmorPenetrationOverdrive
+  (JNIEnv *, jclass, jstring);
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbGlobalDamageOverdrive
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

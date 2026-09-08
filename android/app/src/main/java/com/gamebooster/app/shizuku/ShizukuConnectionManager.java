@@ -119,6 +119,8 @@ public class ShizukuConnectionManager {
     /** Reads the actual binder state and converges the state machine. */
     public void start() {
         enabled = true;
+        int sdkInt = OsVersionGuard.getReliableSdkInt();
+        Log.i(TAG, "Starting ShizukuConnectionManager on " + OsVersionGuard.getOsVersionName() + " (SDK " + sdkInt + ")");
         try {
             android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
             if (ctx != null && !Shizuku.pingBinder()) {

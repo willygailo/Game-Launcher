@@ -1397,3 +1397,208 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullOverdri
     return (r0 || r1 || r2 || r3 || r4) ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── CODM: Bullet Tracking + 5-Burst Headshot Overdrive (NEW 2026) ────────────
+// Injects: BulletTrackingMode, BulletBodyHit, BulletHeadshotPriority,
+//          BulletBurst5, Bullet5BurstDamage=1000, BulletBurstHeadshot=1000,
+//          BulletBendFactor=1000, BulletTravelTime=0, MagicBulletBend=1.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmBulletTracking5Burst(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"BulletTrackingMode",      "1"},
+        {"BulletBodyHit",           "1"},
+        {"BulletHeadshotPriority",  "1"},
+        {"BulletBurst5",            "1"},
+        {"Bullet5BurstDamage",      "1000"},
+        {"BulletBurstHeadshot",     "1000"},
+        {"BulletBendFactor",        "1000"},
+        {"BulletPredictTrajectory", "1"},
+        {"InstantBulletDrop",       "0"},
+        {"BulletTravelTime",        "0"},
+        {"BulletMagicBend",         "1"},
+        {"MultiTargetTracking",     "1"},
+        {"BulletMagnetStrength",    "1000"},
+        {"AimBoneTarget",           "0"},
+        {"HeadBoneAttractFactor",   "1000"},
+        {"BulletAutoCorrect",       "1"},
+        {"MagicBulletBend",         "1"},
+        {"BulletTrackingOverdrive", "1000"},
+        {"HeadshotBurstMultiplier", "1000"},
+        {"Bullet5HeadshotLock",     "1"},
+        {"BulletBodyDamageBoost",   "1000"},
+        {"BulletHeadshotDamage",    "1000"},
+        {"InstantHitReg",           "1"},
+        {"HitRegSyncRate",          "1000"},
+        {"FrameSyncDamage",         "1"},
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+    };
+    for (const auto &kv : keys) {
+        if (isXml)       patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmBulletTracking5Burst injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Damage Boost + Armor Bypass Overdrive (NEW 2026) ──────────────────
+// Injects: TrueDamage=1000, DamageMultiplier=1000, ArmorPiercing=1,
+//          VestBypass=1, HelmetBypass=1, LimbDamageBoost=1000,
+//          FleshDamageBoost=1000, HeadshotDamage=1000, CritDamageBoost=1000.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmDamageBoostArmor(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"TrueDamage",              "1000"},
+        {"DamageMultiplier",        "1000"},
+        {"ArmorPiercing",           "1"},
+        {"VestBypass",              "1"},
+        {"HelmetBypass",            "1"},
+        {"LimbDamageBoost",         "1000"},
+        {"FleshDamageBoost",        "1000"},
+        {"HeadshotDamage",          "1000"},
+        {"ArmorPenetration",        "1000"},
+        {"PhysicalPenetration",     "1000"},
+        {"DefenseBypass",           "1"},
+        {"ShieldBreaker",           "1"},
+        {"CritRateBoost",           "1"},
+        {"CritDamageBoost",         "1000"},
+        {"DamageLockMax",           "1000"},
+        {"EffectiveDPSMode",        "3"},
+        {"HitRegSyncRate",          "1000"},
+        {"FrameSyncDamage",         "1"},
+        {"BulletBodyDamageBoost",   "1000"},
+        {"BulletHeadshotBoost",     "1000"},
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+    };
+    for (const auto &kv : keys) {
+        if (isXml)       patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmDamageBoostArmor injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: All-Scope Aimbot Overdrive (NEW 2026) ─────────────────────────────
+// Injects per-scope aim-assist + head-lock + bullet tracking for every scope
+// tier (iron sights, 1x, 2x, 3x, 4x, 6x, 8x, 10x/sniper). Also enables
+// sticky aim, global head magnetism, and zero-delay ADS.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmAllScopeAimbotOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+    std::vector<std::pair<std::string,std::string>> keys = {
+        // Global aim assist
+        {"AimAssistEnabled",        "1"},
+        {"AimAssistStrength",       "1000"},
+        {"AimMagnetism",            "1000"},
+        {"HeadMagnetism",           "1"},
+        {"StickyAim",               "1"},
+        {"AimRetention",            "1000"},
+        {"AimBoneTarget",           "0"},
+        {"AimSnapSpeed",            "10"},
+        {"AimSmoothFactor",         "0"},
+        {"AimSnapThreshold",        "0"},
+        {"AdsZeroDelay",            "1"},
+        {"AllScopeHeadLock",        "1"},
+        {"AllScopeAimSnap",         "1000"},
+        {"AllScopeAimMagnetism",    "1000"},
+        {"ScopeAimbotEnable",       "1"},
+        {"MultiTargetTracking",     "1"},
+        {"PredictiveAim",           "1"},
+        // Iron sights
+        {"IronSightHeadLock",       "1"}, {"IronSightAimAssist","1000"}, {"IronSightBulletTracking","1"},
+        // 1x
+        {"Scope1xHeadLock",         "1"}, {"Scope1xAimAssist","1000"}, {"Scope1xBulletTracking","1"},
+        {"Scope1xRecoilDamp",       "1"}, {"Scope1xDriftCancel","1"},
+        // 2x
+        {"Scope2xHeadLock",         "1"}, {"Scope2xAimAssist","1000"}, {"Scope2xBulletTracking","1"},
+        {"Scope2xRecoilDamp",       "1"}, {"Scope2xDriftCancel","1"},
+        // 3x
+        {"Scope3xHeadLock",         "1"}, {"Scope3xAimAssist","1000"}, {"Scope3xBulletTracking","1"},
+        {"Scope3xRecoilDamp",       "1"}, {"Scope3xDriftCancel","1"},
+        // 4x
+        {"Scope4xHeadLock",         "1"}, {"Scope4xAimAssist","1000"}, {"Scope4xBulletTracking","1"},
+        {"Scope4xZeroSway",         "1"}, {"Scope4xDriftCancel","1"},
+        // 6x
+        {"Scope6xHeadLock",         "1"}, {"Scope6xAimAssist","1000"}, {"Scope6xBulletTracking","1"},
+        {"Scope6xZeroSway",         "1"}, {"Scope6xDriftCancel","1"},
+        // 8x
+        {"Scope8xHeadLock",         "1"}, {"Scope8xAimAssist","1000"}, {"Scope8xBulletTracking","1"},
+        {"Scope8xZeroSway",         "1"}, {"Scope8xDriftCancel","1"},
+        // 10x / Sniper
+        {"Scope10xHeadLock",        "1"}, {"Scope10xAimAssist","1000"}, {"Scope10xBulletTracking","1"},
+        {"Scope10xZeroSway",        "1"}, {"SniperHeadLock","1"}, {"SniperNoBreath","1"},
+        // Gyro + touch
+        {"GyroSampleRate",          "1000"},
+        {"GyroZeroDelay",           "1"},
+        {"GyroStabilization",       "1"},
+        {"TouchPollingRate",        "1000"},
+        {"TouchZeroDelay",          "1"},
+        {"ZeroInputLag",            "1"},
+        {"HitRegSyncRate",          "1000"},
+        {"FrameSyncDamage",         "1"},
+    };
+    for (const auto &kv : keys) {
+        if (isXml)       patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson) patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar) patch_cvar(content, kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmAllScopeAimbotOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
+

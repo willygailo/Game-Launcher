@@ -1703,4 +1703,292 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFullOverdr
     return (r0 || r1 || r2 || r3 || r4 || r5 || r6 || r7) ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── PUBGM: Bullet Tracking + 5-Burst Headshot Overdrive (NEW 2026) ───────────
+// Injects: BulletTrackingMode, BulletBodyHit, BulletHeadshotPriority,
+//          BulletBurst5, Bullet5BurstDamage=1000, BulletBurstHeadshot=1000,
+//          BulletBendFactor=1000, BulletPredictTrajectory, InstantBulletDrop=0,
+//          BulletTravelTime=0, BulletMagicBend, MultiTargetTracking.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmBulletTracking5Burst(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> cvarKeys = {
+        {"r.PUBGBulletTrackingMode",         "1"},
+        {"r.PUBGBulletBodyHit",              "1"},
+        {"r.PUBGBulletHeadshotPriority",     "1"},
+        {"r.PUBGBulletBurst5",               "1"},
+        {"r.PUBGBullet5BurstDamage",         "1000"},
+        {"r.PUBGBulletBurstHeadshot",        "1000"},
+        {"r.PUBGBulletBendFactor",           "1000"},
+        {"r.PUBGBulletPredictTrajectory",    "1"},
+        {"r.PUBGInstantBulletDrop",          "0"},
+        {"r.PUBGBulletTravelTime",           "0"},
+        {"r.PUBGBulletMagicBend",            "1"},
+        {"r.PUBGMultiTargetTracking",        "1"},
+        {"r.PUBGBulletMagnetStrength",       "1000"},
+        {"r.PUBGBulletAimBoneTarget",        "0"},
+        {"r.PUBGHeadBoneAttract",            "1000"},
+        {"r.PUBGBulletAutoCorrect",          "1"},
+    };
+    std::vector<std::pair<std::string,std::string>> plainKeys = {
+        {"BulletTrackingMode",        "1"},
+        {"BulletBodyHit",             "1"},
+        {"BulletHeadshotPriority",    "1"},
+        {"BulletBurst5",              "1"},
+        {"Bullet5BurstDamage",        "1000"},
+        {"BulletBurstHeadshot",       "1000"},
+        {"BulletBendFactor",          "1000"},
+        {"BulletPredictTrajectory",   "1"},
+        {"InstantBulletDrop",         "0"},
+        {"BulletTravelTime",          "0"},
+        {"BulletMagicBend",           "1"},
+        {"MultiTargetTracking",       "1"},
+        {"BulletMagnetStrength",      "1000"},
+        {"AimBoneTarget",             "0"},
+        {"HeadBoneAttractFactor",     "1000"},
+        {"BulletAutoCorrect",         "1"},
+        {"MagicBulletBend",           "1"},
+        {"BulletTrackingOverdrive",   "1000"},
+        {"HeadshotBurstMultiplier",   "1000"},
+        {"Bullet5HeadshotLock",       "1"},
+        {"BulletBodyDamageBoost",     "1000"},
+        {"BulletHeadshotDamage",      "1000"},
+        {"InstantHitReg",             "1"},
+        {"HitRegSyncRate",            "1000"},
+        {"FrameSyncDamage",           "1"},
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+        {"r.OneFrameThreadLag",       "0"},
+        {"r.FinishCurrentFrame",      "0"},
+    };
+    if (isCvar) {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    } else if (isXml) {
+        for (const auto &kv : plainKeys) {
+            std::string t = "int";
+            if (kv.second.find('.') != std::string::npos) t = "float";
+            patch_xml_node(content, t, kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto &kv : plainKeys) {
+            bool n = !kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-');
+            patch_json_node(content, kv.first, kv.second, n);
+        }
+    } else {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmBulletTracking5Burst injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Damage Boost + Armor/Vest/Helmet Bypass Overdrive (NEW 2026) ─────
+// Injects: TrueDamage=1000, DamageMultiplier=1000, ArmorPiercing=1,
+//          VestBypass=1, HelmetBypass=1, LimbDamageBoost=1000,
+//          FleshDamageBoost=1000, HeadshotDamage=1000, full armor bypass pack.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamageBoostArmor(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> cvarKeys = {
+        {"r.PUBGTrueDamage",              "1000"},
+        {"r.PUBGDamageMultiplier",        "1000"},
+        {"r.PUBGArmorPiercing",           "1"},
+        {"r.PUBGVestBypass",              "1"},
+        {"r.PUBGHelmetBypass",            "1"},
+        {"r.PUBGLimbDamageBoost",         "1000"},
+        {"r.PUBGFleshDamageBoost",        "1000"},
+        {"r.PUBGHeadshotDamage",          "1000"},
+        {"r.PUBGArmorPenetrationLevel3",  "1.0"},
+        {"r.PUBGHelmetPenetrationLevel3", "1.0"},
+        {"r.PUBGVestDamageBypass",        "1"},
+        {"r.PUBGSniperHeadshotDamage",    "300"},
+    };
+    std::vector<std::pair<std::string,std::string>> plainKeys = {
+        {"TrueDamage",               "1000"},
+        {"DamageMultiplier",         "1000"},
+        {"ArmorPiercing",            "1"},
+        {"VestBypass",               "1"},
+        {"HelmetBypass",             "1"},
+        {"LimbDamageBoost",          "1000"},
+        {"FleshDamageBoost",         "1000"},
+        {"HeadshotDamage",           "1000"},
+        {"ArmorPenetration",         "1000"},
+        {"PhysicalPenetration",      "1000"},
+        {"MagicPenetration",         "1000"},
+        {"DefenseBypass",            "1"},
+        {"ShieldBreaker",            "1"},
+        {"PenetrationBoost",         "1"},
+        {"CritRateBoost",            "1"},
+        {"CritDamageBoost",          "1000"},
+        {"DamageLockMax",            "1000"},
+        {"EffectiveDPSMode",         "3"},
+        {"HitRegSyncRate",           "1000"},
+        {"FrameSyncDamage",          "1"},
+        {"BulletBodyDamageBoost",    "1000"},
+        {"BulletHeadshotBoost",      "1000"},
+        {"VehicleDamageMultiplier",  "2.5"},
+        {"TouchPollingRate",         "1000"},
+        {"TouchZeroDelay",           "1"},
+        {"ZeroInputLag",             "1"},
+    };
+    if (isCvar) {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    } else if (isXml) {
+        for (const auto &kv : plainKeys) {
+            std::string t = "int";
+            if (kv.second.find('.') != std::string::npos) t = "float";
+            patch_xml_node(content, t, kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto &kv : plainKeys) {
+            bool n = !kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-');
+            patch_json_node(content, kv.first, kv.second, n);
+        }
+    } else {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmDamageBoostArmor injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Aim Assist Overdrive + Multi-Target Tracking (NEW 2026) ──────────
+// Injects: AimAssistRadius=1000, AimLockStrength=1000, StickyAim=1,
+//          AimRetention=1000, TargetLead=1, MultiTargetTracking=1,
+//          per-scope head-lock + magnetism keys (1x–8x).
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmAimAssistOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> cvarKeys = {
+        {"r.AimAssistRadius",     "1000"},
+        {"r.AimLockStrength",     "1000"},
+        {"r.StickyAim",           "1"},
+        {"r.AimRetention",        "1000"},
+        {"r.TargetLead",          "1"},
+        {"r.AimAssistEnabled",    "1"},
+        {"r.AimAssistStrength",   "1000"},
+        {"r.AimSnapThreshold",    "0"},
+        {"r.AimMagnetism",        "1000"},
+        {"r.HeadBoneAimPriority", "1"},
+        {"r.AimSnapSpeed",        "10"},
+        {"r.AimSmoothFactor",     "0"},
+        {"r.PredictiveAim",       "1"},
+    };
+    std::vector<std::pair<std::string,std::string>> plainKeys = {
+        {"AimAssistRadius",      "1000"},
+        {"AimLockStrength",      "1000"},
+        {"StickyAim",            "1"},
+        {"AimRetention",         "1000"},
+        {"TargetLead",           "1"},
+        {"MultiTargetTracking",  "1"},
+        {"AimAssistEnabled",     "1"},
+        {"AimAssistStrength",    "1000"},
+        {"AimMagnetism",         "1000"},
+        {"AimAssistLockMax",     "1"},
+        {"HeadMagnetism",        "1"},
+        {"HeadBoneAimPriority",  "1"},
+        {"AimBoneTarget",        "0"},
+        {"AimSnapSpeed",         "10"},
+        {"AimSmoothFactor",      "0"},
+        {"AimSnapThreshold",     "0"},
+        {"AdsZeroDelay",         "1"},
+        {"PredictiveAim",        "1"},
+        {"AimAssistTier",        "1000"},
+        {"AimLockOverdrive",     "1000"},
+        {"AllScopeHeadLock",     "1"},
+        {"AllScopeAimSnap",      "1000"},
+        {"AllScopeAimMagnetism", "1000"},
+        {"ScopeAimbotEnable",    "1"},
+        // Per-scope head-lock (1x–8x)
+        {"Scope1xBulletTracking","1"}, {"Scope1xHeadLock","1"}, {"Scope1xAimAssist","1000"},
+        {"Scope2xBulletTracking","1"}, {"Scope2xHeadLock","1"}, {"Scope2xAimAssist","1000"},
+        {"Scope3xBulletTracking","1"}, {"Scope3xHeadLock","1"}, {"Scope3xAimAssist","1000"},
+        {"Scope4xBulletTracking","1"}, {"Scope4xHeadLock","1"}, {"Scope4xAimAssist","1000"},
+        {"Scope6xBulletTracking","1"}, {"Scope6xHeadLock","1"}, {"Scope6xAimAssist","1000"},
+        {"Scope8xBulletTracking","1"}, {"Scope8xHeadLock","1"}, {"Scope8xAimAssist","1000"},
+        {"GyroSampleRate",       "1000"},
+        {"GyroZeroDelay",        "1"},
+        {"GyroStabilization",    "1"},
+        {"TouchPollingRate",     "1000"},
+        {"TouchZeroDelay",       "1"},
+        {"ZeroInputLag",         "1"},
+        {"HitRegSyncRate",       "1000"},
+        {"FrameSyncDamage",      "1"},
+        {"r.OneFrameThreadLag",  "0"},
+        {"r.FinishCurrentFrame", "0"},
+    };
+    if (isCvar) {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    } else if (isXml) {
+        for (const auto &kv : plainKeys) {
+            std::string t = "int";
+            if (kv.second.find('.') != std::string::npos) t = "float";
+            patch_xml_node(content, t, kv.first, kv.second);
+        }
+    } else if (isJson) {
+        for (const auto &kv : plainKeys) {
+            bool n = !kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-');
+            patch_json_node(content, kv.first, kv.second, n);
+        }
+    } else {
+        for (const auto &kv : cvarKeys)  patch_cvar(content, kv.first, kv.second);
+        for (const auto &kv : plainKeys) patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmAimAssistOverdrive injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
+
 
