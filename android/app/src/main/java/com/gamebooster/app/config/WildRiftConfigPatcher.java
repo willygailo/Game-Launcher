@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * WildRiftConfigPatcher manages legal configuration files for League of Legends: Wild Rift (all regions).
- * Unlocks 90 FPS / 120 FPS / 144 FPS / 165 FPS / 185 FPS and 1000Hz touch input response.
+ * Unlocks 120 FPS / 144 FPS / 165 FPS / 185 FPS and 1000Hz touch input response.
  */
 public class WildRiftConfigPatcher {
 

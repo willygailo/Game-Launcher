@@ -1953,7 +1953,6 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HighFrameRate", "1"},
         {"UnlockFPS", "1"},
         {"SuperHighFPS", "1"},
-        {"Unlock90Hz", "1"},
         {"Unlock120Hz", "1"},
         {"Unlock144Hz", "1"},
         {"Unlock165Hz", "1"},

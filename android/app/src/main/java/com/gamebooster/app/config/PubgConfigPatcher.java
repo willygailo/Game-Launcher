@@ -417,7 +417,7 @@ public class PubgConfigPatcher {
         }
 
         // In PUBGM UE4 engine: Level 7 is 120 FPS (Ultra Extreme).
-        // Any level > 7 fails the engine enum boundary check and causes PUBGM to fallback to 90 FPS (Level 6).
+        // Any level > 7 fails the engine enum boundary check in PUBGM; level 7 enforces 120 FPS.
         final int effectiveLevel = (tier.fps >= 120) ? 7 : tier.level;
 
         if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
@@ -531,7 +531,6 @@ public class PubgConfigPatcher {
             "Ultra185FPS=1",
             "HighFPSMode=3",
             "SuperHighFPS=1",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
@@ -573,7 +572,7 @@ public class PubgConfigPatcher {
     public static void patchActiveSavBinary(String pkg, int targetFps, boolean enableHdr) {
         if (pkg == null) return;
         final int rawLevel = FpsUnlockTier.fromFps(targetFps).level;
-        // In PUBGM UE4 engine: Level 7 is 120 FPS. Any level > 7 fails enum validation and clamps to 90 FPS (Level 6).
+        // In PUBGM UE4 engine: Level 7 is 120 FPS. Any level > 7 fails enum validation in PUBGM; level 7 enforces 120 FPS.
         final int effectiveFpsLevel = (targetFps >= 120) ? 7 : rawLevel;
         final int effectiveQuality = enableHdr ? 4 : 1; // 4 = HDR, 1 = Smooth
 

@@ -131,7 +131,7 @@ public class DeltaForceConfigPatcher {
 
         String userCustomContent = "[/Script/Engine.Engine]\n" +
                 "bSmoothFrameRate=False\n" +
-                "MinSmoothedFrameRate=60\n" +
+                "MinSmoothedFrameRate=120\n" +
                 "MaxSmoothedFrameRate=" + forcedFps + "\n\n" +
                 "[/Script/Engine.RendererSettings]\n" +
                 "r.VSync=0\n" +

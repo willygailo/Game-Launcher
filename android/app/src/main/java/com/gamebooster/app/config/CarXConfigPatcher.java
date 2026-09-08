@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * CarXConfigPatcher manages legal configuration files for CarX Street, Asphalt 9/Legends Unite,
  * and high-fidelity racing games.
- * Unlocks 60 FPS / 90 FPS / 120 FPS / 144 FPS / 165 FPS / 185 FPS.
+ * Unlocks 120 FPS / 144 FPS / 165 FPS / 185 FPS.
  */
 public class CarXConfigPatcher {
 

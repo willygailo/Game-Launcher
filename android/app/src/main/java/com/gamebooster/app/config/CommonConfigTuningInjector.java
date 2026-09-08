@@ -565,7 +565,6 @@ public final class CommonConfigTuningInjector {
             "HighFPSMode=3",         // 3 = 185fps on MLBB 2026 (not 1 or 2)
             "SuperHighFPS=1",
             // ── Refresh Rate Unlocks ──
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",

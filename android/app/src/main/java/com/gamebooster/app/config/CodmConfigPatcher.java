@@ -235,7 +235,6 @@ public class CodmConfigPatcher {
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
-                    + "  \"Unlock90Hz\": 1,\n"
                     + "  \"Unlock120Hz\": 1,\n"
                     + "  \"Unlock144Hz\": 1,\n"
                     + "  \"Unlock165Hz\": 1,\n"
@@ -301,7 +300,6 @@ public class CodmConfigPatcher {
                     + "Unlock144FPS=1\n"
                     + "Ultra144FPS=1\n"
                     + "HighFPSMode=3\n"     // 2026: 3 = 185Hz-capable
-                    + "Unlock90Hz=1\n"
                     + "Unlock120Hz=1\n"
                     + "Unlock144Hz=1\n"
                     + "Unlock165Hz=1\n"
@@ -464,7 +462,6 @@ public class CodmConfigPatcher {
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
-                    + "  \"Unlock90Hz\": 1,\n"
                     + "  \"Unlock120Hz\": 1,\n"
                     + "  \"Unlock144Hz\": 1,\n"
                     + "  \"Unlock165Hz\": 1,\n"
@@ -556,7 +553,6 @@ public class CodmConfigPatcher {
                     + "Vsync=0\n"
                     + "UnlockFPS=1\n"
                     + "HighFPSMode=3\n"
-                    + "Unlock90Hz=1\n"
                     + "Unlock120Hz=1\n"
                     + "Unlock144Hz=1\n"
                     + "Unlock165Hz=1\n"
@@ -625,7 +621,6 @@ public class CodmConfigPatcher {
                     + "  \"UltraExtreme\": 1,\n"
                     + "  \"bFramePacingEnabled\": 1,\n"
                     + "  \"Vsync\": 0,\n"
-                    + "  \"Unlock90Hz\": 1,\n"
                     + "  \"Unlock120Hz\": 1,\n"
                     + "  \"Unlock144Hz\": 1,\n"
                     + "  \"Unlock165Hz\": 1,\n"
@@ -989,7 +984,6 @@ public class CodmConfigPatcher {
             "bUseUltraExtreme=True",
             "bFramePacingEnabled=True",
             "Vsync=0",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",

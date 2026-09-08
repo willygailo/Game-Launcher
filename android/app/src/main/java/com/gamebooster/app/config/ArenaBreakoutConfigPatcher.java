@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * ArenaBreakoutConfigPatcher manages legal UE4/UE5 configuration files for Arena Breakout & Delta Force.
- * Unlocks 90 FPS / 120 FPS / 144 FPS / 165 FPS / 185 FPS and low-latency input.
+ * Unlocks 120 FPS / 144 FPS / 165 FPS / 185 FPS and low-latency input.
  */
 public class ArenaBreakoutConfigPatcher {
 

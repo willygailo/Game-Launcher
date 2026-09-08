@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * SpoofProfile — Comprehensive device identity profile for legal, full-stack hardware spoofing.
  *
- * Designed to safely bypass game developer FPS and graphics tier whitelists (unlocking 90Hz, 120Hz,
+ * Designed to safely bypass game developer FPS and graphics tier whitelists (unlocking 120Hz,
  * 144Hz, 165Hz, and 185Hz in titles like PUBG, MLBB, CODM, Wild Rift, and Genshin Impact) without
  * triggering anti-cheat integrity bans or telecom carrier violations.
  *
@@ -449,12 +449,10 @@ public class SpoofProfile {
     // ─────────────────────────────────────────────────────────────────────────
 
     public String[] generateUe4DeviceProfileKeys(int targetFps) {
-        int clampedFps = Math.max(60, Math.min(185, targetFps));
+        int clampedFps = Math.max(120, Math.min(185, targetFps));
         int effectiveLevel = (clampedFps >= 185) ? 10
                 : ((clampedFps >= 165) ? 9
-                : ((clampedFps >= 144) ? 8
-                : ((clampedFps >= 120) ? 7
-                : ((clampedFps >= 90) ? 6 : 5))));
+                : ((clampedFps >= 144) ? 8 : 7));
         return new String[] {
             "DeviceName=" + model,
             "DeviceBrand=" + brand,
@@ -476,7 +474,6 @@ public class SpoofProfile {
             "+CVars=r.PUBGDeviceFPSSupport165=1",
             "+CVars=r.PUBGDeviceFPSSupport144=1",
             "+CVars=r.PUBGDeviceFPSSupport120=1",
-            "+CVars=r.PUBGDeviceFPSSupport90=1",
             "+CVars=r.PUBGDeviceFPSPolicy=1",
             "+CVars=r.PUBGTargetFPS=" + clampedFps,
             "+CVars=r.PUBGMaxFPS=" + clampedFps,
@@ -505,8 +502,7 @@ public class SpoofProfile {
             "Unlock144Hz=1",
             "Unlock144FPS=1",
             "Unlock120Hz=1",
-            "Unlock120FPS=1",
-            "Unlock90Hz=1"
+            "Unlock120FPS=1"
         };
     }
 

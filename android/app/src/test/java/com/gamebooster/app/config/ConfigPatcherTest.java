@@ -1052,5 +1052,75 @@ public class ConfigPatcherTest {
             tempIni.delete();
         }
     }
+
+    @Test
+    public void testAllScopeAutoAimbot1000Keys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("test_allscope_1000_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectAllScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("AllScopeAutoAimbot=1000"));
+            assertTrue(content.contains("ScopeAimbotTier1000m=1"));
+            assertTrue(content.contains("ScopeAimRangeMax=1000"));
+            assertTrue(content.contains("AllScopeAimSnap=1000"));
+            assertTrue(content.contains("AllScopeAimMagnetism=1000"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testNoScopeAutoAimbot1000DamageKeys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("test_noscope_1000_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectNoScopeAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("NoScopeAutoAimbot=1000"));
+            assertTrue(content.contains("NoScopeDamageBoost=1000"));
+            assertTrue(content.contains("NoScopeTrueDamage=1000"));
+            assertTrue(content.contains("DamageBoost=1000"));
+            assertTrue(content.contains("DamageLockMax=1000"));
+            assertTrue(content.contains("InstantHitDamage=1000"));
+        } finally {
+            tempIni.delete();
+        }
+    }
+
+    @Test
+    public void testMagicBullet1000OverdriveKeys() throws java.io.IOException {
+        java.io.File tempJson = java.io.File.createTempFile("test_magicbullet_1000_", ".json");
+        try {
+            java.nio.file.Files.write(tempJson.toPath(), "{}".getBytes());
+            boolean ok = NativeConfigInjector.injectCodmMagicBulletOverdrive(tempJson.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempJson.toPath()));
+            assertTrue(content.contains("MagicBullet1000"));
+            assertTrue(content.contains("MagicBulletMultiplier"));
+            assertTrue(content.contains("MagicBulletDamage"));
+            assertTrue(content.contains("MagicBulletAttractStrength"));
+        } finally {
+            tempJson.delete();
+        }
+    }
+
+    @Test
+    public void testDistanceTieredAimbot1000Keys() throws java.io.IOException {
+        java.io.File tempIni = java.io.File.createTempFile("test_tiered_1000_", ".ini");
+        try {
+            boolean ok = NativeConfigInjector.injectPubgmDistanceTieredAimbot(tempIni.getAbsolutePath());
+            assertTrue(ok);
+            String content = new String(java.nio.file.Files.readAllBytes(tempIni.toPath()));
+            assertTrue(content.contains("ScopeAimbotTier1000m=1"));
+            assertTrue(content.contains("AllScopeAutoAimbot=1000"));
+            assertTrue(content.contains("NoScopeAutoAimbot=1000"));
+            assertTrue(content.contains("NoScopeDamageBoost=1000"));
+            assertTrue(content.contains("MagicBullet1000=1"));
+            assertTrue(content.contains("MagicBulletDamage=1000"));
+        } finally {
+            tempIni.delete();
+        }
+    }
 }
 

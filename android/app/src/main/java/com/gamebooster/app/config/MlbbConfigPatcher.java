@@ -230,7 +230,6 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
@@ -326,7 +325,6 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
@@ -423,7 +421,6 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",
@@ -528,7 +525,7 @@ public class MlbbConfigPatcher {
         if (packageName == null) return false;
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int frameRateLevel = (forcedFps >= 185) ? 5 : (forcedFps >= 144 ? 4 : 3);
-        final int highFpsMode = (forcedFps >= 120) ? 3 : 1; // 2026: 3 = enable 90Hz+ modes
+        final int highFpsMode = 3; // 2026: always high FPS mode (120fps+ minimum)
 
         String[] keys = {
             "HighFPSMode=" + highFpsMode,
@@ -849,7 +846,6 @@ public class MlbbConfigPatcher {
             "HighFrameRate=1",
             "UnlockFPS=1",
             "SuperHighFPS=1",
-            "Unlock90Hz=1",
             "Unlock120Hz=1",
             "Unlock144Hz=1",
             "Unlock165Hz=1",

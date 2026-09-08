@@ -8,7 +8,7 @@ package com.gamebooster.app.config;
  * High Aim Assist, Tracking Bullet engine, Gyro Super Smooth tuning, and hardware masking.
  * Profiles are persisted to SharedPreferences via CfgProfileManager.
  *
- * FPS targets are aligned to the supported tier set (90/120/144/165/185).
+ * FPS targets are aligned to the supported tier set (120/144/165/185).
  */
 public class CompetitiveCfgProfile {
 
