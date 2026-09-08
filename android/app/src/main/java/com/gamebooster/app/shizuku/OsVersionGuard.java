@@ -1,5 +1,6 @@
 package com.gamebooster.app.shizuku;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.util.Log;
 
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
  * Checks android.os.SystemProperties via reflection for "ro.build.version.sdk"
  * and "ro.build.version.release", falling back safely to Build.VERSION.SDK_INT.
  */
+@SuppressLint("PrivateApi")
 public final class OsVersionGuard {
 
     private static final String TAG = "OsVersionGuard";
