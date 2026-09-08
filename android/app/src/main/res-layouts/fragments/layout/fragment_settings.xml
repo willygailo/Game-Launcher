@@ -397,17 +397,6 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
-                <Button
-                    android:id="@+id/btn_apply_ultimate_android_engine"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)"
-                    android:textColor="#080B11"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
                 <Switch
                     android:id="@+id/switch_uclamp_boost"
                     android:layout_width="match_parent"
@@ -507,7 +496,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="1-Tap Gaming DNS Latency Booster:"
+                    android:text="Gaming DNS Latency Profile:"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -614,19 +603,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btn_optimize_network_all"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="🚀 1-TAP 5G / 6G &amp; WI-FI 6/7 TURBO BOOST"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-
-
                 <Switch
                     android:id="@+id/switch_5g_6g_data"
                     android:layout_width="match_parent"
@@ -709,37 +685,17 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- 1-Tap Batch Action Buttons -->
-                <LinearLayout
+                <!-- Reset All Tweaks Action Button -->
+                <Button
+                    android:id="@+id/btn_revert_all_tweaks"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="42dp"
                     android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_apply_all_tweaks"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/btn_cyber_cyan"
-                        android:text="🚀 1-TAP APPLY ALL TWEAKS"
-                        android:textColor="#000000"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_revert_all_tweaks"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:text="🔄 RESET ALL"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="🔄 RESET ALL TWEAKS TO DEFAULT"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
                 <!-- Search Bar for Tweaks & Games -->
                 <LinearLayout

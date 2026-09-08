@@ -73,6 +73,16 @@ public class GpuTweaksChannel {
         return true;
     }
 
+    public static boolean restoreDefaultRenderer() {
+        CommandExecutor.setSystemProperty("debug.hwui.renderer", "skiagl");
+        CommandExecutor.setSystemProperty("debug.renderengine.backend", "skiagl");
+        CommandExecutor.setSystemProperty("debug.renderengine.skia_pipeline", "false");
+        CommandExecutor.setSystemProperty("debug.hwui.use_gpu_pixel_buffers", "false");
+        CommandExecutor.setSystemProperty("debug.hwui.render_thread_priority", "0");
+        CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "0");
+        return true;
+    }
+
     public static boolean enableAdrenoTurbo() {
         CommandExecutor.setSystemProperty("debug.adreno.turbo", "1");
         CommandExecutor.setSystemProperty("debug.adreno.perf_level", "0");

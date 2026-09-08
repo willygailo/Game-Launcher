@@ -108,7 +108,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchPhantomFreezerKill;
     private Switch switchVulkanSkiavk;
     private Switch switchMemory16kbShield;
-    private Button btnApplyUltimateAndroidEngine;
     private Switch switchTetheringHw;
     private Switch switch5g6gData;
     private Switch switchWifiLowLatency;
@@ -485,7 +484,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchPhantomFreezerKill = view.findViewById(R.id.switch_phantom_freezer_kill);
         switchVulkanSkiavk = view.findViewById(R.id.switch_vulkan_skiavk);
         switchMemory16kbShield = view.findViewById(R.id.switch_memory_16kb_shield);
-        btnApplyUltimateAndroidEngine = view.findViewById(R.id.btn_apply_ultimate_android_engine);
 
         // Always ensure ANGLE driver is permanently purged from Android Settings
         AppExecutors.getInstance().executeCommand(GpuTweaksChannel::purgeAngleDriver);
@@ -577,6 +575,37 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 Toast.makeText(getContext(), isChecked
                         ? "⚡ Android 13–16 ADPF Power Hint Engine Enabled"
                         : "ADPF Engine Disabled", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeSettings(() -> {
+                    if (isChecked) {
+                        String adpfCmd = "cmd power set-fixed-performance-mode-enabled true; " +
+                                "setprop debug.sf.enable_adpf_cpu_hint true; " +
+                                "setprop debug.hwui.use_hint_manager true; " +
+                                "setprop persist.sys.adpf.enable 1; " +
+                                "setprop persist.sys.adpf.mode 1; " +
+                                "setprop debug.adpf.hint.enabled 1; " +
+                                "setprop debug.adpf.cpu.boost 1; " +
+                                "setprop debug.adpf.gpu.boost 1; " +
+                                "setprop debug.sf.enable_gl_backpressure 0; " +
+                                "setprop debug.sf.predict_hwc_composition_strategy 1";
+                        if (com.gamebooster.app.shizuku.OsVersionGuard.isAndroid15OrAbove()) {
+                            adpfCmd += "; cmd power set-mode 0 1; cmd power set-mode 2 1; " +
+                                    "setprop debug.sf.enable_adpf_gpu_hint true; " +
+                                    "setprop debug.adpf.workload_type gaming; " +
+                                    "setprop persist.sys.adpf.headroom.boost 1; " +
+                                    "setprop persist.sys.adpf.target_fps 185";
+                        }
+                        CommandExecutor.executeSystemCommand(adpfCmd);
+                    } else {
+                        CommandExecutor.executeSystemCommand(
+                                "cmd power set-fixed-performance-mode-enabled false; " +
+                                "setprop debug.sf.enable_adpf_cpu_hint false; " +
+                                "setprop debug.sf.enable_adpf_gpu_hint false; " +
+                                "setprop debug.hwui.use_hint_manager false; " +
+                                "setprop persist.sys.adpf.enable 0; " +
+                                "setprop debug.adpf.hint.enabled 0"
+                        );
+                    }
+                });
             });
         }
 
@@ -636,6 +665,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 AppExecutors.getInstance().executeSettings(() -> {
                     if (isChecked) {
                         com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
+                    } else {
+                        com.gamebooster.app.booster.GpuTweaksChannel.restoreDefaultRenderer();
                     }
                 });
             });
@@ -657,82 +688,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (btnApplyUltimateAndroidEngine != null) {
-            btnApplyUltimateAndroidEngine.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Ultimate Android 13–16 Engine")) return;
-
-                // Zero-Delay: Instant UI toggle & Preference persistence (0ms)
-                isProgrammaticToggle = true;
-                if (switchGameDriver != null) switchGameDriver.setChecked(true);
-                if (switchGpuMode != null) switchGpuMode.setChecked(true);
-                if (switchCpuMode != null) switchCpuMode.setChecked(true);
-                if (switchThermalBypass != null) switchThermalBypass.setChecked(true);
-                if (switchAdpfEngine != null) switchAdpfEngine.setChecked(true);
-                if (switchUclampBoost != null) switchUclampBoost.setChecked(true);
-                if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(true);
-                if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(true);
-                if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(true);
-                if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(true);
-                isProgrammaticToggle = false;
-
-                ManualSettingsPreferences.setGameDriverEnabled(getContext(), true);
-                ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
-                ManualSettingsPreferences.setCpuMode(getContext(), "performance");
-                ManualSettingsPreferences.setThermalBypassEnabled(getContext(), true);
-                ManualSettingsPreferences.setAdpfEngineEnabled(getContext(), true);
-                ManualSettingsPreferences.setUclampBoostEnabled(getContext(), true);
-                ManualSettingsPreferences.setTouch1000HzLockEnabled(getContext(), true);
-                ManualSettingsPreferences.setPhantomFreezerKillEnabled(getContext(), true);
-                ManualSettingsPreferences.setVulkanSkiaVkEnabled(getContext(), true);
-                ManualSettingsPreferences.setMemory16kbShieldEnabled(getContext(), true);
-
-                btnApplyUltimateAndroidEngine.setEnabled(false);
-                btnApplyUltimateAndroidEngine.setText("⚡ ALL ENGINES ACTIVE");
-                Toast.makeText(getContext(), "🔥 ULTIMATE ENGINE LOCKED: All Android 13–16 Tweaks Active!", Toast.LENGTH_SHORT).show();
-
-                // Non-blocking compound execution on dedicated settings executor
-                AppExecutors.getInstance().executeSettings(() -> {
-                    // 1. CPU & Topology
-                    com.gamebooster.app.booster.CpuGovernorChannel.tuneMultiCoreTopology();
-                    com.gamebooster.app.booster.CpuGovernorChannel.applyExtendedKernelFlags();
-                    com.gamebooster.app.booster.CpuGovernorChannel.setPerformanceLock();
-
-                    // 2. GPU & SkiaVK & Game Driver
-                    com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
-                    com.gamebooster.app.booster.GpuTweaksChannel.setGpuMaxPerformance();
-                    com.gamebooster.app.booster.GpuTweaksChannel.purgeAngleDriver();
-                    com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(true);
-
-                    // 3. Thermal Bypass
-                    com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
-
-                    // 4. Touch 1000Hz Digitizer
-                    com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
-
-                    // 5. Memory 16KB & Phantom Freezer Kill compound batch
-                    CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; echo 50 > /proc/sys/vm/vfs_cache_pressure 2>/dev/null; sysctl -w vm.dirty_ratio=20 2>/dev/null; sysctl -w vm.dirty_background_ratio=10 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.min_free_kbytes=65536 2>/dev/null; device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
-
-                    // 6. Master performance script for 185Hz
-                    com.gamebooster.app.booster.PerformanceChannel.writeAndExecutePerformanceTweaksScript(185);
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnApplyUltimateAndroidEngine.setEnabled(true);
-                        btnApplyUltimateAndroidEngine.setText("⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)");
-                    });
-                });
-            });
-        }
-
-
         // Card 4: Network & Latency Optimization
         TextView tvGamePingMs = view.findViewById(R.id.tv_game_ping_ms);
         Button btnPingTest = view.findViewById(R.id.btn_ping_test);
         btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
         btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
         btnDnsDefault = view.findViewById(R.id.btn_dns_default);
-        Button btnOptimizeNetworkAll = view.findViewById(R.id.btn_optimize_network_all);
         switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
         switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
         switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
@@ -826,35 +787,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 });
             });
         }
-
-        if (btnOptimizeNetworkAll != null) {
-            btnOptimizeNetworkAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("5G/6G & Wi-Fi Turbo Boost")) return;
-
-                // Zero-Delay: Instant UI toggle & Preference persistence (0ms)
-                isProgrammaticToggle = true;
-                if (switch5g6gData != null) switch5g6gData.setChecked(true);
-                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
-                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
-                isProgrammaticToggle = false;
-                updateNetworkModeUi("dual");
-                updateDnsUiState(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
-
-                ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
-                ManualSettingsPreferences.setGamingDns(getContext(), NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
-                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
-
-                Toast.makeText(getContext(), "🚀 5G/6G & Wi-Fi Turbo Boost Applied", Toast.LENGTH_SHORT).show();
-
-                AppExecutors.getInstance().executeSettings(() -> {
-                    NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
-                });
-            });
-        }
-
 
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -966,7 +898,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnFilterTouch = view.findViewById(R.id.btn_filter_touch);
         Button btnFilterShizuku = view.findViewById(R.id.btn_filter_shizuku);
         Button btnFilterNetwork = view.findViewById(R.id.btn_filter_network);
-        Button btnApplyAllTweaks = view.findViewById(R.id.btn_apply_all_tweaks);
         Button btnRevertAllTweaks = view.findViewById(R.id.btn_revert_all_tweaks);
 
         TweakManagerRepository.initializeStates(getContext());
@@ -1050,44 +981,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     }
                 });
             }
-        }
-
-        // 1-Tap Apply All Tweaks
-        if (btnApplyAllTweaks != null) {
-            btnApplyAllTweaks.setOnClickListener(v -> {
-                if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("🛡️ SHIZUKU REQUIRED")
-                            .setMessage("System tweaks require Shizuku (UID 2000 shell).\n\nPlease grant Shizuku permission to apply all tweaks.")
-                            .setPositiveButton("GRANT SHIZUKU", (d, w) -> com.gamebooster.app.shizuku.ShizukuExecutor.requestPermission())
-                            .setNegativeButton("CANCEL", null)
-                            .show();
-                    return;
-                }
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                        .setTitle("🚀 1-TAP APPLY ALL TWEAKS")
-                        .setMessage("Apply all " + TweakManagerRepository.getTotalCount() + " system tweaks?\n\nThis will push CPU/GPU, touch, display, network, and Shizuku system optimizations.")
-                        .setPositiveButton("APPLY ALL", (d, w) -> {
-                            btnApplyAllTweaks.setEnabled(false);
-                            btnApplyAllTweaks.setText("⏳ Applying...");
-                            TweakManagerRepository.applyAllSupportedTweaksAsync(getContext(), appliedCount -> {
-                                if (!isAdded()) return;
-                                btnApplyAllTweaks.setEnabled(true);
-                                btnApplyAllTweaks.setText("🚀 1-TAP APPLY ALL TWEAKS");
-                                if (tvTweaksStatus != null) {
-                                    tvTweaksStatus.setText("ACTIVE: " + appliedCount + " / " + TweakManagerRepository.getTotalCount() + " TWEAKS");
-                                }
-                                if (tweaksAdapter != null) {
-                                    tweaksAdapter.notifyAllStatesChanged();
-                                }
-                                android.widget.Toast.makeText(getContext(),
-                                        "⚡ " + appliedCount + " tweaks applied successfully!",
-                                        android.widget.Toast.LENGTH_SHORT).show();
-                            });
-                        })
-                        .setNegativeButton("CANCEL", null)
-                        .show();
-            });
         }
 
         // Reset All Tweaks
