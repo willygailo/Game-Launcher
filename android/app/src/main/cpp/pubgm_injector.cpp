@@ -462,6 +462,12 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         mod |= patch_gvas_int_property_cpp(data, "BattleFPS", effectiveLevel);
         mod |= patch_gvas_int_property_cpp(data, "LobbyFPS", effectiveLevel);
         mod |= patch_gvas_int_property_cpp(data, "MainCityFPS", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "BattleFPSLevel", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "LobbyFPSLevel", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "FpsLevelInBattle", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "FpsLevelInLobby", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "FpsOption", effectiveLevel);
+        mod |= patch_gvas_int_property_cpp(data, "SelectFps", effectiveLevel);
         mod |= patch_gvas_int_property_cpp(data, "HighFPSMode", 3);
         mod |= patch_gvas_int_property_cpp(data, "BattleRenderQuality", q);
         mod |= patch_gvas_int_property_cpp(data, "LobbyRenderQuality", q);
@@ -490,7 +496,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             utime(path, &t);
         }
         env->ReleaseStringUTFChars(jPath, path);
-        LOGI("PubgmActiveSav 165 FPS & HDR injected: %s [ok=%d]", pathStr.c_str(), ok);
+        LOGI("PubgmActiveSav 4.6 165 FPS & HDR injected: %s [ok=%d]", pathStr.c_str(), ok);
         return ok ? JNI_TRUE : JNI_FALSE;
     }
 
@@ -503,6 +509,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         }
         patch_xml_node(content, "int", "FPS", fpsStr);
         patch_xml_node(content, "int", "FrameRateLevel", effLvlStr);
+        patch_xml_node(content, "int", "BattleFPS", effLvlStr);
+        patch_xml_node(content, "int", "LobbyFPS", effLvlStr);
+        patch_xml_node(content, "int", "BattleFPSLevel", effLvlStr);
+        patch_xml_node(content, "int", "LobbyFPSLevel", effLvlStr);
         patch_xml_node(content, "int", "GraphicQuality", qStr);
         patch_xml_node(content, "int", "MobileHDRMode", "1");
         patch_xml_node(content, "int", "HighFPSMode", "3");
@@ -512,13 +522,21 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         // EnjoyCJZC UserSetting section
         std::vector<std::pair<std::string, std::string>> enjoyKeys = {
             {"FrameRateLevel", effLvlStr}, {"BattleFPS", effLvlStr}, {"LobbyFPS", effLvlStr},
+            {"BattleFPSLevel", effLvlStr}, {"LobbyFPSLevel", effLvlStr},
+            {"FpsLevelInBattle", effLvlStr}, {"FpsLevelInLobby", effLvlStr},
+            {"FpsOption", effLvlStr}, {"SelectFps", effLvlStr},
             {"FPS", fpsStr}, {"MaxFPS", fpsStr}, {"TargetFPS", fpsStr}, {"FrameRateLimit", fpsStr},
             {"MobileFPSLimit", fpsStr}, {"GraphicQuality", qStr}, {"ArtQuality", qStr},
             {"ShadowQuality", "3"}, {"MobileHDRMode", "1"}, {"HighFPSMode", "3"},
             {"bUseHDRMode", "True"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
             {"UnlockFPS", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"}, {"Unlock165Hz", "1"},
             {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"}, {"Unlock165FPS", "1"}, {"Ultra165FPS", "1"},
-            {"+CVars=r.PUBGDeviceFPS", effLvlStr}, {"+CVars=r.PUBGTargetFPS", fpsStr},
+            {"+CVars=r.PUBGVersion", "4.6"}, {"+CVars=r.PUBGClientVersion", "4.6.0"},
+            {"+CVars=r.PUBG46EngineSupport", "1"},
+            {"+CVars=r.PUBGDeviceFPS", effLvlStr}, {"+CVars=r.PUBGDeviceFPSLevel", effLvlStr},
+            {"+CVars=r.PUBGBattleFPS", effLvlStr}, {"+CVars=r.PUBGLobbyFPS", effLvlStr},
+            {"+CVars=r.PUBGFPSLevel", effLvlStr}, {"+CVars=r.PUBGDeviceQuality", qStr},
+            {"+CVars=r.PUBGTargetFPS", fpsStr},
             {"+CVars=r.MobileHDR", "1"}, {"+CVars=r.PUBGHDRMode", "1"}
         };
         for (const auto &kv : enjoyKeys) {
@@ -529,7 +547,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"FrameRateLimit", fpsStr + ".000000"}, {"bUseVSync", "False"},
             {"bUseDynamicResolution", "False"}, {"ResolutionSizeX", "2400"},
             {"ResolutionSizeY", "1080"}, {"LastUserConfirmedResolutionSizeX", "2400"},
-            {"LastUserConfirmedResolutionSizeY", "1080"}
+            {"LastUserConfirmedResolutionSizeY", "1080"},
+            {"FrameRateLevel", effLvlStr}, {"BattleFPS", effLvlStr}, {"LobbyFPS", effLvlStr}
         };
         for (const auto &kv : gusKeys) {
             patch_key_value(content, kv.first, kv.second);
@@ -537,7 +556,20 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     } else {
         // UserCustom.ini / DeviceProfile.ini / Quality.ini
         std::vector<std::pair<std::string, std::string>> ue4Keys = {
+            {"+CVars=r.PUBGVersion", "4.6"},
+            {"+CVars=r.PUBGClientVersion", "4.6.0"},
+            {"+CVars=r.PUBG46EngineSupport", "1"},
             {"+CVars=r.PUBGDeviceFPS", effLvlStr},
+            {"+CVars=r.PUBGDeviceFPSLevel", effLvlStr},
+            {"+CVars=r.PUBGBattleFPS", effLvlStr},
+            {"+CVars=r.PUBGLobbyFPS", effLvlStr},
+            {"+CVars=r.PUBGFPSLevel", effLvlStr},
+            {"+CVars=r.PUBGDeviceQuality", qStr},
+            {"+CVars=r.PUBGDeviceFPSSupport185", "1"},
+            {"+CVars=r.PUBGDeviceFPSSupport165", "1"},
+            {"+CVars=r.PUBGDeviceFPSSupport144", "1"},
+            {"+CVars=r.PUBGDeviceFPSSupport120", "1"},
+            {"+CVars=r.PUBGDeviceFPSSupport90", "1"},
             {"+CVars=r.PUBGDeviceFPSPolicy", "1"},
             {"+CVars=r.DefaultDeviceFPS", effLvlStr},
             {"+CVars=r.UserFPSSetting", effLvlStr},
@@ -560,7 +592,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"+CVars=r.PUBGQualityLevel", qStr},
             {"+CVars=r.PUBGSDKQualityLevel", qStr},
             {"+CVars=r.UserQualitySetting", qStr},
-            {"+CVars=r.ShadowQuality", "3"},
+            {"+CVars=r.ShadowQuality", "4"},
             {"+CVars=r.PostProcessAAQuality", "3"},
             {"+CVars=r.Tonemapper.Quality", "4"},
             {"+CVars=r.MobileContentScaleFactor", "1.0"},
@@ -568,6 +600,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"+CVars=r.TemporalAA.Upscale", "1"},
             {"+CVars=r.AllowOcclusionQueries", "1"},
             {"+CVars=r.Vulkan.Enable", "1"},
+            {"+CVars=r.Vulkan.DescriptorSetLayout", "1"},
+            {"+CVars=r.Vulkan.RenderPass", "1"},
+            {"+CVars=r.EnableAsyncPipelineCompilation", "1"},
             {"+CVars=r.Vulkan.PipelineCache", "1"},
             {"+CVars=r.AsyncCompute", "1"},
             {"+CVars=r.VRS.Enable", "1"},
@@ -577,6 +612,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"FrameRateLimit", fpsStr},
             {"MobileFPSLimit", fpsStr},
             {"FrameRateLevel", effLvlStr},
+            {"BattleFPS", effLvlStr},
+            {"LobbyFPS", effLvlStr},
+            {"BattleFPSLevel", effLvlStr},
+            {"LobbyFPSLevel", effLvlStr},
+            {"FpsLevelInBattle", effLvlStr},
+            {"FpsLevelInLobby", effLvlStr},
+            {"FpsOption", effLvlStr},
+            {"SelectFps", effLvlStr},
             {"GraphicQuality", qStr},
             {"ArtQuality", qStr},
             {"UnlockFPS", "1"},
@@ -585,7 +628,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"HighFPSMode", "3"},
             {"HDRMode", "1"},
             {"TouchBoostHz", fpsStr},
-            {"TouchPollingRate", "1000"}
+            {"TouchPollingRate", "1000"},
+            {"UltraExtreme", "1"},
+            {"UltraExtreme2026", "1"},
+            {"bUseUltraExtreme", "True"}
         };
         for (const auto &kv : ue4Keys) {
             patch_key_value(content, kv.first, kv.second);

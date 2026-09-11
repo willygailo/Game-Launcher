@@ -2268,7 +2268,15 @@ public class NativeConfigInjector {
                 if (nativeInjectCodm165FpsGraphics(path, targetFps, qualityLevel)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        int fps = targetFps > 0 ? targetFps : 165;
+        int q = qualityLevel > 0 ? qualityLevel : 4;
+        String[] keys = {
+            "FrameRateLimit=" + fps, "MaxFPS=" + fps, "TargetFPS=" + fps, "FPS=" + fps,
+            "GraphicQuality=" + q, "HighFPSMode=3", "UltraHighFPS=1", "Unlock120Hz=1",
+            "Unlock144Hz=1", "Unlock165Hz=1", "Unlock185Hz=1", "bFramePacingEnabled=True",
+            "TouchBoostHz=" + fps, "TouchPollingRate=1000", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmGraphics]");
     }
 
     public static boolean injectMlbb165FpsGraphics(String path, int targetFps, int qualityLevel) {
@@ -2279,7 +2287,15 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbb165FpsGraphics(path, targetFps, qualityLevel)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        int fps = targetFps > 0 ? targetFps : 165;
+        int q = qualityLevel > 0 ? qualityLevel : 4;
+        String[] keys = {
+            "HighFPSMode=1", "UltraFrameRate=1", "SuperFrameRate=1", "TargetFPS=" + fps,
+            "FrameRateLimit=" + fps, "QualitySetting=" + q, "GraphicLevel=" + q,
+            "PerformanceLevel=3", "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1",
+            "TouchBoostHz=" + fps, "ZeroDelayTouch=1", "bFramePacingEnabled=True"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbGraphics]");
     }
 
     public static boolean injectPubgm165FpsGraphics(String path, int targetFps, int qualityLevel) {
