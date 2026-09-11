@@ -1,0 +1,87 @@
+name: 🎮 Game Compatibility & FPS Submission
+description: Submit verified game test results, max achievable FPS, and optimal booster settings.
+title: "[Game Compat]: "
+labels: ["game-compatibility", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help the community build the most comprehensive high-refresh Android gaming database! Share your tested game configurations and benchmark results below.
+
+  - type: input
+    id: game_title
+    attributes:
+      label: Game Title
+      placeholder: "e.g., Call of Duty: Warzone Mobile"
+    validations:
+      required: true
+
+  - type: input
+    id: game_package
+    attributes:
+      label: Game Package Name (Application ID)
+      placeholder: "e.g., com.activision.callofduty.warzone"
+    validations:
+      required: true
+
+  - type: input
+    id: device_soc
+    attributes:
+      label: Device Model & Processor (SoC)
+      placeholder: "e.g., ASUS ROG Phone 8 Pro (Snapdragon 8 Gen 3)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: max_fps
+    attributes:
+      label: Maximum Stable FPS / Refresh Rate Achieved
+      options:
+        - 🔥 185 FPS / 185Hz
+        - ⚡ 165 FPS / 165Hz
+        - 🚀 144 FPS / 144Hz
+        - 🎮 120 FPS / 120Hz
+        - 📈 90 FPS / 90Hz
+        - 🔒 60 FPS (Game Hard-Capped)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: booster_preset
+    attributes:
+      label: Game Launcher PRO Preset Used
+      options:
+        - Extreme Performance Profile (Max Hz + CPU Affinity)
+        - Ultra FPS Profile (185Hz Display Lock)
+        - Balanced Gaming Profile (120Hz)
+        - Battery Saver Gaming Profile (90Hz)
+    validations:
+      required: true
+
+  - type: textarea
+    id: optimal_settings
+    attributes:
+      label: Recommended In-Game Settings & Config Tweaks
+      description: What in-game graphics, resolution, or frame rate settings work best?
+      placeholder: "In-game: Smooth graphics, Ultra frame rate, Shadows OFF, Anti-aliasing disabled."
+    validations:
+      required: true
+
+  - type: textarea
+    id: thermal_stability
+    attributes:
+      label: Thermal & Stability Observations
+      description: Average FPS, 1% low stability, temperature after 30+ minutes of gameplay.
+      placeholder: "Tested for 45 minutes: Average 118 FPS, 1% Low 105 FPS, peak battery temp 40.5°C."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Verification Checklist
+      options:
+        - label: I have personally verified these results using Game Launcher PRO's live FPS overlay or Shizuku diagnostics.
+          required: true
+        - label: I did not use any binary-modifying hacks or cheat tools.
+          required: true

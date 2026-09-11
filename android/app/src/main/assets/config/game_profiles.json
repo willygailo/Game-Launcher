@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "max_hardware_hz": 185,
+  "supported_target_fps": [185],
+  "fps_modes": {
+    "185": "Extreme 185Hz Display Limit"
+  },
+  "supported_profiles": [
+    {
+      "name": "EXTREME_185HZ",
+      "target_hz": 185,
+      "cpu_governor": "performance",
+      "touch_latency": "ultra",
+      "enable_dnd": true,
+      "force_vulkan": true
+    }
+  ],
+  "featured_games": [
+    {
+      "package": "com.mobile.legends",
+      "title": "Mobile Legends: Bang Bang",
+      "category": "MOBA",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.garena.game.codm",
+      "title": "Call of Duty: Mobile (Garena)",
+      "category": "FPS",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.activision.callofduty.shooter",
+      "title": "Call of Duty: Mobile (Global)",
+      "category": "FPS",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.tencent.ig",
+      "title": "PUBG Mobile (Global)",
+      "category": "Battle Royale",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.pubg.imobile",
+      "title": "Battlegrounds Mobile India (BGMI)",
+      "category": "Battle Royale",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.riotgames.league.wildrift",
+      "title": "League of Legends: Wild Rift",
+      "category": "MOBA",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.dts.freefiremax",
+      "title": "Free Fire MAX",
+      "category": "Battle Royale",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.levelinfinite.sgameGlobal",
+      "title": "Honor of Kings (Global)",
+      "category": "MOBA",
+      "max_supported_fps": 185
+    },
+    {
+      "package": "com.roblox.client",
+      "title": "Roblox",
+      "category": "Sandbox",
+      "max_supported_fps": 185
+    }
+  ]
+}

@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/terminal_root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D906090F">
+
+    <!-- 1. TOP: Terminal Header Toolbar (Termux Toolbar) -->
+    <LinearLayout
+        android:id="@+id/terminal_header_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#CC0A0E18"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/terminal_header_height"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_terminal_back"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/accent_cyan" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.04"
+                android:singleLine="true"
+                android:text="TERMUX CYBER TERMINAL"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="@dimen/terminal_header_title_size"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_terminal_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:singleLine="true"
+                android:text="shizuku@localhost:~/data/local/tmp $"
+                android:textColor="@color/accent_cyan"
+                android:textSize="@dimen/terminal_status_size" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_terminal_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/terminal_button_height"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:paddingHorizontal="8dp"
+            android:text="📁 SCRIPTS"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="@dimen/terminal_button_text_size"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_copy_terminal"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/terminal_button_height"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:paddingHorizontal="8dp"
+            android:text="📋 COPY"
+            android:textColor="@color/accent_cyan"
+            android:textSize="@dimen/terminal_button_text_size"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_clear_terminal"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/terminal_button_height"
+            android:background="@drawable/btn_cyber_dark"
+            android:paddingHorizontal="8dp"
+            android:text="🗑️ CLEAR"
+            android:textColor="@color/accent_red"
+            android:textSize="@dimen/terminal_button_text_size"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 2. MIDDLE: Terminal Output Scroll (Full-Screen Pure Dark Terminal Monitor) -->
+    <ScrollView
+        android:id="@+id/scroll_terminal_output"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="6dp"
+        android:background="@drawable/terminal_pure_window_bg"
+        android:fillViewport="true"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@id/terminal_modifier_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/terminal_header_bar">
+
+        <TextView
+            android:id="@+id/tv_terminal_output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.02"
+            android:lineSpacingMultiplier="1.18"
+            android:textIsSelectable="true"
+            android:textColor="#00FF66"
+            android:textSize="@dimen/terminal_output_text_size"
+            tools:text="Welcome to Termux (Shizuku Privileged Shell)\nshizuku@localhost:/sdcard $ " />
+    </ScrollView>
+
+    <!-- 3. QUICK MODIFIER KEYS BAR (Termux-Style Extra Keys Toolbar) -->
+    <HorizontalScrollView
+        android:id="@+id/terminal_modifier_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#E6050811"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="3dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/terminal_input_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_key_esc"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="40dp"
+                android:paddingHorizontal="5dp"
+                android:text="ESC"
+                android:textColor="@color/accent_orange"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_tab"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="6dp"
+                android:text="TAB ⇥"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_ctrl_c"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="50dp"
+                android:paddingHorizontal="6dp"
+                android:text="CTRL+C"
+                android:textColor="@color/accent_danger"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_ctrl_l"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="48dp"
+                android:paddingHorizontal="6dp"
+                android:text="CLEAR"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_up"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▲"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_down"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▼"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_left"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="◀"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_arrow_right"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="▶"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_pgup"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="4dp"
+                android:text="PGUP"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_pgdn"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="4dp"
+                android:text="PGDN"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_slash"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="/"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_dash"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="-"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_tilde"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="~"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_pipe"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="|"
+                android:textColor="@color/accent_amber"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_redirect"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="&gt;"
+                android:textColor="@color/accent_amber"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_dollar"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="$"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_amp"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="&amp;"
+                android:textColor="@color/accent_cyan"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_semicolon"
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:text=";"
+                android:textColor="@color/accent_purple"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_root"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="56dp"
+                android:paddingHorizontal="6dp"
+                android:text="ROOT /"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_tmp"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="44dp"
+                android:paddingHorizontal="6dp"
+                android:text="TMP"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_key_sdcard"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/btn_cyber_dark"
+                android:minWidth="56dp"
+                android:paddingHorizontal="6dp"
+                android:text="SDCARD"
+                android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- 4. BOTTOM: Command Input Bar (Glassmorphism Input Dock) -->
+    <LinearLayout
+        android:id="@+id/terminal_input_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#CC0A0E18"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/tv_terminal_prompt_prefix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:paddingHorizontal="4dp"
+            android:text="&gt;$"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_terminal_command"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="@dimen/terminal_input_min_height"
+            android:maxLines="3"
+            android:background="@drawable/card_glass_shape"
+            android:fontFamily="monospace"
+            android:hint="Type command (e.g. ls, cd /sdcard, pwd, pm, settings, cat)..."
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="6dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="#4A5568"
+            android:textSize="@dimen/terminal_input_text_size" />
+
+        <Button
+            android:id="@+id/btn_terminal_run"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/terminal_input_min_height"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:paddingHorizontal="10dp"
+            android:text="EXEC ⚡"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="@dimen/terminal_button_text_size"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

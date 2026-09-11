@@ -1,0 +1,183 @@
+# ====================================================================
+# Android & Gradle Build Artifacts
+# ====================================================================
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+*.aar
+*.klib
+*.bundle
+*.apk.idsig
+
+# Runtime Assets & Precompiled JNI Exceptions (MUST BE PRESERVED)
+!**/shizuku/*.dex
+!**/assets/shizuku/*.dex
+!*rish_shizuku.dex
+!**/assets/shizuku/*
+!**/src/main/jniLibs/**/*.so
+
+# Gradle Build Cache, Daemon & Outputs
+.gradle/
+**/build/
+build/
+android/.gradle/
+android/build/
+android/app/build/
+**/reports/
+**/test-results/
+.gradle-build-id
+daemon/
+
+# JaCoCo Code Coverage Data
+*.exec
+*.ec
+build/jacoco/
+**/jacoco/
+
+# Android Baseline Profiles & R8 / ProGuard Dumps
+*.prof
+*.profm
+**/proguard/
+**/mapping/
+mapping.txt
+seeds.txt
+usage.txt
+dump.txt
+
+# ====================================================================
+# Native, NDK, C++ & CMake Build Outputs
+# ====================================================================
+.cxx/
+**/.cxx/
+.externalNativeBuild/
+android/app/.cxx/
+android/app/.externalNativeBuild/
+obj/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.cmake
+compile_commands.json
+.ninja_deps
+.ninja_log
+*.ninja
+
+# Kotlin, Java & Incremental Build Caches
+.kotlin/
+.incremental/
+*.kotlin_module
+*.kotlin_builtins
+
+# ====================================================================
+# Local Configuration, Keys, Properties & Secrets
+# ====================================================================
+local.properties
+*.local.properties
+android/local.properties
+secrets.properties
+gradle.properties.private
+keystore.properties
+signing.properties
+
+# Google Services & Firebase Private Configs
+google-services.json
+GoogleService-Info.plist
+
+# Signing Keys, Keystores & Certificates
+*.jks
+*.keystore
+debug.keystore
+android/debug.keystore
+release.keystore
+*.pepk
+*.p8
+*.p12
+*.key
+*.pk8
+*.pem
+*.cer
+*.der
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# ====================================================================
+# Android Studio, IntelliJ IDEA, VS Code & Editor Caches
+# ====================================================================
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+.navigation/
+captures/
+**/captures/
+.shelf/
+*.hprof
+*.iws
+*.ids
+*.ipr
+*.drawio.bkp
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# NetBeans
+nbproject/private/
+
+# ====================================================================
+# Operating System & Filesystem Artifacts
+# ====================================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux & Text Editors
+*~
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.orig
+*.fuse_hidden*
+.directory
+
+# ====================================================================
+# Logs, Diagnostic Dumps, Crash Reports & AI Assistant Data
+# ====================================================================
+*.log
+hs_err_pid*
+replay_pid*
+core
+core.*
+scratch/
+**/scratch/
+.antigravity/
+.gemini/
+.agents/
+.claude/
+.cursor/
