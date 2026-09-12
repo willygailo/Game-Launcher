@@ -490,6 +490,19 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
+                <TextView
+                    android:id="@+id/tv_live_network_telemetry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/badge_preset_cyber"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="🌐 Telemetry: Detecting device network..."
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
                 <Button
                     android:id="@+id/btn_ping_test"
                     android:layout_width="match_parent"
@@ -632,6 +645,28 @@
                     android:text="🚀 1-TAP 5G / 6G &amp; WI-FI 6/7 TURBO BOOST"
                     android:textColor="#000000"
                     android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ph_telco_boost"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="🇵🇭 PH TELCO SUPERCHARGER (SMART / GLOBE / DITO)"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_flush_dns_cache"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="🧹 FLUSH DNS RESOLVER &amp; PURGE ROUTE CACHE"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
 

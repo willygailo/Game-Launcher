@@ -195,7 +195,7 @@ public final class WebViewBoosterChannel {
                         "--enable-tcp-fastopen " +
                         "--enable-fast-unload " +
                         "--enable-features=CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,WebRtcHWDecoding,WebRtcHWEncoding,AsyncImageDecoding " +
-                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,WebGPU " +
+                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,WebGPU " +
                         "--num-raster-threads=" + rasterThreads + " " +
                         "--enable-drdc " +
                         "--enable-threaded-compositing " +
@@ -218,7 +218,7 @@ public final class WebViewBoosterChannel {
                         "--enable-threaded-compositing " +
                         "--num-raster-threads=2 " +
                         "--enable-features=CanvasOopRasterization,GpuRasterization " +
-                        "--disable-features=Vulkan,UseSkiaRenderer,WebGPU,DrDc,DefaultAngleVulkan " +
+                        "--disable-features=Vulkan,UseSkiaRenderer,WebGPU,DrDc,DefaultAngleVulkan,VulkanFromANGLE " +
                         "--disable-frame-rate-limit " +
                         "--max-gum-fps=60 " +
                         "--js-flags=\"--max-semi-space-size=32 --max-old-space-size=512 --opt\"";

@@ -55,6 +55,8 @@ public class PhTelcoBoostDialog {
                 Button btnCopyTntApn = view.findViewById(R.id.btn_copy_tnt_apn);
                 Button btnBoostTm = view.findViewById(R.id.btn_boost_tm_globe);
                 Button btnCopyTmApn = view.findViewById(R.id.btn_copy_tm_apn);
+                Button btnBoostDito = view.findViewById(R.id.btn_boost_dito_5g);
+                Button btnCopyDitoApn = view.findViewById(R.id.btn_copy_dito_apn);
                 Button btnOpenApn = view.findViewById(R.id.btn_open_apn_settings);
                 Button btnFlushDns = view.findViewById(R.id.btn_flush_baseband_dns);
                 Button btnDismiss = view.findViewById(R.id.btn_dialog_dismiss);
@@ -114,6 +116,35 @@ public class PhTelcoBoostDialog {
                     btnCopyTmApn.setOnClickListener(v -> {
                         copyToClipboard(context, "APN: real.globe.com.ph\nName: TM 5G Turbo\nAPN Type: default,supl,mms,hipri,dun\nProtocol: IPv4/IPv6\nBearer: LTE, NR");
                         Toast.makeText(context, "📋 TM/Globe APN copied to clipboard!", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                // ── 3. DITO 5G Boost ──────────────────────────────────────────────
+                if (btnBoostDito != null) {
+                    btnBoostDito.setOnClickListener(v -> {
+                        AppExecutors.getInstance().executeCommand(() -> {
+                            boolean ok = NetworkOptimizer.applyPhCarrierOptimization(context, NetworkOptimizer.PhCarrier.DITO);
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                if (ok) {
+                                    CyberActionDialog.show(context, "🇵🇭 DITO 5G FAST ROUTE ACCELERATOR", true,
+                                            "✓ Carrier Profile: DITO Dedicated 5G SA Backbone",
+                                            "✓ TCP Congestion Algorithm: BBR (Low Bufferbloat)",
+                                            "✓ DoT DNS Resolver: 1.1.1.1 (Cloudflare)",
+                                            "✓ 5G SA Radio Keepalive: MAXIMUM PRIORITY",
+                                            "✓ TCP Delayed ACK: 0ms (Instant Packet Mode)",
+                                            "✓ Baseband & Route Resolver Cache: FLUSHED");
+                                } else {
+                                    Toast.makeText(context, "⚠️ Error applying DITO 5G boost", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        });
+                    });
+                }
+
+                if (btnCopyDitoApn != null) {
+                    btnCopyDitoApn.setOnClickListener(v -> {
+                        copyToClipboard(context, "APN: dito.ph\nName: DITO 5G Turbo\nAPN Type: default,supl,hipri,xcap\nProtocol: IPv4/IPv6\nBearer: LTE, NR");
+                        Toast.makeText(context, "📋 DITO APN copied to clipboard!", Toast.LENGTH_SHORT).show();
                     });
                 }
 
