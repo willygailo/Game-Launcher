@@ -76,8 +76,15 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.axlebolt.standoff2", new GameInfoSpec("Standoff 2", "FPS", 185));
         KNOWN_GAMES.put("com.netease.bloodstrike", new GameInfoSpec("Blood Strike", "FPS", 185));
         KNOWN_GAMES.put("com.netease.newspike", new GameInfoSpec("Blood Strike (NewSpike)", "FPS", 185));
-        KNOWN_GAMES.put("com.proximabeta.mf.uamo", new GameInfoSpec("Arena Breakout", "Tactical FPS", 185));
-        KNOWN_GAMES.put("com.levelinfinite.deltaforce", new GameInfoSpec("Delta Force", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.proximabeta.mf.uamo", new GameInfoSpec("Arena Breakout (Global)", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.tencent.tmgp.cf", new GameInfoSpec("CrossFire: Legends", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.levelinfinite.deltaforce", new GameInfoSpec("Delta Force (Global)", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.tencent.tmgp.dfm", new GameInfoSpec("Delta Force (CN)", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.proximabeta.deltaforce", new GameInfoSpec("Delta Force Mobile", "Tactical FPS", 185));
+        KNOWN_GAMES.put("com.kurogame.wutheringwaves.bilibili", new GameInfoSpec("Wuthering Waves (Bilibili)", "Action RPG", 185));
+        KNOWN_GAMES.put("com.kurogame.aki.intl", new GameInfoSpec("Wuthering Waves (Intl)", "Action RPG", 185));
+        KNOWN_GAMES.put("com.HoYoverse.Nap", new GameInfoSpec("Zenless Zone Zero (Global)", "Action RPG", 185));
+        KNOWN_GAMES.put("com.miHoYo.Nap", new GameInfoSpec("Zenless Zone Zero (CN)", "Action RPG", 185));
 
         // Valorant Mobile (CN Server Project C & Global)
         KNOWN_GAMES.put("com.tencent.tmgp.projectc", new GameInfoSpec("Valorant Mobile (CN Project C)", "Tactical FPS", 185));

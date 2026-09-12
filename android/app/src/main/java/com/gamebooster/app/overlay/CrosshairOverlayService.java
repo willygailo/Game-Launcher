@@ -144,7 +144,9 @@ public class CrosshairOverlayService extends Service {
     private void removeOverlayView() {
         if (overlayView != null && windowManager != null) {
             try {
-                windowManager.removeView(overlayView);
+                if (overlayView.isAttachedToWindow()) {
+                    windowManager.removeViewImmediate(overlayView);
+                }
             } catch (Exception ignored) {}
         }
         overlayView = null;

@@ -123,7 +123,8 @@ public class AutoGameMonitorService extends Service {
                 if (!isScreenOn) return;
                 checkForegroundApp();
                 if (handler != null && isRunning && isScreenOn) {
-                    handler.postDelayed(this, 2500); // Check every 2.5s
+                    long delay = (lastActiveGamePackage != null) ? 1200L : 3000L;
+                    handler.postDelayed(this, delay);
                 }
             }
         };

@@ -863,7 +863,9 @@ public class FloatingOverlayService extends Service {
         } catch (Exception ignored) {}
         if (windowManager != null && overlayView != null) {
             try {
-                windowManager.removeView(overlayView);
+                if (overlayView.isAttachedToWindow()) {
+                    windowManager.removeViewImmediate(overlayView);
+                }
             } catch (Exception ignored) {}
         }
     }
