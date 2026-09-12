@@ -86,6 +86,33 @@ public final class DevicePerformanceCapabilities {
         return "MAX 185HZ EXTREME";
     }
 
+    public static float getThermalHeadroom(Context context, int forecastSeconds) {
+        if (context == null) return 1.0f;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                android.os.PowerManager pm = (android.os.PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    return pm.getThermalHeadroom(forecastSeconds);
+                }
+            } catch (Exception ignored) {}
+        }
+        return 1.0f;
+    }
+
+    public static boolean isThermalThrottling(Context context) {
+        if (context == null) return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                android.os.PowerManager pm = (android.os.PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    int status = pm.getCurrentThermalStatus();
+                    return status >= android.os.PowerManager.THERMAL_STATUS_SEVERE;
+                }
+            } catch (Exception ignored) {}
+        }
+        return false;
+    }
+
     private static OemFamily detectOemFamily() {
         String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase();
         String brand = Build.BRAND == null ? "" : Build.BRAND.toLowerCase();

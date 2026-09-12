@@ -76,11 +76,21 @@ public final class DisplayCapabilitiesDetector {
         if (defaultDisplay == null) return empty();
 
         Display.Mode[] modes = defaultDisplay.getSupportedModes();
-        WindowManager wmForMetrics = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
-        android.graphics.Rect bounds = wmForMetrics.getCurrentWindowMetrics().getBounds();
         DisplayMetrics metrics = new DisplayMetrics();
-        metrics.widthPixels = bounds.width();
-        metrics.heightPixels = bounds.height();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && wm != null) {
+            android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+            metrics.widthPixels = bounds.width();
+            metrics.heightPixels = bounds.height();
+            ctx.getResources().getDisplayMetrics();
+            metrics.density = ctx.getResources().getDisplayMetrics().density;
+            metrics.densityDpi = ctx.getResources().getDisplayMetrics().densityDpi;
+        } else {
+            try {
+                defaultDisplay.getRealMetrics(metrics);
+            } catch (Exception e) {
+                metrics = ctx.getResources().getDisplayMetrics();
+            }
+        }
 
         List<Integer> rates = new ArrayList<>();
         int maxRate = 185, minRate = 90, currentRate = 185;

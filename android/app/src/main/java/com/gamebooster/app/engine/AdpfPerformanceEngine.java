@@ -87,21 +87,54 @@ public class AdpfPerformanceEngine {
         closeSession();
 
         try {
-            int[] tids = (targetTids != null && targetTids.length > 0)
-                    ? targetTids
-                    : new int[]{Process.myPid()};
+            int[] tids;
+            if (targetTids != null && targetTids.length > 0) {
+                tids = targetTids;
+            } else {
+                tids = discoverGameThreads(Process.myPid());
+            }
 
             Method createSessionMethod = hintManager.getClass().getMethod("createHintSession", int[].class, long.class);
             activeSession = createSessionMethod.invoke(hintManager, tids, currentTargetNanos);
 
             if (activeSession != null) {
-                Log.i(TAG, "ADPF Session active @ " + fps + " FPS (" + currentTargetNanos + " ns target)");
+                Log.i(TAG, "ADPF Session active @ " + fps + " FPS (" + currentTargetNanos + " ns target, threads: " + tids.length + ")");
                 return true;
             }
         } catch (Throwable t) {
             Log.d(TAG, "Could not create ADPF hint session: " + t.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Discovers render and worker thread IDs under /proc/[pid]/task
+     */
+    public static int[] discoverGameThreads(int pid) {
+        java.util.List<Integer> threadList = new java.util.ArrayList<>();
+        threadList.add(pid);
+        try {
+            java.io.File taskDir = new java.io.File("/proc/" + pid + "/task");
+            if (taskDir.exists() && taskDir.isDirectory()) {
+                java.io.File[] tasks = taskDir.listFiles();
+                if (tasks != null) {
+                    for (java.io.File task : tasks) {
+                        try {
+                            int tid = Integer.parseInt(task.getName());
+                            if (tid != pid && !threadList.contains(tid)) {
+                                threadList.add(tid);
+                            }
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+
+        int[] result = new int[threadList.size()];
+        for (int i = 0; i < threadList.size(); i++) {
+            result[i] = threadList.get(i);
+        }
+        return result;
     }
 
     /**

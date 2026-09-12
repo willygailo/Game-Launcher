@@ -41,15 +41,20 @@ public final class AotCompilerEngine {
             this.flag = flag;
             this.label = label;
         }
+
+        public ArtCompilerEngine.CompileFilter toArtFilter() {
+            if (this == SPEED_PROFILE) return ArtCompilerEngine.CompileFilter.SPEED_PROFILE;
+            return ArtCompilerEngine.CompileFilter.SPEED;
+        }
     }
 
     private AotCompilerEngine() {}
 
     /**
-     * Checks if Shizuku privileged access is available for AOT compilation.
+     * Checks if privileged access is available for AOT compilation.
      */
     public static boolean isAvailable() {
-        return ShizukuExecutor.hasShizukuPermission();
+        return ArtCompilerEngine.isCompilerAvailable();
     }
 
     /**
@@ -61,76 +66,61 @@ public final class AotCompilerEngine {
             return;
         }
 
-        final String pkg = packageName.trim();
-        final CompileMode compileMode = mode != null ? mode : CompileMode.SPEED;
+        ArtCompilerEngine.CompileFilter filter = mode != null ? mode.toArtFilter() : ArtCompilerEngine.CompileFilter.SPEED;
 
-        AppExecutors.getInstance().executeCommand(() -> {
-            if (listener != null) {
-                AppExecutors.getInstance().postToMainThread(() ->
-                        listener.onProgress(1, 1, pkg, "⚡ Compiling " + pkg + " with ART dex2oat (" + compileMode.flag + ")..."));
+        ArtCompilerEngine.compilePackageAsync(packageName, filter, new ArtCompilerEngine.CompileCallback() {
+            @Override
+            public void onProgress(String message) {
+                if (listener != null) {
+                    listener.onProgress(1, 1, packageName, message);
+                }
             }
 
-            String cmd = "pm compile -m " + compileMode.flag + " -f " + pkg;
-            String result = ShizukuExecutor.executeShizukuCommand(cmd);
-            boolean success = result != null && (result.contains("Success") || !result.toLowerCase().contains("error"));
-
-            Log.i(TAG, "AOT compile result for " + pkg + ": " + (result != null ? result.trim() : "null"));
-
-            AppExecutors.getInstance().postToMainThread(() -> {
+            @Override
+            public void onComplete(boolean success, String details) {
                 if (listener != null) {
-                    if (success) {
-                        listener.onComplete(1, 0, "✔ Successfully AOT-compiled " + pkg + " to native machine code!");
-                    } else {
-                        listener.onComplete(0, 1, "Failed compiling " + pkg + ": " + (result != null ? result : "Permission denied"));
-                    }
+                    listener.onComplete(success ? 1 : 0, success ? 0 : 1, details);
                 }
-            });
+            }
         });
     }
 
     /**
-     * Compiles a batch of game packages sequentially in the background.
+     * Compiles multiple packages sequentially.
      */
-    public static void compileBatchAsync(List<String> packages, CompileMode mode, CompileListener listener) {
-        if (packages == null || packages.isEmpty()) {
-            if (listener != null) listener.onComplete(0, 0, "No games provided to compile");
+    public static void compileBatchAsync(List<String> packageNames, CompileMode mode, CompileListener listener) {
+        if (packageNames == null || packageNames.isEmpty()) {
+            if (listener != null) listener.onComplete(0, 0, "No packages provided");
             return;
         }
 
-        final List<String> targets = new ArrayList<>(packages);
-        final CompileMode compileMode = mode != null ? mode : CompileMode.SPEED;
+        final ArtCompilerEngine.CompileFilter filter = mode != null ? mode.toArtFilter() : ArtCompilerEngine.CompileFilter.SPEED;
 
         AppExecutors.getInstance().executeCommand(() -> {
+            int total = packageNames.size();
             int success = 0;
             int failed = 0;
-            int total = targets.size();
 
             for (int i = 0; i < total; i++) {
-                String pkg = targets.get(i);
+                String pkg = packageNames.get(i);
                 final int current = i + 1;
 
                 if (listener != null) {
                     AppExecutors.getInstance().postToMainThread(() ->
-                            listener.onProgress(current, total, pkg, "⚡ (" + current + "/" + total + ") Compiling " + pkg + "..."));
+                            listener.onProgress(current, total, pkg, "Compiling " + pkg + " (" + current + "/" + total + ")"));
                 }
 
-                String cmd = "pm compile -m " + compileMode.flag + " -f " + pkg;
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
-                if (res != null && (res.contains("Success") || !res.toLowerCase().contains("error"))) {
-                    success++;
-                } else {
-                    failed++;
-                }
+                boolean ok = ArtCompilerEngine.compilePackageSync(pkg, filter);
+                if (ok) success++;
+                else failed++;
             }
 
             final int finalSuccess = success;
             final int finalFailed = failed;
-            AppExecutors.getInstance().postToMainThread(() -> {
-                if (listener != null) {
-                    listener.onComplete(finalSuccess, finalFailed,
-                            "⚡ Batch AOT Compilation Done: " + finalSuccess + " succeeded, " + finalFailed + " failed.");
-                }
-            });
+            if (listener != null) {
+                AppExecutors.getInstance().postToMainThread(() ->
+                        listener.onComplete(finalSuccess, finalFailed, "Compiled " + finalSuccess + "/" + total + " games successfully"));
+            }
         });
     }
 
