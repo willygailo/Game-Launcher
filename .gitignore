@@ -172,8 +172,8 @@ $RECYCLE.BIN/
 *.log
 hs_err_pid*
 replay_pid*
-core
-core.*
+/core
+core.[0-9]*
 scratch/
 **/scratch/
 .antigravity/
