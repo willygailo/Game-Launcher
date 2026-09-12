@@ -31,12 +31,104 @@ public class ShellExecutor {
                 || vmName.equalsIgnoreCase("ART");
     }
 
+    private static final String[] SU_PATHS = {
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/sbin/su",
+            "/vendor/bin/su",
+            "/data/local/tmp/su",
+            "/apex/com.android.runtime/bin/su",
+            "/system/bin/.ext/.su"
+    };
+
+    private static Boolean sRootAvailable = null;
+    private static final Object ROOT_CHECK_LOCK = new Object();
+
     public static boolean isRootSuAvailable() {
-        // Non-rooted device architecture: strictly non-root, relies only on Shizuku API (UID 2000)
-        return false;
+        if (!isAndroidEnvironment()) {
+            return false;
+        }
+        synchronized (ROOT_CHECK_LOCK) {
+            if (sRootAvailable != null) {
+                return sRootAvailable;
+            }
+            // 1. Check known binary paths
+            boolean suFileExists = false;
+            for (String path : SU_PATHS) {
+                File f = new File(path);
+                if (f.exists() && f.canExecute()) {
+                    suFileExists = true;
+                    break;
+                }
+            }
+
+            // 2. Also try executing 'su -c id' to verify grant from Magisk / KernelSU / APatch
+            try {
+                CommandResult res = executeInternal("su", "id");
+                if (res.isSuccess() && res.stdout.contains("uid=0")) {
+                    sRootAvailable = true;
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+
+            if (suFileExists) {
+                sRootAvailable = true;
+                return true;
+            }
+
+            // 3. Check 'which su'
+            try {
+                CommandResult whichRes = executeInternal("sh", "which su");
+                if (whichRes.isSuccess() && whichRes.stdout.length() > 0 && !whichRes.stdout.contains("not found")) {
+                    sRootAvailable = true;
+                    return true;
+                }
+            } catch (Throwable ignored) {}
+
+            sRootAvailable = false;
+            return false;
+        }
+    }
+
+    public static void invalidateRootCache() {
+        synchronized (ROOT_CHECK_LOCK) {
+            sRootAvailable = null;
+        }
+    }
+
+    public static boolean isPrivilegedAvailable() {
+        return PrivilegeBridgeEngine.isPrivilegedActive();
+    }
+
+    public static CommandResult executeSuCommand(String command) {
+        if (!isAndroidEnvironment()) {
+            return new CommandResult(0, "", "");
+        }
+        if (isRootSuAvailable()) {
+            return executeInternal("su", command);
+        }
+        // Fall back to Shizuku Virtual Root privileged execution
+        if (PrivilegeBridgeEngine.isShizukuVirtualRootReady()) {
+            String out = PrivilegeBridgeEngine.executePrivileged(command);
+            if (out != null && !out.startsWith("ERROR:")) {
+                return new CommandResult(0, out.equals("SUCCESS") ? "" : out, "");
+            } else {
+                return new CommandResult(1, "", out != null ? out : "Virtual root execution failed");
+            }
+        }
+        return executeInternal("su", command);
     }
 
     public static CommandResult executeCommand(String command, boolean preferRoot) {
+        if (!isAndroidEnvironment()) {
+            return new CommandResult(0, "", "");
+        }
+        if (preferRoot && isRootSuAvailable()) {
+            CommandResult suRes = executeSuCommand(command);
+            if (suRes.isSuccess()) {
+                return suRes;
+            }
+        }
         return executeCommand(command);
     }
 

@@ -375,6 +375,16 @@
                 android:value="In-game slide-out gaming edge drawer" />
         </service>
 
+        <service
+            android:name="com.gamebooster.app.overlay.VirtualShoulderKeyService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Virtual shoulder trigger air keys" />
+        </service>
+
         <receiver
             android:name="com.gamebooster.app.services.BootReceiver"
             android:enabled="true"

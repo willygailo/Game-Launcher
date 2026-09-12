@@ -55,6 +55,9 @@ public class CpuGovernorChannel {
         sb.append("echo ").append(allCores).append(" > /dev/cpuset/restricted/cpus 2>/dev/null; ");
 
         // Linux CFS scheduler & uclamp boost for real-time thread dispatching
+        sb.append("echo 0 > /proc/sys/kernel/sched_energy_aware 2>/dev/null; ");
+        sb.append("echo 0 > /sys/devices/system/cpu/eas/enable 2>/dev/null; ");
+        sb.append("echo 0 > /dev/cpu_dma_latency 2>/dev/null; ");
         sb.append("for p in /sys/devices/system/cpu/cpufreq/policy*; do ");
         sb.append("echo performance > \"$p/scaling_governor\" 2>/dev/null; ");
         sb.append("if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");

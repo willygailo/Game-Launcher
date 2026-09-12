@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
+import com.gamebooster.app.booster.BypassChargingController;
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.RamZramChannel;
 import com.gamebooster.app.core.AppExecutors;
@@ -62,6 +63,7 @@ public class GameTurboEdgeService extends Service {
     private View viewTriggerTab;
     private View layoutDrawerPanel;
     private TextView tvDrawerFps;
+    private TextView tvDrawerPing;
 
     private Handler mainHandler;
     private boolean isDrawerOpen = false;
@@ -127,6 +129,8 @@ public class GameTurboEdgeService extends Service {
         Button btnScreenshot = rootEdgeView.findViewById(R.id.btn_drawer_screenshot);
         Button btnTouchLock = rootEdgeView.findViewById(R.id.btn_drawer_touch_lock);
         Button btnResolution = rootEdgeView.findViewById(R.id.btn_drawer_resolution);
+        Button btnBypassCharge = rootEdgeView.findViewById(R.id.btn_drawer_bypass_charge);
+        Button btnShoulderKeys = rootEdgeView.findViewById(R.id.btn_drawer_shoulder_keys);
 
         Button btnHz60 = rootEdgeView.findViewById(R.id.btn_edge_hz_60);
         Button btnHz90 = rootEdgeView.findViewById(R.id.btn_edge_hz_90);
@@ -226,7 +230,7 @@ public class GameTurboEdgeService extends Service {
                         File outDir = new File(picDir, "Screenshots");
                         if (!outDir.exists()) outDir.mkdirs();
                         String shotPath = new File(outDir, "GameTurbo_" + System.currentTimeMillis() + ".png").getAbsolutePath();
-                        ShizukuExecutor.executeShizukuCommand("screencap -p " + shotPath);
+                        com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("screencap -p " + shotPath);
                         AppExecutors.getInstance().postToMainThread(() ->
                                 Toast.makeText(getApplicationContext(), "📸 Screenshot saved to Pictures/Screenshots", Toast.LENGTH_SHORT).show());
                     });
@@ -234,10 +238,19 @@ public class GameTurboEdgeService extends Service {
             });
         }
 
-        // Touch Lock (Notification Guard)
+        // Combat Mode & Touch Response (Fast Peek, Sprint & Hit-Reg)
         if (btnTouchLock != null) {
             btnTouchLock.setOnClickListener(v -> {
-                Toast.makeText(getApplicationContext(), "🔒 Touch / Edge Notification Guard Active", Toast.LENGTH_SHORT).show();
+                boolean active = com.gamebooster.app.booster.CombatEngineChannel.isCombatModeActive();
+                if (!active) {
+                    AppExecutors.getInstance().executeCommand(() ->
+                            com.gamebooster.app.booster.CombatEngineChannel.enableCombatMode(getApplicationContext()));
+                    Toast.makeText(getApplicationContext(), "⚡ Combat Mode ON (1000Hz Fast Peek, Sprint & Hit-Reg Active)", Toast.LENGTH_SHORT).show();
+                } else {
+                    AppExecutors.getInstance().executeCommand(() ->
+                            com.gamebooster.app.booster.CombatEngineChannel.restoreDefaultMode(getApplicationContext()));
+                    Toast.makeText(getApplicationContext(), "⚡ Combat Mode OFF (Restored to System Defaults)", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
@@ -251,6 +264,34 @@ public class GameTurboEdgeService extends Service {
                 } else {
                     ResolutionScalerEngine.resetResolutionSync();
                     Toast.makeText(getApplicationContext(), "🖥️ Restored to 100% Native Resolution", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        // Bypass Charging (Direct Motherboard Power)
+        if (btnBypassCharge != null) {
+            btnBypassCharge.setOnClickListener(v -> {
+                boolean active = BypassChargingController.isBypassCurrentlyActive();
+                if (!active) {
+                    BypassChargingController.enableBypassCharging(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "🔋 Bypass Charging ON (Battery Thermal Shield Active)", Toast.LENGTH_SHORT).show();
+                } else {
+                    BypassChargingController.restoreNormalCharging(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "🔋 Bypass Charging OFF (Standard Charging Restored)", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        // Virtual Shoulder Keys (Tactical Air Triggers)
+        if (btnShoulderKeys != null) {
+            btnShoulderKeys.setOnClickListener(v -> {
+                boolean running = VirtualShoulderKeyService.isRunning();
+                if (!running) {
+                    VirtualShoulderKeyService.start(getApplicationContext(), "default");
+                    Toast.makeText(getApplicationContext(), "🎯 Virtual Shoulder Keys (L1/R1) Active", Toast.LENGTH_SHORT).show();
+                } else {
+                    VirtualShoulderKeyService.stop(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "🎯 Virtual Shoulder Keys Hidden", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -272,6 +313,14 @@ public class GameTurboEdgeService extends Service {
         RealGameFpsMonitor.getInstance().start(this, (currentFps, onePercentLowFps, isRealGameSurface) -> {
             if (tvDrawerFps != null && isDrawerOpen) {
                 tvDrawerFps.setText(currentFps + " FPS (1% Low: " + onePercentLowFps + ")");
+            }
+        });
+
+        // Connect Real-Time Gaming Network Latency Engine
+        GameNetworkLatencyEngine.getInstance().start(telemetry -> {
+            if (tvDrawerPing != null && isDrawerOpen) {
+                tvDrawerPing.setText(telemetry.pingMs + "ms");
+                tvDrawerPing.setTextColor(android.graphics.Color.parseColor(telemetry.quality.hexColor));
             }
         });
     }
@@ -307,6 +356,7 @@ public class GameTurboEdgeService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        GameNetworkLatencyEngine.getInstance().stop();
         if (rootEdgeView != null && windowManager != null) {
             try {
                 windowManager.removeView(rootEdgeView);

@@ -53,7 +53,8 @@ public class HzFpsChannel {
      */
     public static RefreshRateResult forceSetRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
-        if (!ShizukuExecutor.hasShizukuPermission()) {
+        boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+        if (!hasPrivilege) {
             return setRefreshRate(context, requestedHz);
         }
         MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
@@ -69,7 +70,8 @@ public class HzFpsChannel {
     public static RefreshRateResult setRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
 
-        if (ShizukuExecutor.hasShizukuPermission()) {
+        boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+        if (hasPrivilege) {
             MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
             if (r.success) {
                 return RefreshRateResult.success(requestedHz, r.appliedHz);

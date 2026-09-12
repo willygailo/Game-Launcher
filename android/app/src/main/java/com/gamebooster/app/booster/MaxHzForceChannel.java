@@ -44,18 +44,22 @@ public final class MaxHzForceChannel {
             this.message = message;
         }
 
-        /** Shizuku not available or permission denied. */
-        public static ForceResult noShizuku(int hz) {
+        /** Privileged access (Root or Shizuku) not available. */
+        public static ForceResult noPrivilege(int hz) {
             return new ForceResult(false, hz, 0, 0, 0,
-                    "Shizuku not available or permission not granted. "
-                            + "Connect Shizuku to force " + hz + "Hz.");
+                    "Neither Root nor Shizuku available. "
+                            + "Grant Root or connect Shizuku to force " + hz + "Hz.");
+        }
+
+        public static ForceResult noShizuku(int hz) {
+            return noPrivilege(hz);
         }
 
         /** Normal result after firing all commands. */
         public static ForceResult complete(int hz, int success, int fail, int total) {
             String status = fail == 0 ? " ✅" : " (" + fail + " failed)";
             String msg = "Force " + hz + "Hz — " + success + "/" + total
-                    + " Shizuku commands OK" + status;
+                    + " Privileged commands OK" + status;
             return new ForceResult(success > 0, hz, success, fail, total, msg);
         }
     }
@@ -63,16 +67,17 @@ public final class MaxHzForceChannel {
     // ── Public API ────────────────────────────────────────────────────────────────────
 
     /**
-     * Forces the display to {@code targetHz} via Shizuku — NO capability check, NO fallback.
-     * Uses ShizukuExecutor directly to avoid UserService binding delays.
+     * Forces the display to {@code targetHz} via Root or Shizuku — NO capability check, NO fallback.
+     * Uses CommandExecutor directly for instant Root / Shizuku execution.
      *
      * @param targetHz Target refresh rate: 120, 144, 165, or 185
      * @return ForceResult with per-layer success tracking
      */
     public static ForceResult forceApply(int targetHz) {
-        if (!ShizukuExecutor.hasShizukuPermission()) {
-            Log.w(TAG, "forceApply(" + targetHz + "Hz): Shizuku not available, aborting.");
-            return ForceResult.noShizuku(targetHz);
+        boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+        if (!hasPrivilege) {
+            Log.w(TAG, "forceApply(" + targetHz + "Hz): Root or Shizuku not available, aborting.");
+            return ForceResult.noPrivilege(targetHz);
         }
 
         String hz  = String.valueOf(targetHz);
@@ -136,6 +141,8 @@ public final class MaxHzForceChannel {
             // Xiaomi / Redmi / POCO (MIUI / HyperOS)
             ok += run("settings put secure user_refresh_rate " + hz);                total++;
             ok += run("settings put global surface_flinger_peak_refresh_rate " + hz); total++;
+            ok += run("setprop persist.sys.joyose.fps " + hz);                        total++;
+            ok += run("setprop persist.sys.powerkeeper.fps 0");                      total++;
 
         } else if (id.contains("samsung")) {
             // Samsung (OneUI) — mode 2 = Dynamic / High, mode 1 = Standard 60Hz
@@ -149,6 +156,8 @@ public final class MaxHzForceChannel {
                     + (targetHz >= 90 ? "2" : "1"));                                total++;
             ok += run("settings put global realme_screen_refresh_rate " + hz);       total++;
             ok += run("settings put global oppo_screen_refresh_rate " + hz);         total++;
+            ok += run("settings put global refresh_rate_blacklist \"\"");            total++;
+            ok += run("settings put system peak_refresh_rate " + hz);                total++;
 
         } else if (id.contains("asus")) {
             // ASUS ROG Phone / ZenFone
@@ -197,12 +206,12 @@ public final class MaxHzForceChannel {
     // ── Private Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Fires a single Shizuku command directly via ShizukuExecutor (reflection path).
+     * Fires a single privileged command directly via CommandExecutor (Root or Shizuku).
      * Returns 1 on success, 0 on failure/exception.
      */
     private static int run(String command) {
         try {
-            String result = ShizukuExecutor.executeShizukuCommand(command);
+            String result = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(command);
             boolean success = result != null
                     && !result.trim().toLowerCase().startsWith("error")
                     && !result.trim().toLowerCase().contains("permission denial")

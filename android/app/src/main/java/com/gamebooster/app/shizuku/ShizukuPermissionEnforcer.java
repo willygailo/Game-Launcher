@@ -28,8 +28,9 @@ public class ShizukuPermissionEnforcer {
      */
     public static void enforceAllPermissions(Context context) {
         if (context == null) return;
-        if (!ShizukuExecutor.hasShizukuPermission() && !RishManager.isAvailable(context)) {
-            Log.w(TAG, "Cannot enforce permissions: Shizuku is not available or granted.");
+        if (!com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive()
+                && !RishManager.isAvailable(context)) {
+            Log.w(TAG, "Cannot enforce permissions: Neither Root nor Shizuku is available.");
             return;
         }
 
@@ -143,10 +144,10 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("dumpsys deviceidle whitelist +" + pkg + " 2>/dev/null");
             batchCmds.add("cmd deviceidle whitelist +" + pkg + " 2>/dev/null");
 
-            // 6. Fast Single-Batch Execution via Shizuku
-            ShizukuExecutor.executeShizukuCommands(batchCmds);
+            // 6. Fast Single-Batch Execution via Root (UID 0) or Shizuku (UID 2000)
+            com.gamebooster.app.engine.CommandExecutor.executeBatchCommands(batchCmds);
 
-            Log.i(TAG, "All Shizuku launcher system & storage privileges auto-granted successfully!");
+            Log.i(TAG, "All launcher system & storage privileges auto-granted successfully!");
 
         } catch (Throwable t) {
             Log.e(TAG, "Error enforcing Shizuku permissions", t);
@@ -197,7 +198,7 @@ public class ShizukuPermissionEnforcer {
      * Android 14, 15, and 16 (API 34-36) permission compatibility unlocks.
      */
     public static void enforceAndroid16CompatibilityFlags(Context context) {
-        if (context == null || !ShizukuExecutor.hasShizukuPermission()) return;
+        if (context == null || !com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive()) return;
         String pkg = context.getPackageName();
         List<String> cmds = new ArrayList<>();
         cmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VISUAL_USER_SELECTED 2>/dev/null");
@@ -208,7 +209,7 @@ public class ShizukuPermissionEnforcer {
         cmds.add("cmd appops set " + pkg + " USE_EXACT_ALARM allow 2>/dev/null");
         cmds.add("cmd appops set " + pkg + " SCHEDULE_EXACT_ALARM allow 2>/dev/null");
         cmds.add("cmd appops set " + pkg + " HIGH_SAMPLING_RATE_SENSORS allow 2>/dev/null");
-        ShizukuExecutor.executeShizukuCommands(cmds);
+        com.gamebooster.app.engine.CommandExecutor.executeBatchCommands(cmds);
     }
 
     /**
@@ -241,7 +242,7 @@ public class ShizukuPermissionEnforcer {
             cmds.add("cmd game set --fps 185 " + pkg + " 2>/dev/null");
             cmds.add("cmd window set-app-refresh-rate " + pkg + " 185 2>/dev/null");
 
-            ShizukuExecutor.executeShizukuCommands(cmds);
+            com.gamebooster.app.engine.CommandExecutor.executeBatchCommands(cmds);
         } catch (Throwable ignored) {}
     }
 }

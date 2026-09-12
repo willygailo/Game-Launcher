@@ -9,7 +9,13 @@ import java.util.List;
 public class CommandExecutor {
 
     public static EngineMode getActiveEngineMode() {
-        if (ShizukuExecutor.hasShizukuPermission()) {
+        boolean hasRoot = ShellExecutor.isRootSuAvailable();
+        boolean hasShizuku = PrivilegeBridgeEngine.isShizukuVirtualRootReady();
+        if (hasRoot && hasShizuku) {
+            return EngineMode.DUAL_ENGINE;
+        } else if (hasRoot) {
+            return EngineMode.ROOT;
+        } else if (hasShizuku) {
             return EngineMode.SHIZUKU;
         } else {
             return EngineMode.SYSTEM_SETTINGS;
@@ -20,58 +26,14 @@ public class CommandExecutor {
         if (command == null || command.trim().isEmpty()) {
             return "";
         }
-
-        // 1. Try Shizuku direct AIDL Connector first
-        if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            String res = ShizukuUserServiceConnector.getInstance().executeCommand(command);
-            if (res != null) return res;
-        }
-
-        // 2. Try Shizuku reflection fallback
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            String res = ShizukuExecutor.executeShizukuCommand(command);
-            if (res != null) return res;
-        }
-
-        // 3. Fallback to Local Shell Execution
-        ShellExecutor.CommandResult shellRes = ShellExecutor.executeCommand(command);
-        if (!shellRes.isSuccess()) {
-            return "ERROR: " + (shellRes.stderr.isEmpty() ? "Command failed with code " + shellRes.exitCode : shellRes.stderr);
-        }
-        if (!shellRes.stderr.isEmpty()) {
-            return "ERROR: " + shellRes.stderr;
-        }
-        if (shellRes.stdout.isEmpty()) {
-            return "SUCCESS";
-        }
-        return shellRes.stdout;
+        return PrivilegeBridgeEngine.executePrivileged(command);
     }
 
     public static List<String> executeBatchCommands(List<String> commands) {
         if (commands == null || commands.isEmpty()) {
             return Collections.emptyList();
         }
-
-        if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            return ShizukuUserServiceConnector.getInstance().execBatchCommands(commands);
-        } else if (ShizukuExecutor.hasShizukuPermission()) {
-            String combined = String.join("; ", commands);
-            String result = ShizukuExecutor.executeShizukuCommand(combined);
-            if (result == null) {
-                return Collections.singletonList("ERROR: no output");
-            }
-            return Collections.singletonList(result);
-        } else {
-            List<String> results = new java.util.ArrayList<>();
-            for (String cmd : commands) {
-                if (!isSafeCommand(cmd)) {
-                    results.add("ERROR: rejected unsafe command");
-                    continue;
-                }
-                results.add(executeSystemCommand(cmd));
-            }
-            return results;
-        }
+        return PrivilegeBridgeEngine.executePrivilegedBatch(commands);
     }
 
     public static boolean setSystemProperty(String key, String value) {

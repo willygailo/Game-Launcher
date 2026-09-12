@@ -155,10 +155,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private boolean isProgrammaticToggle = false;
 
     private boolean isPrivilegedExecutionAvailable() {
-        return ShizukuManager.isShizukuRunningAndGranted()
-                || ShizukuExecutor.hasShizukuPermission()
-                || ShizukuUserServiceConnector.getInstance().isServiceConnected()
-                || com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable();
+        return com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
     }
 
     private boolean checkShizukuOrRevert(android.widget.CompoundButton button, String featureName) {

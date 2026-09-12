@@ -56,6 +56,13 @@ public final class GameSessionSettings {
                 .getBoolean(KEY_PREVIOUS_DND, false);
     }
 
+    public static String getStoredActivePackage(Context context) {
+        if (context == null) return null;
+        return context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getString(KEY_ACTIVE_PACKAGE, null);
+    }
+
     public static void closeSession(Context context) {
         if (context == null) return;
         context.getApplicationContext()

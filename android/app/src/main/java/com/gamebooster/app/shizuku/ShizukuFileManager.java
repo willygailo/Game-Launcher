@@ -43,10 +43,10 @@ public final class ShizukuFileManager {
     }
 
     /**
-     * Checks whether Shizuku is currently active with full privileged file system permissions.
+     * Checks whether Root or Shizuku is currently active with full privileged file system permissions.
      */
     public static boolean hasFullAccess() {
-        return ShizukuExecutor.hasShizukuPermission();
+        return com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
     }
 
     /**
@@ -62,13 +62,8 @@ public final class ShizukuFileManager {
                 return ShizukuUserServiceConnector.getInstance().fileExists(path);
             }
 
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand("test -e '" + path + "' && echo EXISTS");
-                return res != null && res.contains("EXISTS");
-            } else {
-                String res = CommandExecutor.executeSystemCommand("test -e '" + path + "' && echo EXISTS");
-                return res != null && res.contains("EXISTS");
-            }
+            String res = CommandExecutor.executeSystemCommand("test -e '" + path + "' && echo EXISTS");
+            return res != null && res.contains("EXISTS");
         } catch (Throwable t) {
             Log.w(TAG, "fileExists exception for " + path, t);
             return false;
@@ -84,13 +79,8 @@ public final class ShizukuFileManager {
             File localFile = new File(path);
             if (localFile.isDirectory()) return true;
 
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand("test -d '" + path + "' && echo IS_DIR");
-                return res != null && res.contains("IS_DIR");
-            } else {
-                String res = CommandExecutor.executeSystemCommand("test -d '" + path + "' && echo IS_DIR");
-                return res != null && res.contains("IS_DIR");
-            }
+            String res = CommandExecutor.executeSystemCommand("test -d '" + path + "' && echo IS_DIR");
+            return res != null && res.contains("IS_DIR");
         } catch (Throwable t) {
             Log.w(TAG, "isDirectory exception for " + path, t);
             return false;
@@ -126,7 +116,7 @@ public final class ShizukuFileManager {
 
             String cmd = "mkdir -p '" + dirPath + "' && chmod 777 '" + dirPath + "'";
             if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
+                String res = CommandExecutor.executeSystemCommand(cmd);
                 return res != null && !res.toLowerCase().contains("error");
             } else {
                 dir.mkdirs();
@@ -178,14 +168,14 @@ public final class ShizukuFileManager {
             String writeCmd = "echo '" + b64 + "' | base64 -d > '" + path + "' && chmod " + mode + " '" + path + "'";
 
             if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(writeCmd);
+                String res = CommandExecutor.executeSystemCommand(writeCmd);
                 boolean ok = res != null && !res.toLowerCase().contains("error");
                 if (ok) {
-                    Log.d(TAG, "writeFile via Shizuku SUCCESS: " + path + " (" + bytes.length + " bytes, mode=" + mode + ")");
-                    return FileOpResult.ok(path, "Written " + bytes.length + " bytes via Shizuku");
+                    Log.d(TAG, "writeFile SUCCESS: " + path + " (" + bytes.length + " bytes, mode=" + mode + ")");
+                    return FileOpResult.ok(path, "Written " + bytes.length + " bytes");
                 } else {
-                    Log.w(TAG, "writeFile via Shizuku FAILED: " + path + " -> " + res);
-                    return FileOpResult.fail(path, "Shizuku write failed: " + res);
+                    Log.w(TAG, "writeFile FAILED: " + path + " -> " + res);
+                    return FileOpResult.fail(path, "Write failed: " + res);
                 }
             } else {
                 CommandExecutor.executeSystemCommand(writeCmd);
@@ -220,22 +210,13 @@ public final class ShizukuFileManager {
         }
 
         String moveCmd = "mv -f '" + tmpPath + "' '" + path + "' && chmod " + (chmodMode != null ? chmodMode : "666") + " '" + path + "'";
-        if (hasFullAccess()) {
-            String res = ShizukuExecutor.executeShizukuCommand(moveCmd);
-            boolean ok = res != null && !res.toLowerCase().contains("error");
-            if (!ok) {
-                deleteFile(tmpPath);
-                return FileOpResult.fail(path, "Atomic rename failed: " + res);
-            }
-            return FileOpResult.ok(path, "Written atomically via Shizuku");
-        } else {
-            String res = CommandExecutor.executeSystemCommand(moveCmd);
-            boolean ok = res != null && !res.toLowerCase().contains("error");
-            if (!ok) {
-                deleteFile(tmpPath);
-            }
-            return ok ? FileOpResult.ok(path, "Written atomically via shell") : FileOpResult.fail(path, "Atomic rename failed");
+        String res = CommandExecutor.executeSystemCommand(moveCmd);
+        boolean ok = res != null && !res.toLowerCase().contains("error");
+        if (!ok) {
+            deleteFile(tmpPath);
+            return FileOpResult.fail(path, "Atomic rename failed: " + res);
         }
+        return FileOpResult.ok(path, "Written atomically");
     }
 
     public static FileOpResult writeFileAtomic(String path, String content) {
@@ -250,13 +231,8 @@ public final class ShizukuFileManager {
         try {
             ensureParentDirectory(destDir);
             String cmd = "cp -rf '" + srcDir + "/.' '" + destDir + "/' && chmod -R 777 '" + destDir + "'";
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            } else {
-                String res = CommandExecutor.executeSystemCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "copyDirectory exception: " + srcDir + " -> " + destDir, t);
             return false;
@@ -277,20 +253,16 @@ public final class ShizukuFileManager {
                 }
             }
 
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand("cat '" + path + "'");
-                if (res != null && !res.startsWith("ERROR:")) {
-                    return res;
-                }
-            } else {
-                File f = new File(path);
-                if (f.exists() && f.canRead()) {
+            File f = new File(path);
+            if (f.exists() && f.canRead()) {
+                try {
                     return new String(java.nio.file.Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
-                }
-                String res = CommandExecutor.executeSystemCommand("cat '" + path + "'");
-                if (res != null && !res.startsWith("ERROR:")) {
-                    return res;
-                }
+                } catch (Throwable ignored) {}
+            }
+
+            String res = CommandExecutor.executeSystemCommand("cat '" + path + "'");
+            if (res != null && !res.startsWith("ERROR:")) {
+                return res;
             }
         } catch (Throwable t) {
             Log.w(TAG, "readFile exception for " + path, t);
@@ -307,12 +279,7 @@ public final class ShizukuFileManager {
 
         try {
             String cmd = "base64 -w0 '" + path + "' 2>/dev/null";
-            String res;
-            if (hasFullAccess()) {
-                res = ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                res = CommandExecutor.executeSystemCommand(cmd);
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
             if (res != null && !res.startsWith("ERROR:") && !res.trim().isEmpty()) {
                 return Base64.decode(res.trim(), Base64.DEFAULT);
             }
@@ -339,15 +306,10 @@ public final class ShizukuFileManager {
             String safeReplace = replacement.replace("'", "'\\''");
             String sedCmd = "sed -i 's/" + safeSearch + "/" + safeReplace + "/g' '" + path + "' && chmod 666 '" + path + "'";
 
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(sedCmd);
-                boolean ok = res != null && !res.toLowerCase().contains("error");
-                return ok ? FileOpResult.ok(path, "File edited successfully via Shizuku sed")
-                          : FileOpResult.fail(path, "Sed edit failed: " + res);
-            } else {
-                CommandExecutor.executeSystemCommand(sedCmd);
-                return FileOpResult.ok(path, "File edited via shell sed");
-            }
+            String res = CommandExecutor.executeSystemCommand(sedCmd);
+            boolean ok = res != null && !res.toLowerCase().contains("error");
+            return ok ? FileOpResult.ok(path, "File edited successfully via sed")
+                      : FileOpResult.fail(path, "Sed edit failed: " + res);
         } catch (Throwable t) {
             Log.e(TAG, "editFile exception for " + path, t);
             return FileOpResult.fail(path, "Exception: " + t.getMessage());
@@ -424,7 +386,7 @@ public final class ShizukuFileManager {
         String cmd = "echo '" + b64 + "' | base64 -d > '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
 
         if (hasFullAccess()) {
-            String res = ShizukuExecutor.executeShizukuCommand(cmd);
+            String res = CommandExecutor.executeSystemCommand(cmd);
             boolean ok = res != null && !res.toLowerCase().contains("error");
             return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath)
                       : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
@@ -468,15 +430,10 @@ public final class ShizukuFileManager {
         String b64 = Base64.encodeToString(textToAppend.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
         String cmd = "echo '" + b64 + "' | base64 -d >> '" + path + "' && chmod 666 '" + path + "'";
 
-        if (hasFullAccess()) {
-            String res = ShizukuExecutor.executeShizukuCommand(cmd);
-            return res != null && !res.toLowerCase().contains("error")
-                    ? FileOpResult.ok(path, "Appended text to " + path)
-                    : FileOpResult.fail(path, "Append failed: " + res);
-        } else {
-            CommandExecutor.executeSystemCommand(cmd);
-            return FileOpResult.ok(path, "Appended text via shell");
-        }
+        String res = CommandExecutor.executeSystemCommand(cmd);
+        return res != null && !res.toLowerCase().contains("error")
+                ? FileOpResult.ok(path, "Appended text to " + path)
+                : FileOpResult.fail(path, "Append failed: " + res);
     }
 
     /**
@@ -487,13 +444,8 @@ public final class ShizukuFileManager {
         try {
             ensureParentDirectory(dest);
             String cmd = "cp -f '" + src + "' '" + dest + "' && chmod 666 '" + dest + "'";
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            } else {
-                String res = CommandExecutor.executeSystemCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "copyFile exception: " + src + " -> " + dest, t);
             return false;
@@ -507,13 +459,8 @@ public final class ShizukuFileManager {
         if (path == null || path.trim().isEmpty()) return false;
         try {
             String cmd = "rm -rf '" + path + "'";
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            } else {
-                String res = CommandExecutor.executeSystemCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "deletePath exception for " + path, t);
             return false;
@@ -545,13 +492,8 @@ public final class ShizukuFileManager {
         if (path == null || mode == null) return false;
         try {
             String cmd = "chmod " + mode + " '" + path + "'";
-            if (hasFullAccess()) {
-                String res = ShizukuExecutor.executeShizukuCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            } else {
-                String res = CommandExecutor.executeSystemCommand(cmd);
-                return res != null && !res.toLowerCase().contains("error");
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "setPermissions exception for " + path, t);
             return false;
@@ -567,12 +509,7 @@ public final class ShizukuFileManager {
 
         try {
             String cmd = "ls -1 '" + dirPath + "'";
-            String res;
-            if (hasFullAccess()) {
-                res = ShizukuExecutor.executeShizukuCommand(cmd);
-            } else {
-                res = CommandExecutor.executeSystemCommand(cmd);
-            }
+            String res = CommandExecutor.executeSystemCommand(cmd);
 
             if (res != null && !res.startsWith("ERROR:")) {
                 String[] lines = res.split("\n");

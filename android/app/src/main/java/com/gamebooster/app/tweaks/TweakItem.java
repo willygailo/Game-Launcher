@@ -58,4 +58,27 @@ public class TweakItem {
     public void setApplied(boolean applied) {
         isApplied = applied;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TweakItem tweakItem = (TweakItem) o;
+        return id != null && id.equals(tweakItem.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "TweakItem{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", category=" + category +
+                ", isApplied=" + isApplied +
+                '}';
+    }
 }

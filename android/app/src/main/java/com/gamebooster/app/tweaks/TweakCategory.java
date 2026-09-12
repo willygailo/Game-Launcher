@@ -21,4 +21,14 @@ public enum TweakCategory {
     public String getDisplayName() {
         return title;
     }
+
+    public static TweakCategory fromName(String name) {
+        if (name == null || name.trim().isEmpty()) return ALL;
+        for (TweakCategory cat : values()) {
+            if (cat.name().equalsIgnoreCase(name.trim())) {
+                return cat;
+            }
+        }
+        return ALL;
+    }
 }

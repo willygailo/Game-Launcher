@@ -212,7 +212,14 @@ public final class GameManagerLauncher {
                             + "am start --activity-brought-to-front -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p " + pkg + " 2>/dev/null || "
                             + "monkey -p " + pkg + " -c android.intent.category.LAUNCHER 1 2>/dev/null";
 
-                    if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    if (ShellExecutor.isRootSuAvailable()) {
+                        ShellExecutor.CommandResult rootRes = ShellExecutor.executeSuCommand(startCmd);
+                        if (rootRes.isSuccess()) {
+                            elevatedSuccess = true;
+                        }
+                    }
+
+                    if (!elevatedSuccess && ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                         String out = ShizukuUserServiceConnector.getInstance().executeCommand(startCmd);
                         if (out != null && !out.contains("Error") && !out.contains("Exception")) {
                             elevatedSuccess = true;
@@ -264,12 +271,13 @@ public final class GameManagerLauncher {
                     Log.w(TAG, "Refresh rate lock warning: " + t.getMessage());
                 }
 
-                // Apply GPU Game Driver & Display isolation without unstable overrides
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.executeShizukuCommands(
+                boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+                if (hasPrivilege) {
+                    CommandExecutor.executeBatchCommands(java.util.Arrays.asList(
                         "cmd game mode performance " + pkg + " 2>/dev/null",
                         "cmd window set-app-refresh-rate " + pkg + " " + safeFps + " 2>/dev/null",
                         "cmd game set --fps " + safeFps + " " + pkg + " 2>/dev/null",
+                        "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
                         "settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null",
                         "setprop debug.sf.fps_limit " + safeFps,
                         "setprop persist.sys.NV_FPSLIMIT " + safeFps,
@@ -277,12 +285,15 @@ public final class GameManagerLauncher {
                         "setprop debug.hwui.render_dirty_regions false",
                         "setprop debug.egl.hw 1",
                         "setprop debug.sf.hw 1"
-                    );
+                    ));
                 }
 
                 // Full Game Session: Native C++ config injection, hardware masking, locks
                 try {
                     GameManagerSessionEngine.beginSession(appContext, pkg);
+                    com.gamebooster.app.engine.VulkanRayTracingEngine.applyVulkanOptimizations(pkg);
+                    com.gamebooster.app.booster.BypassChargingController.onGameStarted(appContext);
+                    com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
                     com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);

@@ -257,7 +257,7 @@ public class ShizukuConnectionManager {
 
     /** Background reconnection loop: exponential backoff, auto-rebinds. */
     private void scheduleReconnect() {
-        if (!enabled) return;
+        if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
             return;
         }

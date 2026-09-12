@@ -59,6 +59,19 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/tv_drawer_ping"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/badge_neon_cyan"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="1dp"
+                android:text="🟢 25ms"
+                android:textColor="@color/accent_cyan"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
@@ -163,6 +176,40 @@
                 android:background="@drawable/btn_cyber_dark"
                 android:text="🖥️ SCALE"
                 android:textColor="@color/accent_amber"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Thermal Shield & Tactical Triggers Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <!-- Bypass Charging (Battery Thermal Shield) -->
+            <Button
+                android:id="@+id/btn_drawer_bypass_charge"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🔋 BYPASS"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <!-- Virtual Shoulder Keys (Air Triggers) -->
+            <Button
+                android:id="@+id/btn_drawer_shoulder_keys"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cyber_dark"
+                android:text="🎯 TRIGGERS"
+                android:textColor="@color/accent_cyan"
                 android:textSize="10sp"
                 android:textStyle="bold" />
         </LinearLayout>

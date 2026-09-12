@@ -8,6 +8,7 @@ import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TweakManagerRepository {
@@ -16,7 +17,13 @@ public class TweakManagerRepository {
         void onBatchComplete(int appliedCount);
     }
 
+    public interface OnBatchProgressListener {
+        void onProgress(int current, int total, String tweakTitle);
+    }
+
     private static final List<TweakItem> TWEAKS = new ArrayList<>();
+    private static final java.util.Map<String, TweakItem> TWEAK_MAP = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<TweakCategory, List<TweakItem>> CATEGORY_MAP = new java.util.EnumMap<>(TweakCategory.class);
 
     static {
         // =========================================================================
@@ -884,22 +891,33 @@ public class TweakManagerRepository {
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
+
+        // Index all tweaks for O(1) lookups by ID and Category
+        for (TweakCategory cat : TweakCategory.values()) {
+            CATEGORY_MAP.put(cat, new ArrayList<>());
+        }
+        for (TweakItem tweak : TWEAKS) {
+            TWEAK_MAP.put(tweak.getId(), tweak);
+            List<TweakItem> catList = CATEGORY_MAP.get(tweak.getCategory());
+            if (catList != null) {
+                catList.add(tweak);
+            }
+        }
     }
 
     public static List<TweakItem> getAllTweaks() {
-        return TWEAKS;
+        return Collections.unmodifiableList(TWEAKS);
+    }
+
+    public static TweakItem getTweakById(String id) {
+        if (id == null) return null;
+        return TWEAK_MAP.get(id);
     }
 
     public static List<TweakItem> getTweaksByCategory(TweakCategory category) {
-        if (category == TweakCategory.ALL) return TWEAKS;
-
-        List<TweakItem> filtered = new ArrayList<>();
-        for (TweakItem tweak : TWEAKS) {
-            if (tweak.getCategory() == category) {
-                filtered.add(tweak);
-            }
-        }
-        return filtered;
+        if (category == null || category == TweakCategory.ALL) return Collections.unmodifiableList(TWEAKS);
+        List<TweakItem> list = CATEGORY_MAP.get(category);
+        return list != null ? Collections.unmodifiableList(list) : Collections.emptyList();
     }
 
     public static void initializeStates(Context context) {
@@ -928,31 +946,7 @@ public class TweakManagerRepository {
      */
     private static String executePrivilegedCommand(String command) {
         if (command == null || command.trim().isEmpty()) return "SUCCESS";
-
-        // Tier 1: Direct Shizuku AIDL UserService
-        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            String res = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeCommand(command);
-            if (res != null) return res;
-        }
-
-        // Tier 1 Fallback: Shizuku reflection / newProcess
-        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            String res = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(command);
-            if (res != null) return res;
-        }
-
-        // Tier 2: Standalone Rish
-        if (com.gamebooster.app.shizuku.RishManager.isRishAvailable()) {
-            try {
-                String rishOut = com.gamebooster.app.shizuku.RishManager.executeRishCommand(null, command);
-                if (rishOut != null && !rishOut.startsWith("ERROR")) {
-                    return rishOut;
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        // Tier 3: Standard CommandExecutor fallback
-        return CommandExecutor.executeSystemCommand(command);
+        return com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(command);
     }
 
     /**
@@ -960,23 +954,7 @@ public class TweakManagerRepository {
      */
     private static void executePrivilegedBatch(List<String> commands) {
         if (commands == null || commands.isEmpty()) return;
-
-        // Tier 1: Direct Shizuku AIDL UserService
-        if (com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().executeBatchCommands(commands);
-            return;
-        }
-
-        // Tier 1 Fallback: ShizukuExecutor list execution
-        if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-            com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(commands);
-            return;
-        }
-
-        // Tier 2/3: Rish, Root su, or sequential execution
-        for (String cmd : commands) {
-            executePrivilegedCommand(cmd);
-        }
+        com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivilegedBatch(commands);
     }
 
     public static boolean applyTweak(TweakItem tweak) {
@@ -1048,6 +1026,10 @@ public class TweakManagerRepository {
     }
 
     public static void applyAllSupportedTweaksAsync(Context context, OnBatchCompleteListener listener) {
+        applyAllSupportedTweaksAsync(context, null, listener);
+    }
+
+    public static void applyAllSupportedTweaksAsync(Context context, OnBatchProgressListener progressListener, OnBatchCompleteListener completeListener) {
         if (!com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission() && com.gamebooster.app.shizuku.ShizukuExecutor.isShizukuAvailable()) {
             try {
                 rikka.shizuku.Shizuku.requestPermission(1001);
@@ -1055,9 +1037,119 @@ public class TweakManagerRepository {
         }
 
         AppExecutors.getInstance().executeCommand(() -> {
-            int appliedCount = applyAllSupportedTweaks(context);
-            if (listener != null) {
-                AppExecutors.getInstance().postToMainThread(() -> listener.onBatchComplete(appliedCount));
+            int total = TWEAKS.size();
+            int current = 0;
+            List<String> batchCmds = new ArrayList<>();
+
+            for (TweakItem tweak : TWEAKS) {
+                current++;
+                if (progressListener != null) {
+                    final int c = current;
+                    AppExecutors.getInstance().postToMainThread(() ->
+                            progressListener.onProgress(c, total, tweak.getTitle()));
+                }
+                batchCmds.add(tweak.getApplyCommand());
+                tweak.setApplied(true);
+                if (context != null) {
+                    TweakPreferences.saveTweakState(context, tweak.getId(), true);
+                }
+            }
+
+            // Neutralize aggressive kill flags and safeguard background multitasking
+            batchCmds.add("settings put global always_finish_activities 0");
+            batchCmds.add("settings put global background_process_limit -1");
+            batchCmds.add("settings put global cached_apps_freezer disabled");
+
+            // Neutralize lingering mock combat/cheat properties
+            batchCmds.add("setprop persist.sys.game.damage_boost 0; setprop persist.sys.game.crit_rate 0; setprop persist.vendor.game.damage_mult 1.00; setprop persist.sys.game.headshot_boost 0; setprop persist.sys.game.bullet_spread 1; setprop persist.sys.game.target_lock 0; setprop persist.sys.game.lowest_hp_lock 0; setprop persist.sys.game.drone_view 0; setprop persist.sys.game.fov_scale 100; setprop persist.sys.game.fast_cooldown 0; setprop persist.sys.game.cdr_ratio 0.00");
+
+            executePrivilegedBatch(batchCmds);
+
+            try {
+                com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+            } catch (Throwable ignored) {}
+
+            final int appliedCount = total;
+            if (completeListener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> completeListener.onBatchComplete(appliedCount));
+            }
+        });
+    }
+
+    public static void applyCategoryTweaksAsync(Context context, TweakCategory category, OnBatchProgressListener progressListener, OnBatchCompleteListener completeListener) {
+        if (category == null || category == TweakCategory.ALL) {
+            applyAllSupportedTweaksAsync(context, progressListener, completeListener);
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            List<TweakItem> list = CATEGORY_MAP.get(category);
+            int total = list != null ? list.size() : 0;
+            int current = 0;
+            List<String> batchCmds = new ArrayList<>();
+
+            if (list != null) {
+                for (TweakItem tweak : list) {
+                    current++;
+                    if (progressListener != null) {
+                        final int c = current;
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                progressListener.onProgress(c, total, tweak.getTitle()));
+                    }
+                    batchCmds.add(tweak.getApplyCommand());
+                    tweak.setApplied(true);
+                    if (context != null) {
+                        TweakPreferences.saveTweakState(context, tweak.getId(), true);
+                    }
+                }
+            }
+
+            if (!batchCmds.isEmpty()) {
+                executePrivilegedBatch(batchCmds);
+            }
+
+            final int appliedCount = total;
+            if (completeListener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> completeListener.onBatchComplete(appliedCount));
+            }
+        });
+    }
+
+    public static void revertCategoryTweaksAsync(Context context, TweakCategory category, OnBatchProgressListener progressListener, OnBatchCompleteListener completeListener) {
+        if (category == null || category == TweakCategory.ALL) {
+            revertAllTweaksAsync(context, completeListener);
+            return;
+        }
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            List<TweakItem> list = CATEGORY_MAP.get(category);
+            int total = list != null ? list.size() : 0;
+            int current = 0;
+            List<String> batchCmds = new ArrayList<>();
+
+            if (list != null) {
+                for (TweakItem tweak : list) {
+                    current++;
+                    if (progressListener != null) {
+                        final int c = current;
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                progressListener.onProgress(c, total, tweak.getTitle()));
+                    }
+                    batchCmds.add(tweak.getRevertCommand());
+                    tweak.setApplied(false);
+                    if (context != null) {
+                        TweakPreferences.saveTweakState(context, tweak.getId(), false);
+                    }
+                }
+            }
+
+            if (!batchCmds.isEmpty()) {
+                executePrivilegedBatch(batchCmds);
+            }
+
+            final int revertedCount = total;
+            if (completeListener != null) {
+                AppExecutors.getInstance().postToMainThread(() -> completeListener.onBatchComplete(revertedCount));
             }
         });
     }

@@ -136,8 +136,8 @@ public class RealGameFpsMonitor {
             double computedJitterMs = 0.2;
             boolean isRealSurface = false;
 
-            // Tier 1: Try SurfaceFlinger Latency query via Shizuku
-            if (ShizukuExecutor.hasShizukuPermission()) {
+            // Tier 1: Try SurfaceFlinger Latency query via Root or Shizuku Virtual Root
+            if (com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive()) {
                 try {
                     String pkg;
                     synchronized (lock) {
@@ -248,7 +248,7 @@ public class RealGameFpsMonitor {
 
         // Auto-detect foreground package if not set
         if (pkg == null) {
-            String focusDump = ShizukuExecutor.executeShizukuCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
+            String focusDump = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
             if (focusDump != null && !focusDump.isEmpty()) {
                 for (String line : focusDump.split("\n")) {
                     int slash = line.indexOf('/');
@@ -267,7 +267,7 @@ public class RealGameFpsMonitor {
         }
 
         // Query active layer list from SurfaceFlinger
-        String listOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --list");
+        String listOutput = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("dumpsys SurfaceFlinger --list");
         if (listOutput == null || listOutput.isEmpty() || listOutput.startsWith("ERROR")) {
             // Fallback to raw package name
             return pkg;
@@ -298,14 +298,13 @@ public class RealGameFpsMonitor {
             if (priority > bestPriority) {
                 bestPriority = priority;
                 bestLayer = layer;
-                if (priority == 100) break; // Found exact game surface layer
             }
         }
 
         if (bestLayer != null) {
             cachedLayerName = bestLayer;
-            lastLayerResolveTime = now;
             lastResolvedPkg = pkg;
+            lastLayerResolveTime = now;
             return bestLayer;
         }
 
@@ -322,7 +321,7 @@ public class RealGameFpsMonitor {
         }
 
         // Query SurfaceFlinger latency for the identified layer
-        String latencyOutput = ShizukuExecutor.executeShizukuCommand("dumpsys SurfaceFlinger --latency \"" + layerName + "\"");
+        String latencyOutput = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("dumpsys SurfaceFlinger --latency \"" + layerName + "\"");
         if (latencyOutput == null || latencyOutput.isEmpty() || latencyOutput.startsWith("ERROR")) {
             cachedLayerName = null; // Invalidate cache on failure
             return null;

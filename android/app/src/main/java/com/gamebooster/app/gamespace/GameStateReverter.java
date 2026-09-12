@@ -109,6 +109,13 @@ public final class GameStateReverter {
         try { GameSpaceDndManager.setGamingDndMode(context, previousDnd); } catch (Throwable t) { Log.w(TAG, "DND restore failed", t); }
         try { com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(context); } catch (Throwable t) { Log.w(TAG, "FocusMode unsuspend failed", t); }
         try { com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync(); } catch (Throwable t) { Log.w(TAG, "Resolution reset failed", t); }
+        try { com.gamebooster.app.booster.BypassChargingController.onGameStopped(context); } catch (Throwable ignored) {}
+        try {
+            String activePkg = GameSessionSettings.getStoredActivePackage(context);
+            if (activePkg != null) {
+                com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionEnd(context, activePkg);
+            }
+        } catch (Throwable ignored) {}
 
         GameSessionSettings.closeSession(context);
         Log.i(TAG, "revertToBaseline done: " + hz + "Hz — " + report.message);

@@ -3,6 +3,7 @@ package com.gamebooster.app.gamemanager;
 import android.content.Context;
 import android.util.Log;
 
+import com.gamebooster.app.booster.CombatEngineChannel;
 import com.gamebooster.app.booster.CpuGovernorChannel;
 import com.gamebooster.app.booster.GpuTweaksChannel;
 import com.gamebooster.app.booster.HzFpsChannel;
@@ -150,6 +151,7 @@ public final class UnifiedGameEngineOrchestrator {
                 }
                 GpuTweaksChannel.setGameDriverMode(true);
                 TouchLatencyChannel.enableUltraTouchResponse();
+                CombatEngineChannel.enableCombatMode(appContext);
                 ThermalChannel.setThermalOverride(true);
                 if (appContext != null) {
                     NetworkOptimizer.optimizeAllDataAndWifi(appContext);

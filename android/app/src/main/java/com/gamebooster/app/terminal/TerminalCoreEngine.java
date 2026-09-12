@@ -44,6 +44,7 @@ public class TerminalCoreEngine {
     private final List<TerminalScriptPreset> presetScripts = new ArrayList<>();
     private volatile String currentWorkingDir = resolveInitialDirectory();
     private final AtomicReference<java.lang.Process> activeLocalProcess = new AtomicReference<>(null);
+    private volatile boolean isVirtualRootSession = false;
 
     // Standard shell commands for tab completion
     private static final List<String> COMMON_COMMANDS = Arrays.asList(
@@ -107,7 +108,13 @@ public class TerminalCoreEngine {
      * Returns the dynamic bash-like user prompt string in Termux format.
      */
     public String getPromptUserPrefix() {
-        if (ShizukuExecutor.hasShizukuPermission()) {
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            return "root@localhost";
+        }
+        if (isVirtualRootSession) {
+            return "root@shizuku";
+        }
+        if (ShizukuExecutor.hasShizukuPermission() || com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady()) {
             return "shizuku@localhost";
         }
         int uid = Process.myUid();
@@ -115,6 +122,9 @@ public class TerminalCoreEngine {
     }
 
     public String getPromptSymbol() {
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable() || isVirtualRootSession) {
+            return "#";
+        }
         return "$";
     }
 
@@ -221,8 +231,28 @@ public class TerminalCoreEngine {
             }
         }
 
+        // 5.5 Handle Virtual Root Interactive Toggle (su / root / sudo su / exit)
+        if ("su".equalsIgnoreCase(trimmed) || "su -".equalsIgnoreCase(trimmed) || "su root".equalsIgnoreCase(trimmed) || "root".equalsIgnoreCase(trimmed)) {
+            if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                isVirtualRootSession = true;
+                return new TerminalResult("\u001B[1;32m[Superuser Shell Granted: Native Root UID 0]\u001B[0m", 0, currentWorkingDir);
+            } else if (com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady()) {
+                isVirtualRootSession = true;
+                return new TerminalResult("\u001B[1;32m[⚡ Virtual Root Granted: Shizuku Privileged ADB Shell UID 2000]\u001B[0m\n\u001B[36mInteractive Superuser Prompt Active (#). Running elevated system commands.\u001B[0m", 0, currentWorkingDir);
+            } else {
+                return new TerminalResult("\u001B[31mPermission denied: Neither Root SU nor Shizuku API is active.\u001B[0m", 1, currentWorkingDir);
+            }
+        }
+        if ("exit".equalsIgnoreCase(trimmed) && isVirtualRootSession && !com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            isVirtualRootSession = false;
+            return new TerminalResult("\u001B[33m[Exited Virtual Root Session]\u001B[0m", 0, currentWorkingDir);
+        }
+
         // 6. Resolve script execution if script name is typed directly
         String execCommandStr = trimmed;
+        if (!com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            execCommandStr = com.gamebooster.app.engine.PrivilegeBridgeEngine.unwrapSuCommand(execCommandStr);
+        }
         if (trimmed.endsWith(".sh")) {
             String scriptName = trimmed.startsWith("./") ? trimmed.substring(2) : trimmed;
             File localScript = new File(currentWorkingDir, scriptName);
@@ -245,6 +275,19 @@ public class TerminalCoreEngine {
                 execCommandStr + "; " +
                 "echo \"__PWD__:$PWD\"; " +
                 "echo \"__EXIT__:$?\"";
+
+        // Try Elevated Root (UID 0) Execution
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            try {
+                com.gamebooster.app.engine.ShellExecutor.CommandResult rootRes =
+                        com.gamebooster.app.engine.ShellExecutor.executeSuCommand(shellScript);
+                if (rootRes.isSuccess() && !rootRes.stdout.isEmpty()) {
+                    return parseShellOutput(rootRes.stdout);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Root execution failed, trying Shizuku: " + t.getMessage());
+            }
+        }
 
         // Try Elevated Shizuku Multi-Tier Execution (UserService / Shizuku.newProcess / rish)
         if (ShizukuExecutor.hasShizukuPermission()) {
@@ -284,10 +327,26 @@ public class TerminalCoreEngine {
             }
         }
 
-        // Try elevated Shizuku shell listing first (vital for / , /data, /system, /vendor, /data/local/tmp)
+        String shellLsCmd = "export PATH=/system/bin:/system/xbin:/vendor/bin:/data/local/tmp:$PATH; cd \"" + currentWorkingDir + "\" 2>/dev/null || cd /; " + cmd + "; echo \"__PWD__:$PWD\"; echo \"__EXIT__:$?\"";
+
+        // Try elevated Root shell listing first
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            try {
+                com.gamebooster.app.engine.ShellExecutor.CommandResult rootRes =
+                        com.gamebooster.app.engine.ShellExecutor.executeSuCommand(shellLsCmd);
+                if (rootRes.isSuccess() && !rootRes.stdout.isEmpty()) {
+                    TerminalResult parsed = parseShellOutput(rootRes.stdout);
+                    if (parsed.output != null && !parsed.output.trim().isEmpty()) {
+                        String formatted = colorizeLsOutput(parsed.output, targetPath);
+                        return new TerminalResult(formatted, parsed.exitCode, parsed.workingDirectory);
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Try elevated Shizuku shell listing (vital for / , /data, /system, /vendor, /data/local/tmp)
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String shellLsCmd = "export PATH=/system/bin:/system/xbin:/vendor/bin:/data/local/tmp:$PATH; cd \"" + currentWorkingDir + "\" 2>/dev/null || cd /; " + cmd + "; echo \"__PWD__:$PWD\"; echo \"__EXIT__:$?\"";
                 String rawOutput = ShizukuExecutor.executeShizukuCommand(shellLsCmd);
                 if (rawOutput != null && !rawOutput.trim().isEmpty() && !rawOutput.startsWith("ERROR:")) {
                     TerminalResult parsed = parseShellOutput(rawOutput);
