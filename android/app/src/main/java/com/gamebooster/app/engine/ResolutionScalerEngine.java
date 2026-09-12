@@ -112,16 +112,9 @@ public final class ResolutionScalerEngine {
             try {
                 WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
                 if (wm != null) {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                        android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
-                        if (sNativeWidth <= 0) sNativeWidth = Math.min(bounds.width(), bounds.height());
-                        if (sNativeHeight <= 0) sNativeHeight = Math.max(bounds.width(), bounds.height());
-                    } else {
-                        DisplayMetrics dm = new DisplayMetrics();
-                        wm.getDefaultDisplay().getRealMetrics(dm);
-                        if (sNativeWidth <= 0) sNativeWidth = Math.min(dm.widthPixels, dm.heightPixels);
-                        if (sNativeHeight <= 0) sNativeHeight = Math.max(dm.widthPixels, dm.heightPixels);
-                    }
+                    android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+                    if (sNativeWidth <= 0) sNativeWidth = Math.min(bounds.width(), bounds.height());
+                    if (sNativeHeight <= 0) sNativeHeight = Math.max(bounds.width(), bounds.height());
                     if (sNativeDensity <= 0) {
                         sNativeDensity = context.getResources().getConfiguration().densityDpi;
                     }

@@ -99,9 +99,7 @@ public class VirtualShoulderKeyService extends Service {
         currentScheme = ShoulderKeySchemeManager.getSchemeForPackage(this, currentPackage);
 
         int triggerSize = dpToPx(56);
-        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
+        int overlayType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
         // L1 Setup
         paramsL1 = new WindowManager.LayoutParams(

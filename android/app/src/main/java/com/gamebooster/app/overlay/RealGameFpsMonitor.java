@@ -81,15 +81,7 @@ public class RealGameFpsMonitor {
             this.isRunning = true;
 
             try {
-                Display display = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                    display = context.getDisplay();
-                } else {
-                    WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                    if (wm != null) {
-                        display = wm.getDefaultDisplay();
-                    }
-                }
+                Display display = context.getDisplay();
                 if (display != null) {
                     float deviceRefreshRate = display.getRefreshRate();
                     if (deviceRefreshRate > 0) {

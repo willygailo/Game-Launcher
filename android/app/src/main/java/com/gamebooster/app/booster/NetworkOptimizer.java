@@ -163,24 +163,16 @@ public class NetworkOptimizer {
             try {
                 ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 if (cm != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        Network activeNet = cm.getActiveNetwork();
-                        if (activeNet != null) {
-                            NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
-                            if (caps != null) {
-                                if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                                    wifiActive = true;
-                                }
-                                if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                                    cellularActive = true;
-                                }
+                    Network activeNet = cm.getActiveNetwork();
+                    if (activeNet != null) {
+                        NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
+                        if (caps != null) {
+                            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                                wifiActive = true;
                             }
-                        }
-                    } else {
-                        android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
-                        if (ni != null && ni.isConnected()) {
-                            wifiActive = (ni.getType() == ConnectivityManager.TYPE_WIFI);
-                            cellularActive = (ni.getType() == ConnectivityManager.TYPE_MOBILE);
+                            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                                cellularActive = true;
+                            }
                         }
                     }
                 }

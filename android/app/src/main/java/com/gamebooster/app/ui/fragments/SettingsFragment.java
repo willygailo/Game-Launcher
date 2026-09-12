@@ -1682,14 +1682,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 try {
                     android.net.ConnectivityManager cm = (android.net.ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
                     if (cm != null) {
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                            android.net.Network activeNet = cm.getActiveNetwork();
-                            android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
-                            isWifi = caps != null && caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI);
-                        } else {
-                            android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
-                            isWifi = ni != null && ni.getType() == android.net.ConnectivityManager.TYPE_WIFI;
-                        }
+                        android.net.Network activeNet = cm.getActiveNetwork();
+                        android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
+                        isWifi = caps != null && caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI);
                     }
                 } catch (Throwable ignored) {}
 
