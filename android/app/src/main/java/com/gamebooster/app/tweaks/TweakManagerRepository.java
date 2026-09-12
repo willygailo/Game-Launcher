@@ -892,6 +892,46 @@ public class TweakManagerRepository {
                 true
         ));
 
+        TWEAKS.add(new TweakItem(
+                "vulkan_raytracing_pipeline",
+                "Hardware Vulkan Ray Tracing & Driver Extension Pipeline",
+                "Configures SkiaGL render backends, latch_unsignaled Vulkan pipelines, and binds MediaTek MT6878 / Adreno Game Driver",
+                "setprop debug.hwui.renderer skiagl; setprop debug.renderengine.backend skiagl; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop vendor.gpu.vulkan_version_override 1.3; setprop ro.hardware.vulkan 1",
+                "setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"; setprop debug.sf.latch_unsignaled 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "bypass_charging_shield",
+                "Direct Motherboard Power & Battery Thermal Shield",
+                "Bypasses battery charging circuit during matches (cmd battery unplug & sysfs) to eliminate battery heat and thermal throttling",
+                "cmd battery unplug; dumpsys battery unplug; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 0 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi",
+                "cmd battery reset; dumpsys battery reset; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 1 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "network_game_ping_optimizer",
+                "Dual-Channel Low-Latency Gaming Ping & Jitter Acceleration",
+                "Optimizes TCP gaming buffer sockets, TCP BBR congestion protocol, and disables Wi-Fi background roaming scans",
+                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null; cmd wifi set-scan-always-available 0 2>/dev/null",
+                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; cmd wifi set-scan-always-available 1 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "no_limit_hardware_overdrive",
+                "No-Limit Extreme Hardware Overdrive (185 FPS + Max Clocks)",
+                "Locks all CPU clusters scaling_min_freq to max, performance governor, Adreno/Mali GPU boost, SurfaceFlinger 185Hz, and thermal trip point immunity",
+                "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; setprop debug.adreno.turbo 1; setprop debug.mali.force_gpu_boost 1; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; service call SurfaceFlinger 1035 i32 185",
+                "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; setprop debug.adreno.turbo 0; setprop debug.mali.force_gpu_boost 0; setprop debug.sf.fps_limit 60",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
         // Index all tweaks for O(1) lookups by ID and Category
         for (TweakCategory cat : TweakCategory.values()) {
             CATEGORY_MAP.put(cat, new ArrayList<>());

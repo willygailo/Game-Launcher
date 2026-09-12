@@ -214,6 +214,18 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- No-Limit Hardware Overdrive (185 FPS + Max Clocks) -->
+        <Button
+            android:id="@+id/btn_drawer_no_limit"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/btn_cyber_cyan"
+            android:text="🔥 NO LIMIT OVERDRIVE (185 FPS)"
+            android:textColor="@color/bg_dark_pure"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
         <!-- Quick Hz Switcher -->
         <TextView
             android:layout_width="wrap_content"

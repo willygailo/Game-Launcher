@@ -294,6 +294,7 @@ public final class GameManagerLauncher {
                     com.gamebooster.app.engine.VulkanRayTracingEngine.applyVulkanOptimizations(pkg);
                     com.gamebooster.app.booster.BypassChargingController.onGameStarted(appContext);
                     com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
+                    com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(appContext, pkg, safeFps);
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
                     com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);

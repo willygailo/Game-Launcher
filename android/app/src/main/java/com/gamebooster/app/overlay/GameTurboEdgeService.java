@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat;
 import com.gamebooster.app.R;
 import com.gamebooster.app.booster.BypassChargingController;
 import com.gamebooster.app.booster.MaxHzForceChannel;
+import com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine;
 import com.gamebooster.app.booster.RamZramChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.ResolutionScalerEngine;
@@ -293,6 +294,15 @@ public class GameTurboEdgeService extends Service {
                     VirtualShoulderKeyService.stop(getApplicationContext());
                     Toast.makeText(getApplicationContext(), "🎯 Virtual Shoulder Keys Hidden", Toast.LENGTH_SHORT).show();
                 }
+            });
+        }
+
+        // No-Limit Extreme Overdrive (185 FPS + Max CPU/GPU Clocks + Thermal Defeat)
+        Button btnNoLimit = rootEdgeView.findViewById(R.id.btn_drawer_no_limit);
+        if (btnNoLimit != null) {
+            btnNoLimit.setOnClickListener(v -> {
+                NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(getApplicationContext(), null, 185);
+                Toast.makeText(getApplicationContext(), "🔥 NO-LIMIT OVERDRIVE ACTIVE (185 FPS + Max Clocks)", Toast.LENGTH_SHORT).show();
             });
         }
 
