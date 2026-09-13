@@ -482,201 +482,33 @@
                     android:letterSpacing="0.03" />
 
                 <TextView
-                    android:id="@+id/tv_game_ping_ms"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="📡 Game Server Ping: Not Tested"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
-
-                <TextView
                     android:id="@+id/tv_live_network_telemetry"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/badge_preset_cyber"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="5dp"
+                    android:paddingVertical="6dp"
                     android:text="🌐 Telemetry: Detecting device network..."
                     android:textColor="@color/accent_cyan"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btn_ping_test"
+                <Switch
+                    android:id="@+id/switch_tcp_bbr_buffers"
                     android:layout_width="match_parent"
-                    android:layout_height="42dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="📡 TEST GAME SERVER LATENCY"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_open_game_radar"
-                    android:layout_width="match_parent"
-                    android:layout_height="42dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="📡 OPEN LIVE GAME SERVER RADAR"
-                    android:textColor="#080B11"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="1-Tap Gaming DNS Latency Booster:"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_dns_cloudflare"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/btn_cyber_cyan"
-                        android:padding="0dp"
-                        android:text="⚡ 1.1.1.1"
-                        android:textColor="#000000"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_dns_google"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🌐 8.8.8.8"
-                        android:textColor="@color/text_primary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_dns_default"
-                        android:layout_width="0dp"
-                        android:layout_height="42dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="🔄 DEFAULT"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_network_active_mode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Active Network Mode: ⚡ Dual Data + Wi-Fi Multipath"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <!-- Network Mode Selection Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_net_data_only"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="📱 DATA ONLY\n5G / 4G LTE"
-                        android:textColor="@color/accent_cyan"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_net_wifi_only"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="2dp"
-                        android:background="@drawable/btn_cyber_dark"
-                        android:padding="0dp"
-                        android:text="📶 WI-FI ONLY\nWi-Fi 6/7 Lock"
-                        android:textColor="@color/accent_neon_green"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btn_net_dual"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="3dp"
-                        android:background="@drawable/btn_cyber_cyan"
-                        android:padding="0dp"
-                        android:text="⚡ DUAL\nData + Wi-Fi"
-                        android:textColor="#000000"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btn_optimize_network_all"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="🚀 1-TAP 5G / 6G &amp; WI-FI 6/7 TURBO BOOST"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_ph_telco_boost"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🇵🇭 PH TELCO SUPERCHARGER (SMART / GLOBE / DITO)"
-                    android:textColor="@color/accent_neon_green"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_flush_dns_cache"
-                    android:layout_width="match_parent"
-                    android:layout_height="42dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🧹 FLUSH DNS RESOLVER &amp; PURGE ROUTE CACHE"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-
+                    android:text="🚀 Kernel TCP BBR &amp; 8MB Socket Windows"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
 
                 <Switch
                     android:id="@+id/switch_5g_6g_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="🚀 5G / 6G NR Mobile Data Accelerator (TCP BBR &amp; 8MB Window)"
+                    android:layout_marginTop="8dp"
+                    android:text="📱 5G / 6G NR Mobile Data Accelerator (Anti-Sleep Radio)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -685,7 +517,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="📶 Wi-Fi 6/6E/7 Ultra-Low Latency &amp; Anti-Lag Lock"
+                    android:text="📶 Wi-Fi 6/6E/7 Ultra-Low Latency Lock (No AP Throttling)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -699,11 +531,47 @@
                     android:textSize="13sp" />
 
                 <Switch
+                    android:id="@+id/switch_dns_cloudflare"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="⚡ Cloudflare 1.1.1.1 Gaming DNS-over-TLS (DoT)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_dns_google"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🌐 Google 8.8.8.8 Gaming DNS-over-TLS (DoT)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_ph_telco_supercharger"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🇵🇭 PH Telco Supercharger (Smart / Globe / DITO QoS)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_auto_dns_flush"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🧹 Auto DNS Resolver &amp; Route Cache Flush"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
                     android:id="@+id/switch_tethering_hw"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Tethering Hardware Acceleration (Hotspot Offload)"
+                    android:text="🔥 Tethering Hardware Acceleration (Hotspot Offload)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -712,12 +580,190 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Force Full GNSS Raw Measurements"
+                    android:text="🛰️ Force Full GNSS Raw Measurements (Continuous Sync)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <!-- TWEAKS SECTION REMOVED FOR CLEAN & FAST APK SETTINGS -->
+            <!-- CARD 4.5: SYSTEM & KERNEL TWEAKS REPOSITORY -->
+            <LinearLayout
+                android:id="@+id/card_settings_tweaks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_glass_shape"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.03"
+                        android:text="⚡ SYSTEM &amp; KERNEL TWEAKS"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_settings_tweaks_badge_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/badge_preset_cyber"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"
+                        android:text="⚡ 87 Available"
+                        android:textColor="@color/accent_neon_green"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Fine-grained hardware, GPU rendering, kernel, touch and network optimization toggles"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Search Input Bar -->
+                <EditText
+                    android:id="@+id/et_settings_tweaks_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/search_bar_cyber_bg"
+                    android:fontFamily="monospace"
+                    android:hint="🔍 Search tweaks (e.g. vulkan, bbr, touch)..."
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="#64748B"
+                    android:textSize="12sp" />
+
+                <!-- Category Filter Chips -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_tweak_filter_all"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/btn_cyber_cyan"
+                            android:paddingHorizontal="12dp"
+                            android:text="ALL"
+                            android:textColor="#000000"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_tweak_filter_cpugpu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="12dp"
+                            android:text="CPU &amp; GPU"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_tweak_filter_touch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="12dp"
+                            android:text="TOUCH &amp; DISPLAY"
+                            android:textColor="@color/accent_neon_green"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_tweak_filter_shizuku"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="12dp"
+                            android:text="SYSTEM &amp; ADB"
+                            android:textColor="@color/text_primary"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btn_tweak_filter_network"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:background="@drawable/btn_cyber_dark"
+                            android:paddingHorizontal="12dp"
+                            android:text="NETWORK"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Batch Actions -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_settings_tweaks_apply_all"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_cyber_cyan"
+                        android:text="⚡ 1-TAP APPLY ALL"
+                        android:textColor="#000000"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_settings_tweaks_reset_all"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_cyber_dark"
+                        android:text="🔄 RESET TO STOCK"
+                        android:textColor="@color/accent_red"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Tweaks List RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_settings_tweaks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+            </LinearLayout>
 
             <!-- CARD SPOOF: HARDWARE DEVICE SPOOFING -->
             <LinearLayout

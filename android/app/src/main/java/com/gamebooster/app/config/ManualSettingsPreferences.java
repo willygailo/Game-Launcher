@@ -43,6 +43,39 @@ public class ManualSettingsPreferences {
     private static final String KEY_TETHER_HW = "pref_tether_hw";
     private static final String KEY_FORCE_GNSS = "pref_force_gnss";
     private static final String KEY_GAMING_DNS = "pref_gaming_dns";
+    private static final String KEY_TCP_BBR_BUFFERS = "pref_tcp_bbr_buffers";
+    private static final String KEY_PH_TELCO_SUPERCHARGER = "pref_ph_telco_supercharger";
+    private static final String KEY_AUTO_DNS_FLUSH = "pref_auto_dns_flush";
+
+    public static void setTcpBbrBuffersEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_TCP_BBR_BUFFERS, enabled).apply();
+    }
+
+    public static boolean isTcpBbrBuffersEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_TCP_BBR_BUFFERS, true);
+    }
+
+    public static void setPhTelcoSuperchargerEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_PH_TELCO_SUPERCHARGER, enabled).apply();
+    }
+
+    public static boolean isPhTelcoSuperchargerEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_PH_TELCO_SUPERCHARGER, false);
+    }
+
+    public static void setAutoDnsFlushEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_AUTO_DNS_FLUSH, enabled).apply();
+    }
+
+    public static boolean isAutoDnsFlushEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_AUTO_DNS_FLUSH, true);
+    }
 
     public static void setGamingDns(Context context, String dnsMode) {
         if (context == null) return;

@@ -116,15 +116,27 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchEsportsAudio;
     private Switch switchAntiLog;
 
-    // Network Mode UI
-    private TextView tvNetworkActiveMode;
+    // Network Settings UI (Pure Manual ON/OFF Switches - Android 13 to 16)
     private TextView tvLiveNetworkTelemetry;
-    private Button btnNetDataOnly;
-    private Button btnNetWifiOnly;
-    private Button btnNetDual;
-    private Button btnDnsCloudflare;
-    private Button btnDnsGoogle;
-    private Button btnDnsDefault;
+    private Switch switchTcpBbrBuffers;
+    private Switch switchDnsCloudflare;
+    private Switch switchDnsGoogle;
+    private Switch switchPhTelcoSupercharger;
+    private Switch switchAutoDnsFlush;
+
+    // Card 4.5: System & Kernel Tweaks UI
+    private TextView tvSettingsTweaksBadgeCount;
+    private EditText etSettingsTweaksSearch;
+    private RecyclerView rvSettingsTweaks;
+    private com.gamebooster.app.ui.adapters.TweaksAdapter settingsTweaksAdapter;
+    private Button btnTweakFilterAll;
+    private Button btnTweakFilterCpuGpu;
+    private Button btnTweakFilterTouch;
+    private Button btnTweakFilterShizuku;
+    private Button btnTweakFilterNetwork;
+    private Button btnSettingsTweaksApplyAll;
+    private Button btnSettingsTweaksResetAll;
+    private com.gamebooster.app.tweaks.TweakCategory currentTweakCategory = com.gamebooster.app.tweaks.TweakCategory.ALL;
 
     // Device Spoofing UI
     private Switch switchDeviceSpoof;
@@ -790,210 +802,53 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-
-        // Card 4: Network & Latency Optimization
-        TextView tvGamePingMs = view.findViewById(R.id.tv_game_ping_ms);
+        // Card 4: Network & Latency Optimization (Pure Manual ON/OFF Toggles - Android 13 to 16)
         tvLiveNetworkTelemetry = view.findViewById(R.id.tv_live_network_telemetry);
-        Button btnPingTest = view.findViewById(R.id.btn_ping_test);
-        btnDnsCloudflare = view.findViewById(R.id.btn_dns_cloudflare);
-        btnDnsGoogle = view.findViewById(R.id.btn_dns_google);
-        btnDnsDefault = view.findViewById(R.id.btn_dns_default);
-        Button btnOptimizeNetworkAll = view.findViewById(R.id.btn_optimize_network_all);
-        Button btnPhTelcoBoost = view.findViewById(R.id.btn_ph_telco_boost);
-        Button btnFlushDnsCache = view.findViewById(R.id.btn_flush_dns_cache);
+        switchTcpBbrBuffers = view.findViewById(R.id.switch_tcp_bbr_buffers);
         switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
         switchWifiLowLatency = view.findViewById(R.id.switch_wifi_low_latency);
         switchDualDataWifi = view.findViewById(R.id.switch_dual_data_wifi);
+        switchDnsCloudflare = view.findViewById(R.id.switch_dns_cloudflare);
+        switchDnsGoogle = view.findViewById(R.id.switch_dns_google);
+        switchPhTelcoSupercharger = view.findViewById(R.id.switch_ph_telco_supercharger);
+        switchAutoDnsFlush = view.findViewById(R.id.switch_auto_dns_flush);
         switchTetheringHw = view.findViewById(R.id.switch_tethering_hw);
         switchForceGnss = view.findViewById(R.id.switch_force_gnss);
 
         if (getContext() != null) {
             isProgrammaticToggle = true;
+            if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(ManualSettingsPreferences.isTcpBbrBuffersEnabled(getContext()));
             if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
             if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
             if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
+            if (switchPhTelcoSupercharger != null) switchPhTelcoSupercharger.setChecked(ManualSettingsPreferences.isPhTelcoSuperchargerEnabled(getContext()));
+            if (switchAutoDnsFlush != null) switchAutoDnsFlush.setChecked(ManualSettingsPreferences.isAutoDnsFlushEnabled(getContext()));
             if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
             if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
+
+            updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
+            updateLiveTelemetryUi();
             isProgrammaticToggle = false;
         }
 
-        tvNetworkActiveMode = view.findViewById(R.id.tv_network_active_mode);
-        btnNetDataOnly = view.findViewById(R.id.btn_net_data_only);
-        btnNetWifiOnly = view.findViewById(R.id.btn_net_wifi_only);
-        btnNetDual = view.findViewById(R.id.btn_net_dual);
-
-        if (getContext() != null) {
-            String currentNetMode = ManualSettingsPreferences.getNetworkMode(getContext());
-            updateNetworkModeUi(currentNetMode);
-            updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
-            updateLiveTelemetryUi();
-        }
-
-        if (btnNetDataOnly != null) {
-            btnNetDataOnly.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("5G/4G Mobile Data Mode")) return;
-                ManualSettingsPreferences.setNetworkMode(getContext(), "data_only");
-                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), false);
-                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), false);
-
-                isProgrammaticToggle = true;
-                if (switch5g6gData != null) switch5g6gData.setChecked(true);
-                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(false);
-                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(false);
-                isProgrammaticToggle = false;
-
-                updateNetworkModeUi("data_only");
-                Toast.makeText(getContext(), "📱 5G / 4G Data Only Mode Enabled (Wi-Fi Disconnected)", Toast.LENGTH_SHORT).show();
+        if (switchTcpBbrBuffers != null) {
+            switchTcpBbrBuffers.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "TCP BBR & 8MB Buffers")) return;
+                ManualSettingsPreferences.setTcpBbrBuffersEnabled(getContext(), isChecked);
                 AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.DATA_ONLY);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded()) updateLiveTelemetryUi();
-                    });
-                });
-            });
-        }
-
-        if (btnNetWifiOnly != null) {
-            btnNetWifiOnly.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Wi-Fi Only Low-Latency Lock")) return;
-                ManualSettingsPreferences.setNetworkMode(getContext(), "wifi_only");
-                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), false);
-                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), false);
-
-                isProgrammaticToggle = true;
-                if (switch5g6gData != null) switch5g6gData.setChecked(false);
-                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
-                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(false);
-                isProgrammaticToggle = false;
-
-                updateNetworkModeUi("wifi_only");
-                Toast.makeText(getContext(), "📶 Wi-Fi Only Low-Latency Lock Enabled", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.WIFI_ONLY);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded()) updateLiveTelemetryUi();
-                    });
-                });
-            });
-        }
-
-        if (btnNetDual != null) {
-            btnNetDual.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Dual Data + Wi-Fi Aggregation")) return;
-                ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
-                ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-                ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
-
-                isProgrammaticToggle = true;
-                if (switch5g6gData != null) switch5g6gData.setChecked(true);
-                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
-                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
-                isProgrammaticToggle = false;
-
-                updateNetworkModeUi("dual");
-                Toast.makeText(getContext(), "⚡ Dual Data + Wi-Fi Multipath Aggregation Enabled", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.setNetworkMode(getContext(), NetworkOptimizer.NetworkMode.DUAL_DATA_WIFI);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded()) updateLiveTelemetryUi();
-                    });
-                });
-            });
-        }
-
-        if (btnOptimizeNetworkAll != null) {
-            btnOptimizeNetworkAll.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("5G/6G & Wi-Fi Turbo Boost")) return;
-                btnOptimizeNetworkAll.setEnabled(false);
-                btnOptimizeNetworkAll.setText("⏳ OPTIMIZING 5G/6G & WI-FI 6/7...");
-                Toast.makeText(getContext(), "🚀 Applying Full Low-Latency Network Pipeline...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.optimizeAllDataAndWifi(getContext().getApplicationContext());
-                    ManualSettingsPreferences.setNetworkMode(getContext(), "dual");
-                    ManualSettingsPreferences.setGamingDns(getContext(), NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
-                    ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-                    ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                    ManualSettingsPreferences.setDualDataWifiEnabled(getContext(), true);
-                    ManualSettingsPreferences.setTetherHwEnabled(getContext(), true);
-                    ManualSettingsPreferences.setForceGnssEnabled(getContext(), true);
-
-                    // Re-test ping automatically after applying
-                    try { Thread.sleep(600); } catch (Throwable ignored) {}
-                    NetworkOptimizer.PingStats stats = NetworkOptimizer.measureRealPingMs();
-
+                    if (isChecked) {
+                        NetworkOptimizer.optimizeTcpBuffers();
+                    }
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            btnOptimizeNetworkAll.setEnabled(true);
-                            btnOptimizeNetworkAll.setText("🚀 1-TAP 5G / 6G & WI-FI 6/7 TURBO BOOST");
-                            isProgrammaticToggle = true;
-                            if (switch5g6gData != null) switch5g6gData.setChecked(true);
-                            if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
-                            if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
-                            if (switchTetheringHw != null) switchTetheringHw.setChecked(true);
-                            if (switchForceGnss != null) switchForceGnss.setChecked(true);
-                            isProgrammaticToggle = false;
-                            updateNetworkModeUi("dual");
-                            updateDnsUiState(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
                             updateLiveTelemetryUi();
-
-                            if (tvGamePingMs != null && stats.reachable) {
-                                tvGamePingMs.setText("📡 Game Server Ping: " + stats.avgLatencyMs + " ms " + stats.quality + " (Jitter: " + stats.jitterMs + "ms)");
-                                tvGamePingMs.setTextColor(stats.qualityColor);
-                            }
-
-                            com.gamebooster.app.ui.dialogs.CyberActionDialog.show(getContext(),
-                                    "🚀 5G / 6G & WI-FI 6/7 TURBO BOOST LOCKED", true,
-                                    "✓ Dual Multipath: 5G/4G + Wi-Fi Aggregated",
-                                    "✓ Linux Kernel: TCP BBR Congestion Control Active",
-                                    "✓ Buffer Windows: 8MB Burst Transfer Enforced",
-                                    "✓ Wi-Fi 6/7 Driver: Hardware Low-Latency Lock Active",
-                                    "✓ Private DNS: 1.1.1.1 Cloudflare DoT Enforced",
-                                    "✓ Mobile Cellular: SA/NSA Radio Anti-Sleep Enabled",
-                                    "✓ Resolver Cache: Flushed & Route Refreshed",
-                                    stats.reachable ? ("✓ Live Ping: " + stats.avgLatencyMs + "ms (" + stats.jitterMs + "ms jitter)") : "✓ Live Ping: Route Optimized");
+                            Toast.makeText(getContext(), isChecked ? "🚀 TCP BBR & 8MB Buffers Enforced" : "TCP Normal Buffers Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
             });
         }
-
-        if (btnPhTelcoBoost != null) {
-            btnPhTelcoBoost.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.ui.dialogs.PhTelcoBoostDialog.show(getContext());
-                }
-            });
-        }
-
-        if (btnFlushDnsCache != null) {
-            btnFlushDnsCache.setOnClickListener(v -> {
-                btnFlushDnsCache.setEnabled(false);
-                Toast.makeText(getContext(), "🧹 Purging DNS & Route Cache...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.flushDnsCache();
-                    NetworkOptimizer.PingStats stats = NetworkOptimizer.measureRealPingMs();
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (isAdded() && getContext() != null) {
-                            btnFlushDnsCache.setEnabled(true);
-                            updateLiveTelemetryUi();
-                            if (tvGamePingMs != null && stats.reachable) {
-                                tvGamePingMs.setText("📡 Game Server Ping: " + stats.avgLatencyMs + " ms " + stats.quality + " (Jitter: " + stats.jitterMs + "ms)");
-                                tvGamePingMs.setTextColor(stats.qualityColor);
-                            }
-                            Toast.makeText(getContext(), "🧹 DNS & Route Cache Purged! Route Reset.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            });
-        }
-
 
         if (switch5g6gData != null) {
             switch5g6gData.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -1005,7 +860,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             updateLiveTelemetryUi();
-                            Toast.makeText(getContext(), isChecked ? "⚡ 5G/6G Data Accelerator Enabled" : "5G/6G Data Accelerator Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "📱 5G/6G Data Accelerator Enabled" : "5G/6G Data Accelerator Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1015,7 +870,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchWifiLowLatency != null) {
             switchWifiLowLatency.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Wi-Fi Low-Latency Anti-Lag")) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Wi-Fi Low-Latency Lock")) return;
                 ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), isChecked);
                 if (isChecked) {
                     com.gamebooster.app.engine.NativeFrameworkBridge.acquireLowLatencyWifiLock(getContext());
@@ -1027,7 +882,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             updateLiveTelemetryUi();
-                            Toast.makeText(getContext(), isChecked ? "⚡ Wi-Fi Low-Latency Anti-Lag Enabled" : "Wi-Fi Normal Mode Restored", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "📶 Wi-Fi Low-Latency Lock Active" : "Wi-Fi Normal Mode Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1044,53 +899,82 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             updateLiveTelemetryUi();
-                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Data + Wi-Fi Aggregation Enabled" : "Dual Data Aggregation Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Dual Multipath Aggregation Active" : "Dual Multipath Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
             });
         }
 
-        if (btnPingTest != null && tvGamePingMs != null) {
-            btnPingTest.setOnClickListener(v -> {
-                tvGamePingMs.setText("📡 Testing Live Game Server Latency...");
-                btnPingTest.setEnabled(false);
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.PingStats stats = NetworkOptimizer.measureRealPingMs();
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnPingTest.setEnabled(true);
-                        if (stats.reachable && stats.avgLatencyMs > 0) {
-                            tvGamePingMs.setText("📡 Game Server Ping: " + stats.avgLatencyMs + " ms " + stats.quality + " (Jitter: " + stats.jitterMs + "ms)");
-                            tvGamePingMs.setTextColor(stats.qualityColor);
-                        } else {
-                            tvGamePingMs.setText("📡 Game Server Ping: TIMEOUT / NO INTERNET");
-                            tvGamePingMs.setTextColor(0xFFEF4444);
-                        }
-                    });
-                });
-            });
-        }
-
-        Button btnOpenGameRadar = view.findViewById(R.id.btn_open_game_radar);
-        if (btnOpenGameRadar != null) {
-            btnOpenGameRadar.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.ui.dialogs.GameServerRadarDialog.show(getContext());
+        if (switchDnsCloudflare != null) {
+            switchDnsCloudflare.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked) {
+                    if (!checkShizukuOrRevert(buttonView, "Cloudflare 1.1.1.1 Gaming DNS")) return;
+                    isProgrammaticToggle = true;
+                    if (switchDnsGoogle != null) switchDnsGoogle.setChecked(false);
+                    isProgrammaticToggle = false;
+                    applyGamingDns(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1, "⚡ 1.1.1.1 Cloudflare Gaming DNS Applied");
+                } else {
+                    if (switchDnsGoogle == null || !switchDnsGoogle.isChecked()) {
+                        applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored");
+                    }
                 }
             });
         }
 
-        if (btnDnsCloudflare != null) {
-            btnDnsCloudflare.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1, "⚡ 1.1.1.1 Cloudflare Gaming DNS Applied"));
+        if (switchDnsGoogle != null) {
+            switchDnsGoogle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked) {
+                    if (!checkShizukuOrRevert(buttonView, "Google 8.8.8.8 Gaming DNS")) return;
+                    isProgrammaticToggle = true;
+                    if (switchDnsCloudflare != null) switchDnsCloudflare.setChecked(false);
+                    isProgrammaticToggle = false;
+                    applyGamingDns(NetworkOptimizer.DnsMode.GOOGLE_8_8_8_8, "🌐 8.8.8.8 Google Gaming DNS Applied");
+                } else {
+                    if (switchDnsCloudflare == null || !switchDnsCloudflare.isChecked()) {
+                        applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored");
+                    }
+                }
+            });
         }
-        if (btnDnsGoogle != null) {
-            btnDnsGoogle.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.GOOGLE_8_8_8_8, "🌐 8.8.8.8 Google Gaming DNS Applied"));
+
+        if (switchPhTelcoSupercharger != null) {
+            switchPhTelcoSupercharger.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "PH Telco Supercharger")) return;
+                ManualSettingsPreferences.setPhTelcoSuperchargerEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        NetworkOptimizer.applyPhCarrierOptimization(getContext(), NetworkOptimizer.PhCarrier.TNT_SMART);
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            updateLiveTelemetryUi();
+                            Toast.makeText(getContext(), isChecked ? "🇵🇭 PH Telco Supercharger Active (Smart / Globe / DITO)" : "PH Telco Supercharger Disabled", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
         }
-        if (btnDnsDefault != null) {
-            btnDnsDefault.setOnClickListener(v -> applyGamingDns(NetworkOptimizer.DnsMode.SYSTEM_DEFAULT, "🔄 System Default DNS Restored"));
+
+        if (switchAutoDnsFlush != null) {
+            switchAutoDnsFlush.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                ManualSettingsPreferences.setAutoDnsFlushEnabled(getContext(), isChecked);
+                if (isChecked) {
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        NetworkOptimizer.flushDnsCache();
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (isAdded() && getContext() != null) {
+                                updateLiveTelemetryUi();
+                                Toast.makeText(getContext(), "🧹 DNS & Route Cache Flushed", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                }
+            });
         }
 
         if (switchTetheringHw != null) {
@@ -1102,7 +986,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     NetworkOptimizer.setTetheringHwAcceleration(isChecked);
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "⚡ Tethering Hardware Offload Enabled" : "Tethering Offload Disabled", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), isChecked ? "🔥 Tethering Hardware Offload Enabled" : "Tethering Offload Disabled", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });
@@ -1125,7 +1009,98 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        // Card 4.5: System & Kernel Tweaks Repository
+        tvSettingsTweaksBadgeCount = view.findViewById(R.id.tv_settings_tweaks_badge_count);
+        etSettingsTweaksSearch = view.findViewById(R.id.et_settings_tweaks_search);
+        rvSettingsTweaks = view.findViewById(R.id.rv_settings_tweaks);
+        btnTweakFilterAll = view.findViewById(R.id.btn_tweak_filter_all);
+        btnTweakFilterCpuGpu = view.findViewById(R.id.btn_tweak_filter_cpugpu);
+        btnTweakFilterTouch = view.findViewById(R.id.btn_tweak_filter_touch);
+        btnTweakFilterShizuku = view.findViewById(R.id.btn_tweak_filter_shizuku);
+        btnTweakFilterNetwork = view.findViewById(R.id.btn_tweak_filter_network);
+        btnSettingsTweaksApplyAll = view.findViewById(R.id.btn_settings_tweaks_apply_all);
+        btnSettingsTweaksResetAll = view.findViewById(R.id.btn_settings_tweaks_reset_all);
 
+        if (getContext() != null) {
+            com.gamebooster.app.tweaks.TweakManagerRepository.initializeStates(getContext());
+        }
+
+        if (rvSettingsTweaks != null && getContext() != null) {
+            rvSettingsTweaks.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvSettingsTweaks.setHasFixedSize(false);
+            rvSettingsTweaks.setNestedScrollingEnabled(false);
+            settingsTweaksAdapter = new com.gamebooster.app.ui.adapters.TweaksAdapter(
+                    getContext(),
+                    com.gamebooster.app.tweaks.TweakManagerRepository.getAllTweaks()
+            );
+            settingsTweaksAdapter.setShizukuAlive(isPrivilegedExecutionAvailable());
+            settingsTweaksAdapter.setOnTweakStateChangeListener((item, isApplied, totalAppliedCount) -> {
+                updateTweaksBadgeCount();
+            });
+            rvSettingsTweaks.setAdapter(settingsTweaksAdapter);
+            updateTweaksBadgeCount();
+        }
+
+        setupTweakFilters();
+
+        if (etSettingsTweaksSearch != null) {
+            etSettingsTweaksSearch.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (settingsTweaksAdapter != null) {
+                        settingsTweaksAdapter.setSearchQuery(s != null ? s.toString() : "");
+                    }
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
+        }
+
+        if (btnSettingsTweaksApplyAll != null) {
+            btnSettingsTweaksApplyAll.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                if (!requireShizukuForAction("Batch Apply Tweaks")) return;
+                btnSettingsTweaksApplyAll.setEnabled(false);
+                btnSettingsTweaksApplyAll.setText("⏳ APPLYING TWEAKS...");
+                Toast.makeText(getContext(), "⚡ Applying tweaks in batch...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    int applied = com.gamebooster.app.tweaks.TweakManagerRepository.applyAllSupportedTweaks(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            btnSettingsTweaksApplyAll.setEnabled(true);
+                            btnSettingsTweaksApplyAll.setText("⚡ 1-TAP APPLY ALL");
+                            if (settingsTweaksAdapter != null) {
+                                settingsTweaksAdapter.notifyAllStatesChanged();
+                            }
+                            updateTweaksBadgeCount();
+                            Toast.makeText(getContext(), "✅ " + applied + " Tweaks Applied & Locked!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnSettingsTweaksResetAll != null) {
+            btnSettingsTweaksResetAll.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnSettingsTweaksResetAll.setEnabled(false);
+                btnSettingsTweaksResetAll.setText("⏳ RESETTING...");
+                Toast.makeText(getContext(), "🔄 Reverting tweaks to stock...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.tweaks.TweakManagerRepository.revertAllTweaks(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            btnSettingsTweaksResetAll.setEnabled(true);
+                            btnSettingsTweaksResetAll.setText("🔄 RESET TO STOCK");
+                            if (settingsTweaksAdapter != null) {
+                                settingsTweaksAdapter.notifyAllStatesChanged();
+                            }
+                            updateTweaksBadgeCount();
+                            Toast.makeText(getContext(), "🔄 All Tweaks Reset to Stock Defaults", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
 
         // Card Spoof: Hardware Device Spoofing
         switchDeviceSpoof = view.findViewById(R.id.switch_device_spoof);
@@ -1424,25 +1399,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     private void updateDnsUiState(String dnsMode) {
         if (getContext() == null) return;
-        if (btnDnsCloudflare == null || btnDnsGoogle == null || btnDnsDefault == null) return;
-
-        btnDnsCloudflare.setBackgroundResource(R.drawable.btn_cyber_dark);
-        btnDnsCloudflare.setTextColor(0xFFFFFFFF);
-        btnDnsGoogle.setBackgroundResource(R.drawable.btn_cyber_dark);
-        btnDnsGoogle.setTextColor(0xFFFFFFFF);
-        btnDnsDefault.setBackgroundResource(R.drawable.btn_cyber_dark);
-        btnDnsDefault.setTextColor(0xFF94A3B8);
-
+        isProgrammaticToggle = true;
         if ("GOOGLE_8_8_8_8".equalsIgnoreCase(dnsMode)) {
-            btnDnsGoogle.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            btnDnsGoogle.setTextColor(0xFF000000);
-        } else if ("SYSTEM_DEFAULT".equalsIgnoreCase(dnsMode)) {
-            btnDnsDefault.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            btnDnsDefault.setTextColor(0xFF000000);
+            if (switchDnsGoogle != null) switchDnsGoogle.setChecked(true);
+            if (switchDnsCloudflare != null) switchDnsCloudflare.setChecked(false);
+        } else if ("CLOUDFLARE_1_1_1_1".equalsIgnoreCase(dnsMode)) {
+            if (switchDnsCloudflare != null) switchDnsCloudflare.setChecked(true);
+            if (switchDnsGoogle != null) switchDnsGoogle.setChecked(false);
         } else {
-            btnDnsCloudflare.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            btnDnsCloudflare.setTextColor(0xFF000000);
+            if (switchDnsCloudflare != null) switchDnsCloudflare.setChecked(false);
+            if (switchDnsGoogle != null) switchDnsGoogle.setChecked(false);
         }
+        isProgrammaticToggle = false;
     }
 
     private void applyGamingDns(NetworkOptimizer.DnsMode mode, String msg) {
@@ -1615,9 +1583,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
                 if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
                 if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
+                if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(ManualSettingsPreferences.isTcpBbrBuffersEnabled(getContext()));
                 if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
                 if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(ManualSettingsPreferences.isWifiLowLatencyEnabled(getContext()));
                 if (switchDualDataWifi != null) switchDualDataWifi.setChecked(ManualSettingsPreferences.isDualDataWifiEnabled(getContext()));
+                if (switchPhTelcoSupercharger != null) switchPhTelcoSupercharger.setChecked(ManualSettingsPreferences.isPhTelcoSuperchargerEnabled(getContext()));
+                if (switchAutoDnsFlush != null) switchAutoDnsFlush.setChecked(ManualSettingsPreferences.isAutoDnsFlushEnabled(getContext()));
                 if (switchTetheringHw != null) switchTetheringHw.setChecked(ManualSettingsPreferences.isTetherHwEnabled(getContext()));
                 if (switchForceGnss != null) switchForceGnss.setChecked(ManualSettingsPreferences.isForceGnssEnabled(getContext()));
                 if (switchDeviceSpoof != null) switchDeviceSpoof.setChecked(SpoofPreferences.isSpoofEnabled(getContext()));
@@ -1625,10 +1596,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchPrecisionInputTuner != null && precisionSettingsManager != null) {
                     switchPrecisionInputTuner.setChecked(precisionSettingsManager.isDeviceTuned());
                 }
-                updateNetworkModeUi(ManualSettingsPreferences.getNetworkMode(getContext()));
                 updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
                 updateLiveTelemetryUi();
                 isProgrammaticToggle = false;
+
+                if (settingsTweaksAdapter != null) {
+                    settingsTweaksAdapter.setShizukuAlive(isPrivilegedExecutionAvailable());
+                    settingsTweaksAdapter.notifyAllStatesChanged();
+                    updateTweaksBadgeCount();
+                }
             }
 
             updateTerminalStatusInSettings();
@@ -1826,38 +1802,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         });
     }
 
-    private void updateNetworkModeUi(String mode) {
-        if (tvNetworkActiveMode == null || getContext() == null) return;
-        if ("data_only".equalsIgnoreCase(mode)) {
-            tvNetworkActiveMode.setText("Active Network Mode: 📱 MOBILE DATA ONLY (5G/4G)");
-            tvNetworkActiveMode.setTextColor(0xFF00F0FF);
-            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF000000);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF00FF66);
-            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetDual != null) btnNetDual.setTextColor(0xFFFFFFFF);
-        } else if ("wifi_only".equalsIgnoreCase(mode)) {
-            tvNetworkActiveMode.setText("Active Network Mode: 📶 WI-FI ONLY (Low-Latency Lock)");
-            tvNetworkActiveMode.setTextColor(0xFF00FF66);
-            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF00F0FF);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF000000);
-            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetDual != null) btnNetDual.setTextColor(0xFFFFFFFF);
-        } else {
-            tvNetworkActiveMode.setText("Active Network Mode: ⚡ DUAL DATA + WI-FI (Multipath)");
-            tvNetworkActiveMode.setTextColor(0xFF00FF66);
-            if (btnNetDataOnly != null) btnNetDataOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetDataOnly != null) btnNetDataOnly.setTextColor(0xFF00F0FF);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setBackgroundResource(R.drawable.btn_cyber_dark);
-            if (btnNetWifiOnly != null) btnNetWifiOnly.setTextColor(0xFF00FF66);
-            if (btnNetDual != null) btnNetDual.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            if (btnNetDual != null) btnNetDual.setTextColor(0xFF000000);
-        }
-        updateLiveTelemetryUi();
-    }
+
 
 
     private void updatePrecisionAimStatus() {
@@ -1959,6 +1904,53 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
+    }
+
+    private void setupTweakFilters() {
+        if (btnTweakFilterAll != null) {
+            btnTweakFilterAll.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.ALL, btnTweakFilterAll));
+        }
+        if (btnTweakFilterCpuGpu != null) {
+            btnTweakFilterCpuGpu.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.CPU_GPU, btnTweakFilterCpuGpu));
+        }
+        if (btnTweakFilterTouch != null) {
+            btnTweakFilterTouch.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.TOUCH_DISPLAY, btnTweakFilterTouch));
+        }
+        if (btnTweakFilterShizuku != null) {
+            btnTweakFilterShizuku.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.SHIZUKU_SYSTEM, btnTweakFilterShizuku));
+        }
+        if (btnTweakFilterNetwork != null) {
+            btnTweakFilterNetwork.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.NETWORK_LATENCY, btnTweakFilterNetwork));
+        }
+    }
+
+    private void selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory cat, Button selectedBtn) {
+        currentTweakCategory = cat;
+        if (settingsTweaksAdapter != null) {
+            settingsTweaksAdapter.setCategoryFilter(cat);
+        }
+        Button[] filterBtns = new Button[]{
+                btnTweakFilterAll, btnTweakFilterCpuGpu, btnTweakFilterTouch,
+                btnTweakFilterShizuku, btnTweakFilterNetwork
+        };
+        for (Button b : filterBtns) {
+            if (b != null && getContext() != null) {
+                b.setBackgroundResource(R.drawable.btn_cyber_dark);
+                b.setTextColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.accent_cyan));
+            }
+        }
+        if (selectedBtn != null) {
+            selectedBtn.setBackgroundResource(R.drawable.btn_cyber_cyan);
+            selectedBtn.setTextColor(0xFF000000);
+        }
+        updateTweaksBadgeCount();
+    }
+
+    private void updateTweaksBadgeCount() {
+        if (tvSettingsTweaksBadgeCount == null || getContext() == null) return;
+        int active = com.gamebooster.app.config.TweakPreferences.getAppliedTweakIds(getContext()).size();
+        int total = com.gamebooster.app.tweaks.TweakManagerRepository.getAllTweaks().size();
+        tvSettingsTweaksBadgeCount.setText("⚡ " + total + " Available | " + active + " Active");
     }
 
     // =========================================================================
