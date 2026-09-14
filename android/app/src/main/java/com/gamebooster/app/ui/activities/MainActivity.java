@@ -35,13 +35,11 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
     private static final String[] TAB_TITLES = {
             "HOME",
-            "STATS",
             "SETTINGS"
     };
 
     private static final String[] TAB_ICONS = {
             "🏠",
-            "📊",
             "⚙️"
     };
 
@@ -241,7 +239,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     private static final String TAG_HOME = "tab_home";
-    private static final String TAG_STATS = "tab_stats";
     private static final String TAG_SETTINGS = "tab_settings";
 
     private void showFragmentForTab(int position) {
@@ -251,11 +248,15 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             androidx.fragment.app.FragmentTransaction transaction = fm.beginTransaction();
 
             Fragment homeFrag = fm.findFragmentByTag(TAG_HOME);
-            Fragment statsFrag = fm.findFragmentByTag(TAG_STATS);
             Fragment settingsFrag = fm.findFragmentByTag(TAG_SETTINGS);
 
+            // Clean up any legacy stats fragment if still attached
+            Fragment legacyStatsFrag = fm.findFragmentByTag("tab_stats");
+            if (legacyStatsFrag != null && legacyStatsFrag.isAdded()) {
+                transaction.remove(legacyStatsFrag);
+            }
+
             if (position == 0) {
-                if (statsFrag != null && statsFrag.isAdded()) transaction.hide(statsFrag);
                 if (settingsFrag != null && settingsFrag.isAdded()) transaction.hide(settingsFrag);
                 if (homeFrag == null) {
                     homeFrag = new HomeFragment();
@@ -265,16 +266,6 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 }
             } else if (position == 1) {
                 if (homeFrag != null && homeFrag.isAdded()) transaction.hide(homeFrag);
-                if (settingsFrag != null && settingsFrag.isAdded()) transaction.hide(settingsFrag);
-                if (statsFrag == null) {
-                    statsFrag = new com.gamebooster.app.ui.fragments.GameAnalyticsFragment();
-                    transaction.add(R.id.fragment_container, statsFrag, TAG_STATS);
-                } else {
-                    transaction.show(statsFrag);
-                }
-            } else if (position == 2) {
-                if (homeFrag != null && homeFrag.isAdded()) transaction.hide(homeFrag);
-                if (statsFrag != null && statsFrag.isAdded()) transaction.hide(statsFrag);
                 if (settingsFrag == null) {
                     settingsFrag = new SettingsFragment();
                     transaction.add(R.id.fragment_container, settingsFrag, TAG_SETTINGS);

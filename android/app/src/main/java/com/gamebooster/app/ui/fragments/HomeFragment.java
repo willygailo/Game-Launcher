@@ -94,7 +94,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (btnSettings != null) {
             btnSettings.setOnClickListener(v -> {
                 if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).selectTab(2);
+                    ((MainActivity) getActivity()).selectTab(1);
                 }
             });
         }
