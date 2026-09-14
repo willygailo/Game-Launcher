@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.gamebooster.app.games.GamePackageRegistry;
 import com.gamebooster.app.games.GamePackageRegistry.GameType;
+import com.gamebooster.app.booster.NetworkOptimizer;
 
 /**
  * GameAutoInjectDispatcher — Centralized router that automatically injects
@@ -124,6 +125,13 @@ public final class GameAutoInjectDispatcher {
             Log.w(TAG, "⚠️ Pre-flight storage access grant note for " + pkg + ": " + t.getMessage());
         }
 
+        // ── 1.5. Pre-flight: Ranked Low-Latency Socket Tuning & Buffer Bloat Suppression ──
+        try {
+            NetworkOptimizer.enableRankedLowLatencySocketTuning(context);
+        } catch (Throwable t) {
+            Log.w(TAG, "⚠️ Ranked socket tuning note for " + pkg + ": " + t.getMessage());
+        }
+
         // ── 2. Pre-flight: safety backup before modifying any config files ──
         try {
             ConfigBackupManager.backupAllPaths(pkg);
@@ -205,6 +213,7 @@ public final class GameAutoInjectDispatcher {
     private static void injectMlbb(String pkg) {
         Log.i(TAG, "⚔️ Injecting MLBB hero combos (Ling, Fanny, Gusion, Chou, Haya, Beatrix), SA Damage+, Farming, Jungle & All-Hero...");
         try { MlbbConfigPatcher.applyMlbbMasterSuite(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyMlbbRankedMastery(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyLingHeroDamageCombo(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyUltraDamageAllHero(pkg); } catch (Throwable ignored) {}
@@ -265,6 +274,7 @@ public final class GameAutoInjectDispatcher {
     private static void injectPubgm(String pkg) {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
         try { PubgConfigPatcher.applyPubgmMasterSuite(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyRankedMastery(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
@@ -307,6 +317,7 @@ public final class GameAutoInjectDispatcher {
     private static void injectCodm(String pkg) {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
         try { CodmConfigPatcher.applyCodmMasterSuite(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyRankedMastery(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAllScopeTieredHeadshot(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyTieredNoScopeHeadshotAllGun(pkg); } catch (Throwable ignored) {}
@@ -505,6 +516,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectFpsShooter(String pkg) {
         Log.i(TAG, "⚡ Injecting FPS Precision, All-Gun & All-Scope Calibration for " + pkg + "...");
+        try { CommonConfigTuningInjector.applyFullRankedMasterySuite(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
@@ -519,6 +531,7 @@ public final class GameAutoInjectDispatcher {
     }
 
     private static void injectGeneric(String pkg) {
+        try { CommonConfigTuningInjector.applyFullRankedMasterySuite(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyHitRegistrationDpsBoost(pkg); } catch (Throwable ignored) {}

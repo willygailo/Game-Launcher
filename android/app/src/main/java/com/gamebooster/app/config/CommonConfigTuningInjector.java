@@ -171,6 +171,65 @@ public final class CommonConfigTuningInjector {
         applyAllScopeMasteryCalibration(packageName);
     }
 
+    // ─── Unified Ranked & Classic Game Mastery ───────────────────────────────
+
+    /**
+     * Unified Ranked & Classic Damage Synchronization & Hit Registration:
+     * Applies to any supported title dynamically (PUBGM, CODM, MLBB, etc.).
+     */
+    public static boolean applyRankedCompetitiveDamageSync(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.trim().toLowerCase();
+        if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            return PubgConfigPatcher.applyRankedDamageSync(packageName);
+        } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+            return CodmConfigPatcher.applyRankedDamageSync(packageName);
+        } else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            return MlbbConfigPatcher.applyMlbbRankedHitSync(packageName);
+        } else {
+            List<String> paths = getPaths(packageName);
+            int written = 0;
+            for (String p : paths) {
+                if (NativeConfigInjector.injectPubgmRankedDamageSync(p)) written++;
+            }
+            return written > 0;
+        }
+    }
+
+    /**
+     * Unified Ranked & Classic Aim Assist Sticky Tracking:
+     * Applies to any supported title dynamically (PUBGM, CODM, MLBB, etc.).
+     */
+    public static boolean applyRankedCompetitiveAimAssist(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.trim().toLowerCase();
+        if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile")) {
+            return PubgConfigPatcher.applyRankedAimAssist(packageName);
+        } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+            return CodmConfigPatcher.applyRankedAimAssist(packageName);
+        } else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            return MlbbConfigPatcher.applyMlbbRankedAimAssist(packageName);
+        } else {
+            List<String> paths = getPaths(packageName);
+            int written = 0;
+            for (String p : paths) {
+                if (NativeConfigInjector.injectPubgmRankedAimAssist(p)) written++;
+            }
+            return written > 0;
+        }
+    }
+
+    /**
+     * Unified Full Ranked Mastery Suite (Damage Sync + Aim Assist + Anti-Log Armor).
+     */
+    public static boolean applyFullRankedMasterySuite(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        boolean ok1 = applyRankedCompetitiveDamageSync(packageName);
+        boolean ok2 = applyRankedCompetitiveAimAssist(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        return ok1 || ok2;
+    }
+
     /**
      * Injects Joystick response level, zero-deadzone, and input stabilization.
      */

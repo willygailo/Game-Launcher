@@ -246,6 +246,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmUltraHdr120(String path);
     public static native boolean nativeInjectPubgmHdr120(String path);
     public static native boolean nativeInjectPubgmSuperSmooth165(String path);
+    public static native boolean nativeInjectPubgmRankedDamageSync(String path);
+    public static native boolean nativeInjectPubgmRankedAimAssist(String path);
+    public static native boolean nativeInjectCodmRankedDamageSync(String path);
+    public static native boolean nativeInjectCodmRankedAimAssist(String path);
+    public static native boolean nativeInjectMlbbRankedHitSync(String path);
+    public static native boolean nativeInjectMlbbRankedAimAssist(String path);
     public static native boolean nativeInjectMlbbAllHeroOverdrive(String path);
     public static native boolean nativeInjectMlbbFannyNoEnergyLimit(String path);
     public static native boolean nativeInjectMlbbLingNoEnergyLimit(String path);
@@ -2568,6 +2574,113 @@ public class NativeConfigInjector {
             } catch (Throwable ignored) {}
         }
         return injectPubgm165FpsGraphics(path, 165, 1);
+    }
+
+    public static boolean injectPubgmRankedDamageSync(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmRankedDamageSync(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "HitRegSyncRate=1000", "FrameSyncDamage=1", "PacketSyncInterval=0",
+            "BulletVelocityFactor=1.0", "MuzzleVelocityFactor=1.0", "HitRegistrationSync=1000",
+            "TouchPollingRate=1000", "TouchSampleRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "NetTickRate=120", "ClientNetRate=120", "bEnableDirectHitReg=True",
+            "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0", "r.GTSyncType=1", "r.VSync=0",
+            "r.MaxFPS=165", "r.PUBGTargetFPS=165", "r.PUBGDeviceFPSSupport165=1", "bSmoothFrameRate=False"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedDamageSync]");
+    }
+
+    public static boolean injectPubgmRankedAimAssist(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmRankedAimAssist(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AimAssist=1", "bEnableAimAssist=True", "AimAssistLevel=2", "AimAssistFriction=0.85",
+            "AimAssistMagnetism=1.0", "AimAssistSlowdown=1.0", "AimAssistMaxDistance=25000",
+            "InstantAimSnap=1", "AdsZeroDelay=1", "AdsTransitionTime=0", "HipfireDeadzone=0",
+            "HipfireSensitivityBoost=1.15", "GyroSampleRate=1000", "GyroZeroDelay=1",
+            "GyroStabilization=1", "GyroSmoothFactor=1", "Scope2xGyroSample=1000",
+            "Scope3xGyroStabilization=1", "Scope4xGyroStabilization=1", "Scope6xMicroDamping=1",
+            "Scope8xPrecisionFilter=1", "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedAimAssist]");
+    }
+
+    public static boolean injectCodmRankedDamageSync(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmRankedDamageSync(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "HitRegistrationSync=1000", "HitRegSyncRate=1000", "FrameSyncDamage=1",
+            "BulletVelocityFactor=1.0", "MuzzleVelocityFactor=1.0", "InstantHitReg=1",
+            "PacketSyncInterval=0", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedDamageSync]");
+    }
+
+    public static boolean injectCodmRankedAimAssist(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmRankedAimAssist(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AimAssistEnabled=1", "AimAssistScale=100", "AimAssistStrength=100",
+            "AdsFrictionScale=1.0", "AimMagnetism=3", "HeadMagnetism=1",
+            "AdsZeroDelay=1", "AimSmoothFactor=0", "AimSnapSpeed=10",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedAimAssist]");
+    }
+
+    public static boolean injectMlbbRankedHitSync(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbRankedHitSync(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "HitRegSyncRate=1000", "FrameSyncDamage=1", "InstantHitReg=1",
+            "DirectSkillCastSync=1", "SkillCastZeroDelay=1", "AutoAttackCancelDelay=0",
+            "ZeroInputLag=1", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "InputBufferRate=1000", "bFramePacingEnabled=True", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedHitSync]");
+    }
+
+    public static boolean injectMlbbRankedAimAssist(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbRankedAimAssist(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "HeroLock=1", "SkillSmartAim=1", "AimAssist=1", "AutoLockTarget=1",
+            "TargetPriority=0", "AimMagnetism=3", "AimSnapSpeed=10", "AimSmoothFactor=0",
+            "AdsZeroDelay=1", "SkillAutoChain=1", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RankedAimAssist]");
     }
 
     public static boolean injectMlbbAllHeroOverdrive(String path) {

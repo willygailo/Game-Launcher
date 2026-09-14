@@ -291,6 +291,47 @@ public class PubgConfigPatcher {
         return written > 0;
     }
 
+    // ─── Ranked & Classic Game Mastery ───────────────────────────────────────
+
+    public static boolean applyRankedDamageSync(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmRankedDamageSync(path)) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 165, false, 1);
+        deployPakPatch(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM Ranked Damage Sync & Hit Registration applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyRankedAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmRankedAimAssist(path)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM Ranked Aim Assist Friction & Magnetism applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyRankedMastery(String packageName) {
+        if (packageName == null) return false;
+        boolean ok1 = applyRankedDamageSync(packageName);
+        boolean ok2 = applyRankedAimAssist(packageName);
+        deployPakPatch(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        return ok1 || ok2;
+    }
+
     // ─── Competitive Force-Write ─────────────────────────────────────────────
 
     public static boolean patchCompetitive(String packageName, int targetFps) {

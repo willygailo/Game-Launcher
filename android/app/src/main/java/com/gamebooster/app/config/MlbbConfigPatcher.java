@@ -62,6 +62,45 @@ public class MlbbConfigPatcher {
         }
     }
 
+    // ─── Ranked & Classic Game Mastery ───────────────────────────────────────
+
+    public static boolean applyMlbbRankedHitSync(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectMlbbRankedHitSync(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "MLBB Ranked Direct Hit Sync applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyMlbbRankedAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectMlbbRankedAimAssist(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "MLBB Ranked Hero Lock & Aim Assist applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyMlbbRankedMastery(String packageName) {
+        if (packageName == null) return false;
+        GameSecurityBypassEngine.purgeCorruptedAssetCaches(packageName);
+        boolean ok1 = applyMlbbRankedHitSync(packageName);
+        boolean ok2 = applyMlbbRankedAimAssist(packageName);
+        applyAntiLog(packageName);
+        return ok1 || ok2;
+    }
+
     /**
      * Beatrix Instant Reload & Weapon Swap Overdrive — 2026 Edition.
      */

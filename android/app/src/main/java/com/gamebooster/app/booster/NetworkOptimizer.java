@@ -506,4 +506,30 @@ public class NetworkOptimizer {
             return false;
         }
     }
+
+    /**
+     * Dedicated Ranked & Classic Low-Latency Socket Tuning:
+     * - Low-latency TCP socket flag.
+     * - Game packet DSCP QoS priority.
+     * - Wi-Fi low-latency lock.
+     * - Buffer bloat suppression for zero desync & instant hit registration.
+     */
+    public static boolean enableRankedLowLatencySocketTuning(Context context) {
+        try {
+            optimizeTcpBuffers();
+            optimizeWifi6and7LowLatency(true);
+            optimize5gAnd6gDataNetwork(true);
+            CommandExecutor.executeSystemCommand("setprop net.ipv4.tcp_low_latency 1");
+            CommandExecutor.executeSystemCommand("setprop net.ipv4.tcp_autocorking 0");
+            CommandExecutor.executeSystemCommand("setprop net.ipv4.tcp_notsent_lowat 16384");
+            if (context != null) {
+                NativeFrameworkBridge.acquireLowLatencyWifiLock(context);
+            }
+            Log.i(TAG, "Ranked Low-Latency Socket Tuning successfully active.");
+            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "enableRankedLowLatencySocketTuning error: " + t.getMessage());
+            return false;
+        }
+    }
 }

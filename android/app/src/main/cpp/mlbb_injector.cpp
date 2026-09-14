@@ -2205,3 +2205,66 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── MLBB: Ranked Direct Skill Hit Registration & Frame Sync ─────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedHitSync(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"HitRegSyncRate", "1000"},
+        {"FrameSyncDamage", "1"},
+        {"InstantHitReg", "1"},
+        {"DirectSkillCastSync", "1"},
+        {"SkillCastZeroDelay", "1"},
+        {"AutoAttackCancelDelay", "0"},
+        {"ZeroInputLag", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"InputBufferRate", "1000"},
+        {"bFramePacingEnabled", "True"},
+        {"r.OneFrameThreadLag", "0"},
+        {"r.FinishCurrentFrame", "0"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbRankedHitSync");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Ranked Hero Lock & Smart Aim Magnetism ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedAimAssist(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"HeroLock", "1"},
+        {"SkillSmartAim", "1"},
+        {"AimAssist", "1"},
+        {"AutoLockTarget", "1"},
+        {"TargetPriority", "0"},
+        {"AimMagnetism", "3"},
+        {"AimSnapSpeed", "10"},
+        {"AimSmoothFactor", "0"},
+        {"AdsZeroDelay", "1"},
+        {"SkillAutoChain", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbRankedAimAssist");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

@@ -711,3 +711,97 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFastLoadSha
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── CODM: Ranked 1000Hz Hit Registration & Bullet Velocity Sync ─────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmRankedDamageSync(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"HitRegistrationSync", "1000"},
+        {"HitRegSyncRate", "1000"},
+        {"FrameSyncDamage", "1"},
+        {"BulletVelocityFactor", "1.0"},
+        {"MuzzleVelocityFactor", "1.0"},
+        {"InstantHitReg", "1"},
+        {"PacketSyncInterval", "0"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"bFramePacingEnabled", "True"},
+        {"r.OneFrameThreadLag", "0"},
+        {"r.FinishCurrentFrame", "0"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson) {
+            patch_json_node(content, kv.first, kv.second, true);
+        } else if (isXml) {
+            patch_xml_node(content, "int", kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmRankedDamageSync injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: Ranked Sticky Aim Assist & Ads Friction ───────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmRankedAimAssist(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"AimAssistEnabled", "1"},
+        {"AimAssistScale", "100"},
+        {"AimAssistStrength", "100"},
+        {"AdsFrictionScale", "1.0"},
+        {"AimMagnetism", "3"},
+        {"HeadMagnetism", "1"},
+        {"AdsZeroDelay", "1"},
+        {"AimSmoothFactor", "0"},
+        {"AimSnapSpeed", "10"},
+        {"GyroSampleRate", "1000"},
+        {"GyroZeroDelay", "1"},
+        {"GyroStabilization", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson) {
+            patch_json_node(content, kv.first, kv.second, true);
+        } else if (isXml) {
+            patch_xml_node(content, "int", kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmRankedAimAssist injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

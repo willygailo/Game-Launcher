@@ -1372,6 +1372,54 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCarXTorqueHorsepower10000Max
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectPubgmRankedDamageSync
+ * PUBGM — Ranked & Classic 1000Hz Hit Registration & Desync Fix
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmRankedDamageSync
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmRankedAimAssist
+ * PUBGM — Ranked & Classic Sticky Crosshair Friction & Magnetism
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmRankedAimAssist
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmRankedDamageSync
+ * CODM — Ranked 1000Hz Hit Registration & Bullet Velocity Sync
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmRankedDamageSync
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmRankedAimAssist
+ * CODM — Ranked Sticky Aim Assist & Ads Friction
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmRankedAimAssist
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbRankedHitSync
+ * MLBB — Ranked & Classic Direct Skill Hit Registration & Frame Sync
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedHitSync
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbRankedAimAssist
+ * MLBB — Ranked Hero Lock & Smart Aim Magnetism
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedAimAssist
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

@@ -928,3 +928,110 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFastLoadAs
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── PUBGM: Ranked & Classic 1000Hz Hit Registration & Desync Fix ────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmRankedDamageSync(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"HitRegSyncRate", "1000"},
+        {"FrameSyncDamage", "1"},
+        {"PacketSyncInterval", "0"},
+        {"BulletVelocityFactor", "1.0"},
+        {"MuzzleVelocityFactor", "1.0"},
+        {"HitRegistrationSync", "1000"},
+        {"TouchPollingRate", "1000"},
+        {"TouchSampleRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"NetTickRate", "120"},
+        {"ClientNetRate", "120"},
+        {"bEnableDirectHitReg", "True"},
+        {"r.OneFrameThreadLag", "0"},
+        {"r.FinishCurrentFrame", "0"},
+        {"r.GTSyncType", "1"},
+        {"r.VSync", "0"},
+        {"r.MaxFPS", "165"},
+        {"r.PUBGTargetFPS", "165"},
+        {"r.PUBGDeviceFPSSupport165", "1"},
+        {"bSmoothFrameRate", "False"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmRankedDamageSync injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── PUBGM: Ranked & Classic Sticky Crosshair Friction & Magnetism ───────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmRankedAimAssist(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path); std::string content = read_file_posix(pathStr);
+    struct stat stBefore; bool hasStat = (stat(path, &stBefore) == 0);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos || pathStr.rfind("EnjoyCJZC.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string,std::string>> keys = {
+        {"AimAssist", "1"},
+        {"bEnableAimAssist", "True"},
+        {"AimAssistLevel", "2"},
+        {"AimAssistFriction", "0.85"},
+        {"AimAssistMagnetism", "1.0"},
+        {"AimAssistSlowdown", "1.0"},
+        {"AimAssistMaxDistance", "25000"},
+        {"InstantAimSnap", "1"},
+        {"AdsZeroDelay", "1"},
+        {"AdsTransitionTime", "0"},
+        {"HipfireDeadzone", "0"},
+        {"HipfireSensitivityBoost", "1.15"},
+        {"GyroSampleRate", "1000"},
+        {"GyroZeroDelay", "1"},
+        {"GyroStabilization", "1"},
+        {"GyroSmoothFactor", "1"},
+        {"Scope2xGyroSample", "1000"},
+        {"Scope3xGyroStabilization", "1"},
+        {"Scope4xGyroStabilization", "1"},
+        {"Scope6xMicroDamping", "1"},
+        {"Scope8xPrecisionFilter", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmRankedAimAssist injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

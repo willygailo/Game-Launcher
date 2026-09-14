@@ -110,6 +110,44 @@ public class CodmConfigPatcher {
         }
     }
 
+    // ─── Ranked & Classic Game Mastery ───────────────────────────────────────
+
+    public static boolean applyRankedDamageSync(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodmRankedDamageSync(path)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CODM Ranked Damage Sync & Hit Registration applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyRankedAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodmRankedAimAssist(path)) {
+                written++;
+            }
+        }
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "CODM Ranked Aim Assist Friction & Scale applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyRankedMastery(String packageName) {
+        if (packageName == null) return false;
+        boolean ok1 = applyRankedDamageSync(packageName);
+        boolean ok2 = applyRankedAimAssist(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        return ok1 || ok2;
+    }
+
     public static void applyAllScopeAimbot(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {

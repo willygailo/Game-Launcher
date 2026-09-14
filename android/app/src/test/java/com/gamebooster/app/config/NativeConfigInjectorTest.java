@@ -54,6 +54,12 @@ public class NativeConfigInjectorTest {
         assertFalse(NativeConfigInjector.injectLingHeroDamageCombo(null));
         assertFalse(NativeConfigInjector.injectMagicBulletAimbot(null));
         assertFalse(NativeConfigInjector.injectNoRecoilNoSpread(null));
+        assertFalse(NativeConfigInjector.injectPubgmRankedDamageSync(null));
+        assertFalse(NativeConfigInjector.injectPubgmRankedAimAssist(null));
+        assertFalse(NativeConfigInjector.injectCodmRankedDamageSync(null));
+        assertFalse(NativeConfigInjector.injectCodmRankedAimAssist(null));
+        assertFalse(NativeConfigInjector.injectMlbbRankedHitSync(null));
+        assertFalse(NativeConfigInjector.injectMlbbRankedAimAssist(null));
 
         assertFalse(NativeConfigInjector.setProcessCpuAffinity(-1, 0));
         assertFalse(NativeConfigInjector.setProcessCpuAffinity(0, 0));
@@ -173,5 +179,38 @@ public class NativeConfigInjectorTest {
         assertTrue("Must contain SoC model", result.contains("Snapdragon 8 Elite"));
         assertTrue("Must contain valid XML map tag", result.contains("<map>") && result.contains("</map>"));
         assertFalse("Must not inject raw INI header into XML", result.contains("[HardwareProfile]"));
+    }
+
+    @Test
+    public void testRankedDamageSyncAndAimAssist() throws IOException {
+        File pubgmDamageFile = new File(mTempDir, "pubgm_damage.ini");
+        assertTrue(NativeConfigInjector.injectPubgmRankedDamageSync(pubgmDamageFile.getAbsolutePath()));
+        String pubgmDmgResult = new String(Files.readAllBytes(pubgmDamageFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(pubgmDmgResult.contains("HitRegSyncRate=1000") || pubgmDmgResult.contains("NetTickRate=120"));
+
+        File pubgmAimFile = new File(mTempDir, "pubgm_aim.ini");
+        assertTrue(NativeConfigInjector.injectPubgmRankedAimAssist(pubgmAimFile.getAbsolutePath()));
+        String pubgmAimResult = new String(Files.readAllBytes(pubgmAimFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(pubgmAimResult.contains("AimAssist=1") || pubgmAimResult.contains("AimAssistFriction=0.85"));
+
+        File codmDmgFile = new File(mTempDir, "codm_damage.ini");
+        assertTrue(NativeConfigInjector.injectCodmRankedDamageSync(codmDmgFile.getAbsolutePath()));
+        String codmDmgResult = new String(Files.readAllBytes(codmDmgFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(codmDmgResult.contains("HitRegSyncRate=1000") || codmDmgResult.contains("InstantHitReg=1"));
+
+        File codmAimFile = new File(mTempDir, "codm_aim.ini");
+        assertTrue(NativeConfigInjector.injectCodmRankedAimAssist(codmAimFile.getAbsolutePath()));
+        String codmAimResult = new String(Files.readAllBytes(codmAimFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(codmAimResult.contains("AimAssistStrength=100") || codmAimResult.contains("AdsFrictionScale=1.0"));
+
+        File mlbbHitFile = new File(mTempDir, "mlbb_hit.ini");
+        assertTrue(NativeConfigInjector.injectMlbbRankedHitSync(mlbbHitFile.getAbsolutePath()));
+        String mlbbHitResult = new String(Files.readAllBytes(mlbbHitFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(mlbbHitResult.contains("DirectSkillCastSync=1") || mlbbHitResult.contains("TouchPollingRate=1000"));
+
+        File mlbbAimFile = new File(mTempDir, "mlbb_aim.ini");
+        assertTrue(NativeConfigInjector.injectMlbbRankedAimAssist(mlbbAimFile.getAbsolutePath()));
+        String mlbbAimResult = new String(Files.readAllBytes(mlbbAimFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(mlbbAimResult.contains("HeroLock=1") || mlbbAimResult.contains("SkillSmartAim=1"));
     }
 }
