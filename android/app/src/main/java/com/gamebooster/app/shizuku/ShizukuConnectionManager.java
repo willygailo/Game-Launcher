@@ -255,7 +255,28 @@ public class ShizukuConnectionManager {
         return ShizukuUserServiceConnector.getInstance().isServiceConnected();
     }
 
-    /** Background reconnection loop: exponential backoff, auto-rebinds. */
+    /**
+     * Proactively forces an immediate check of the Shizuku binder state.
+     * Called on network changes (Wi-Fi disconnect / mobile data switch) or app resume.
+     */
+    public void forceReconnectCheck() {
+        if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
+        try {
+            boolean alive = Shizuku.pingBinder();
+            boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (alive && granted) {
+                setState(State.READY);
+                if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    ShizukuUserServiceConnector.getInstance().bindService();
+                }
+                ShizukuManager.triggerThrottledPostConnectionSync();
+                return;
+            }
+        } catch (Throwable ignored) {}
+        scheduleReconnect();
+    }
+
+    /** Background reconnection loop: persistent keepalive, exponential backoff into steady heartbeat. */
     private void scheduleReconnect() {
         if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
@@ -265,7 +286,7 @@ public class ShizukuConnectionManager {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 int attempt = 0;
-                while (enabled && attempt < MAX_RETRY_ATTEMPTS) {
+                while (enabled) {
                     boolean alive;
                     boolean granted;
                     try {
@@ -286,8 +307,8 @@ public class ShizukuConnectionManager {
                         return;
                     }
 
-                    if (attempt == 0 || attempt % 10 == 0) {
-                        Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku not ready yet (alive=" + alive + ", granted=" + granted + ")");
+                    if (attempt == 0 || attempt % 15 == 0) {
+                        Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku daemon checking (alive=" + alive + ", granted=" + granted + ")");
                     }
 
                     if (alive) {
@@ -299,7 +320,6 @@ public class ShizukuConnectionManager {
                     }
                     sleepQuietly(backoffMs(attempt++));
                 }
-                Log.d(TAG, "Reconnect loop finished after " + MAX_RETRY_ATTEMPTS + " attempts");
             } catch (Throwable t) {
                 Log.e(TAG, "Reconnect loop error", t);
             } finally {

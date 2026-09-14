@@ -63,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
 
+        // Enforce maximum hardware refresh rate on MainActivity window
+        com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(this);
+
         // Phase 0.2: enable the config backup safety net (app-private storage)
         com.gamebooster.app.config.ConfigBackupManager.setAppContext(getApplicationContext());
 
@@ -309,6 +312,13 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 com.gamebooster.app.ui.dialogs.PostGameReportDialog.show(this, report);
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(this);
+        com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
     }
 
     @Override

@@ -140,14 +140,25 @@ public class ShizukuPermissionEnforcer {
                 batchCmds.add("cmd appops set " + pkg + " " + op + " allow 2>/dev/null");
             }
 
-            // 5. Battery Optimization & Doze Mode Bypass
+            // 5. Offline Shizuku Immunity: Battery Optimization & Doze Bypass for both Launcher & Shizuku
             batchCmds.add("dumpsys deviceidle whitelist +" + pkg + " 2>/dev/null");
             batchCmds.add("cmd deviceidle whitelist +" + pkg + " 2>/dev/null");
+            batchCmds.add("dumpsys deviceidle whitelist +moe.shizuku.privileged.api 2>/dev/null");
+            batchCmds.add("cmd deviceidle whitelist +moe.shizuku.privileged.api 2>/dev/null");
+            batchCmds.add("cmd appops set moe.shizuku.privileged.api RUN_IN_BACKGROUND allow 2>/dev/null");
+            batchCmds.add("cmd appops set moe.shizuku.privileged.api RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
+            batchCmds.add("cmd appops set moe.shizuku.privileged.api AUTO_START allow 2>/dev/null");
 
-            // 6. Fast Single-Batch Execution via Root (UID 0) or Shizuku (UID 2000)
+            // 6. Prevent Android 12-16 Phantom Process Killer from terminating Shizuku daemon on Wi-Fi disconnect
+            batchCmds.add("/system/bin/device_config set_sync_disabled_for_tests persistent 2>/dev/null");
+            batchCmds.add("/system/bin/device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
+            batchCmds.add("settings put global settings_enable_monitor_phantom_procs false 2>/dev/null");
+            batchCmds.add("settings put global adb_allowed_connection_time 0 2>/dev/null");
+
+            // 7. Fast Single-Batch Execution via Root (UID 0) or Shizuku (UID 2000)
             com.gamebooster.app.engine.CommandExecutor.executeBatchCommands(batchCmds);
 
-            Log.i(TAG, "All launcher system & storage privileges auto-granted successfully!");
+            Log.i(TAG, "All launcher system privileges & Shizuku offline immunity applied successfully!");
 
         } catch (Throwable t) {
             Log.e(TAG, "Error enforcing Shizuku permissions", t);

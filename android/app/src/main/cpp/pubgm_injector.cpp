@@ -657,6 +657,10 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string pathStr(path);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamageBoost", "10000"},
+        {"DamageScale", "10000.0"}, {"HeadshotMultiplier", "10000.0"},
+        {"Level3HelmetBypass", "1"}, {"VestDamageBypass", "1"}, {"ArmorPiercingMultiplier", "10000.0"},
+        {"DamageRangeFalloff", "0.0"}, {"MinDamageMultiplier", "1.0"}, {"MaxDamageRange", "99999.0"},
+        {"CoverPenetrationMultiplier", "5.0"}, {"WallPiercing", "1"}, {"DoorPenetration", "1"},
         {"BulletVelocityBoost", "10000"}, {"MuzzleVelocityFactor", "10.0"}, {"FireRateBoost", "10000"},
         {"FireRateMultiplier", "10.0"}, {"RapidFireHitReg", "1000"}, {"TriggerZeroDelay", "1"},
         {"BurstIntervalZero", "1"}, {"HitboxMultiplier", "5.0"}, {"HitboxScale", "5.0"},
@@ -664,9 +668,15 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"HitRegSyncRate", "1000"}, {"ZeroBulletDrop", "1"}, {"BulletDropComp", "1"},
         {"TrueDamageBoost", "10000"}, {"PenetrationBoost", "10000"}, {"ZeroRecoil", "1"},
         {"RecoilScale", "0"}, {"WeaponSpread", "0"}, {"BulletSpreadScale", "0"},
+        {"FastReload", "1"}, {"ReloadSpeedMultiplier", "10.0"}, {"ReloadDurationReduction", "0.99"},
+        {"TacticalReloadTime", "0.01"}, {"FullReloadTime", "0.01"},
+        {"InstantChambering", "1"}, {"BoltActionCycleTime", "0"}, {"CycleTimeReduction", "1.0"},
+        {"QuickSwap", "1"}, {"WeaponSwapZeroDelay", "1"}, {"HolsterSpeedBoost", "10.0"}, {"DrawSpeedBoost", "10.0"},
+        {"SprintToFireZeroDelay", "1"}, {"FastMagMultiplier", "10.0"}, {"QuickDrawSpeed", "10.0"},
         {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
         {"r.PUBGDamageBoost", "10000"}, {"r.PUBGFireRateBoost", "10000"},
-        {"r.PUBGBulletVelocityCompensation", "1"}, {"r.PUBGInstantHitReg", "1"}
+        {"r.PUBGBulletVelocityCompensation", "1"}, {"r.PUBGInstantHitReg", "1"},
+        {"r.PUBGFastReload", "1"}, {"r.PUBGInstantChambering", "1"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "PubgmDamage10000AttackSpeedMax");
     env->ReleaseStringUTFChars(jPath, path);

@@ -69,6 +69,11 @@ public class ShizukuManager {
             boolean granted = (grantResult == PackageManager.PERMISSION_GRANTED);
             Log.i(TAG, "Shizuku permission result: " + (granted ? "GRANTED" : "DENIED"));
             if (granted) {
+                Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    com.gamebooster.app.config.ShizukuPreferences.setShizukuEverGranted(ctx, true);
+                    com.gamebooster.app.config.ShizukuPreferences.recordOnlineTimestamp(ctx);
+                }
                 AppExecutors.getInstance().executeCommand(() -> {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
@@ -87,6 +92,11 @@ public class ShizukuManager {
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
             } else {
+                Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    com.gamebooster.app.config.ShizukuPreferences.setShizukuEverGranted(ctx, true);
+                    com.gamebooster.app.config.ShizukuPreferences.recordOnlineTimestamp(ctx);
+                }
                 AppExecutors.getInstance().executeCommand(() -> {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
@@ -184,10 +194,23 @@ public class ShizukuManager {
     }
 
     /**
-     * Strict requirement check: returns true if Shizuku is available, or shows prompt dialog and returns false.
+     * Returns true if Shizuku is currently live OR was previously granted on this device
+     * and fallback mechanisms (Rish / direct system commands) are operational offline.
+     */
+    public static boolean isPrivilegedOrEverGranted(Context context) {
+        if (isShizukuRunningAndGranted()) return true;
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null) return false;
+        return com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(context)
+                && (RishManager.isAvailable(context) || com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable());
+    }
+
+    /**
+     * Strict requirement check: returns true if Shizuku is available or ever granted offline,
+     * or shows prompt dialog and returns false.
      */
     public static boolean requireShizuku(Context context, String featureTitle) {
-        if (isShizukuRunningAndGranted()) {
+        if (isShizukuRunningAndGranted() || isPrivilegedOrEverGranted(context)) {
             return true;
         }
         if (context != null) {
@@ -299,5 +322,24 @@ public class ShizukuManager {
         } else {
             showShizukuPermissionDialog(context, "Shizuku Privileged Engine");
         }
+    }
+
+    /**
+     * Displays the offline guide explaining how Shizuku stays connected without Wi-Fi
+     * and how to start Shizuku offline using personal hotspot or local loopback.
+     */
+    public static void showShizukuOfflineGuide(Context context) {
+        if (context == null) return;
+        new AlertDialog.Builder(context)
+                .setTitle("📶 SHIZUKU OFFLINE & WI-FI PERSISTENCE")
+                .setMessage("💡 HOW SHIZUKU WORKS OFFLINE:\n\n" +
+                        "1. Local Binder IPC:\n" +
+                        "Shizuku does NOT require Wi-Fi to execute commands. Once authorized, communication is 100% internal kernel Binder IPC.\n\n" +
+                        "2. Auto-Immunity Applied:\n" +
+                        "The app automatically exempts Shizuku from battery optimization and disables Android's Phantom Process Killer so the daemon survives Wi-Fi disconnects.\n\n" +
+                        "3. Starting Shizuku Without Wi-Fi Router:\n" +
+                        "Turn ON your phone's 'Personal Hotspot' in Android Settings. Even with no internet, Wireless Debugging can pair and start Shizuku over the hotspot interface. Once started, turn off hotspot—Shizuku stays active until reboot!")
+                .setPositiveButton("GOT IT", null)
+                .show();
     }
 }

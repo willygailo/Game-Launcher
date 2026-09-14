@@ -441,11 +441,21 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string pathStr(path);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamage", "10000"},
-        {"DPSOverdrive", "10000"}, {"FireRateMultiplier", "10.0"}, {"CycleTimeReduction", "1.0"},
-        {"BoltActionSpeedBoost", "5.0"}, {"ADSFireRateSync", "1000"}, {"TriggerZeroDeadzone", "1"},
+        {"DPSOverdrive", "10000"}, {"HeadshotMultiplier", "10000.0"}, {"UpperChestMultiplier", "10000.0"},
+        {"KineticArmorBypass", "1"}, {"ArmorReductionMultiplier", "1.0"},
+        {"MaterialPenetrationMax", "1"}, {"CoverPenetrationMultiplier", "5.0"}, {"WallPiercing", "1"},
+        {"FireRateMultiplier", "10.0"}, {"BurstFireDelay", "0"}, {"CycleTimeReduction", "1.0"},
+        {"BoltActionSpeedBoost", "5.0"}, {"BoltActionCycleTime", "0"},
+        {"InstantChambering", "1"}, {"SniperRechamberInstant", "1"},
+        {"FastReload", "1"}, {"ReloadSpeedMultiplier", "10.0"}, {"ReloadDurationReduction", "0.99"},
+        {"TacticalReloadTime", "0.01"}, {"FullReloadTime", "0.01"}, {"SleightOfHandUnlock", "1"},
+        {"FastMagMultiplier", "10.0"}, {"QuickSwap", "1"}, {"WeaponSwapZeroDelay", "1"},
+        {"HolsterSpeedBoost", "10.0"}, {"DrawSpeedBoost", "10.0"},
+        {"ADSFireRateSync", "1000"}, {"TriggerZeroDeadzone", "1"},
         {"HitRegSyncRate", "1000"}, {"InstantHitReg", "1"}, {"PenetrationBoost", "10000"},
         {"TrueDamageBoost", "10000"}, {"ZeroRecoil", "1"}, {"RecoilScale", "0"},
-        {"WeaponSpread", "0"}, {"SlideCancelInstant", "1"}, {"QuickDrawZeroDelay", "1"},
+        {"WeaponSpread", "0"}, {"SprintToFireZeroDelay", "1"},
+        {"SlideCancelInstant", "1"}, {"SlideJumpTurbo", "1"}, {"QuickDrawZeroDelay", "1"},
         {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "CodmDamage10000AttackSpeedMax");

@@ -64,8 +64,20 @@ public class Standoff2ConfigPatcher {
         }
     }
 
+    /**
+     * Standoff 2 Damage Overdrive (10000x) & Attack Speed Max — 2026 Edition.
+     * Applies damage_scale=10000, headshot_multiplier=10000, and fire_rate_scale=10.0.
+     */
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectStandoff2Damage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyStandoff2MasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
         java.util.Map<String, String> keys = new java.util.HashMap<>();
         keys.put("cl_updaterate", "128");
         keys.put("cl_cmdrate", "128");

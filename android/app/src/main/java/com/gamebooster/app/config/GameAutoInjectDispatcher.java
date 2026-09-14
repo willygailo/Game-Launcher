@@ -259,6 +259,7 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyFannyNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyBeatrixInstantReloadAndSwap(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -286,6 +287,7 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyPubgmAllWeaponMaxDamage2026(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmUltraAimbot2026(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyPubgmInstantReloadChambering(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyFastReloadQuickSwap(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyWallPiercingArmorShredder(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
@@ -327,6 +329,7 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyCodmMaxDamageAllWeapon2026(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyCodmUltraConfigCheat2026(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyCodmInstantReloadChambering(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyFastReloadQuickSwap(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyWallPiercingArmorShredder(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyZeroPingNetworkOverclock(pkg); } catch (Throwable ignored) {}
@@ -402,6 +405,7 @@ public final class GameAutoInjectDispatcher {
         try { BloodStrikeConfigPatcher.applyZeroRecoil(pkg); } catch (Throwable ignored) {}
         try { BloodStrikeConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { BloodStrikeConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { BloodStrikeConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -413,6 +417,7 @@ public final class GameAutoInjectDispatcher {
         try { Standoff2ConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { Standoff2ConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { Standoff2ConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { Standoff2ConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -424,6 +429,7 @@ public final class GameAutoInjectDispatcher {
         try { ValorantConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { ValorantConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { ValorantConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { ValorantConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -435,6 +441,7 @@ public final class GameAutoInjectDispatcher {
         try { FarlightConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { FarlightConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { FarlightConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { FarlightConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -447,6 +454,7 @@ public final class GameAutoInjectDispatcher {
         try { DeltaForceConfigPatcher.applyPrecisionAim(pkg); } catch (Throwable ignored) {}
         try { DeltaForceConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { DeltaForceConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { DeltaForceConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -458,6 +466,7 @@ public final class GameAutoInjectDispatcher {
         try { ArenaBreakoutConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { ArenaBreakoutConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
         try { ArenaBreakoutConfigPatcher.applyAimAssistLockMax(pkg); } catch (Throwable ignored) {}
+        try { ArenaBreakoutConfigPatcher.applyDamage10000AttackSpeedMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllGunWeaponCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyAllScopeMasteryCalibration(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
@@ -467,6 +476,7 @@ public final class GameAutoInjectDispatcher {
         Log.i(TAG, "🏎️ Injecting CarX Street / Racing 165FPS & Render Scaling...");
         try { CarXConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { CarXConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
+        try { CarXConfigPatcher.applyTorqueHorsepower10000Max(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 
@@ -474,6 +484,7 @@ public final class GameAutoInjectDispatcher {
         Log.i(TAG, "✨ Injecting Genshin / HoYoverse 120/165FPS Frame Unlock & Vulkan Cache...");
         try { GenshinConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { GenshinConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
+        try { GenshinConfigPatcher.applyDamage10000ElementalBurstMax(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 
@@ -481,6 +492,7 @@ public final class GameAutoInjectDispatcher {
         Log.i(TAG, "🧱 Injecting Roblox FFlag 165FPS Uncap & Graphics Boost...");
         try { RobloxConfigPatcher.patchCompetitive(pkg, 165); } catch (Throwable ignored) {}
         try { RobloxConfigPatcher.applyDamageLockMax(pkg); } catch (Throwable ignored) {}
+        try { RobloxConfigPatcher.applyDamage10000Max(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applySuperFastTouch(pkg); } catch (Throwable ignored) {}
     }
 

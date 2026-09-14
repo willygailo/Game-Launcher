@@ -58,6 +58,17 @@ public class GenshinConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    /**
+     * Genshin / HSR / ZZZ Damage Overdrive (10000x) & Elemental Burst Max — 2026 Edition.
+     * Applies DamageMultiplier=10000, CritDamageRate=1000.0, and EnergyRechargeRate=500.0.
+     */
+    public static void applyDamage10000ElementalBurstMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectGenshinDamage10000ElementalBurstMax(path);
+        }
+    }
+
     private static final String TAG = "GenshinConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

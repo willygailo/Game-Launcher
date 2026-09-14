@@ -172,12 +172,17 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         holder.tvTitle.setText(targetItem.getTitle());
         holder.tvDescription.setText(targetItem.getDescription());
 
-        boolean hasShizuku = ShizukuManager.isShizukuRunningAndGranted() || RishManager.isRishAvailable();
-        boolean hasElevatedAccess = hasShizuku;
+        boolean isLive = ShizukuManager.isShizukuRunningAndGranted();
+        boolean hasRish = RishManager.isRishAvailable();
+        boolean isEverGranted = (context != null && com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(context));
+        boolean hasElevatedAccess = isLive || hasRish || isEverGranted;
 
-        if (hasShizuku) {
+        if (isLive) {
             holder.tvBadge.setText("[SHIZUKU ACTIVE / FULL NATIVE]");
             holder.tvBadge.setTextColor(Color.parseColor("#00FF66"));
+        } else if (hasElevatedAccess) {
+            holder.tvBadge.setText("[SHIZUKU GRANTED / OFFLINE MODE]");
+            holder.tvBadge.setTextColor(Color.parseColor("#00D0FF"));
         } else {
             holder.tvBadge.setText("[SHIZUKU ACCESS REQUIRED]");
             holder.tvBadge.setTextColor(Color.parseColor("#FF4444"));
@@ -200,7 +205,7 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (holder.isUpdatingProgrammatically) return;
 
-                if (isChecked && !ShizukuManager.isShizukuRunningAndGranted() && !RishManager.isRishAvailable()) {
+                if (isChecked && !hasElevatedAccess) {
                     holder.isUpdatingProgrammatically = true;
                     buttonView.setChecked(false);
                     holder.isUpdatingProgrammatically = false;

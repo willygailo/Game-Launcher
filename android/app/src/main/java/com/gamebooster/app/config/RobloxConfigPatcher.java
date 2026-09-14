@@ -58,6 +58,17 @@ public class RobloxConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    /**
+     * Roblox Damage Overdrive (10000x) Max — 2026 Edition.
+     * Applies DamageMultiplier=10000, FFlagPhysicsStepMultiplier=2.0, and DFLIntTargetFps=185.
+     */
+    public static void applyDamage10000Max(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectRobloxDamage10000Max(path);
+        }
+    }
+
     private static final String TAG = "RobloxConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

@@ -164,7 +164,13 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Featured Hero Hardware Banner Card -->
+        <!-- Real-Time Shizuku Telemetry Dashboard -->
+        <com.gamebooster.app.ui.views.ShizukuStatusDashboardView
+            android:id="@+id/shizuku_dashboard_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="145dp"

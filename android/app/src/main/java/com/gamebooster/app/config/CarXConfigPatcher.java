@@ -58,6 +58,17 @@ public class CarXConfigPatcher {
         CommonConfigTuningInjector.applyNetworkLagCompensation(packageName);
     }
 
+    /**
+     * CarX Street / Racing Torque & Horsepower Overdrive (10000x) Max — 2026 Edition.
+     * Applies EngineTorqueMultiplier=10000, NitroBoostMultiplier=10.0, and SteeringResponseRate=1000.
+     */
+    public static void applyTorqueHorsepower10000Max(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCarXTorqueHorsepower10000Max(path);
+        }
+    }
+
     private static final String TAG = "CarXConfigPatcher";
 
     public static boolean patch(String packageName, int targetFps) {

@@ -68,6 +68,14 @@ public class BloodStrikeConfigPatcher {
         }
     }
 
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectBloodStrikeDamage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyBloodStrikeMasterSuite(String packageName) {
         if (packageName == null) return;
         java.util.Map<String, String> keys = new java.util.HashMap<>();
@@ -79,13 +87,18 @@ public class BloodStrikeConfigPatcher {
         keys.put("SlideRecoveryDelayMs", "0");
         keys.put("SprintAccelerationMax", "1");
         keys.put("TacticalSlideZeroLag", "1");
-        keys.put("DamageLockMax", "1");
+        keys.put("DamageLockMax", "10000");
+        keys.put("DamageBoost", "10000");
+        keys.put("WeaponDamage", "10000");
+        keys.put("HeadshotMultiplier", "5.0");
+        keys.put("VestDamageBypass", "1");
         keys.put("AimAssistLockMax", "1");
         keys.put("TouchPollingRate", "1000");
         keys.put("TouchZeroDelay", "1");
         keys.put("HitRegSyncRate", "1000");
         for (String path : GameConfigPathResolver.getPathsForGame(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[BloodStrikeMasterSuite]");
+            NativeConfigInjector.injectBloodStrikeDamage10000AttackSpeedMax(path);
         }
     }
 

@@ -1010,6 +1010,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
 
         // Card 4.5: System & Kernel Tweaks Repository
+        View tweaksHeaderTitle = view.findViewById(R.id.tv_settings_tweaks_title);
+        if (tweaksHeaderTitle != null) {
+            tweaksHeaderTitle.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    ShizukuManager.showShizukuOfflineGuide(getContext());
+                }
+            });
+        }
         tvSettingsTweaksBadgeCount = view.findViewById(R.id.tv_settings_tweaks_badge_count);
         etSettingsTweaksSearch = view.findViewById(R.id.et_settings_tweaks_search);
         rvSettingsTweaks = view.findViewById(R.id.rv_settings_tweaks);
@@ -1537,6 +1545,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     public void onResume() {
         super.onResume();
         if (videoSettingsBg != null) videoSettingsBg.play();
+        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
         refreshAllStatuses();
     }
 

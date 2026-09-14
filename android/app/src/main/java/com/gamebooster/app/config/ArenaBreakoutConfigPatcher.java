@@ -64,6 +64,13 @@ public class ArenaBreakoutConfigPatcher {
         }
     }
 
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectArenaBreakoutDamage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyArenaBreakoutMasterSuite(String packageName) {
         if (packageName == null) return;
         java.util.Map<String, String> keys = new java.util.HashMap<>();
@@ -73,13 +80,19 @@ public class ArenaBreakoutConfigPatcher {
         keys.put("OccludedAudioClarity", "1");
         keys.put("ZeroSniperSway", "1");
         keys.put("AimMagnetism", "3");
-        keys.put("DamageLockMax", "1");
+        keys.put("DamageLockMax", "10000");
+        keys.put("DamageBoost", "10000");
+        keys.put("ArmorPiercingTier6", "1");
+        keys.put("ArmorDamageMultiplier", "3.0");
+        keys.put("LimbDamageMultiplier", "2.5");
+        keys.put("FleshDamageMultiplier", "3.0");
         keys.put("AimAssistLockMax", "1");
         keys.put("TouchPollingRate", "1000");
         keys.put("TouchZeroDelay", "1");
         keys.put("HitRegSyncRate", "1000");
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[ArenaBreakoutMasterSuite]");
+            NativeConfigInjector.injectArenaBreakoutDamage10000AttackSpeedMax(path);
         }
     }
 

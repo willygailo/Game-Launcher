@@ -70,6 +70,14 @@ public class DeltaForceConfigPatcher {
         }
     }
 
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectDeltaForceDamage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyDeltaForceMasterSuite(String packageName) {
         if (packageName == null) return;
         java.util.Map<String, String> keys = new java.util.HashMap<>();
@@ -84,13 +92,18 @@ public class DeltaForceConfigPatcher {
         keys.put("r.ShaderPipelineCache.Prewarm", "1");
         keys.put("r.ShaderPipelineCache.BatchSize", "100");
         keys.put("r.Vulkan.AsyncCompute", "1");
-        keys.put("DamageLockMax", "1");
+        keys.put("DamageLockMax", "10000");
+        keys.put("DamageBoost", "10000");
+        keys.put("WeaponDamageBoost", "10000");
+        keys.put("SniperHeadshotDamage", "999");
+        keys.put("OneShotKillHitbox", "1");
         keys.put("AimAssistLockMax", "1");
         keys.put("TouchPollingRate", "1000");
         keys.put("TouchZeroDelay", "1");
         keys.put("HitRegSyncRate", "1000");
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[DeltaForceMasterSuite]");
+            NativeConfigInjector.injectDeltaForceDamage10000AttackSpeedMax(path);
         }
     }
 

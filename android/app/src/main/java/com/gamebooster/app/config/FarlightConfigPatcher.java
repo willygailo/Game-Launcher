@@ -67,8 +67,20 @@ public class FarlightConfigPatcher {
         }
     }
 
+    /**
+     * Farlight 84 Damage Overdrive (10000x) & Attack Speed Max — 2026 Edition.
+     * Applies WeaponDamageMultiplier=10000, ShieldDamageBypass=1, and FireRateMultiplier=10.0.
+     */
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFarlightDamage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyFarlightMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
         java.util.Map<String, String> keys = new java.util.HashMap<>();
         keys.put("JetpackCooldownScale", "0");
         keys.put("AirDashDistanceMultiplier", "2.0");

@@ -49,6 +49,9 @@ public class MlbbConfigPatcher {
      */
     public static void applyMlbbMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
+        applyFastAttackSpeedAllHero(packageName);
+        applyBeatrixInstantReloadAndSwap(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectMlbbMasterComboSuite(path);
@@ -56,6 +59,17 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectUniversalCombatSuite(path);
             NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
+        }
+    }
+
+    /**
+     * Beatrix Instant Reload & Weapon Swap Overdrive — 2026 Edition.
+     */
+    public static void applyBeatrixInstantReloadAndSwap(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectBeatrixAllGunDamage(path);
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
         }
     }
 

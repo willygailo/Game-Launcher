@@ -47,11 +47,20 @@ public class PrivilegeBridgeEngine {
         if (!ShellExecutor.isAndroidEnvironment()) {
             return false;
         }
+        boolean everGranted = false;
+        try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                everGranted = com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(ctx);
+            }
+        } catch (Throwable ignored) {}
+
         return ShizukuExecutor.hasShizukuPermission()
                 || ShizukuManager.isShizukuRunningAndGranted()
                 || ShizukuUserServiceConnector.getInstance().isServiceConnected()
                 || ShizukuConnectionManager.getInstance().isReady()
-                || RishManager.isRishAvailable();
+                || RishManager.isRishAvailable()
+                || (everGranted && RishManager.isRishAvailable());
     }
 
     /**

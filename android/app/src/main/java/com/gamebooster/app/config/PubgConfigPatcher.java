@@ -66,10 +66,15 @@ public class PubgConfigPatcher {
 
     /**
      * Executes single-pass atomic batch injection for all PUBGM cheats:
-     * Magic Bullet Aimbot, Hitbox 3.0x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load.
+     * Magic Bullet Aimbot, Hitbox 3.0x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load,
+     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, and Fast Reload.
      */
     public static void applyPubgmMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
+        applyPubgmFastAttackSpeed(packageName);
+        applyFastReloadQuickSwap(packageName);
+        applyPubgmInstantReloadChambering(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectUniversalCombatSuite(path);
@@ -78,6 +83,27 @@ public class PubgConfigPatcher {
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
             NativeConfigInjector.injectPubgmBallisticsVelocityPenetration(path);
             NativeConfigInjector.injectPubgmFastLoadAsyncStreaming(path);
+        }
+    }
+
+    /**
+     * PUBGM Fast Reload & Quick Weapon Swap — 2026 Edition.
+     */
+    public static void applyFastReloadQuickSwap(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
+        }
+    }
+
+    /**
+     * PUBGM Instant Reload & Bolt-Action Chambering Overdrive — 2026 Edition.
+     */
+    public static void applyPubgmInstantReloadChambering(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
         }
     }
 

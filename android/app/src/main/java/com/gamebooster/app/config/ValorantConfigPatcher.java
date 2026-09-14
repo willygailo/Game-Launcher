@@ -67,8 +67,20 @@ public class ValorantConfigPatcher {
         }
     }
 
+    /**
+     * Valorant Mobile Damage Overdrive (10000x) & Attack Speed Max — 2026 Edition.
+     * Applies HeadshotMultiplier=10000, FirstBulletAccuracy=1.0, and instant bullet velocity.
+     */
+    public static void applyDamage10000AttackSpeedMax(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectValorantDamage10000AttackSpeedMax(path);
+        }
+    }
+
     public static void applyValorantMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
         java.util.Map<String, String> keys = new java.util.HashMap<>();
         keys.put("CounterStrafeInstantStop", "1");
         keys.put("MovementDeadzone", "0");

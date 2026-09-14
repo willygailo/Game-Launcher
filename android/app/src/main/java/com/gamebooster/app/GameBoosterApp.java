@@ -57,6 +57,27 @@ public class GameBoosterApp extends Application {
             Log.w(TAG, "Shizuku early initialization error: " + t.getMessage());
         }
 
+        // 2.2 Network transition listener: preserve Shizuku Binder during Wi-Fi drops & cellular handoffs
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                cm.registerDefaultNetworkCallback(new android.net.ConnectivityManager.NetworkCallback() {
+                    @Override
+                    public void onAvailable(android.net.Network network) {
+                        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+                    }
+
+                    @Override
+                    public void onLost(android.net.Network network) {
+                        // Wi-Fi disconnected: verify local Binder immediately
+                        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+                    }
+                });
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "NetworkCallback registration error: " + t.getMessage());
+        }
+
         // 3. Pre-warm background engines on dedicated worker thread (Zero Main-Thread Block)
         final Context appCtx = getApplicationContext();
         AppExecutors.getInstance().executeCommand(() -> {

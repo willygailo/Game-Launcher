@@ -436,6 +436,7 @@ public class GameConfigPatcher {
         // Inject specialized Aim Head Lock, Ultra Damage Overdrive, and Hero Aim Lock
         CommonConfigTuningInjector.applyAimHeadLockConfig(pkg);
         CommonConfigTuningInjector.applyUltraDamageOverdriveConfig(pkg);
+        CommonConfigTuningInjector.applyUniversalGodDamageOverdrive(pkg);
         CommonConfigTuningInjector.applyHeroAimLockConfig(pkg);
 
         // Apply Ultra Extreme Graphics & Max FPS unlock across all resolved game paths.

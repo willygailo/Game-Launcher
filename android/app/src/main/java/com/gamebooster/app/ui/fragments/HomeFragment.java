@@ -190,6 +190,11 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             });
         }
 
+        com.gamebooster.app.ui.views.ShizukuStatusDashboardView dashboardView = view.findViewById(R.id.shizuku_dashboard_view);
+        if (dashboardView != null) {
+            dashboardView.bindLifecycle(getViewLifecycleOwner());
+        }
+
         updateStatusStrip();
         loadAndScanGames(true);
         return view;

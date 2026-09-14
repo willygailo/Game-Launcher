@@ -1290,6 +1290,76 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Tick128ZeroSpread
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectUniversalGodDamageOverdrive2026
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalGodDamageOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectBloodStrikeDamage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectDeltaForceDamage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectArenaBreakoutDamage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectValorantDamage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFarlightDamage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightDamage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectStandoff2Damage10000AttackSpeedMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Damage10000AttackSpeedMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectGenshinDamage10000ElementalBurstMax
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGenshinDamage10000ElementalBurstMax
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectRobloxDamage10000Max
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRobloxDamage10000Max
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCarXTorqueHorsepower10000Max
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCarXTorqueHorsepower10000Max
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

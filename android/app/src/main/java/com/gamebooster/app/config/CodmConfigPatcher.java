@@ -62,10 +62,15 @@ public class CodmConfigPatcher {
 
     /**
      * Executes single-pass atomic batch injection for all CODM cheats:
-     * No Recoil, No Spread, Aimbot Magnetism, Hitbox 3.0x, ESP Clarity, BSA Removal, Fast Load.
+     * No Recoil, No Spread, Aimbot Magnetism, Hitbox 3.0x, ESP Clarity, BSA Removal, Fast Load,
+     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, and Fast Reload.
      */
     public static void applyCodmMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
+        applyFastAttackSpeed(packageName);
+        applyFastReloadQuickSwap(packageName);
+        applyCodmInstantReloadChambering(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectUniversalCombatSuite(path);
@@ -74,6 +79,27 @@ public class CodmConfigPatcher {
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
             NativeConfigInjector.injectCodmBsaRemovalRangeOverdrive(path);
             NativeConfigInjector.injectCodmFastLoadShaderBypass(path);
+        }
+    }
+
+    /**
+     * CODM Fast Reload & Quick Weapon Swap — 2026 Edition.
+     */
+    public static void applyFastReloadQuickSwap(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
+        }
+    }
+
+    /**
+     * CODM Instant Reload & Bolt-Action Chambering Overdrive — 2026 Edition.
+     */
+    public static void applyCodmInstantReloadChambering(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectFastReloadQuickSwap(path);
         }
     }
 

@@ -335,3 +335,194 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── Blood Strike: Damage 10000 & Attack Speed Max Overdrive ─────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeDamage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamage", "10000"},
+        {"FleshDamageMultiplier", "3.0"}, {"ArmorDamageMultiplier", "3.0"}, {"VestDamageBypass", "1"},
+        {"PelletDamageFull", "1"}, {"ShotgunDamagePerPellet", "100"}, {"HeadshotMultiplier", "5.0"},
+        {"FireRateOverclock", "10000"}, {"FireRateBoost", "10.0"}, {"FastTacticalSprint", "1"},
+        {"SlideCancelSync", "1"}, {"ZeroRecoil", "1"}, {"SpreadZero", "1"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "BloodStrikeDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Delta Force: Damage 10000 & Sniper Lethality Overdrive ──────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceDamage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamageBoost", "10000"},
+        {"SniperHeadshotDamage", "999"}, {"OneShotKillHitbox", "1"}, {"ArmorPenetrationTier6", "1"},
+        {"BulletDropComp", "1"}, {"MuzzleVelocityFactor", "2.0"}, {"ZeroSwaySniper", "1"},
+        {"FrameSyncDamage", "1"}, {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"},
+        {"ZeroRecoil", "1"}, {"SpreadZero", "1"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "DeltaForceDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Arena Breakout: Damage 10000 & Armor Penetration Max ────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutDamage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"ArmorPiercingTier6", "1"},
+        {"ArmorDamageMultiplier", "3.0"}, {"LimbDamageMultiplier", "2.5"}, {"FleshDamageMultiplier", "3.0"},
+        {"SniperOneShotKill", "1"}, {"ZeroSwaySniper", "1"}, {"BulletDropComp", "1"},
+        {"ThermalContrastBoost", "1"}, {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"},
+        {"ZeroRecoil", "1"}, {"SpreadZero", "1"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ArenaBreakoutDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Valorant Mobile: Damage 10000 & Headshot 1-Tap Lethality ────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantDamage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"HeadshotMultiplier", "5.0"},
+        {"OneTapHeadshot", "1"}, {"FirstBulletAccuracy", "1.0"}, {"CounterStrafeDeadzone", "0"},
+        {"CrosshairHeadLevelLock", "1"}, {"MovingSpreadFactor", "0"}, {"ZeroRecoil", "1"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ValorantDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Farlight 84: Damage 10000 & Air-Dash Rapid Combat Overdrive ─────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightDamage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"GunDamageMultiplier", "10000"},
+        {"FireRateOverclock", "10000"}, {"AirDashBulletSync", "1"}, {"JetpackCooldownDelay", "0"},
+        {"RapidReload", "1"}, {"HeadshotMultiplier", "4.0"}, {"InstantHitReg", "1"},
+        {"HitRegSyncRate", "1000"}, {"ZeroRecoil", "1"}, {"SpreadZero", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FarlightDamage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Standoff 2: Damage 10000 & 128-Tick Instant Hit Registration ────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2Damage10000AttackSpeedMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"HeadshotDamageMultiplier", "5.0"},
+        {"cl_updaterate", "128"}, {"cl_cmdrate", "128"}, {"rate", "786432"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"ZeroRecoil", "1"},
+        {"SpreadZero", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "Standoff2Damage10000AttackSpeedMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Genshin Impact: Damage 10000 & Elemental Reaction Burst Max ─────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGenshinDamage10000ElementalBurstMax
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"ElementalDamageMultiplier", "10000"},
+        {"PhysicalDamageBase", "10000"}, {"CritRateBoost", "100"}, {"CritDamageMultiplier", "10.0"},
+        {"ElementalMasteryBoost", "10000"}, {"EnergyRechargeMax", "1"}, {"BurstCooldownZero", "1"},
+        {"InstantSkillCast", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "GenshinDamage10000ElementalBurstMax");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Roblox: Damage 10000 & Physics Tick Overclock ───────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRobloxDamage10000Max
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamageBoost", "10000"},
+        {"PhysicsTickRate", "1000"}, {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"},
+        {"ZeroInputLag", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "RobloxDamage10000Max");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CarX: Torque & Horsepower 10000 Drift Overdrive ─────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCarXTorqueHorsepower10000Max
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"TorqueMultiplier", "10.0"}, {"HorsepowerBoost", "10000"}, {"TurboBoostMax", "1"},
+        {"TireGripSlipOptimization", "1"}, {"SteeringAngleMax", "70"}, {"ZeroSteeringLag", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "CarXTorqueHorsepower10000Max");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

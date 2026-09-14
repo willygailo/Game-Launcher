@@ -268,6 +268,17 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectFarlightJetpackZeroCooldown(String path);
     public static native boolean nativeInjectStandoff2Tick128ZeroSpread(String path);
 
+    public static native boolean nativeInjectUniversalGodDamageOverdrive2026(String path);
+    public static native boolean nativeInjectBloodStrikeDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectDeltaForceDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectArenaBreakoutDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectValorantDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectFarlightDamage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectStandoff2Damage10000AttackSpeedMax(String path);
+    public static native boolean nativeInjectGenshinDamage10000ElementalBurstMax(String path);
+    public static native boolean nativeInjectRobloxDamage10000Max(String path);
+    public static native boolean nativeInjectCarXTorqueHorsepower10000Max(String path);
+
     /**
      * Executes single-pass atomic batch injection for a map of key-value overrides.
      */
@@ -1679,6 +1690,142 @@ public class NativeConfigInjector {
             "recoil_scale_x=0", "recoil_scale_y=0", "touch_smooth_factor=0", "touch_sampling_hz=1000"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[Standoff2Tick128]");
+    }
+
+    public static boolean injectUniversalGodDamageOverdrive2026(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectUniversalGodDamageOverdrive2026(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "WeaponDamageBoost=10000", "TrueDamageBoost=10000",
+            "HeadshotMultiplier=5.0", "OneShotKillHitbox=1", "PenetrationBoost=10000", "VestDamageBypass=1",
+            "InstantHitReg=1", "HitRegSyncRate=1000", "FrameSyncDamage=1", "ZeroRecoil=1", "SpreadZero=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UniversalGodDamage]");
+    }
+
+    public static boolean injectBloodStrikeDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectBloodStrikeDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "WeaponDamage=10000", "FleshDamageMultiplier=3.0",
+            "ArmorDamageMultiplier=3.0", "VestDamageBypass=1", "FireRateOverclock=10000", "FireRateBoost=10.0",
+            "PelletDamageFull=1", "HeadshotMultiplier=5.0", "InstantHitReg=1", "HitRegSyncRate=1000",
+            "ZeroRecoil=1", "SpreadZero=1", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[BloodStrikeDamage10000]");
+    }
+
+    public static boolean injectDeltaForceDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectDeltaForceDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "WeaponDamageBoost=10000", "SniperHeadshotDamage=999",
+            "OneShotKillHitbox=1", "ArmorPenetrationTier6=1", "BulletDropComp=1", "MuzzleVelocityFactor=2.0",
+            "ZeroSwaySniper=1", "FrameSyncDamage=1", "InstantHitReg=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[DeltaForceDamage10000]");
+    }
+
+    public static boolean injectArenaBreakoutDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectArenaBreakoutDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "ArmorPiercingTier6=1", "ArmorDamageMultiplier=3.0",
+            "LimbDamageMultiplier=2.5", "FleshDamageMultiplier=3.0", "SniperOneShotKill=1",
+            "InstantHitReg=1", "HitRegSyncRate=1000", "ZeroRecoil=1", "SpreadZero=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ArenaBreakoutDamage10000]");
+    }
+
+    public static boolean injectValorantDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectValorantDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "HeadshotMultiplier=5.0", "OneTapHeadshot=1",
+            "FirstBulletAccuracy=1.0", "CounterStrafeDeadzone=0", "InstantHitReg=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ValorantDamage10000]");
+    }
+
+    public static boolean injectFarlightDamage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectFarlightDamage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "GunDamageMultiplier=10000", "FireRateOverclock=10000",
+            "AirDashBulletSync=1", "HeadshotMultiplier=4.0", "InstantHitReg=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FarlightDamage10000]");
+    }
+
+    public static boolean injectStandoff2Damage10000AttackSpeedMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectStandoff2Damage10000AttackSpeedMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "HeadshotDamageMultiplier=5.0", "cl_updaterate=128",
+            "cl_cmdrate=128", "rate=786432", "InstantHitReg=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Standoff2Damage10000]");
+    }
+
+    public static boolean injectGenshinDamage10000ElementalBurstMax(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectGenshinDamage10000ElementalBurstMax(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "ElementalDamageMultiplier=10000", "PhysicalDamageBase=10000",
+            "CritRateBoost=100", "CritDamageMultiplier=10.0", "ElementalMasteryBoost=10000", "EnergyRechargeMax=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[GenshinDamage10000]");
+    }
+
+    public static boolean injectRobloxDamage10000Max(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectRobloxDamage10000Max(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "DamageLockMax=10000", "DamageBoost=10000", "WeaponDamageBoost=10000", "PhysicsTickRate=1000",
+            "InstantHitReg=1", "HitRegSyncRate=1000", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[RobloxDamage10000]");
+    }
+
+    public static boolean injectCarXTorqueHorsepower10000Max(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCarXTorqueHorsepower10000Max(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "TorqueMultiplier=10.0", "HorsepowerBoost=10000", "TurboBoostMax=1", "TireGripSlipOptimization=1",
+            "SteeringAngleMax=70", "ZeroSteeringLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CarXTorque10000]");
     }
 
     public static boolean injectHokAutoSmiteObjective(String path) {

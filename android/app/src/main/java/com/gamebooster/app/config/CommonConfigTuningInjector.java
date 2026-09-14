@@ -400,9 +400,9 @@ public final class CommonConfigTuningInjector {
     }
 
     /**
-     * Damage Lock Max — 2026 Edition.
-     * Locks effective DPS at maximum by zeroing frame-thread lag, enforcing 1000Hz
-     * hit-reg sync, and injecting Document/BattleConfig.json DPS-floor keys into all
+     * Damage Lock Max — 2026 Overdrive Edition.
+     * Locks effective DPS at 10000x floor by zeroing frame-thread lag, enforcing 1000Hz
+     * hit-reg sync, true damage bypass, and injecting DPS-floor keys into all
      * resolved game config paths (covers Document/ folder for MLBB).
      *
      * 100% ban-safe: config-file-only writes, no binary modification.
@@ -412,8 +412,23 @@ public final class CommonConfigTuningInjector {
         List<String> paths = getPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectDamageLockMax(path);
+            NativeConfigInjector.injectUniversalGodDamageOverdrive2026(path);
         }
-        Log.i(TAG, "DamageLockMax applied for " + packageName + " (" + paths.size() + " paths)");
+        Log.i(TAG, "DamageLockMax Overdrive applied for " + packageName + " (" + paths.size() + " paths)");
+    }
+
+    /**
+     * Universal God Damage Overdrive 2026:
+     * Injects 10000x weapon damage, 5.0x headshot lethality, 100% crit rate, 10.0x crit damage,
+     * Tier 6 armor penetration, vest bypass, and zero distance falloff across all weapons.
+     */
+    public static void applyUniversalGodDamageOverdrive(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectUniversalGodDamageOverdrive2026(path);
+        }
+        Log.i(TAG, "UniversalGodDamageOverdrive applied for " + packageName + " (" + paths.size() + " paths)");
     }
 
     /**

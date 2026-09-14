@@ -10,18 +10,51 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *env, jclass, jstring jPath, jfloat mult, jfloat hsMult, jint crit) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
     std::string pathStr(path);
-    std::string multStr = std::to_string(mult > 0 ? mult : 1.5f);
-    std::string hsStr = std::to_string(hsMult > 0 ? hsMult : 2.0f);
+    std::string multStr = std::to_string(mult > 0 ? mult : 10000.0f);
+    std::string hsStr = std::to_string(hsMult > 0 ? hsMult : 5.0f);
     std::string critStr = std::to_string(crit > 0 ? crit : 100);
     std::vector<std::pair<std::string, std::string>> keys = {
-        {"DamageBoost", "1"}, {"DamageMultiplier", multStr}, {"DamageLockMax", "1"},
-        {"HeadshotMultiplier", hsStr}, {"CritRateBoost", critStr}, {"EffectiveDPSMode", "3"},
-        {"PenetrationBoost", "1"}, {"TrueDamageBoost", "1"}, {"InstantHitReg", "1"},
-        {"HitRegSyncRate", "1000"}, {"FrameSyncDamage", "1"}, {"TouchPollingRate", "1000"},
-        {"r.PUBGDamageLockMax", "1"}, {"r.PUBGDamageBoost", "1"}, {"r.PUBGHeadshotMultiplier", hsStr}
+        {"DamageBoost", "10000"}, {"DamageMultiplier", multStr}, {"DamageLockMax", "10000"},
+        {"WeaponDamageBoost", "10000"}, {"TrueDamageBoost", "10000"}, {"TrueDamageMultiplier", "10000"},
+        {"HeadshotMultiplier", hsStr}, {"CritRateBoost", critStr}, {"CritDamageMultiplier", "10.0"},
+        {"EffectiveDPSMode", "3"}, {"PenetrationBoost", "10000"}, {"ArmorPenetrationTier6", "1"},
+        {"VestDamageBypass", "1"}, {"HelmetPenetrationLevel3", "1.0"}, {"FleshDamageMultiplier", "3.0"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"FrameSyncDamage", "1"},
+        {"DamageRangeFalloff", "0.0"}, {"MinDamageMultiplier", "1.0"}, {"MaxDamageRange", "99999"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"ZeroInputLag", "1"},
+        {"r.PUBGDamageLockMax", "10000"}, {"r.PUBGDamageBoost", "10000"}, {"r.PUBGHeadshotMultiplier", hsStr},
+        {"r.PUBGTrueDamageMod", "1"}, {"r.PUBGLimbDamageMultiplier", "2.0"}, {"r.PUBGVestDamageBypass", "1"}
     };
     bool ok = apply_keys_to_file(pathStr, path, keys, "DamageBoost");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalGodDamageOverdrive2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"DamageLockMax", "10000"}, {"DamageBoost", "10000"}, {"WeaponDamageBoost", "10000"},
+        {"TrueDamageBoost", "10000"}, {"TrueDamageMultiplier", "10000"}, {"HeadshotMultiplier", "5.0"},
+        {"OneShotKillHitbox", "1"}, {"OneTapHeadshot", "1"}, {"FirstBulletAccuracy", "1.0"},
+        {"CritRateBoost", "100"}, {"CritDamageMultiplier", "10.0"}, {"EffectiveDPSMode", "3"},
+        {"PenetrationBoost", "10000"}, {"ArmorPenetrationTier6", "1"}, {"VestDamageBypass", "1"},
+        {"HelmetPenetrationLevel3", "1.0"}, {"FleshDamageMultiplier", "3.0"}, {"LimbDamageMultiplier", "2.5"},
+        {"PelletDamageFull", "1"}, {"ShotgunDamagePerPellet", "100"}, {"SniperHeadshotDamage", "999"},
+        {"DamageRangeFalloff", "0.0"}, {"MinDamageMultiplier", "1.0"}, {"MaxDamageRange", "99999"},
+        {"InstantHitReg", "1"}, {"HitRegSyncRate", "1000"}, {"FrameSyncDamage", "1"},
+        {"AttackFrameSync", "1"}, {"BulletDropComp", "1"}, {"MuzzleVelocityFactor", "2.0"},
+        {"ZeroRecoil", "1"}, {"SpreadZero", "1"}, {"ZeroInputLag", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"bFramePacingEnabled", "True"},
+        {"r.PUBGDamageLockMax", "10000"}, {"r.PUBGDamageBoost", "10000"}, {"r.PUBGTrueDamageMod", "1"},
+        {"r.PUBGHeadshotMultiplier", "5.0"}, {"r.PUBGFleshDamageMultiplier", "3.0"}, {"r.PUBGVestDamageBypass", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UniversalGodDamageOverdrive2026");
     env->ReleaseStringUTFChars(jPath, path);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
@@ -660,7 +693,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     std::string pathStr(path);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"FastReload", "1"}, {"ReloadSpeedMultiplier", "10.0"}, {"ReloadDurationReduction", "0.99"},
-        {"InstantChambering", "1"}, {"QuickSwap", "1"}, {"WeaponSwapZeroDelay", "1"},
+        {"TacticalReloadTime", "0.01"}, {"FullReloadTime", "0.01"}, {"SleightOfHandUnlock", "1"},
+        {"FastMagMultiplier", "10.0"}, {"InstantChambering", "1"}, {"BoltActionCycleTime", "0"},
+        {"SniperRechamberInstant", "1"}, {"QuickSwap", "1"}, {"WeaponSwapZeroDelay", "1"},
         {"HolsterSpeedBoost", "10.0"}, {"DrawSpeedBoost", "10.0"}, {"SprintToFireZeroDelay", "1"},
         {"AdsZeroDelay", "1"}, {"TouchPollingRate", "1000"}, {"ZeroInputLag", "1"}
     };
