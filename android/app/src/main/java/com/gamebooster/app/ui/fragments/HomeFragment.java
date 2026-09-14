@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.gamebooster.app.R;
-import com.gamebooster.app.device.DeviceInfoChannel;
-import com.gamebooster.app.engine.CommandExecutor;
-import com.gamebooster.app.engine.EngineMode;
 import com.gamebooster.app.games.GameAppInfo;
 import com.gamebooster.app.games.HomeGameScanner;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -39,8 +36,6 @@ import com.gamebooster.app.ui.views.LoopingVideoBackgroundView;
 
 public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
-    private TextView tvEngineMode;
-    private TextView tvRamUsage;
     private TextView tvGamesHeader;
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
@@ -56,8 +51,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
                 || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
                 || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState() == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
-
-        updateStatusStrip();
 
         if (nowActive && !lastKnownShizukuActive) {
             lastKnownShizukuActive = true;
@@ -79,8 +72,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        tvEngineMode = view.findViewById(R.id.tv_engine_mode);
-        tvRamUsage = view.findViewById(R.id.tv_ram_usage);
         tvGamesHeader = view.findViewById(R.id.tv_games_header);
         layoutEmptyState = view.findViewById(R.id.layout_empty_state);
         rvGames = view.findViewById(R.id.rv_games_list);
@@ -97,35 +88,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (videoHeroBanner != null) {
             videoHeroBanner.setMuted(true);
             videoHeroBanner.setVideoRawResource(R.raw.banner_video);
-        }
-
-        View chipEngineMode = view.findViewById(R.id.chip_engine_mode);
-        if (chipEngineMode != null) {
-            chipEngineMode.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    ShizukuManager.handleShizukuCardClick(getContext());
-                    updateStatusStrip();
-                }
-            });
-        }
-        if (tvEngineMode != null) {
-            tvEngineMode.setOnClickListener(v -> {
-                if (getContext() != null) {
-                    com.gamebooster.app.engine.ShellExecutor.invalidateRootCache();
-                    boolean hasRoot = com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable();
-                    boolean hasShizuku = com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
-                    if (!hasRoot && !hasShizuku) {
-                        ShizukuManager.handleShizukuCardClick(getContext());
-                    } else {
-                        com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getContext());
-                        String toastMsg = hasRoot
-                                ? "⚡ Root Superuser (UID 0) active! All permissions granted."
-                                : "⚡ Virtual Root via Shizuku active! All privileged features enabled.";
-                        android.widget.Toast.makeText(getContext(), toastMsg, android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                    updateStatusStrip();
-                }
-            });
         }
 
         Button btnSettings = view.findViewById(R.id.btn_open_settings);
@@ -195,7 +157,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             dashboardView.bindLifecycle(getViewLifecycleOwner());
         }
 
-        updateStatusStrip();
         loadAndScanGames(true);
         return view;
     }
@@ -241,7 +202,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         } catch (Throwable ignored) {}
 
         applyVideoBackgroundState();
-        updateStatusStrip();
         loadAndScanGames(true);
     }
 
@@ -289,7 +249,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             if (videoHeroBanner != null) videoHeroBanner.pause();
         } else {
             applyVideoBackgroundState();
-            updateStatusStrip();
             loadAndScanGames(true);
         }
     }
@@ -321,68 +280,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         }
     }
 
-    private void updateStatusStrip() {
-        if (!isAdded() || getContext() == null) return;
-
-        boolean hasRoot = com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable();
-        com.gamebooster.app.shizuku.ShizukuConnectionManager.State conn =
-                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().getState();
-        boolean isShizukuActive = ShizukuExecutor.hasShizukuPermission()
-                || com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()
-                || com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady()
-                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.READY;
-
-        if (hasRoot && isShizukuActive) {
-            if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ DUAL ENGINE: ROOT (UID 0) + SHIZUKU ACTIVE");
-                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FFCC"));
-            }
-        } else if (hasRoot) {
-            if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ ROOT ACCESS GRANTED (UID 0 SUPERUSER)");
-                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FF0055"));
-            }
-        } else if (isShizukuActive) {
-            if (tvEngineMode != null) {
-                String osBadge = "VIRTUAL ROOT (SHIZUKU FULL ACTIVE)";
-                if (android.os.Build.VERSION.SDK_INT >= 36) {
-                    osBadge = "VIRTUAL ROOT • ANDROID 16 BAKLAVA";
-                } else if (android.os.Build.VERSION.SDK_INT >= 35) {
-                    osBadge = "VIRTUAL ROOT • ANDROID 15 ADPF 3.0";
-                } else if (android.os.Build.VERSION.SDK_INT >= 34) {
-                    osBadge = "VIRTUAL ROOT • ANDROID 14 ADPF 2.0";
-                } else if (android.os.Build.VERSION.SDK_INT >= 33) {
-                    osBadge = "VIRTUAL ROOT • ANDROID 13 GAME ENGINE";
-                }
-                tvEngineMode.setText("⚡ " + osBadge);
-                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#00FFCC"));
-            }
-        } else if (ShizukuExecutor.isShizukuAvailable() || rikka.shizuku.Shizuku.pingBinder()) {
-            if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ SHIZUKU API: GRANT PERMISSION (TAP)");
-                tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FFCC00"));
-            }
-        } else if (tvEngineMode != null
-                && (conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.BINDING
-                || conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.RETRY)) {
-            tvEngineMode.setText("🔄 Shizuku connecting…");
-            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#FCA5A5"));
-        } else if (tvEngineMode != null && conn == com.gamebooster.app.shizuku.ShizukuConnectionManager.State.DEAD) {
-            tvEngineMode.setText("⚠️ Shizuku Disconnected (Tap to connect)");
-            tvEngineMode.setTextColor(android.graphics.Color.parseColor("#EF4444"));
-        } else {
-            EngineMode engineMode = CommandExecutor.getActiveEngineMode();
-            if (tvEngineMode != null) {
-                tvEngineMode.setText("⚡ " + engineMode.getDisplayName() + " (Tap to connect)");
-                tvEngineMode.setTextColor(engineMode.getColorHex());
-            }
-        }
-
-        if (tvRamUsage != null && getContext() != null) {
-            DeviceInfoChannel.Metrics m = DeviceInfoChannel.getMetrics(getContext());
-            tvRamUsage.setText("RAM: " + m.ramUsagePct + "% (" + m.usedRamMb + "/" + m.totalRamMb + " MB)");
-        }
-    }
 
     /**
      * Non-Blocking Architecture:
