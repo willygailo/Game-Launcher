@@ -111,4 +111,21 @@ public class SpoofPreferences {
         } catch (Throwable ignored) {}
         return out;
     }
+
+    /**
+     * Checks whether spoofing is enabled and configured for a specific package.
+     */
+    public static boolean isSpoofActiveForPackage(Context context, String packageName) {
+        if (context == null || !isSpoofEnabled(context)) return false;
+        String id = resolveProfileId(context, packageName);
+        return id != null && !id.trim().isEmpty();
+    }
+
+    /**
+     * Completely resets all spoofing preferences (master switch, active profile, per-package overrides).
+     */
+    public static void resetAll(Context context) {
+        if (context == null) return;
+        getPrefs(context).edit().clear().apply();
+    }
 }

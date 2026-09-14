@@ -241,6 +241,56 @@ public class PubgConfigPatcher {
         return patchForTier(packageName, FpsUnlockTier.FPS_185);
     }
 
+    // ─── 4.6.0 Dedicated Presets: Ultra HDR 120, HDR 120, SuperSmooth 165 ───
+
+    public static boolean patchUltraHdr120(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmUltraHdr120(path)) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 120, true, 5);
+        deployPakPatch(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM Ultra HDR + 120 FPS applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean patchHdr120(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmHdr120(path)) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 120, true, 4);
+        deployPakPatch(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM HDR + 120 FPS applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean patchSuperSmooth165(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmSuperSmooth165(path)) {
+                written++;
+            }
+        }
+        patchActiveSavBinary(packageName, 165, false, 1);
+        deployPakPatch(packageName);
+        AntiLogPatcher.applyAntiLog(packageName);
+        Log.i(TAG, "PUBGM SuperSmooth 165 FPS applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
     // ─── Competitive Force-Write ─────────────────────────────────────────────
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
@@ -274,35 +324,63 @@ public class PubgConfigPatcher {
     public static boolean deployPakPatch(String pkg) {
         if (pkg == null || pkg.trim().isEmpty()) return false;
 
-        String[] candidateDirs = {
-            "/storage/emulated/0/Download",
-            "/sdcard/Download",
-            "/storage/emulated/0/Documents/Game-Launcher",
-            "/sdcard/Documents/Game-Launcher",
-            "/storage/emulated/0/GameLauncher",
-            "/sdcard/GameLauncher",
-            "/data/local/tmp"
-        };
-
         String foundSource = null;
-        String pakFileName = null;
+        String pakFileName = "game_patch_4.6.0.21556.pak";
 
-        for (String dir : candidateDirs) {
-            if (!ShizukuFileManager.fileExists(dir)) continue;
-            // Quick check for any game_patch*.pak
-            String checkCmd = "ls -1 \"" + dir + "\"/game_patch*.pak 2>/dev/null | head -n 1";
-            String res = ShizukuExecutor.hasShizukuPermission()
-                    ? ShizukuExecutor.executeShizukuCommand(checkCmd)
-                    : CommandExecutor.executeSystemCommand(checkCmd);
-            if (res != null && !res.trim().isEmpty() && !res.startsWith("ERROR:") && !res.contains("No such")) {
-                foundSource = res.trim();
-                int slash = foundSource.lastIndexOf('/');
-                pakFileName = (slash >= 0) ? foundSource.substring(slash + 1) : foundSource;
-                break;
+        // 1. Check if bundled in APK assets, extract to app cache for deployment
+        try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                java.io.File cachePak = new java.io.File(ctx.getCacheDir(), pakFileName);
+                if (!cachePak.exists() || cachePak.length() == 0) {
+                    try (java.io.InputStream is = ctx.getAssets().open("paks/" + pakFileName);
+                         java.io.FileOutputStream fos = new java.io.FileOutputStream(cachePak)) {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = is.read(buf)) > 0) {
+                            fos.write(buf, 0, len);
+                        }
+                        fos.flush();
+                    }
+                }
+                if (cachePak.exists() && cachePak.length() > 0) {
+                    cachePak.setReadable(true, false);
+                    foundSource = cachePak.getAbsolutePath();
+                }
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "Asset pak extraction note: " + t.getMessage());
+        }
+
+        // 2. Check local directories and downloads
+        if (foundSource == null) {
+            String[] candidateDirs = {
+                "/home/willygailo/Downloads/Game-Launcher/android",
+                "/storage/emulated/0/Download",
+                "/sdcard/Download",
+                "/storage/emulated/0/Documents/Game-Launcher",
+                "/sdcard/Documents/Game-Launcher",
+                "/storage/emulated/0/GameLauncher",
+                "/sdcard/GameLauncher",
+                "/data/local/tmp"
+            };
+
+            for (String dir : candidateDirs) {
+                if (!ShizukuFileManager.fileExists(dir)) continue;
+                String checkCmd = "ls -1 \"" + dir + "\"/game_patch*.pak 2>/dev/null | head -n 1";
+                String res = ShizukuExecutor.hasShizukuPermission()
+                        ? ShizukuExecutor.executeShizukuCommand(checkCmd)
+                        : CommandExecutor.executeSystemCommand(checkCmd);
+                if (res != null && !res.trim().isEmpty() && !res.startsWith("ERROR:") && !res.contains("No such")) {
+                    foundSource = res.trim();
+                    int slash = foundSource.lastIndexOf('/');
+                    pakFileName = (slash >= 0) ? foundSource.substring(slash + 1) : foundSource;
+                    break;
+                }
             }
         }
 
-        if (foundSource == null || pakFileName == null || pakFileName.isEmpty()) {
+        if (foundSource == null) {
             Log.d(TAG, "No optional PAK file found for " + pkg + "; relying purely on native INI & Active.sav binary patch.");
             return false;
         }
@@ -598,17 +676,24 @@ public class PubgConfigPatcher {
         patchActiveSavBinary(pkg, targetFps, true);
     }
 
+    public static void patchActiveSavBinary(String pkg, int targetFps, boolean enableHdr) {
+        patchActiveSavBinary(pkg, targetFps, enableHdr, enableHdr ? 4 : 1);
+    }
+
     /**
      * Patches Active.sav binary savegame file directly using byte manipulation.
      * Enforces FPSLevel, BattleFPS, and LobbyFPS to Level 7 (120 FPS / Ultra Extreme),
-     * and sets BattleRenderQuality / LobbyRenderQuality to Level 4 (HDR) or Level 1 (Smooth).
+     * and sets BattleRenderQuality / LobbyRenderQuality to Level 5 (Ultra HDR), Level 4 (HDR) or Level 1 (Smooth).
      */
-    public static void patchActiveSavBinary(String pkg, int targetFps, boolean enableHdr) {
+    public static void patchActiveSavBinary(String pkg, int targetFps, boolean enableHdr, int qualityLevel) {
         if (pkg == null) return;
         final int rawLevel = FpsUnlockTier.fromFps(targetFps).level;
         // In PUBGM UE4 engine: Level 7 is 120 FPS. Any level > 7 fails enum validation and clamps to 90 FPS (Level 6).
         final int effectiveFpsLevel = (targetFps >= 120) ? 7 : rawLevel;
-        final int effectiveQuality = enableHdr ? 4 : 1; // 4 = HDR, 1 = Smooth
+        final int effectiveQuality = (qualityLevel > 0) ? qualityLevel : (enableHdr ? 4 : 1);
+        final int mobileHdrMode = (effectiveQuality >= 5) ? 2 : (enableHdr ? 1 : 0);
+        final int shadowQuality = (effectiveQuality >= 5) ? 4 : (enableHdr ? 3 : 0);
+        final int shadowSwitch = (effectiveQuality >= 4) ? 1 : 0;
 
         String[] savPaths = {
             // Double-subfolder canonical UE4 paths
@@ -668,10 +753,9 @@ public class PubgConfigPatcher {
                     modified |= patchGvasIntProperty(data, "LobbyRenderQuality", effectiveQuality);
                     modified |= patchGvasIntProperty(data, "MainCityRenderQuality", effectiveQuality);
                     modified |= patchGvasIntProperty(data, "GraphicQuality", effectiveQuality);
-                    modified |= patchGvasIntProperty(data, "ArtQuality", effectiveQuality);
-                    modified |= patchGvasIntProperty(data, "MobileHDRMode", enableHdr ? 1 : 0);
-                    modified |= patchGvasIntProperty(data, "ShadowQuality", enableHdr ? 3 : 1);
-                    modified |= patchGvasIntProperty(data, "ShadowSwitch", enableHdr ? 1 : 0);
+                    modified |= patchGvasIntProperty(data, "MobileHDRMode", mobileHdrMode);
+                    modified |= patchGvasIntProperty(data, "ShadowQuality", shadowQuality);
+                    modified |= patchGvasIntProperty(data, "ShadowSwitch", shadowSwitch);
 
                     if (modified) {
                         if (ShizukuFileManager.fileExists(sav)) {

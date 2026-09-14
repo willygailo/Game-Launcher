@@ -243,6 +243,9 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodm165FpsGraphics(String path, int targetFps, int qualityLevel);
     public static native boolean nativeInjectMlbb165FpsGraphics(String path, int targetFps, int qualityLevel);
     public static native boolean nativeInjectPubgm165FpsGraphics(String path, int targetFps, int qualityLevel);
+    public static native boolean nativeInjectPubgmUltraHdr120(String path);
+    public static native boolean nativeInjectPubgmHdr120(String path);
+    public static native boolean nativeInjectPubgmSuperSmooth165(String path);
     public static native boolean nativeInjectMlbbAllHeroOverdrive(String path);
     public static native boolean nativeInjectMlbbFannyNoEnergyLimit(String path);
     public static native boolean nativeInjectMlbbLingNoEnergyLimit(String path);
@@ -2532,6 +2535,39 @@ public class NativeConfigInjector {
         else if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")) section = "[EnjoyCJZC DeviceProfile]";
         else if (path.endsWith("GameUserSettings.ini")) section = "[/Script/ShadowTrackerExtra.UserSetting]";
         return ConfigFileHelper.patchKeys(path, keys, section);
+    }
+
+    public static boolean injectPubgmUltraHdr120(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmUltraHdr120(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return injectPubgm165FpsGraphics(path, 120, 5);
+    }
+
+    public static boolean injectPubgmHdr120(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmHdr120(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return injectPubgm165FpsGraphics(path, 120, 4);
+    }
+
+    public static boolean injectPubgmSuperSmooth165(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmSuperSmooth165(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return injectPubgm165FpsGraphics(path, 165, 1);
     }
 
     public static boolean injectMlbbAllHeroOverdrive(String path) {

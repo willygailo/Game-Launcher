@@ -87,4 +87,28 @@ public class ShizukuStatusArchitectureTest {
         assertEquals(1000, profile.getTouchBoostHz());
         assertEquals("performance", profile.getCpuGovernor());
     }
+
+    @Test
+    public void testPubgmPresetMethods() {
+        // Assert that null package returns false gracefully
+        assertFalse(com.gamebooster.app.config.PubgConfigPatcher.patchUltraHdr120(null));
+        assertFalse(com.gamebooster.app.config.PubgConfigPatcher.patchHdr120(null));
+        assertFalse(com.gamebooster.app.config.PubgConfigPatcher.patchSuperSmooth165(null));
+
+        // In unit test environment, fallback config patcher executes successfully for dummy paths
+        boolean resUltra = com.gamebooster.app.config.PubgConfigPatcher.patchUltraHdr120("com.dummy.nonexistent");
+        assertTrue(resUltra);
+
+        boolean resHdr = com.gamebooster.app.config.PubgConfigPatcher.patchHdr120("com.dummy.nonexistent");
+        assertTrue(resHdr);
+
+        boolean resSmooth = com.gamebooster.app.config.PubgConfigPatcher.patchSuperSmooth165("com.dummy.nonexistent");
+        assertTrue(resSmooth);
+    }
+
+    @Test
+    public void testPakAssetFileExists() {
+        java.io.File pak = new java.io.File("src/main/assets/paks/game_patch_4.6.0.21556.pak");
+        assertTrue("game_patch_4.6.0.21556.pak must exist in assets/paks/", pak.exists() && pak.length() > 0);
+    }
 }

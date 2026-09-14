@@ -204,7 +204,11 @@ public final class AntiLogPatcher {
     private static List<String> getLogPathsForPackage(String pkg) {
         List<String> paths = new ArrayList<>();
         // Use Environment API instead of hardcoded /sdcard/ to comply with Android storage best practices
-        final String extRoot = Environment.getExternalStorageDirectory().getPath()
+        java.io.File ext = null;
+        try {
+            ext = Environment.getExternalStorageDirectory();
+        } catch (Throwable ignored) {}
+        final String extRoot = (ext != null ? ext.getPath() : "/sdcard")
                 + "/Android/data/" + pkg;
 
         // Standard external + internal paths

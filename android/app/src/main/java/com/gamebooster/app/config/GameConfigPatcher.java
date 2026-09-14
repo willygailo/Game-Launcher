@@ -110,6 +110,51 @@ public class GameConfigPatcher {
         return applyUltraExtreme185Patch(null, packageName);
     }
 
+    /**
+     * Applies PUBGM Ultra HDR + 120 FPS native preset (Quality 5, BattleFPS 7 / 120 FPS).
+     */
+    public static PatchResult applyPubgmUltraHdr120(Context context, String packageName) {
+        boolean ok = PubgConfigPatcher.patchUltraHdr120(packageName);
+        if (context != null && SpoofPreferences.isSpoofEnabled(context)) {
+            DeviceSpooferEngine.applySpoofing(context, packageName);
+        }
+        return new PatchResult(ok, ok ? "Ultra HDR + 120 FPS applied successfully" : "Failed to apply Ultra HDR + 120 FPS");
+    }
+
+    public static PatchResult applyPubgmUltraHdr120(String packageName) {
+        return applyPubgmUltraHdr120(null, packageName);
+    }
+
+    /**
+     * Applies PUBGM HDR + 120 FPS native preset (Quality 4, BattleFPS 7 / 120 FPS).
+     */
+    public static PatchResult applyPubgmHdr120(Context context, String packageName) {
+        boolean ok = PubgConfigPatcher.patchHdr120(packageName);
+        if (context != null && SpoofPreferences.isSpoofEnabled(context)) {
+            DeviceSpooferEngine.applySpoofing(context, packageName);
+        }
+        return new PatchResult(ok, ok ? "HDR + 120 FPS applied successfully" : "Failed to apply HDR + 120 FPS");
+    }
+
+    public static PatchResult applyPubgmHdr120(String packageName) {
+        return applyPubgmHdr120(null, packageName);
+    }
+
+    /**
+     * Applies PUBGM SuperSmooth 165 FPS native preset (Quality 1, TargetFPS 165, BattleFPS 7).
+     */
+    public static PatchResult applyPubgmSuperSmooth165(Context context, String packageName) {
+        boolean ok = PubgConfigPatcher.patchSuperSmooth165(packageName);
+        if (context != null && SpoofPreferences.isSpoofEnabled(context)) {
+            DeviceSpooferEngine.applySpoofing(context, packageName);
+        }
+        return new PatchResult(ok, ok ? "SuperSmooth 165 FPS applied successfully" : "Failed to apply SuperSmooth 165 FPS");
+    }
+
+    public static PatchResult applyPubgmSuperSmooth165(String packageName) {
+        return applyPubgmSuperSmooth165(null, packageName);
+    }
+
     public static PatchResult applyGameFpsPatch(Context context, String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) {
             return new PatchResult(false, "Invalid package name");

@@ -685,6 +685,18 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
   (JNIEnv *, jclass, jstring, jint, jint);
 
 /*
+ * PUBGM 4.6.0 Dedicated Graphics Presets
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmUltraHdr120
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmHdr120
+  (JNIEnv *, jclass, jstring);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmSuperSmooth165
+  (JNIEnv *, jclass, jstring);
+
+/*
  * nativeInjectPubgmDamage10000AttackSpeedMax
  * Method signature: JNIEnv *, jclass, jstring
  */

@@ -114,6 +114,14 @@ public class SpoofValidator {
         return Build.MODEL.equals(profile.model) && Build.BRAND.equals(profile.brand);
     }
 
+    /**
+     * Validates whether spoofing is successfully active and matched for a specific target game package.
+     */
+    public static SpoofValidationResult validatePackage(Context context, String packageName) {
+        SpoofProfile profile = DeviceSpooferEngine.getEffectiveProfile(context, packageName);
+        return validate(context, profile);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Helpers
     // ─────────────────────────────────────────────────────────────────────────

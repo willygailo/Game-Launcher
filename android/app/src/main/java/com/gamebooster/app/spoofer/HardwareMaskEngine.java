@@ -135,6 +135,17 @@ public class HardwareMaskEngine {
                 batchCommands.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
                 batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
                 batchCommands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0 2>/dev/null");
+
+                // Target game driver opt-in and ANGLE purge for smooth maximum FPS
+                if (com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(pkg)) {
+                    batchCommands.add("settings put global game_driver_opt_in_apps \"" + pkg + "\" 2>/dev/null");
+                    batchCommands.add("settings put global game_driver_prerelease_opt_in_apps \"" + pkg + "\" 2>/dev/null");
+                }
+                batchCommands.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+                batchCommands.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+                batchCommands.add("settings delete global angle_enabled_pkgs 2>/dev/null");
+                batchCommands.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+                batchCommands.add("setprop debug.angle.backend 0");
             }
 
             // ═══════════════════════════════════════════════════════════════════
@@ -340,11 +351,18 @@ public class HardwareMaskEngine {
                 }
             }
 
-            // CRITICAL: Force binary patching of Active.sav & ActiveShadow.sav for PUBGM 4.6 (120 FPS / 90 FPS unlock)
+            // CRITICAL: Force binary patching of Active.sav & ActiveShadow.sav and PAK deployment for PUBGM 4.6 (120 FPS / 165 FPS unlock)
             if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
                 pkg.contains("vng.pubgmobile") || pkg.contains("krmobile") || pkg.contains("rekoo")) {
                 try {
-                    com.gamebooster.app.config.PubgConfigPatcher.patchActiveSavBinary(packageName, targetFps, true);
+                    if (targetFps >= 165) {
+                        com.gamebooster.app.config.PubgConfigPatcher.patchSuperSmooth165(packageName);
+                    } else if (targetFps >= 120) {
+                        com.gamebooster.app.config.PubgConfigPatcher.patchUltraHdr120(packageName);
+                    } else {
+                        com.gamebooster.app.config.PubgConfigPatcher.patchActiveSavBinary(packageName, targetFps, true);
+                    }
+                    com.gamebooster.app.config.PubgConfigPatcher.deployPakPatch(packageName);
                     com.gamebooster.app.config.AntiLogPatcher.applyAntiLog(packageName);
                 } catch (Throwable t) {
                     Log.w(TAG, "patchActiveSavBinary error: " + t.getMessage());
@@ -363,6 +381,14 @@ public class HardwareMaskEngine {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, jsonProfile, "666");
                     }
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps);
+                } else if (p.endsWith(".ini")) {
+                    String[] profileKeys = profile.generateUe4DeviceProfileKeys(targetFps);
+                    ConfigFileHelper.patchKeys(p, profileKeys, "[DeviceProfile]");
+                    ConfigFileHelper.patchKeys(p, profileKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
                 }
             }
         }
@@ -378,6 +404,8 @@ public class HardwareMaskEngine {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, genshinProfile, "666");
                     }
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 }
             }
         }
@@ -386,7 +414,15 @@ public class HardwareMaskEngine {
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             GameSecurityBypassEngine.purgeCorruptedAssetCaches(packageName);
             try {
-                MlbbConfigPatcher.patch(packageName, targetFps);
+                if (targetFps >= 185) {
+                    MlbbConfigPatcher.patchUltraExtreme185(packageName);
+                } else if (targetFps >= 165) {
+                    MlbbConfigPatcher.patchUltraExtreme165(packageName);
+                } else if (targetFps >= 144) {
+                    MlbbConfigPatcher.patchUltraExtreme144(packageName);
+                } else {
+                    MlbbConfigPatcher.patch(packageName, targetFps);
+                }
             } catch (Throwable ignored) {}
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
@@ -407,6 +443,10 @@ public class HardwareMaskEngine {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, ffProfile, "666");
                     }
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
                 }
             }
         }
@@ -423,6 +463,10 @@ public class HardwareMaskEngine {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, hokProfile, "666");
                     }
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
                 }
             }
         }

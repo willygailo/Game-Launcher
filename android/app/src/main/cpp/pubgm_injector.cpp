@@ -437,10 +437,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     int fps = (targetFps >= 120) ? targetFps : 165;
     // In PUBGM UE4 engine: Level 7 is 120/165 FPS tier. Levels > 7 fail validation.
     int effectiveLevel = (fps >= 120) ? 7 : 6;
-    int q = (qualityLevel > 0) ? qualityLevel : 4; // 4 = HDR
+    int q = (qualityLevel > 0) ? qualityLevel : 4; // 1 = Smooth/SuperSmooth, 4 = HDR, 5 = Ultra HDR
     std::string fpsStr = std::to_string(fps);
     std::string effLvlStr = std::to_string(effectiveLevel);
     std::string qStr = std::to_string(q);
+
+    int mobileHdrMode = (q >= 5) ? 2 : ((q == 4) ? 1 : 0);
+    int shadowQuality = (q >= 5) ? 4 : ((q == 4) ? 3 : 0);
+    int shadowSwitch = (q >= 4) ? 1 : 0;
+    std::string mobileHdrStr = std::to_string(mobileHdrMode);
+    std::string shadowQStr = std::to_string(shadowQuality);
+    std::string shadowSwStr = std::to_string(shadowSwitch);
 
     // 1. Binary GVAS savegame (Active.sav / ActiveShadow.sav)
     if (pathStr.rfind(".sav") != std::string::npos || pathStr.find("Active") != std::string::npos) {
@@ -474,9 +481,9 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         mod |= patch_gvas_int_property_cpp(data, "MainCityRenderQuality", q);
         mod |= patch_gvas_int_property_cpp(data, "GraphicQuality", q);
         mod |= patch_gvas_int_property_cpp(data, "ArtQuality", q);
-        mod |= patch_gvas_int_property_cpp(data, "MobileHDRMode", 1);
-        mod |= patch_gvas_int_property_cpp(data, "ShadowQuality", 3);
-        mod |= patch_gvas_int_property_cpp(data, "ShadowSwitch", 1);
+        mod |= patch_gvas_int_property_cpp(data, "MobileHDRMode", mobileHdrMode);
+        mod |= patch_gvas_int_property_cpp(data, "ShadowQuality", shadowQuality);
+        mod |= patch_gvas_int_property_cpp(data, "ShadowSwitch", shadowSwitch);
         mod |= patch_gvas_int_property_cpp(data, "AutoChangeQuality", 0);
 
         std::string tmpPath = pathStr + ".tmp";
@@ -496,7 +503,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             utime(path, &t);
         }
         env->ReleaseStringUTFChars(jPath, path);
-        LOGI("PubgmActiveSav 4.6 165 FPS & HDR injected: %s [ok=%d]", pathStr.c_str(), ok);
+        LOGI("PubgmActiveSav 4.6 (fps=%d, q=%d, hdr=%d) injected: %s [ok=%d]", fps, q, mobileHdrMode, pathStr.c_str(), ok);
         return ok ? JNI_TRUE : JNI_FALSE;
     }
 
@@ -514,8 +521,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         patch_xml_node(content, "int", "BattleFPSLevel", effLvlStr);
         patch_xml_node(content, "int", "LobbyFPSLevel", effLvlStr);
         patch_xml_node(content, "int", "GraphicQuality", qStr);
-        patch_xml_node(content, "int", "MobileHDRMode", "1");
+        patch_xml_node(content, "int", "MobileHDRMode", mobileHdrStr);
+        patch_xml_node(content, "int", "ShadowQuality", shadowQStr);
         patch_xml_node(content, "int", "HighFPSMode", "3");
+        patch_xml_node(content, "int", "Unlock120Hz", "1");
+        patch_xml_node(content, "int", "Unlock144Hz", "1");
         patch_xml_node(content, "int", "Unlock165Hz", "1");
         patch_xml_node(content, "int", "Unlock165FPS", "1");
     } else if (pathStr.find("EnjoyCJZC.ini") != std::string::npos || pathStr.find("EnjoyCJ.ini") != std::string::npos) {
@@ -527,8 +537,8 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"FpsOption", effLvlStr}, {"SelectFps", effLvlStr},
             {"FPS", fpsStr}, {"MaxFPS", fpsStr}, {"TargetFPS", fpsStr}, {"FrameRateLimit", fpsStr},
             {"MobileFPSLimit", fpsStr}, {"GraphicQuality", qStr}, {"ArtQuality", qStr},
-            {"ShadowQuality", "3"}, {"MobileHDRMode", "1"}, {"HighFPSMode", "3"},
-            {"bUseHDRMode", "True"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
+            {"ShadowQuality", shadowQStr}, {"MobileHDRMode", mobileHdrStr}, {"HighFPSMode", "3"},
+            {"bUseHDRMode", (q >= 4) ? "True" : "False"}, {"bUseUltraExtreme", "True"}, {"bFramePacingEnabled", "True"},
             {"UnlockFPS", "1"}, {"Unlock120Hz", "1"}, {"Unlock144Hz", "1"}, {"Unlock165Hz", "1"},
             {"Unlock185Hz", "1"}, {"Unlock240Hz", "1"}, {"Unlock165FPS", "1"}, {"Ultra165FPS", "1"},
             {"+CVars=r.PUBGVersion", "4.6"}, {"+CVars=r.PUBGClientVersion", "4.6.0"},
@@ -537,7 +547,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"+CVars=r.PUBGBattleFPS", effLvlStr}, {"+CVars=r.PUBGLobbyFPS", effLvlStr},
             {"+CVars=r.PUBGFPSLevel", effLvlStr}, {"+CVars=r.PUBGDeviceQuality", qStr},
             {"+CVars=r.PUBGTargetFPS", fpsStr},
-            {"+CVars=r.MobileHDR", "1"}, {"+CVars=r.PUBGHDRMode", "1"}
+            {"+CVars=r.MobileHDR", mobileHdrStr}, {"+CVars=r.PUBGHDRMode", mobileHdrStr}
         };
         for (const auto &kv : enjoyKeys) {
             patch_key_value(content, kv.first, kv.second);
@@ -587,17 +597,18 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"+CVars=r.TouchBoostHz", fpsStr},
             {"+CVars=r.MobileTouchBoostRate", fpsStr},
             {"+CVars=r.FramePacing", "1"},
-            {"+CVars=r.MobileHDR", "1"},
-            {"+CVars=r.PUBGHDRMode", "1"},
+            {"+CVars=r.MobileHDR", mobileHdrStr},
+            {"+CVars=r.PUBGHDRMode", mobileHdrStr},
+            {"+CVars=r.PUBGUltraHDRMode", (q >= 5) ? "1" : "0"},
             {"+CVars=r.PUBGQualityLevel", qStr},
             {"+CVars=r.PUBGSDKQualityLevel", qStr},
             {"+CVars=r.UserQualitySetting", qStr},
-            {"+CVars=r.ShadowQuality", "4"},
-            {"+CVars=r.PostProcessAAQuality", "3"},
-            {"+CVars=r.Tonemapper.Quality", "4"},
+            {"+CVars=r.ShadowQuality", shadowQStr},
+            {"+CVars=r.PostProcessAAQuality", (q >= 5) ? "3" : ((q >= 4) ? "2" : "0")},
+            {"+CVars=r.Tonemapper.Quality", (q >= 4) ? "4" : "1"},
             {"+CVars=r.MobileContentScaleFactor", "1.0"},
-            {"+CVars=r.MaxAnisotropy", "16"},
-            {"+CVars=r.TemporalAA.Upscale", "1"},
+            {"+CVars=r.MaxAnisotropy", (q >= 4) ? "16" : "2"},
+            {"+CVars=r.TemporalAA.Upscale", (q >= 4) ? "1" : "0"},
             {"+CVars=r.AllowOcclusionQueries", "1"},
             {"+CVars=r.Vulkan.Enable", "1"},
             {"+CVars=r.Vulkan.DescriptorSetLayout", "1"},
@@ -623,10 +634,12 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
             {"GraphicQuality", qStr},
             {"ArtQuality", qStr},
             {"UnlockFPS", "1"},
+            {"Unlock120FPS", "1"},
+            {"Unlock144FPS", "1"},
             {"Unlock165FPS", "1"},
             {"Ultra165FPS", "1"},
             {"HighFPSMode", "3"},
-            {"HDRMode", "1"},
+            {"HDRMode", mobileHdrStr},
             {"TouchBoostHz", fpsStr},
             {"TouchPollingRate", "1000"},
             {"UltraExtreme", "1"},
@@ -648,6 +661,25 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     env->ReleaseStringUTFChars(jPath, path);
     LOGI("Pubgm165FpsGraphics injected: %s [ok=%d, fps=%d, q=%d]", pathStr.c_str(), ok, fps, q);
     return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dedicated Presets: Ultra HDR 120 FPS, HDR 120 FPS, SuperSmooth 165 FPS
+// ─────────────────────────────────────────────────────────────────────────────
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmUltraHdr120
+  (JNIEnv *env, jclass clazz, jstring jPath) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics(env, clazz, jPath, 120, 5);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmHdr120
+  (JNIEnv *env, jclass clazz, jstring jPath) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics(env, clazz, jPath, 120, 4);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmSuperSmooth165
+  (JNIEnv *env, jclass clazz, jstring jPath) {
+    return Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgm165FpsGraphics(env, clazz, jPath, 165, 1);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmDamage10000AttackSpeedMax
