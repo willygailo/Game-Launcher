@@ -40,6 +40,8 @@ public class GameBoosterService extends Service {
     public static final String ACTION_TURBO_5G_WIFI = "com.gamebooster.app.action.TURBO_5G_WIFI";
     public static final String ACTION_TOGGLE_FOCUS_DND = "com.gamebooster.app.action.TOGGLE_FOCUS_DND";
     public static final String ACTION_BOOST_GAME = "com.gamebooster.app.action.BOOST_GAME";
+    public static final String ACTION_REINJECT_COMBAT = "com.gamebooster.app.action.REINJECT_COMBAT";
+    public static final String ACTION_MEMORY_PRO = "com.gamebooster.app.action.MEMORY_PRO";
     public static final String EXTRA_PACKAGE_NAME = "extra_package_name";
 
     @Override
@@ -71,6 +73,18 @@ public class GameBoosterService extends Service {
             showToast("🚀 5G / Wi-Fi Turbo & Network QoS Active");
         } else if (ACTION_TOGGLE_FOCUS_DND.equals(action)) {
             toggleFocusDnd();
+        } else if (ACTION_REINJECT_COMBAT.equals(action)) {
+            String pkg = intent.getStringExtra(EXTRA_PACKAGE_NAME);
+            if (pkg != null) {
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.services.MapChangeReInjector.forceReInjectNow(getApplicationContext(), pkg);
+                });
+                showToast("🔄 Combat Suite Re-Injected for " + pkg);
+            }
+        } else if (ACTION_MEMORY_PRO.equals(action)) {
+            String pkg = intent.getStringExtra(EXTRA_PACKAGE_NAME);
+            com.gamebooster.app.booster.MemoryCleanerPro.applyFullGamingMemoryProfile(getApplicationContext(), pkg != null ? pkg : "");
+            showToast("🧹 Memory Pro: RAM Burst + LMKD Tuning Applied");
         } else if (ACTION_BOOST_GAME.equals(action) && intent != null) {
             String pkg = intent.getStringExtra(EXTRA_PACKAGE_NAME);
             if (pkg != null) {
@@ -156,15 +170,27 @@ public class GameBoosterService extends Service {
                             } catch (NumberFormatException ignored) {}
                         }
                     }
-                    Log.i(TAG, "Privileged boosted game: " + packageName);
-                } else {
-                    Log.i(TAG, "Standard boosted game: " + packageName);
+                    // Start MapChangeReInjector to auto re-inject on map change
+                try {
+                    com.gamebooster.app.services.MapChangeReInjector.startMonitoring(getApplicationContext(), packageName);
+                } catch (Throwable t) {
+                    Log.w(TAG, "MapChangeReInjector start error: " + t.getMessage());
                 }
-            } catch (Exception e) {
-                Log.w(TAG, "Error boosting game: " + packageName, e);
+                // Apply pre-game memory profile
+                try {
+                    com.gamebooster.app.booster.MemoryCleanerPro.applyFullGamingMemoryProfile(getApplicationContext(), packageName);
+                } catch (Throwable t) {
+                    Log.w(TAG, "MemoryCleanerPro error: " + t.getMessage());
+                }
+                Log.i(TAG, "Privileged boosted game: " + packageName);
+            } else {
+                Log.i(TAG, "Standard boosted game: " + packageName);
             }
-        });
-    }
+        } catch (Exception e) {
+            Log.w(TAG, "Error boosting game: " + packageName, e);
+        }
+    });
+}
 
     private void cleanMemory() {
         AppExecutors.getInstance().executeCommand(() -> {
@@ -239,6 +265,9 @@ public class GameBoosterService extends Service {
         Intent dndIntent = new Intent(this, GameBoosterService.class).setAction(ACTION_TOGGLE_FOCUS_DND);
         PendingIntent pDnd = PendingIntent.getService(this, 4, dndIntent, flag);
 
+        Intent reInjectIntent = new Intent(this, GameBoosterService.class).setAction(ACTION_REINJECT_COMBAT);
+        PendingIntent pReInject = PendingIntent.getService(this, 5, reInjectIntent, flag);
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GAME SPACE — " + targetHz + " FPS/Hz Engine Active")
                 .setContentText("Privileged Shizuku Engine Active • " + targetHz + "Hz Mode Lock")
@@ -249,6 +278,7 @@ public class GameBoosterService extends Service {
                 .addAction(0, "🧹 Clean RAM", pClean)
                 .addAction(0, "🚀 5G/Wi-Fi", pTurboNet)
                 .addAction(0, "🛡️ DND", pDnd)
+                .addAction(0, "🔄 Re-Inject", pReInject)
                 .build();
     }
 

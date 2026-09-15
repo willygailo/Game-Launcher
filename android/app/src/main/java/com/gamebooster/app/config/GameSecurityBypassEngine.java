@@ -27,6 +27,7 @@ import java.util.Locale;
 public final class GameSecurityBypassEngine {
 
     private static final String TAG = "SecurityBypassEngine";
+    private static final java.util.Map<String, GameIdentity> UID_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
     private GameSecurityBypassEngine() {}
 
@@ -57,6 +58,10 @@ public final class GameSecurityBypassEngine {
             return GameIdentity.fallback();
         }
         String pkg = packageName.trim().toLowerCase(Locale.ROOT);
+        GameIdentity cached = UID_CACHE.get(pkg);
+        if (cached != null && cached.isValid) {
+            return cached;
+        }
 
         // 1. Check /data/data/<pkg> directory ownership
         if (ShizukuExecutor.hasShizukuPermission()) {
@@ -67,7 +72,9 @@ public final class GameSecurityBypassEngine {
                     int u = Integer.parseInt(parts[0].trim());
                     int g = Integer.parseInt(parts[1].trim());
                     if (u >= 10000) {
-                        return new GameIdentity(u, g, true);
+                        GameIdentity id = new GameIdentity(u, g, true);
+                        UID_CACHE.put(pkg, id);
+                        return id;
                     }
                 }
             } catch (Throwable ignored) {}
@@ -83,7 +90,9 @@ public final class GameSecurityBypassEngine {
                     String uidStr = (end > 0) ? sub.substring(0, end).trim() : sub;
                     int u = Integer.parseInt(uidStr);
                     if (u >= 10000) {
-                        return new GameIdentity(u, u, true);
+                        GameIdentity id = new GameIdentity(u, u, true);
+                        UID_CACHE.put(pkg, id);
+                        return id;
                     }
                 }
             } catch (Throwable ignored) {}

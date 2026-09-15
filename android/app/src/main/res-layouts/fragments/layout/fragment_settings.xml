@@ -107,6 +107,15 @@
                     android:textSize="13sp" />
 
                 <Switch
+                    android:id="@+id/switch_speaker_bypass_boost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🔊 Bypass Audio Limiter &amp; Speaker Boost (+15dB Overdrive &amp; Zero DRC)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
                     android:id="@+id/switch_anti_log"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

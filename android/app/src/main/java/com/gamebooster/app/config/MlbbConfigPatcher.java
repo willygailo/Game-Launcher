@@ -1078,5 +1078,68 @@ public class MlbbConfigPatcher {
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB Master All-Hero Overdrive successfully applied for " + packageName);
     }
+
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    /**
+     * Adaptive Aim Assist — 2026.2 Edition.
+     * Per-scope gyro sensitivity ratios + predictive head snap. Works all heroes, ranked & classic.
+     */
+    public static boolean applyAdaptiveAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveAimAssist(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "MLBB AdaptiveAimAssist2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Adaptive No Recoil — 2026.2 Edition.
+     * Per-weapon-category recoil compensation (AR/SMG/Sniper/LMG/Shotgun).
+     * All scope stabilizers + UE4 CVar pass. Ranked & classic, all maps.
+     */
+    public static boolean applyAdaptiveNoRecoil(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveNoRecoil(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "MLBB AdaptiveNoRecoil2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Ranked Combat Full Suite — 2026.2 Edition.
+     * Master 24-layer payload: AdaptiveAim + AdaptiveNoRecoil + Damage10000 + FastCD +
+     * FastReload + FastRun + TrackingBullet + Hitbox3x + MultiRangeHeadshot + ZeroPing +
+     * SilentAimbot + WallPiercing + SkillEconomy + CombatMechanics + AllGun + AllScope.
+     * Fires on ranked mode, classic mode, and all maps.
+     */
+    public static boolean applyRankedCombatFullSuite(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "MLBB RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Classic Combat Full Suite — 2026.2 Edition.
+     * Identical payload to Ranked — separate label for clarity and per-mode toggle support.
+     */
+    public static boolean applyClassicCombatFullSuite(String packageName) {
+        Log.i(TAG, "MLBB ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
+        return applyRankedCombatFullSuite(packageName);
+    }
 }
 

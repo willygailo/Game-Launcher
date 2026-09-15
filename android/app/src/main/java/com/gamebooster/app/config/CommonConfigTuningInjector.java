@@ -856,4 +856,47 @@ public final class CommonConfigTuningInjector {
             NativeConfigInjector.injectUniversalFastLoadTurbo(path);
         }
     }
+
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    /**
+     * Universal Adaptive Aim Assist — 2026.2 Edition.
+     * Per-scope gyro sensitivity + predictive head snap. Works for MLBB, CODM, PUBGM and all others.
+     */
+    public static void applyAdaptiveAimAssist(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectAdaptiveAimAssist(path);
+        }
+        Log.i(TAG, "Universal AdaptiveAimAssist2026 applied for " + packageName);
+    }
+
+    /**
+     * Universal Adaptive No Recoil — 2026.2 Edition.
+     * Per-weapon-category recoil compensation + UE4 CVar pass. All games, ranked & classic.
+     */
+    public static void applyAdaptiveNoRecoil(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectAdaptiveNoRecoil(path);
+        }
+        Log.i(TAG, "Universal AdaptiveNoRecoil2026 applied for " + packageName);
+    }
+
+    /**
+     * Universal Ranked Combat Full Suite — 2026.2 Edition.
+     * Master 24-layer payload: works for MLBB, CODM, PUBGM and any other game path.
+     * Ranked + Classic + All Maps.
+     */
+    public static void applyRankedCombatFullSuite(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectRankedCombatFullSuite(path);
+        }
+        Log.i(TAG, "Universal RankedCombatFullSuite2026 applied for " + packageName);
+    }
 }
+

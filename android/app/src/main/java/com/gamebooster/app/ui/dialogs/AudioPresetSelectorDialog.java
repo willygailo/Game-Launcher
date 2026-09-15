@@ -60,6 +60,9 @@ public class AudioPresetSelectorDialog {
                 TextView indSpatial = view.findViewById(R.id.indicator_preset_spatial);
                 TextView indVoice = view.findViewById(R.id.indicator_preset_voice);
 
+                LinearLayout btnSpeakerBypass = view.findViewById(R.id.btn_toggle_speaker_bypass);
+                TextView indSpeakerBypass = view.findViewById(R.id.indicator_speaker_bypass);
+
                 Button btnDismiss = view.findViewById(R.id.btn_audio_dismiss);
 
                 Runnable updateSelectionUi = () -> {
@@ -84,6 +87,11 @@ public class AudioPresetSelectorDialog {
                         boolean isAct = active == EsportsAudioEnhancer.AudioPreset.SQUAD_VOICE_CLARITY;
                         indVoice.setText(isAct ? "● ACTIVE" : "SELECT");
                         indVoice.setTextColor(isAct ? Color.parseColor("#00FF66") : Color.parseColor("#94A3B8"));
+                    }
+                    if (indSpeakerBypass != null) {
+                        boolean isBypassed = EsportsAudioEnhancer.isSpeakerBypassEnabled(context);
+                        indSpeakerBypass.setText(isBypassed ? "● BOOSTED (+15dB)" : "OFF");
+                        indSpeakerBypass.setTextColor(isBypassed ? Color.parseColor("#00FF66") : Color.parseColor("#94A3B8"));
                     }
                 };
 
@@ -110,6 +118,20 @@ public class AudioPresetSelectorDialog {
                 if (btnGunshots != null) btnGunshots.setOnClickListener(makeListener);
                 if (btnSpatial != null) btnSpatial.setOnClickListener(makeListener);
                 if (btnVoice != null) btnVoice.setOnClickListener(makeListener);
+
+                if (btnSpeakerBypass != null) {
+                    btnSpeakerBypass.setOnClickListener(v -> {
+                        boolean currentlyBypassed = EsportsAudioEnhancer.isSpeakerBypassEnabled(context);
+                        boolean newState = !currentlyBypassed;
+                        AppExecutors.getInstance().executeCommand(() -> {
+                            EsportsAudioEnhancer.setSpeakerBypassMode(context, newState);
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                updateSelectionUi.run();
+                                Toast.makeText(context, newState ? "🔊 Speaker Audio Limiter Bypassed & Hardware Boost (+15dB) Enabled!" : "Speaker Boost Disabled", Toast.LENGTH_SHORT).show();
+                            });
+                        });
+                    });
+                }
 
                 if (btnDismiss != null) {
                     btnDismiss.setOnClickListener(v -> dialog.dismiss());

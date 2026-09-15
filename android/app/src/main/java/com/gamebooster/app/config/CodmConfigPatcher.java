@@ -1157,5 +1157,64 @@ public class CodmConfigPatcher {
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "CODM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
     }
+
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    /**
+     * Adaptive Aim Assist — 2026.2 Edition.
+     * Per-scope gyro sensitivity + predictive head snap. All guns, ranked & classic, all maps.
+     */
+    public static boolean applyAdaptiveAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveAimAssist(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "CODM AdaptiveAimAssist2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Adaptive No Recoil — 2026.2 Edition.
+     * Per-weapon-category recoil compensation + UE4 CVar pass. Ranked & classic, all maps.
+     */
+    public static boolean applyAdaptiveNoRecoil(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveNoRecoil(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "CODM AdaptiveNoRecoil2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Ranked Combat Full Suite — 2026.2 Edition.
+     * Master 24-layer payload for CODM. Ranked + Classic + All Maps.
+     */
+    public static boolean applyRankedCombatFullSuite(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "CODM RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Classic Combat Full Suite — 2026.2 Edition.
+     * Identical payload to Ranked — separate label for mode clarity.
+     */
+    public static boolean applyClassicCombatFullSuite(String packageName) {
+        Log.i(TAG, "CODM ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
+        return applyRankedCombatFullSuite(packageName);
+    }
 }
 

@@ -288,6 +288,68 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectRobloxDamage10000Max(String path);
     public static native boolean nativeInjectCarXTorqueHorsepower10000Max(String path);
 
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    /**
+     * Adaptive Aim Assist — 2026.2 Edition.
+     * Per-scope gyro sensitivity ratios (RedDot 1.0x to 8x scope 0.65x) + predictive head snap.
+     * Unlike AimAssist1000 (hard lock), uses smooth predict + per-distance tuning.
+     * Works for MLBB (hero lock), CODM (ADS snap), PUBGM (UE4 CVars).
+     */
+    public static native boolean nativeInjectAdaptiveAimAssist(String path);
+
+    /**
+     * Adaptive No Recoil — 2026.2 Edition.
+     * Per-weapon-category recoil compensation: AR/SMG spray recovery, Sniper/DMR zero sway,
+     * LMG bloom cap, Shotgun pellet lock. All scope stabilizers enabled. UE4 CVar pass included.
+     */
+    public static native boolean nativeInjectAdaptiveNoRecoil(String path);
+
+    /**
+     * Ranked Combat Full Suite — 2026.2 Edition (MASTER PAYLOAD).
+     * Single-pass C++ call firing all 24 combat sub-layers atomically.
+     * Designed for: RANKED + CLASSIC + ALL MAPS.
+     */
+    public static native boolean nativeInjectRankedCombatFullSuite(String path);
+
+    /** Convenience wrapper: injectAdaptiveAimAssist with native-first fallback. */
+    public static boolean injectAdaptiveAimAssist(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectAdaptiveAimAssist(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectAdaptiveAimAssist fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /** Convenience wrapper: injectAdaptiveNoRecoil with native-first fallback. */
+    public static boolean injectAdaptiveNoRecoil(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectAdaptiveNoRecoil(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectAdaptiveNoRecoil fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /** Convenience wrapper: injectRankedCombatFullSuite — master 24-layer payload. Ranked + Classic + All Maps. */
+    public static boolean injectRankedCombatFullSuite(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectRankedCombatFullSuite(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectRankedCombatFullSuite fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+
+
     /**
      * Executes single-pass atomic batch injection for a map of key-value overrides.
      */

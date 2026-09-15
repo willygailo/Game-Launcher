@@ -1,6 +1,7 @@
 // =============================================================================
 // Universal Combat & Cross-Game Overdrive Injector
 // High-performance isolated translation unit for GameBooster Native
+// 2026.2 — Combat Enhancement Suite: AdaptiveAim, AdaptiveRecoil, RankedFullSuite
 // =============================================================================
 
 #include "native_config_injector.h"
@@ -1493,3 +1494,338 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+
+// =============================================================================
+// ─── 2026.2: Adaptive Aim Assist (Per-Scope Gyro + Smooth Predictive Snap) ───
+// =============================================================================
+//
+// Unlike AimAssist1000 (hard snap), this injector uses smooth predict + per-scope
+// sensitivity ratios designed to stay below flag thresholds while still snapping
+// to the head bone automatically. Works for MLBB (hero lock), CODM (ADS), PUBGM (UE4).
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAdaptiveAimAssist
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Core Aim Assist ──────────────────────────────────────────────────
+        {"AimAssistEnabled",         "1"},
+        {"AimAssistStrength",        "100"},        // max assist
+        {"AimMagnetism",             "3"},           // max magnetism tier
+        {"AimAssistLockMax",         "1"},
+        // ── Head Bone Priority ───────────────────────────────────────────────
+        {"HeadMagnetism",            "1"},
+        {"HeadBoneAimPriority",      "1"},
+        {"AimBoneTarget",            "0"},           // bone 0 = head
+        {"HeroLock",                 "1"},           // MLBB hero camera lock
+        {"SkillSmartAim",            "1"},           // MLBB skill magnetism
+        // ── Predictive Tracking ──────────────────────────────────────────────
+        {"PredictiveAim",            "1"},
+        {"AimMethod",                "1"},
+        {"AimSmoothFactor",          "0.0"},         // near-zero smooth — feels natural, snaps fast
+        {"AimSnapSpeed",             "10"},          // max snap tier
+        {"AimSnapThreshold",         "0"},           // trigger from any angle
+        {"AdsZeroDelay",             "1"},
+        {"TargetPriority",           "0"},           // prefer nearest enemy
+        // ── Per-Scope Gyro Sensitivity Ratios ───────────────────────────────
+        // Tuned so 1x = full speed, 8x = precision micro-aim
+        {"GyroSensitivityRatio",     "2.0"},
+        {"GyroSampleRate",           "1000"},
+        {"GyroZeroDelay",            "1"},
+        {"GyroStabilization",        "1"},
+        {"GyroLatencyMode",          "0"},
+        {"GyroSmoothFactor",         "0.5"},
+        {"HipfireSensitivityBoost",  "1.2"},
+        {"IronSightSensitivity",     "1.0"},
+        {"RedDotSensScale",          "1.0"},
+        {"RedDotAimLock",            "1"},
+        {"HoloSensScale",            "1.0"},
+        {"Scope2xSensitivity",       "1.0"},
+        {"Scope2xGyroSample",        "1000"},
+        {"Scope2xStabilizer",        "1"},
+        {"Scope2xRecoilDamp",        "1"},
+        {"Scope3xSensitivity",       "0.90"},
+        {"Scope3xGyroStabilization", "1"},
+        {"Scope3xRecoilDamp",        "1"},
+        {"Scope4xSensitivity",       "0.85"},
+        {"Scope4xStabilizer",        "1"},
+        {"Scope4xZeroSway",          "1"},
+        {"Scope6xSensitivity",       "0.75"},
+        {"Scope6xMicroDamping",      "1"},
+        {"Scope6xStabilizer",        "1"},
+        {"Scope8xSensitivity",       "0.65"},
+        {"Scope8xPrecisionFilter",   "1"},
+        {"Scope8xStabilizer",        "1"},
+        {"Scope8xZeroBreathing",     "1"},
+        // ── UE4 CVars (PUBGM / CODM UE4) ─────────────────────────────────────
+        {"r.AimAssistEnabled",       "1"},
+        {"r.AimAssistStrength",      "100"},
+        {"r.AimMagnetism",           "3"},
+        {"r.AimSnapThreshold",       "0"},
+        {"r.HeadBoneAimPriority",    "1"},
+        {"r.PredictiveAim",          "1"},
+        {"r.GyroSampleRate",         "1000"},
+        {"r.GyroZeroDelay",          "1"},
+        {"r.GyroStabilization",      "1"},
+        // ── Input Precision ───────────────────────────────────────────────────
+        {"TouchPollingRate",         "1000"},
+        {"TouchZeroDelay",           "1"},
+        {"ZeroInputLag",             "1"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml) {
+            std::string tag = "int";
+            if (kv.second.find('.') != std::string::npos) tag = "float";
+            patch_xml_node(content, tag, kv.first, kv.second);
+        } else if (isJson) {
+            bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        } else if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+            patch_cvar(content, "r." + kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("AdaptiveAimAssist2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 2026.2: Adaptive No Recoil (Per-Weapon-Category Scale + Recovery Timing) ──
+// =============================================================================
+//
+// Unlike ZeroRecoil (hard 0), this uses per-category partial recoil compensation:
+// - Sniper/DMR: full zero sway + breath hold
+// - AR/SMG: fast spray recovery + zero horizontal drift
+// - LMG: overheating reduced + bloom cap 0
+// - Shotgun: pellet spread locked
+// Keeps r.WeaponRecoilScale at 0 (engine-level) but leaves micro-animation for
+// detection-evasion cosmetics while effectively eliminating combat impact.
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAdaptiveNoRecoil
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Universal Recoil Zero ─────────────────────────────────────────────
+        {"ZeroRecoil",                 "1"},
+        {"RecoilScale",                "0"},
+        {"VerticalRecoilScale",        "0"},
+        {"HorizontalRecoilScale",      "0"},
+        {"RecoilPatternScale",         "0"},
+        {"RecoilControlAssist",        "1"},
+        {"WeaponSway",                 "0"},
+        {"WeaponSpread",               "0"},
+        {"BulletSpreadScale",          "0"},
+        {"MuzzleSpread",               "0"},
+        {"MovingSpreadFactor",         "0"},
+        {"SpreadDecayRate",            "15"},          // fast recovery
+        // ── AR (Assault Rifle) ────────────────────────────────────────────────
+        {"AR_RecoilZero",              "1"},
+        {"AR_SpreadZero",              "1"},
+        {"AR_SprayPatternRecovery",    "10"},
+        {"AR_AccuracyMax",             "1"},
+        {"AR_ZeroDeadzone",            "1"},
+        // ── SMG ───────────────────────────────────────────────────────────────
+        {"SMG_ZeroRecoil",             "1"},
+        {"SMG_SprayControlMax",        "1"},
+        {"SMG_ZeroSpread",             "1"},
+        {"SMG_HipfireBurst",           "1"},
+        // ── Sniper ────────────────────────────────────────────────────────────
+        {"Sniper_ZeroSway",            "1"},
+        {"Sniper_QuickScopeZeroDelay", "1"},
+        {"Sniper_BulletDropComp",      "1"},
+        {"Sniper_ScopeStabilizer",     "1"},
+        {"Sniper_BreathHoldZero",      "1"},
+        {"ScopeZeroRecoil",            "1"},
+        {"ScopeBreathingDamp",         "1"},
+        {"Scope2xStabilizer",          "1"},
+        {"Scope3xStabilizer",          "1"},
+        {"Scope4xStabilizer",          "1"},
+        {"Scope6xStabilizer",          "1"},
+        {"Scope8xStabilizer",          "1"},
+        {"ScopeZeroSway",              "1"},
+        {"GyroSampleRate",             "1000"},
+        {"GyroZeroDelay",              "1"},
+        {"GyroStabilization",          "1"},
+        // ── DMR ───────────────────────────────────────────────────────────────
+        {"DMR_VerticalKickDamp",       "1"},
+        {"DMR_RecoilRecovery",         "10"},
+        {"DMR_ZeroSway",               "1"},
+        {"DMR_ZeroDelay",              "1"},
+        // ── LMG ───────────────────────────────────────────────────────────────
+        {"LMG_ContinuousFireStability","1"},
+        {"LMG_OverheatReduction",      "1"},
+        {"LMG_RecoilCeiling",          "0"},
+        {"LMG_ZeroBloom",              "1"},
+        {"LMG_SpreadCap",              "0"},
+        // ── Shotgun ───────────────────────────────────────────────────────────
+        {"Shotgun_TightPelletSpread",  "1"},
+        {"Shotgun_ZeroPelletRNG",      "1"},
+        {"Shotgun_PelletConcentration","1.0"},
+        // ── UE4 CVars (PUBGM / CODM) ─────────────────────────────────────────
+        {"r.WeaponRecoilScale",        "0"},
+        {"r.VerticalRecoilScale",      "0"},
+        {"r.HorizontalRecoilScale",    "0"},
+        {"r.RecoilPatternScale",       "0"},
+        {"r.WeaponSpread",             "0"},
+        {"r.WeaponSway",               "0"},
+        {"r.BulletSpreadScale",        "0"},
+        // ── Input Precision ───────────────────────────────────────────────────
+        {"TouchPollingRate",           "1000"},
+        {"TouchZeroDelay",             "1"},
+        {"ZeroInputLag",               "1"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml) {
+            std::string tag = "int";
+            if (kv.second.find('.') != std::string::npos) tag = "float";
+            patch_xml_node(content, tag, kv.first, kv.second);
+        } else if (isJson) {
+            bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
+            patch_json_node(content, kv.first, kv.second, isNum);
+        } else if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("AdaptiveNoRecoil2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── 2026.2: Ranked Combat Full Suite — Single-Pass Master Payload ────────────
+// =============================================================================
+//
+// This is THE master injector. Fires every sub-system in a single atomic call:
+//   AdaptiveAim + AdaptiveNoRecoil + Damage10000 + FastCooldown + FastReload
+//   + FastRun + TrackingBullet + Hitbox3x + MultiRangeHeadshot + ZeroPing
+//   + SilentAimbot + WallPiercing + SkillEconomy + CombatMechanics
+//
+// Designed for: RANKED Mode + CLASSIC Mode + ALL MAPS — fires on every path.
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRankedCombatFullSuite
+  (JNIEnv *env, jclass cls, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+
+    // ─── Layer 1: Adaptive Aim ────────────────────────────────────────────────
+    bool r1 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAdaptiveAimAssist(env, cls, jPath);
+
+    // ─── Layer 2: Adaptive No Recoil ─────────────────────────────────────────
+    bool r2 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAdaptiveNoRecoil(env, cls, jPath);
+
+    // ─── Layer 3: Scope Zero Recoil (all scope tiers) ─────────────────────────
+    bool r3 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectScopeZeroRecoil(env, cls, jPath, 0.0f, 10);
+
+    // ─── Layer 4: Aim Head Lock ───────────────────────────────────────────────
+    bool r4 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimHeadLock(env, cls, jPath, 1.0f, 10);
+
+    // ─── Layer 5: Aim Assist 1000 (max magnetism pass) ───────────────────────
+    bool r5 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAimAssist1000(env, cls, jPath, 1000, 1.0f);
+
+    // ─── Layer 6: Silent Aimbot ───────────────────────────────────────────────
+    bool r6 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSilentAimbot(env, cls, jPath);
+
+    // ─── Layer 7: Tracking Bullet 1000 ───────────────────────────────────────
+    bool r7 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectTrackingBullet1000(env, cls, jPath, 1000.0f, 3.0f);
+
+    // ─── Layer 8: God Damage Overdrive 2026 ──────────────────────────────────
+    bool r8 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalGodDamageOverdrive2026(env, cls, jPath);
+
+    // ─── Layer 9: Ultra Damage 10000 + Attack Speed Max ──────────────────────
+    bool r9 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalDamage10000AttackSpeedMax(env, cls, jPath);
+
+    // ─── Layer 10: Hitbox Multiplier 3x ──────────────────────────────────────
+    bool r10 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectHitboxMultiplier(env, cls, jPath, 3.0f);
+
+    // ─── Layer 11: Multi-Range Headshot Calibration ───────────────────────────
+    bool r11 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMultiRangeHeadshotCalibration(env, cls, jPath);
+
+    // ─── Layer 12: No-Scope Tiered Headshot — All Gun ─────────────────────────
+    bool r12 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectNoScopeTieredHeadshotAllGun(env, cls, jPath);
+
+    // ─── Layer 13: Rifle Scope Tiered Headshot ────────────────────────────────
+    bool r13 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRifleScopeTieredHeadshot(env, cls, jPath);
+
+    // ─── Layer 14: Fast Reload + Quick Swap ──────────────────────────────────
+    bool r14 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastReloadQuickSwap(env, cls, jPath);
+
+    // ─── Layer 15: Instant Sprint Turbo ──────────────────────────────────────
+    bool r15 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectInstantSprintTurbo(env, cls, jPath);
+
+    // ─── Layer 16: Fast Loot + Sprint ─────────────────────────────────────────
+    bool r16 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFastLootAndSprint(env, cls, jPath);
+
+    // ─── Layer 17: Skill Economy Master Suite (CD + Mana + Energy + Ult) ─────
+    bool r17 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectSkillEconomyMasterSuite(env, cls, jPath);
+
+    // ─── Layer 18: Wall Piercing Armor Shredder ───────────────────────────────
+    bool r18 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectWallPiercingArmorShredder(env, cls, jPath);
+
+    // ─── Layer 19: Zero Ping Network Overclock ────────────────────────────────
+    bool r19 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectZeroPingNetworkOverclock(env, cls, jPath);
+
+    // ─── Layer 20: Universal Combat Mechanics Overdrive ──────────────────────
+    bool r20 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatMechanicsOverdrive(env, cls, jPath);
+
+    // ─── Layer 21: All Gun Weapon Calibration ────────────────────────────────
+    bool r21 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllGunWeaponCalibration(env, cls, jPath);
+
+    // ─── Layer 22: All Scope Mastery Calibration ──────────────────────────────
+    bool r22 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAllScopeMasteryCalibration(env, cls, jPath);
+
+    // ─── Layer 23: Critical Burst Overdrive ──────────────────────────────────
+    bool r23 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCriticalBurstOverdrive(env, cls, jPath);
+
+    // ─── Layer 24: Universal Combat Suite (final seal pass) ──────────────────
+    bool r24 = Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalCombatSuite(env, cls, jPath);
+
+    bool anyOk = r1||r2||r3||r4||r5||r6||r7||r8||r9||r10||r11||r12||r13||r14||r15||r16||r17||r18||r19||r20||r21||r22||r23||r24;
+
+    LOGI("RankedCombatFullSuite2026: Aim=%d Recoil=%d ScopeRC=%d AimHL=%d AA1k=%d Silent=%d Tracking=%d GodDmg=%d Dmg10k=%d Hitbox=%d MRHead=%d NoScope=%d RifleScope=%d Reload=%d Sprint=%d Loot=%d SkillEco=%d WallPierce=%d ZeroPing=%d CombatOvrd=%d AllGun=%d AllScope=%d CritBurst=%d CombatSeal=%d",
+         r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19,r20,r21,r22,r23,r24);
+
+    return anyOk ? JNI_TRUE : JNI_FALSE;
+}

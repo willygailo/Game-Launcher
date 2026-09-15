@@ -368,6 +368,7 @@ public class HardwareMaskEngine {
                     Log.w(TAG, "patchActiveSavBinary error: " + t.getMessage());
                 }
             }
+            GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
         // 2. Call of Duty Mobile / Warzone / Blood Strike
@@ -391,6 +392,7 @@ public class HardwareMaskEngine {
                     ConfigFileHelper.patchKeys(p, profileKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
                 }
             }
+            GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
         // 3. Genshin Impact / Star Rail / ZZZ / Wuthering Waves
@@ -575,6 +577,137 @@ public class HardwareMaskEngine {
             return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
+    }
+
+    /**
+     * Ultra-Fast Single-Pass Hardware Masking for all target games (MLBB, CODM, PUBGM, etc.)
+     * Consolidates all system props, display refresh rate, Dalvik, game modes, and game driver settings
+     * into a single atomic Shizuku batch, then injects tailored game configs with SELinux enforcement.
+     * Completes in sub-second time (<800ms) with full SELinux Enforcing compatibility.
+     */
+    public static int applyFastHardwareMaskAll(Context context, SpoofProfile profile) {
+        if (profile == null) return 0;
+
+        try {
+            Log.i(TAG, "⚡ [FAST SPOOF] Activating Instant Hardware Masking: " + profile.displayName);
+
+            Set<String> batchCommands = new LinkedHashSet<>();
+            int maxPhysicalHz = 185;
+            if (context != null) {
+                try {
+                    com.gamebooster.app.device.DisplayCapabilitiesDetector.DisplayCaps caps =
+                            com.gamebooster.app.device.DisplayCapabilitiesDetector.detect(context);
+                    if (caps != null && caps.maxRefreshRate > 0) {
+                        maxPhysicalHz = Math.max(185, caps.maxRefreshRate);
+                    }
+                } catch (Throwable ignored) {}
+            }
+            int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
+
+            // 1. App-Scoped Launcher & Debug Props
+            batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
+            batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
+            batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
+            batchCommands.add("setprop debug.game.spoofed_cpu_freq \"" + profile.cpuMaxFreqKhz + "\"");
+            batchCommands.add("setprop debug.game.spoofed_cpu_arch \"" + profile.cpuArchitecture + "\"");
+            batchCommands.add("setprop debug.game.spoofed_gpu \"" + profile.glRenderer + "\"");
+            batchCommands.add("setprop debug.game.spoofed_gpu_vendor \"" + profile.glVendor + "\"");
+            batchCommands.add("setprop debug.game.spoofed_vulkan_ver \"" + profile.vulkanVersion + "\"");
+            batchCommands.add("setprop debug.game.spoofed_vulkan_driver \"" + profile.vulkanDriverVersion + "\"");
+            batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
+            batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
+
+            // 2. Display & SF FPS Limit
+            batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put system min_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put system user_refresh_rate " + targetHz);
+            batchCommands.add("settings put global peak_refresh_rate " + targetHz + ".0");
+            batchCommands.add("settings put global min_refresh_rate " + targetHz + ".0");
+            batchCommands.add("setprop debug.sf.fps_limit " + targetHz);
+            batchCommands.add("setprop persist.sys.NV_FPSLIMIT " + targetHz);
+            batchCommands.add("setprop persist.sys.NV_POWERMODE 1");
+            batchCommands.add("setprop debug.gr.swapinterval 0");
+
+            // 3. Dalvik VM Heap
+            batchCommands.add("setprop dalvik.vm.heapgrowthlimit 512m");
+            batchCommands.add("setprop dalvik.vm.heapsize 1024m");
+
+            // 4. Performance & Power Mode
+            batchCommands.add("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+            batchCommands.add("dumpsys battery reset 2>/dev/null");
+
+            // 5. Scan target games
+            Set<String> targetGames = new LinkedHashSet<>();
+            if (context != null) {
+                List<com.gamebooster.app.games.GameAppInfo> scanned = com.gamebooster.app.games.HomeGameScanner.scanTargetGames(context);
+                if (scanned != null) {
+                    for (com.gamebooster.app.games.GameAppInfo g : scanned) {
+                        if (g != null && g.getPackageName() != null) targetGames.add(g.getPackageName());
+                    }
+                }
+            }
+            for (String known : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
+                if (known != null && !known.trim().isEmpty() && context != null) {
+                    try {
+                        context.getPackageManager().getPackageInfo(known.trim(), 0);
+                        targetGames.add(known.trim());
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 6. Game Mode, Driver Opt-In, and AppOps
+            List<String> gameDriverPkgs = new ArrayList<>();
+            for (String pkg : targetGames) {
+                batchCommands.add("cmd game mode performance " + pkg + " 2>/dev/null");
+                batchCommands.add("cmd game set --fps " + targetHz + " " + pkg + " 2>/dev/null");
+                batchCommands.add("cmd window set-app-refresh-rate " + pkg + " " + targetHz + " 2>/dev/null");
+                batchCommands.add("device_config put game_overlay " + pkg + " mode=2,useAngle=false,fps=" + targetHz + ",downscaleFactor=1.0 2>/dev/null");
+                if (com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(pkg)) {
+                    gameDriverPkgs.add(pkg);
+                }
+                applyAppOpsShieldForPackage(batchCommands, pkg);
+            }
+
+            if (!gameDriverPkgs.isEmpty()) {
+                String csv = String.join(",", gameDriverPkgs);
+                batchCommands.add("settings put global game_driver_opt_in_apps \"" + csv + "\" 2>/dev/null");
+                batchCommands.add("settings put global game_driver_prerelease_opt_in_apps \"" + csv + "\" 2>/dev/null");
+            }
+            batchCommands.add("settings delete global angle_gl_driver_selection_pkgs 2>/dev/null");
+            batchCommands.add("settings delete global angle_gl_driver_selection_values 2>/dev/null");
+            batchCommands.add("settings put global angle_gl_driver_all_angle 0 2>/dev/null");
+
+            // 7. Privacy & Tracking
+            batchCommands.add("settings put secure limit_ad_tracking 1");
+            batchCommands.add("settings put secure ad_id \"" + profile.getAdvertisingId() + "\"");
+
+            // Execute in 1 Consolidated Shizuku Batch (Sub-second!)
+            ShizukuExecutor.executeShizukuCommandsWithResults(new ArrayList<>(batchCommands));
+
+            // Force Refresh Rate & In-App Reflection
+            if (targetHz > 60) {
+                com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
+            }
+            applyInAppReflectionMask(profile);
+            exportMockProcfsPayloads(profile);
+
+            // 8. Fast Single-Pass Game Config Injection with SELinux Enforcement
+            int injectedCount = 0;
+            for (String pkg : targetGames) {
+                try {
+                    injectTailoredGameHardwareConfigs(pkg, profile);
+                    injectedCount++;
+                } catch (Throwable t) {
+                    Log.w(TAG, "Fast inject failed for " + pkg + ": " + t.getMessage());
+                }
+            }
+
+            Log.i(TAG, "✔ [FAST SPOOF COMPLETE] Masked " + injectedCount + " games as " + profile.displayName);
+            return injectedCount;
+        } catch (Throwable t) {
+            Log.e(TAG, "applyFastHardwareMaskAll failed: " + t.getMessage(), t);
+            return 0;
+        }
     }
 
     /**

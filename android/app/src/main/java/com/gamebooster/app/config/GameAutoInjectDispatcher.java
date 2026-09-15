@@ -119,6 +119,11 @@ public final class GameAutoInjectDispatcher {
 
         // ── 1. Pre-flight: ensure and grant all path access (chmod 777/666 + appops) ──
         try {
+            // Anti-Ban Stealth: rate limit check (prevent thundering herd injection)
+            if (!force && !AntiBanStealthEngine.isInjectionAllowed(pkg)) {
+                Log.i(TAG, "🛡️ [AutoInject] Rate limited for " + pkg + " — skipping to prevent over-injection");
+                return;
+            }
             GameConfigStorageAccessEngine.grantAllPathsAccess(context, pkg);
             GameSecurityBypassEngine.unlockForInjection(pkg);
         } catch (Throwable t) {
@@ -204,6 +209,13 @@ public final class GameAutoInjectDispatcher {
             }
 
             Log.i(TAG, "✅ [AutoInject] Successfully completed injection & security bypass for " + pkg);
+            // Anti-Ban Stealth: record injection timestamp + purge game logs
+            try {
+                AntiBanStealthEngine.recordInjection(pkg);
+                AntiBanStealthEngine.purgeGameLogs(pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "Stealth post-flight note: " + t.getMessage());
+            }
             sInjectedPackages.put(pkgLower, System.currentTimeMillis());
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ [AutoInject] Non-fatal error during auto-injection for " + pkg + ": " + t.getMessage(), t);
@@ -269,6 +281,15 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyBeatrixInstantReloadAndSwap(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
+        // Adaptive Aim: per-scope gyro + smooth head snap (all heroes, all maps)
+        try { MlbbConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
+        // Adaptive No Recoil: per-weapon-category recoil zero (all heroes, all maps)
+        try { MlbbConfigPatcher.applyAdaptiveNoRecoil(pkg); } catch (Throwable ignored) {}
+        // Ranked Combat Full Suite: master 24-layer payload
+        try { MlbbConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // Classic Combat Full Suite: identical payload — guarantees classic mode coverage
+        try { MlbbConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -312,6 +333,15 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyFastLoadAsyncStreaming(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
+        // Adaptive Aim: per-scope gyro + UE4 predictive aim (all weapons, all maps)
+        try { PubgConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
+        // Adaptive No Recoil: full UE4 CVar pass + per-category (all maps)
+        try { PubgConfigPatcher.applyAdaptiveNoRecoil(pkg); } catch (Throwable ignored) {}
+        // Ranked Combat Full Suite: master 24-layer payload
+        try { PubgConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // Classic Combat Full Suite: guarantees classic mode coverage
+        try { PubgConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -355,6 +385,15 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyFastLoadShaderBypass(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
+        // Adaptive Aim: per-scope gyro + ADS snap (all weapons, all maps)
+        try { CodmConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
+        // Adaptive No Recoil: per-weapon-category zero recoil (AR/SMG/Sniper/LMG)
+        try { CodmConfigPatcher.applyAdaptiveNoRecoil(pkg); } catch (Throwable ignored) {}
+        // Ranked Combat Full Suite: master 24-layer payload
+        try { CodmConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // Classic Combat Full Suite: guarantees classic mode coverage
+        try { CodmConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {

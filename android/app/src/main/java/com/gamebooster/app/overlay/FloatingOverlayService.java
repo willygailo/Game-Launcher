@@ -111,7 +111,7 @@ public class FloatingOverlayService extends Service {
     private TextView tvHudRam;
     private ProgressBar pbHudRam;
 
-    // Action buttons
+    // Action buttons — original 6
     private Button btnHudBoost;
     private Button btnHudExtreme;
     private Button btnHudCrosshair;
@@ -119,7 +119,17 @@ public class FloatingOverlayService extends Service {
     private Button btnHudTouch;
     private Button btnHudNet;
 
-    // State Variables
+    // Action buttons — 2026.2 Combat Suite
+    private Button btnHudInjectCombat;
+    private Button btnHudReInject;
+    private Button btnHudAimLock;
+    private Button btnHudDamageLock;
+
+    // Combat state
+    private boolean isCombatSuiteActive = false;
+    private boolean isAimLockActive = false;
+    private boolean isDamageLockActive = false;
+    private volatile String currentActiveGamePkg = null;
     private static final int[] REFRESH_RATE_TIERS = {185};
     private int currentHzIndex = 0;
     private HudMode currentMode = HudMode.PILL;
@@ -446,6 +456,154 @@ public class FloatingOverlayService extends Service {
                 });
             });
         }
+
+        // ── 2026.2 Combat Suite Buttons ────────────────────────────────────────
+
+        // 7. INJECT COMBAT — fire full ranked combat suite on detected game
+        btnHudInjectCombat = overlayView.findViewById(R.id.btn_hud_inject_combat);
+        if (btnHudInjectCombat != null) {
+            btnHudInjectCombat.setOnClickListener(v -> {
+                performHaptic();
+                isCombatSuiteActive = !isCombatSuiteActive;
+                final boolean active = isCombatSuiteActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    String pkg = detectActiveGamePackage();
+                    if (pkg != null) {
+                        currentActiveGamePkg = pkg;
+                        com.gamebooster.app.config.GameAutoInjectDispatcher.resetPackageInjectionState(pkg);
+                        com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(
+                                getApplicationContext(), pkg, true);
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudInjectCombat != null) {
+                            btnHudInjectCombat.setText(active ? "⚔️ COMBAT ON" : "⚔️ INJECT");
+                            btnHudInjectCombat.setTextColor(active
+                                    ? Color.parseColor("#FF3366")
+                                    : Color.parseColor("#00F0FF"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                pkg != null
+                                        ? "⚔️ Combat Suite Injected for " + pkg
+                                        : "⚔️ No active game detected",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 8. RE-INJECT — force re-inject after map change
+        btnHudReInject = overlayView.findViewById(R.id.btn_hud_reinject);
+        if (btnHudReInject != null) {
+            btnHudReInject.setOnClickListener(v -> {
+                performHaptic();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    String pkg = currentActiveGamePkg != null
+                            ? currentActiveGamePkg : detectActiveGamePackage();
+                    if (pkg != null) {
+                        currentActiveGamePkg = pkg;
+                        com.gamebooster.app.services.MapChangeReInjector.forceReInjectNow(
+                                getApplicationContext(), pkg);
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(getApplicationContext(),
+                                pkg != null
+                                        ? "🔄 Re-Injected for " + pkg
+                                        : "🔄 No active game detected",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 9. AIM LOCK — per-scope adaptive aim toggle
+        btnHudAimLock = overlayView.findViewById(R.id.btn_hud_aim_lock);
+        if (btnHudAimLock != null) {
+            btnHudAimLock.setOnClickListener(v -> {
+                performHaptic();
+                isAimLockActive = !isAimLockActive;
+                final boolean active = isAimLockActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    String pkg = currentActiveGamePkg != null
+                            ? currentActiveGamePkg : detectActiveGamePackage();
+                    if (pkg != null) {
+                        com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg);
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudAimLock != null) {
+                            btnHudAimLock.setText(active ? "🎯 AIM ON" : "🎯 AIM");
+                            btnHudAimLock.setTextColor(active
+                                    ? Color.parseColor("#00FF66")
+                                    : Color.parseColor("#00F0FF"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                active ? "🎯 Adaptive Aim Lock Active" : "🎯 Aim Lock Off",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+
+        // 10. DAMAGE — damage overdrive toggle
+        btnHudDamageLock = overlayView.findViewById(R.id.btn_hud_damage);
+        if (btnHudDamageLock != null) {
+            btnHudDamageLock.setOnClickListener(v -> {
+                performHaptic();
+                isDamageLockActive = !isDamageLockActive;
+                final boolean active = isDamageLockActive;
+                AppExecutors.getInstance().executeCommand(() -> {
+                    String pkg = currentActiveGamePkg != null
+                            ? currentActiveGamePkg : detectActiveGamePackage();
+                    if (pkg != null) {
+                        com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg);
+                        com.gamebooster.app.config.CommonConfigTuningInjector.applyRankedCombatFullSuite(pkg);
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (btnHudDamageLock != null) {
+                            btnHudDamageLock.setText(active ? "💥 DMG ON" : "💥 DAMAGE");
+                            btnHudDamageLock.setTextColor(active
+                                    ? Color.parseColor("#FF8C00")
+                                    : Color.parseColor("#00F0FF"));
+                        }
+                        Toast.makeText(getApplicationContext(),
+                                active ? "💥 Damage Overdrive 10000x Active" : "💥 Damage Override Off",
+                                Toast.LENGTH_SHORT).show();
+                        scheduleAutoCollapse();
+                    });
+                });
+            });
+        }
+    }
+
+    /** Detect the currently active foreground game package. Returns null if none found. */
+    private String detectActiveGamePackage() {
+        try {
+            android.app.ActivityManager am = (android.app.ActivityManager)
+                    getSystemService(android.content.Context.ACTIVITY_SERVICE);
+            if (am == null) return null;
+            java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am.getRunningAppProcesses();
+            if (procs == null) return null;
+            for (android.app.ActivityManager.RunningAppProcessInfo p : procs) {
+                if (p.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    String pkg = p.processName;
+                    // Only return if it's a known game package
+                    if (pkg != null && (
+                            pkg.contains("mobile.legends") ||
+                            pkg.contains("codm") || pkg.contains("callofduty") ||
+                            pkg.contains("tencent.ig") || pkg.contains("pubg") ||
+                            pkg.contains("garena") || pkg.contains("freefire") ||
+                            com.gamebooster.app.games.GamePackageRegistry.getGameType(pkg) !=
+                                    com.gamebooster.app.games.GamePackageRegistry.GameType.OTHER)) {
+                        return pkg;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "detectActiveGamePackage error: " + t.getMessage());
+        }
+        return null;
     }
 
     private void cycleCrosshairPreset() {

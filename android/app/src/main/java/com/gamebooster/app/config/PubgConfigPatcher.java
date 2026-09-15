@@ -957,5 +957,66 @@ public class PubgConfigPatcher {
         try { AntiLogPatcher.applyAntiLog(packageName); } catch (Throwable ignored) {}
         Log.i(TAG, "PUBGM AllScopeTieredHeadshot (100m-400m) successfully applied for " + packageName);
     }
+
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    /**
+     * Adaptive Aim Assist — 2026.2 Edition.
+     * Per-scope gyro sensitivity + UE4 CVar predictive aim. All weapons, ranked & classic, all maps.
+     */
+    public static boolean applyAdaptiveAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveAimAssist(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "PUBGM AdaptiveAimAssist2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Adaptive No Recoil — 2026.2 Edition.
+     * Per-weapon-category recoil zero + UE4 CVar pass (r.WeaponRecoilScale=0 etc).
+     * All scope stabilizers. Ranked & classic, all maps.
+     */
+    public static boolean applyAdaptiveNoRecoil(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveNoRecoil(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "PUBGM AdaptiveNoRecoil2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Ranked Combat Full Suite — 2026.2 Edition.
+     * Master 24-layer payload for PUBGM. Ranked + Classic + All Maps.
+     * Includes ballistic speed, bullet tracking, UE4 damage CVars, fast loot, sprint.
+     */
+    public static boolean applyRankedCombatFullSuite(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "PUBGM RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    /**
+     * Classic Combat Full Suite — 2026.2 Edition.
+     * Identical to ranked — separate label for mode clarity and per-mode toggle support.
+     */
+    public static boolean applyClassicCombatFullSuite(String packageName) {
+        Log.i(TAG, "PUBGM ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
+        return applyRankedCombatFullSuite(packageName);
+    }
 }
 
