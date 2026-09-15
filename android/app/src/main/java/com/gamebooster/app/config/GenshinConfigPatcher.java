@@ -66,6 +66,7 @@ public class GenshinConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectGenshinDamage10000ElementalBurstMax(path);
+            NativeConfigInjector.injectGenshinFpsUnlockShaderTurbo(path);
         }
     }
 

@@ -526,3 +526,184 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── Arena Breakout: Combat Overdrive & Extraction 120 FPS ───────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutCombatOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSLimit", "120"}, {"TargetFPS", "120"}, {"AudioSpatialEnhance", "1"},
+        {"FootstepClarity", "1"}, {"RecoilCompensation", "0.0"}, {"WeaponSwayZero", "1"},
+        {"AimStabilization", "1"}, {"ArmorPenetrationLevel6", "1"}, {"FleshDamageMultiplier", "3.0"},
+        {"AdsInstantTime", "0"}, {"QuickHealSpeed", "10.0"}, {"HitRegSyncRate", "1000"},
+        {"ZeroInputLag", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ArenaBreakoutCombatOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Delta Force Mobile: Tactical Combat Overdrive ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceCombatOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"r.FPSLimit", "120"}, {"r.TargetFPS", "120"}, {"r.WeaponRecoilScale", "0.0"},
+        {"r.AimAssistLock", "1"}, {"r.AimMagnetism", "3"}, {"r.HeadshotPriority", "1"},
+        {"PenetrationMultiplier", "10000"}, {"DamageMultiplier", "10000"},
+        {"TacticalSprintZeroDelay", "1"}, {"HitRegSyncRate", "1000"}, {"ZeroInputLag", "1"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}, {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "DeltaForceCombatOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Blood Strike: Tactical Slide & Combat Overdrive ─────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeCombatOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"MaxFPS", "144"}, {"FrameRate", "144"}, {"TacticalSlideBoost", "1"},
+        {"SlideCancelDelay", "0"}, {"SprintToFireDelay", "0"}, {"JumpFatigueDisabled", "1"},
+        {"WeaponRecoilScale", "0.0"}, {"HorizontalRecoil", "0.0"}, {"VerticalRecoil", "0.0"},
+        {"BulletSpread", "0.0"}, {"AimAssistTier", "3"}, {"AimMagnetism", "3"},
+        {"HeadTrackingPriority", "1"}, {"DamageMultiplier", "10000"}, {"HeadshotMultiplier", "5.0"},
+        {"HitRegSyncRate", "1000"}, {"ZeroInputLag", "1"}, {"TouchPollingRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "BloodStrikeCombatOverdrive");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Genshin Impact: FPS Unlock & Shader Turbo ───────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGenshinFpsUnlockShaderTurbo
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSUncap", "120"}, {"TargetFPS", "120"}, {"MaxFPS", "120"},
+        {"VulkanAsyncCompute", "1"}, {"ShaderPrewarm", "1"}, {"CameraSmoothingZero", "1"},
+        {"ZeroInputLatency", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"},
+        {"bFramePacingEnabled", "True"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "GenshinFpsUnlockShaderTurbo");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CarX Street: Zero Throttle Latency ──────────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCarXZeroThrottleLatency
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"TargetFPSLimit", "120"}, {"TargetFPS", "120"}, {"ThrottleInputLatency", "0"},
+        {"SteeringDeadzone", "0"}, {"TextureStreamingSpeed", "10"}, {"MotionBlur", "0"},
+        {"ZeroSteeringLag", "1"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "CarXZeroThrottleLatency");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Farlight 84: Jetpack Strafe Accuracy & 144 FPS ─────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightJetpackAccuracy
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSLevel", "144"}, {"TargetFPS", "144"}, {"JetpackStrafeStability", "1"},
+        {"JetpackCooldownReduction", "1"}, {"AimAssistMagnetism", "3"}, {"ZeroRecoil", "1"},
+        {"BulletVelocityMultiplier", "2.0"}, {"HitRegSyncRate", "1000"}, {"TouchPollingRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "FarlightJetpackAccuracy");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Roblox: 120 FPS Unlock & Physics Sync ───────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRoblox120FpsUnlock
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSUncap", "120"}, {"TargetFPS", "120"}, {"GraphicsQualityLevel", "7"},
+        {"MemoryBudgetMB", "2048"}, {"ZeroTouchLatency", "1"}, {"PhysicsTickRate", "1000"},
+        {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "Roblox120FpsUnlock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Standoff 2: 128 Tick-rate & Zero Spread ─────────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2True128Tick
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSLimit", "120"}, {"TargetFPS", "120"}, {"TickRate", "128"},
+        {"ZeroSpread", "1"}, {"CrosshairDynamic", "0"}, {"HeadshotMagnetism", "1"},
+        {"HitRegSyncRate", "1000"}, {"ZeroInputLag", "1"}, {"TouchPollingRate", "1000"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "Standoff2True128Tick");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── Valorant Mobile: Head-Height Lock & Zero Input Delay ────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantLowLatencyHeadshot
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FPSLock", "120"}, {"TargetFPS", "120"}, {"HeadLevelCrosshairAssist", "1"},
+        {"FirstBulletSpread", "0.0"}, {"WalkingAccuracyLock", "1"}, {"ZeroInputLag", "1"},
+        {"HitRegSyncRate", "1000"}, {"TouchPollingRate", "1000"}, {"TouchZeroDelay", "1"}
+    };
+    bool ok = apply_keys_to_file(pathStr, path, keys, "ValorantLowLatencyHeadshot");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+

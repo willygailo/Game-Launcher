@@ -93,6 +93,7 @@ public class ArenaBreakoutConfigPatcher {
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[ArenaBreakoutMasterSuite]");
             NativeConfigInjector.injectArenaBreakoutDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectArenaBreakoutCombatOverdrive(path);
         }
     }
 

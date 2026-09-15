@@ -144,6 +144,13 @@ public final class GameAutoInjectDispatcher {
             Log.w(TAG, "⚠️ Config backup note for " + pkg + ": " + t.getMessage());
         }
 
+        // ── 2.5. Lua Boost Profile Bridge: Load and apply offline Lua profile properties ──
+        try {
+            LuaProfileBridge.applyProfileForPackage(context, pkg);
+        } catch (Throwable t) {
+            Log.w(TAG, "⚠️ Lua profile bridge note for " + pkg + ": " + t.getMessage());
+        }
+
         // ── 3. Game-specific injection ──
         try {
             switch (gameType) {
@@ -281,6 +288,10 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyLingNoEnergyLimit(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllJungleFastFarmOverdrive(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyBeatrixInstantReloadAndSwap(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Fast Farming + Fast Retri + All Hero God Suite ───────────
+        try { MlbbConfigPatcher.applyFastFarmingAllHero(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyFastRetributionObjectiveSteal(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyAllHeroGodSuite2026(pkg); } catch (Throwable ignored) {}
         // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
         // Adaptive Aim: per-scope gyro + smooth head snap (all heroes, all maps)
         try { MlbbConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}

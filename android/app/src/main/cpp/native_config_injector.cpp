@@ -999,3 +999,48 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── Direct Lua Profile Key-Value Stream Injector ────────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLuaProperties
+  (JNIEnv *env, jclass, jstring jPath, jobjectArray jKeys, jobjectArray jValues) {
+    if (!jPath || !jKeys || !jValues) return JNI_FALSE;
+
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+
+    jsize keyCount = env->GetArrayLength(jKeys);
+    jsize valCount = env->GetArrayLength(jValues);
+    jsize count = (keyCount < valCount) ? keyCount : valCount;
+
+    if (count <= 0) {
+        env->ReleaseStringUTFChars(jPath, path);
+        return JNI_TRUE;
+    }
+
+    std::vector<std::pair<std::string, std::string>> keys;
+    keys.reserve(count);
+
+    for (jsize i = 0; i < count; i++) {
+        jstring kStr = (jstring)env->GetObjectArrayElement(jKeys, i);
+        jstring vStr = (jstring)env->GetObjectArrayElement(jValues, i);
+        if (kStr && vStr) {
+            const char *kChars = env->GetStringUTFChars(kStr, nullptr);
+            const char *vChars = env->GetStringUTFChars(vStr, nullptr);
+            if (kChars && vChars) {
+                keys.emplace_back(std::string(kChars), std::string(vChars));
+            }
+            if (kChars) env->ReleaseStringUTFChars(kStr, kChars);
+            if (vChars) env->ReleaseStringUTFChars(vStr, vChars);
+        }
+        if (kStr) env->DeleteLocalRef(kStr);
+        if (vStr) env->DeleteLocalRef(vStr);
+    }
+
+    std::string pathStr(path);
+    bool ok = apply_keys_to_file(pathStr, path, keys, "LuaProfileStream");
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("LuaProfileStream injected %zu keys into: %s [ok=%d]", keys.size(), pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

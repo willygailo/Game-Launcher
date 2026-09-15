@@ -66,6 +66,7 @@ public class CarXConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectCarXTorqueHorsepower10000Max(path);
+            NativeConfigInjector.injectCarXZeroThrottleLatency(path);
         }
     }
 

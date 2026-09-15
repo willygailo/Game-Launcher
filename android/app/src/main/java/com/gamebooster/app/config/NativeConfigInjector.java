@@ -72,8 +72,22 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectDamageLockMax(String path);
     // 2026: Aim Assist Lock Max — locks angular tracking, hero magnetism, zero ADS lag
     public static native boolean nativeInjectAimAssistLockMax(String path);
-    // 2026: Vulkan Optimization — async shader compilation, pipeline cache, and GPU features
-    public static native boolean nativeInjectVulkanOptimization(String path);
+    // 2026: Direct Lua Profile Batch Stream Injection
+    public static native boolean nativeInjectLuaProperties(String path, String[] keys, String[] values);
+
+    // 2026: Dedicated Native Game Injectors
+    public static native boolean nativeInjectArenaBreakoutCombatOverdrive(String path);
+    public static native boolean nativeInjectDeltaForceCombatOverdrive(String path);
+    public static native boolean nativeInjectBloodStrikeCombatOverdrive(String path);
+    public static native boolean nativeInjectGenshinFpsUnlockShaderTurbo(String path);
+    public static native boolean nativeInjectCarXZeroThrottleLatency(String path);
+    public static native boolean nativeInjectFarlightJetpackAccuracy(String path);
+    public static native boolean nativeInjectRoblox120FpsUnlock(String path);
+    public static native boolean nativeInjectStandoff2True128Tick(String path);
+    public static native boolean nativeInjectValorantLowLatencyHeadshot(String path);
+    public static native boolean nativeInjectMlbbFastFarmingAllHero(String path);
+    public static native boolean nativeInjectMlbbFastRetributionObjectiveSteal(String path);
+    public static native boolean nativeInjectMlbbAllHeroGodSuite2026(String path);
 
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
@@ -3027,6 +3041,229 @@ public class NativeConfigInjector {
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbHeroBoostArmor]");
     }
 
+
+    // ─── 2026 Game Native Wrapper Methods with Safe Fallback ──────────────────
+    public static boolean injectLuaProperties(String path, String[] keys, String[] values) {
+        if (path == null || keys == null || values == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectLuaProperties(path, keys, values)) return true;
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean injectArenaBreakoutCombatOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectArenaBreakoutCombatOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSLimit=120", "TargetFPS=120", "AudioSpatialEnhance=1",
+            "FootstepClarity=1", "RecoilCompensation=0.0", "WeaponSwayZero=1",
+            "AimStabilization=1", "ArmorPenetrationLevel6=1", "FleshDamageMultiplier=3.0",
+            "AdsInstantTime=0", "QuickHealSpeed=10.0", "HitRegSyncRate=1000",
+            "ZeroInputLag=1", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ArenaBreakoutOverdrive]");
+    }
+
+    public static boolean injectDeltaForceCombatOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectDeltaForceCombatOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.FPSLimit=120", "r.TargetFPS=120", "r.WeaponRecoilScale=0.0",
+            "r.AimAssistLock=1", "r.AimMagnetism=3", "r.HeadshotPriority=1",
+            "PenetrationMultiplier=10000", "DamageMultiplier=10000",
+            "TacticalSprintZeroDelay=1", "HitRegSyncRate=1000", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[DeltaForceOverdrive]");
+    }
+
+    public static boolean injectBloodStrikeCombatOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectBloodStrikeCombatOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MaxFPS=144", "FrameRate=144", "TacticalSlideBoost=1",
+            "SlideCancelDelay=0", "SprintToFireDelay=0", "JumpFatigueDisabled=1",
+            "WeaponRecoilScale=0.0", "HorizontalRecoil=0.0", "VerticalRecoil=0.0",
+            "BulletSpread=0.0", "AimAssistTier=3", "AimMagnetism=3",
+            "HeadTrackingPriority=1", "DamageMultiplier=10000", "HeadshotMultiplier=5.0",
+            "HitRegSyncRate=1000", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[BloodStrikeOverdrive]");
+    }
+
+    public static boolean injectGenshinFpsUnlockShaderTurbo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectGenshinFpsUnlockShaderTurbo(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSUncap=120", "TargetFPS=120", "MaxFPS=120",
+            "VulkanAsyncCompute=1", "ShaderPrewarm=1", "CameraSmoothingZero=1",
+            "ZeroInputLatency=1", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[GenshinTurbo]");
+    }
+
+    public static boolean injectCarXZeroThrottleLatency(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCarXZeroThrottleLatency(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "TargetFPSLimit=120", "TargetFPS=120", "ThrottleInputLatency=0",
+            "SteeringDeadzone=0", "TextureStreamingSpeed=10", "MotionBlur=0",
+            "ZeroSteeringLag=1", "TouchPollingRate=1000", "TouchZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CarXZeroLatency]");
+    }
+
+    public static boolean injectFarlightJetpackAccuracy(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectFarlightJetpackAccuracy(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSLevel=144", "TargetFPS=144", "JetpackStrafeStability=1",
+            "JetpackCooldownReduction=1", "AimAssistMagnetism=3", "ZeroRecoil=1",
+            "BulletVelocityMultiplier=2.0", "HitRegSyncRate=1000", "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[FarlightAccuracy]");
+    }
+
+    public static boolean injectRoblox120FpsUnlock(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectRoblox120FpsUnlock(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSUncap=120", "TargetFPS=120", "GraphicsQualityLevel=7",
+            "MemoryBudgetMB=2048", "ZeroTouchLatency=1", "PhysicsTickRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Roblox120Fps]");
+    }
+
+    public static boolean injectStandoff2True128Tick(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectStandoff2True128Tick(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSLimit=120", "TargetFPS=120", "TickRate=128",
+            "ZeroSpread=1", "CrosshairDynamic=0", "HeadshotMagnetism=1",
+            "HitRegSyncRate=1000", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[Standoff2Tick]");
+    }
+
+    public static boolean injectValorantLowLatencyHeadshot(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectValorantLowLatencyHeadshot(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FPSLock=120", "TargetFPS=120", "HeadLevelCrosshairAssist=1",
+            "FirstBulletSpread=0.0", "WalkingAccuracyLock=1", "ZeroInputLag=1",
+            "HitRegSyncRate=1000", "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[ValorantHeadshot]");
+    }
+
+    public static boolean injectMlbbFastFarmingAllHero(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFastFarmingAllHero(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FastFarming=1", "JungleClearSpeedBoost=10", "CreepDamageMultiplier=10000",
+            "JungleMonsterTrueDmg=1", "MinionWaveInstantClear=1", "LastHitAssist=1",
+            "GoldRateBoost=3", "ExpRateBoost=3", "CreepGoldMultiplier=3", "FastLevelUp=1",
+            "SmartCreepTargeting=1", "JunglePathZeroDeadzone=1", "CreepHP=1", "DamageText=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastFarming]");
+    }
+
+    public static boolean injectMlbbFastRetributionObjectiveSteal(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFastRetributionObjectiveSteal(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FastRetribution=1", "AutoRetriLordTurtle=1", "RetriHpThresholdCalc=1",
+            "InstantSmite=1", "SmartRetributionHpThreshold=1", "TargetLowestHpMonster=1",
+            "RetributionDamageMax=10000", "AutoSmiteLock=1", "RetributionInstantCast=1",
+            "ObjectiveTargetLock=1", "RetributionStealSyncRate=1000", "RetriReactionTimeMs=0",
+            "FlameRetriInstant=1", "IceRetriInstant=1", "BloodyRetriInstant=1",
+            "AdsZeroDelay=1", "ZeroInputLag=1", "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastRetribution]");
+    }
+
+    public static boolean injectMlbbAllHeroGodSuite2026(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbAllHeroGodSuite2026(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AllHeroDamageMultiplier=10000", "AllHeroDefenseBoost=10000", "AllHeroCritRateBoost=100",
+            "AllHeroTrueDamage=1", "AllHeroInstantCooldown=1", "AllHeroUnlimitedEnergy=1",
+            "AllHeroUnlimitedMana=1", "DamageLockMax=10000", "EffectiveDPSMode=3",
+            "HeroLock=1", "HeroLockPriority=0", "SkillSmartAim=1", "SkillAutoChain=1",
+            "ZeroDelaySkillTap=1", "FastSkillCycle=1", "SkillCastDelayMs=0", "FastSkillReleaseSpeed=10",
+            "FannyCableSpeed=10", "FannyZeroCableDelay=1", "FannyUnlimitedEnergy=1",
+            "LingComboSpeed=10", "LingWallJumpDelay=0", "LingSwordCollectZeroDelay=1",
+            "GusionDaggerSpeed=10", "GusionInstaRecall=1", "ChouFreestyleFlicker=1",
+            "ChouKickZeroDelay=1", "HayaShadowSwapInstant=1", "BeatrixGunSwapInstant=1",
+            "NolanInfiniteRiftEnergy=1", "JoyPerfectBeatRhythmLock=1", "ArlottDemonGazeAutoStab=1",
+            "SuyouStanceSwapZeroDelay=1", "CameraHeight=2", "FovBoost=1.35",
+            "MinimapEnemyPriority=1", "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbAllHeroGodSuite]");
+    }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────
 

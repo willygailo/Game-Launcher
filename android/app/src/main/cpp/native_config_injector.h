@@ -1420,6 +1420,110 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedAimAssist
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbFastFarmingAllHero
+ * MLBB — Fast Farming & Jungle Creep Clear Overdrive
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastFarmingAllHero
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbFastRetributionObjectiveSteal
+ * MLBB — Fast Retribution Instant Smite & Objective Steal (Lord/Turtle)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastRetributionObjectiveSteal
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbAllHeroGodSuite2026
+ * MLBB — Universal All Hero Overdrive, Unlimited Energy/Mana & Skill Chain
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroGodSuite2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectLuaProperties
+ * Ingests arbitrary key-value sets from parsed Lua profiles directly into target files at native speed.
+ * Signature: (Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectLuaProperties
+  (JNIEnv *, jclass, jstring, jobjectArray, jobjectArray);
+
+/*
+ * nativeInjectArenaBreakoutCombatOverdrive
+ * Arena Breakout — 120 FPS, Audio Spatialization, Armor Piercing & Zero Sway
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectArenaBreakoutCombatOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectDeltaForceCombatOverdrive
+ * Delta Force Mobile — 120 FPS, Tactical Sprint & Muzzle Stabilization
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDeltaForceCombatOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectBloodStrikeCombatOverdrive
+ * Blood Strike — 144 FPS, Tactical Slide Acceleration & Zero Recoil
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectBloodStrikeCombatOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectGenshinFpsUnlockShaderTurbo
+ * Genshin Impact — 120 FPS, Vulkan Async Compute & Pipeline Pre-warming
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectGenshinFpsUnlockShaderTurbo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCarXZeroThrottleLatency
+ * CarX Street — Zero Throttle Latency, 120 FPS & Texture Streaming
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCarXZeroThrottleLatency
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectFarlightJetpackAccuracy
+ * Farlight 84 — Jetpack Strafe Stability, 144 FPS & Tick-rate Sync
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectFarlightJetpackAccuracy
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectRoblox120FpsUnlock
+ * Roblox — 120 FPS Uncap, Physics Rate Sync & Memory Budget Boost
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectRoblox120FpsUnlock
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectStandoff2True128Tick
+ * Standoff 2 — 128-tick rate network packet alignment & Zero First Bullet Spread
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectStandoff2True128Tick
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectValorantLowLatencyHeadshot
+ * Valorant Mobile — Crosshair Head-height Lock & Zero Input Delay
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantLowLatencyHeadshot
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

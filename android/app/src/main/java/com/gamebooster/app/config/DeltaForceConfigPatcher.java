@@ -104,6 +104,7 @@ public class DeltaForceConfigPatcher {
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[DeltaForceMasterSuite]");
             NativeConfigInjector.injectDeltaForceDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectDeltaForceCombatOverdrive(path);
         }
     }
 

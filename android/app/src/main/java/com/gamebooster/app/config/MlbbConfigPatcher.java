@@ -45,6 +45,36 @@ public class MlbbConfigPatcher {
     }
 
     /**
+     * Fast Farming & Minion/Jungle Creep Wave Clear Overdrive — 2026 Edition.
+     */
+    public static void applyFastFarmingAllHero(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbFastFarmingAllHero(path);
+        }
+    }
+
+    /**
+     * Fast Retribution Instant Smite & Objective Steal (Lord / Turtle) — 2026 Edition.
+     */
+    public static void applyFastRetributionObjectiveSteal(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbFastRetributionObjectiveSteal(path);
+        }
+    }
+
+    /**
+     * Universal All Hero God Suite & Micro Hero Overdrives — 2026 Edition.
+     */
+    public static void applyAllHeroGodSuite2026(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbAllHeroGodSuite2026(path);
+        }
+    }
+
+    /**
      * Executes single-pass atomic batch injection for MLBB Master Combo Suite + Drone View + Auto-Retri + 10000 Damage.
      */
     public static void applyMlbbMasterSuite(String packageName) {
@@ -52,6 +82,9 @@ public class MlbbConfigPatcher {
         applyDamage10000AttackSpeedMax(packageName);
         applyFastAttackSpeedAllHero(packageName);
         applyBeatrixInstantReloadAndSwap(packageName);
+        applyFastFarmingAllHero(packageName);
+        applyFastRetributionObjectiveSteal(packageName);
+        applyAllHeroGodSuite2026(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectMlbbMasterComboSuite(path);
@@ -59,6 +92,9 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectUniversalCombatSuite(path);
             NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
+            NativeConfigInjector.injectMlbbFastFarmingAllHero(path);
+            NativeConfigInjector.injectMlbbFastRetributionObjectiveSteal(path);
+            NativeConfigInjector.injectMlbbAllHeroGodSuite2026(path);
         }
     }
 

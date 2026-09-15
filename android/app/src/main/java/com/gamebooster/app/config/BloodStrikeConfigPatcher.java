@@ -99,6 +99,7 @@ public class BloodStrikeConfigPatcher {
         for (String path : GameConfigPathResolver.getPathsForGame(packageName)) {
             NativeConfigInjector.batchInjectKeys(path, keys, "[BloodStrikeMasterSuite]");
             NativeConfigInjector.injectBloodStrikeDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectBloodStrikeCombatOverdrive(path);
         }
     }
 

@@ -72,6 +72,7 @@ public class Standoff2ConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectStandoff2Damage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectStandoff2True128Tick(path);
         }
     }
 

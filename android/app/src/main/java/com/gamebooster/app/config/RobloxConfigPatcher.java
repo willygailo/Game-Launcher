@@ -66,6 +66,7 @@ public class RobloxConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectRobloxDamage10000Max(path);
+            NativeConfigInjector.injectRoblox120FpsUnlock(path);
         }
     }
 

@@ -75,6 +75,7 @@ public class FarlightConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectFarlightDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectFarlightJetpackAccuracy(path);
         }
     }
 

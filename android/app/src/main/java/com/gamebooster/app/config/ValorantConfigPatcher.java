@@ -75,6 +75,7 @@ public class ValorantConfigPatcher {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectValorantDamage10000AttackSpeedMax(path);
+            NativeConfigInjector.injectValorantLowLatencyHeadshot(path);
         }
     }
 

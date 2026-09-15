@@ -2268,3 +2268,148 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbRankedAimAs
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── MLBB: Fast Farming & Jungle Creep Clear Overdrive ────────────────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastFarmingAllHero(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FastFarming", "1"},
+        {"JungleClearSpeedBoost", "10"},
+        {"CreepDamageMultiplier", "10000"},
+        {"JungleMonsterTrueDmg", "1"},
+        {"MinionWaveInstantClear", "1"},
+        {"LastHitAssist", "1"},
+        {"GoldRateBoost", "3"},
+        {"ExpRateBoost", "3"},
+        {"CreepGoldMultiplier", "3"},
+        {"FastLevelUp", "1"},
+        {"SmartCreepTargeting", "1"},
+        {"JunglePathZeroDeadzone", "1"},
+        {"CreepHP", "1"},
+        {"DamageText", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"HitRegSyncRate", "1000"},
+        {"bFramePacingEnabled", "True"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFastFarmingAllHero");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Fast Retribution Instant Smite & Objective Steal (Lord/Turtle) ─────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastRetributionObjectiveSteal(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"FastRetribution", "1"},
+        {"AutoRetriLordTurtle", "1"},
+        {"RetriHpThresholdCalc", "1"},
+        {"InstantSmite", "1"},
+        {"SmartRetributionHpThreshold", "1"},
+        {"TargetLowestHpMonster", "1"},
+        {"RetributionDamageMax", "10000"},
+        {"AutoSmiteLock", "1"},
+        {"RetributionInstantCast", "1"},
+        {"ObjectiveTargetLock", "1"},
+        {"RetributionStealSyncRate", "1000"},
+        {"RetriReactionTimeMs", "0"},
+        {"FlameRetriInstant", "1"},
+        {"IceRetriInstant", "1"},
+        {"BloodyRetriInstant", "1"},
+        {"AdsZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"HitRegSyncRate", "1000"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbFastRetributionObjectiveSteal");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── MLBB: Universal All Hero Overdrive, Energy/Mana & Skill Chain ───────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroGodSuite2026(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // All-Hero Combat
+        {"AllHeroDamageMultiplier", "10000"},
+        {"AllHeroDefenseBoost", "10000"},
+        {"AllHeroCritRateBoost", "100"},
+        {"AllHeroTrueDamage", "1"},
+        {"AllHeroInstantCooldown", "1"},
+        {"AllHeroUnlimitedEnergy", "1"},
+        {"AllHeroUnlimitedMana", "1"},
+        {"DamageLockMax", "10000"},
+        {"EffectiveDPSMode", "3"},
+        {"HitRegSyncRate", "1000"},
+        // Hero Lock & Micro
+        {"HeroLock", "1"},
+        {"HeroLockPriority", "0"},
+        {"SkillSmartAim", "1"},
+        {"SkillAutoChain", "1"},
+        {"ZeroDelaySkillTap", "1"},
+        {"FastSkillCycle", "1"},
+        {"SkillCastDelayMs", "0"},
+        {"FastSkillReleaseSpeed", "10"},
+        {"AimMagnetism", "3"},
+        {"AimSnapSpeed", "10"},
+        {"AimSmoothFactor", "0"},
+        // Micro Hero Passives
+        {"FannyCableSpeed", "10"},
+        {"FannyZeroCableDelay", "1"},
+        {"FannyUnlimitedEnergy", "1"},
+        {"LingComboSpeed", "10"},
+        {"LingWallJumpDelay", "0"},
+        {"LingSwordCollectZeroDelay", "1"},
+        {"GusionDaggerSpeed", "10"},
+        {"GusionInstaRecall", "1"},
+        {"ChouFreestyleFlicker", "1"},
+        {"ChouKickZeroDelay", "1"},
+        {"HayaShadowSwapInstant", "1"},
+        {"BeatrixGunSwapInstant", "1"},
+        {"NolanInfiniteRiftEnergy", "1"},
+        {"JoyPerfectBeatRhythmLock", "1"},
+        {"ArlottDemonGazeAutoStab", "1"},
+        {"SuyouStanceSwapZeroDelay", "1"},
+        // Controls & Camera
+        {"CameraHeight", "2"},
+        {"FovBoost", "1.35"},
+        {"MinimapEnemyPriority", "1"},
+        {"JoystickZeroDeadzone", "1"},
+        {"TouchPollingRate", "1000"},
+        {"TouchZeroDelay", "1"},
+        {"ZeroInputLag", "1"},
+        {"bFramePacingEnabled", "True"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbAllHeroGodSuite2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
