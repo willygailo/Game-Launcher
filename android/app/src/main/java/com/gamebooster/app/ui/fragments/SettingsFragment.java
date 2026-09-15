@@ -104,7 +104,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchVulkanSkiavk;
     private Switch switchMemory16kbShield;
     private Switch switchWebviewBoost;
-    private Button btnApplyUltimateAndroidEngine;
     private Switch switchTetheringHw;
     private Switch switchForceGnss;
     private Switch switch5g6gData;
@@ -116,6 +115,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchEsportsAudio;
     private Switch switchSpeakerBypassBoost;
     private Switch switchAntiLog;
+    private Switch switchAutoPurgeLogs;
+    private Switch switchArtSpeedCompile;
 
     // Network Settings UI (Pure Manual ON/OFF Switches - Android 13 to 16)
     private TextView tvLiveNetworkTelemetry;
@@ -172,7 +173,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Switch switchFastRun;
     private Switch switchFastCooldown;
     private Switch switchAutoReInject;
-    private Button btnApplyCombatNow;
 
     private SettingsManager precisionSettingsManager;
     private ProfileManager precisionProfileManager;
@@ -367,18 +367,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        Button btnAudioPresets = view.findViewById(R.id.btn_audio_presets);
-
-        if (btnAudioPresets != null) {
-            btnAudioPresets.setOnClickListener(v -> {
-                if (isAdded() && getActivity() != null) {
-                    com.gamebooster.app.ui.dialogs.AudioPresetSelectorDialog.show(requireActivity());
-                }
-            });
-        }
-
         switchAntiLog = view.findViewById(R.id.switch_anti_log);
-        Button btnPurgeGameLogs = view.findViewById(R.id.btn_purge_game_logs);
+        switchAutoPurgeLogs = view.findViewById(R.id.switch_auto_purge_logs);
+        switchArtSpeedCompile = view.findViewById(R.id.switch_art_speed_compile);
 
         if (switchAntiLog != null) {
             if (getContext() != null) {
@@ -404,59 +395,61 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
-        if (btnPurgeGameLogs != null) {
-            btnPurgeGameLogs.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Purge Game Logs")) return;
-                btnPurgeGameLogs.setEnabled(false);
-                Toast.makeText(getContext(), "🛡️ Purging All Game Logs & System Telemetry...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    int count = AntiLogPatcher.purgeAllGameLogs();
-                    AntiLogPatcher.applySystemAntiLog();
-                    CommandExecutor.executeSystemCommand("logcat -b all -c 2>/dev/null; dumpsys dropbox --clean 2>/dev/null; rm -rf /data/tombstones/* 2>/dev/null; rm -rf /data/anr/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/tlog/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/ano_tmp/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/tp_log/* 2>/dev/null");
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnPurgeGameLogs.setEnabled(true);
-                        Toast.makeText(getContext(), "✅ Purged logs for " + count + " game packages & system buffers", Toast.LENGTH_SHORT).show();
+        if (switchAutoPurgeLogs != null) {
+            if (getContext() != null) {
+                isProgrammaticToggle = true;
+                switchAutoPurgeLogs.setChecked(true);
+                isProgrammaticToggle = false;
+            }
+            switchAutoPurgeLogs.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Auto Purge Game Logs")) return;
+                if (isChecked) {
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        int count = AntiLogPatcher.purgeAllGameLogs();
+                        AntiLogPatcher.applySystemAntiLog();
+                        CommandExecutor.executeSystemCommand("logcat -b all -c 2>/dev/null; dumpsys dropbox --clean 2>/dev/null; rm -rf /data/tombstones/* 2>/dev/null; rm -rf /data/anr/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/tlog/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/ano_tmp/* 2>/dev/null; rm -rf /sdcard/Android/data/*/files/tp_log/* 2>/dev/null");
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            if (isAdded() && getContext() != null) {
+                                Toast.makeText(getContext(), "🧹 Game Logs & Telemetry Purged (" + count + " packages)", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     });
-                });
+                }
             });
         }
 
-        Button btnArtBatchCompile = view.findViewById(R.id.btn_art_batch_compile);
-        if (btnArtBatchCompile != null) {
-            btnArtBatchCompile.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("ART Speed Compilation")) return;
-                btnArtBatchCompile.setEnabled(false);
-                btnArtBatchCompile.setText("⏳ COMPILING GAMES (AOT)...");
-                Toast.makeText(getContext(), "⚡ Starting ART Speed-Profile compilation for all games...", Toast.LENGTH_SHORT).show();
+        if (switchArtSpeedCompile != null) {
+            if (getContext() != null) {
+                isProgrammaticToggle = true;
+                switchArtSpeedCompile.setChecked(ManualSettingsPreferences.isAotSpeedEnabled(getContext()));
+                isProgrammaticToggle = false;
+            }
+            switchArtSpeedCompile.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "ART Speed Compilation")) return;
+                ManualSettingsPreferences.setAotSpeedEnabled(getContext(), isChecked);
+                if (isChecked) {
+                    Toast.makeText(getContext(), "⚡ ART Speed-Compile Triggered via Shizuku...", Toast.LENGTH_SHORT).show();
+                    com.gamebooster.app.engine.ArtCompilerEngine.compileAllInstalledGamesAsync(
+                            getContext(),
+                            com.gamebooster.app.engine.ArtCompilerEngine.CompileFilter.SPEED,
+                            new com.gamebooster.app.engine.ArtCompilerEngine.BatchCompileCallback() {
+                                @Override
+                                public void onGameStarted(String packageName, String gameLabel, int currentIndex, int totalGames) {}
 
-                com.gamebooster.app.engine.ArtCompilerEngine.compileAllInstalledGamesAsync(
-                        getContext(),
-                        com.gamebooster.app.engine.ArtCompilerEngine.CompileFilter.SPEED,
-                        new com.gamebooster.app.engine.ArtCompilerEngine.BatchCompileCallback() {
-                            @Override
-                            public void onGameStarted(String packageName, String gameLabel, int currentIndex, int totalGames) {
-                                if (isAdded() && getContext() != null) {
-                                    Toast.makeText(getContext(), "⚡ Compiling [" + currentIndex + "/" + totalGames + "]: " + gameLabel, Toast.LENGTH_SHORT).show();
+                                @Override
+                                public void onGameFinished(String packageName, boolean success) {}
+
+                                @Override
+                                public void onAllFinished(int successCount, int totalGames) {
+                                    if (isAdded() && getContext() != null) {
+                                        Toast.makeText(getContext(), "⚡ ART Compilation Complete: " + successCount + "/" + totalGames + " games compiled!", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
-
-                            @Override
-                            public void onGameFinished(String packageName, boolean success) {
-                                // Game compilation step finished
-                            }
-
-                            @Override
-                            public void onAllFinished(int successCount, int totalGames) {
-                                if (!isAdded() || getContext() == null) return;
-                                btnArtBatchCompile.setEnabled(true);
-                                btnArtBatchCompile.setText("⚡ ART SPEED-COMPILE ALL GAMES (AOT)");
-                                Toast.makeText(getContext(), "✅ ART AOT Speed Compilation Complete: " + successCount + "/" + totalGames + " games compiled!", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
+                    );
+                }
             });
         }
 
@@ -558,7 +551,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchVulkanSkiavk = view.findViewById(R.id.switch_vulkan_skiavk);
         switchMemory16kbShield = view.findViewById(R.id.switch_memory_16kb_shield);
         switchWebviewBoost = view.findViewById(R.id.switch_webview_boost);
-        btnApplyUltimateAndroidEngine = view.findViewById(R.id.btn_apply_ultimate_android_engine);
 
         // Always ensure ANGLE driver is permanently purged from Android Settings
         AppExecutors.getInstance().executeCommand(GpuTweaksChannel::purgeAngleDriver);
@@ -785,88 +777,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         if (isAdded() && getContext() != null) {
                             Toast.makeText(getContext(), isChecked ? "⚡ WebView Boost Active: " + tier.description : "WebView Flags Reset to Default", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                });
-            });
-        }
-
-        if (btnApplyUltimateAndroidEngine != null) {
-            btnApplyUltimateAndroidEngine.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Ultimate Android 13–16 Engine")) return;
-                btnApplyUltimateAndroidEngine.setEnabled(false);
-                btnApplyUltimateAndroidEngine.setText("⏳ PUSHING NEXT-GEN ENGINE...");
-                Toast.makeText(getContext(), "🚀 Launching Ultimate Android 13–16 Performance Pipeline...", Toast.LENGTH_SHORT).show();
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    // 1. CPU & Topology
-                    com.gamebooster.app.booster.CpuGovernorChannel.tuneMultiCoreTopology();
-                    com.gamebooster.app.booster.CpuGovernorChannel.applyExtendedKernelFlags();
-                    com.gamebooster.app.booster.CpuGovernorChannel.setPerformanceLock();
-                    com.gamebooster.app.booster.CpuGovernorChannel.setGovernor("extreme");
-
-                    // 2. GPU & SkiaVK
-                    com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
-                    com.gamebooster.app.booster.GpuTweaksChannel.setGpuMaxPerformance();
-                    com.gamebooster.app.booster.GpuTweaksChannel.purgeAngleDriver();
-                    com.gamebooster.app.booster.GpuTweaksChannel.setGameDriverMode(true);
-                    com.gamebooster.app.booster.PerformanceChannel.setGpuRenderMode(true);
-
-                    // 3. Touch 1000Hz Digitizer
-                    com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
-
-                    // 4. Memory 16KB & Phantom Freezer Kill
-                    CommandExecutor.executeSystemCommand("sysctl -w vm.max_map_count=1048576 2>/dev/null; echo 1048576 > /proc/sys/vm/max_map_count 2>/dev/null; sysctl -w vm.swappiness=10 2>/dev/null; echo 10 > /proc/sys/vm/swappiness 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
-
-                    // 5. Thermal Bypass
-                    com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
-
-                    // 6. Master performance script for 185Hz
-                    com.gamebooster.app.booster.PerformanceChannel.writeAndExecutePerformanceTweaksScript(185);
-
-                    // 7. Ranked Low-Latency Socket Tuning & TCP Buffers
-                    NetworkOptimizer.enableRankedLowLatencySocketTuning(getContext());
-                    NetworkOptimizer.optimizeTcpBuffers();
-                    NetworkOptimizer.optimizeWifi6and7LowLatency(true);
-                    NetworkOptimizer.optimize5gAnd6gDataNetwork(true);
-
-                    // Save all preferences
-                    ManualSettingsPreferences.setUclampBoostEnabled(getContext(), true);
-                    ManualSettingsPreferences.setTouch1000HzLockEnabled(getContext(), true);
-                    ManualSettingsPreferences.setPhantomFreezerKillEnabled(getContext(), true);
-                    ManualSettingsPreferences.setVulkanSkiaVkEnabled(getContext(), true);
-                    ManualSettingsPreferences.setMemory16kbShieldEnabled(getContext(), true);
-                    ManualSettingsPreferences.setAdpfEngineEnabled(getContext(), true);
-                    ManualSettingsPreferences.setCpuMode(getContext(), "performance");
-                    ManualSettingsPreferences.setGpuMode(getContext(), "vulkan");
-                    ManualSettingsPreferences.setGameDriverEnabled(getContext(), true);
-                    ManualSettingsPreferences.setThermalBypassEnabled(getContext(), true);
-                    ManualSettingsPreferences.setTcpBbrBuffersEnabled(getContext(), true);
-                    ManualSettingsPreferences.setWifiLowLatencyEnabled(getContext(), true);
-                    ManualSettingsPreferences.set5g6gDataEnabled(getContext(), true);
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        btnApplyUltimateAndroidEngine.setEnabled(true);
-                        btnApplyUltimateAndroidEngine.setText("⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)");
-
-                        isProgrammaticToggle = true;
-                        if (switchUclampBoost != null) switchUclampBoost.setChecked(true);
-                        if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(true);
-                        if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(true);
-                        if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(true);
-                        if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(true);
-                        if (switchAdpfEngine != null) switchAdpfEngine.setChecked(true);
-                        if (switchCpuMode != null) switchCpuMode.setChecked(true);
-                        if (switchGpuMode != null) switchGpuMode.setChecked(true);
-                        if (switchGameDriver != null) switchGameDriver.setChecked(true);
-                        if (switchThermalBypass != null) switchThermalBypass.setChecked(true);
-                        if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(true);
-                        if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
-                        if (switch5g6gData != null) switch5g6gData.setChecked(true);
-                        isProgrammaticToggle = false;
-
-                        Toast.makeText(getContext(), "🔥 ULTIMATE ENGINE LOCKED: All Android 13–16 CPU/GPU/Touch/ADPF/Network Tweaks Active!", Toast.LENGTH_LONG).show();
                     });
                 });
             });
@@ -2335,7 +2245,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         switchFastRun            = view.findViewById(R.id.switch_fast_run);
         switchFastCooldown       = view.findViewById(R.id.switch_fast_cooldown);
         switchAutoReInject       = view.findViewById(R.id.switch_auto_reinject);
-        btnApplyCombatNow        = view.findViewById(R.id.btn_apply_combat_now);
 
         // ── Restore saved states ─────────────────────────────────────────────
         if (getContext() != null) {
@@ -2391,47 +2300,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     com.gamebooster.app.services.MapChangeReInjector.stopMonitoring();
                     Toast.makeText(getContext(), "Auto Re-Inject OFF", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
-
-        // Apply Combat Suite Now button — force-inject on all known game packages
-        if (btnApplyCombatNow != null) {
-            btnApplyCombatNow.setOnClickListener(v -> {
-                if (getContext() == null) return;
-                if (!requireShizukuForAction("Apply Combat Suite Now")) return;
-                btnApplyCombatNow.setEnabled(false);
-                btnApplyCombatNow.setText("⚡ INJECTING...");
-                Toast.makeText(getContext(), "⚔️ Applying Full Combat Suite...", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String[] targets = {
-                        "com.mobile.legends",
-                        "com.activision.callofduty.shooter",
-                        "com.tencent.ig",
-                        "com.vng.pubgmobile",
-                        "com.garena.game.codm",
-                    };
-                    for (String pkg : targets) {
-                        try {
-                            com.gamebooster.app.config.GameAutoInjectDispatcher
-                                    .resetPackageInjectionState(pkg);
-                            com.gamebooster.app.config.GameAutoInjectDispatcher
-                                    .dispatchForPackage(getContext(), pkg, true);
-                        } catch (Throwable t) {
-                            android.util.Log.w("SettingsFragment",
-                                    "Combat apply error for " + pkg + ": " + t.getMessage());
-                        }
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (!isAdded() || getContext() == null) return;
-                        if (btnApplyCombatNow != null) {
-                            btnApplyCombatNow.setEnabled(true);
-                            btnApplyCombatNow.setText("⚔️ APPLY COMBAT SUITE NOW");
-                        }
-                        Toast.makeText(getContext(),
-                                "✅ Full Combat Suite Applied — Ranked + Classic + All Maps",
-                                Toast.LENGTH_LONG).show();
-                    });
-                });
             });
         }
     }

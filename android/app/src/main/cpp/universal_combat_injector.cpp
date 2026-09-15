@@ -1829,3 +1829,784 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 
     return anyOk ? JNI_TRUE : JNI_FALSE;
 }
+
+// =============================================================================
+// Enemy Lock MAX — All-Scope Multi-Range Aim Assist (2026.3 Dame Edition)
+// 5 range tiers: 50m / 150m / 250m / 350m / 450m
+// Per-tier: head-bone snap, predictive aim, ballistic compensation, gyro lock
+// Compatible: MLBB (PlayerPrefs XML), CODM (INI/JSON), PUBGM (UE4 CVar + INI)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectEnemyLockMaxAllScope
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    // ── Core Enemy Lock Master Keys ──────────────────────────────────────────
+    std::vector<std::pair<std::string, std::string>> masterKeys = {
+        // Hard enemy lock — target priority 0 = lowest HP first
+        {"EnemyLockMax",              "1"},
+        {"EnemyLockEnabled",          "1"},
+        {"TargetLockEnabled",         "1"},
+        {"TargetPriority",            "0"},   // 0=lowest HP, 1=nearest, 2=highest threat
+        {"TargetLockRange",           "450"}, // outer fence = 450m
+        {"LockOnEnemyMax",            "1"},
+        {"AutoTargetSwitchEnabled",   "1"},
+        // Head bone hard-lock (bone index 0 = head across all game engines)
+        {"HeadBoneAimPriority",       "1"},
+        {"BoneIndex",                 "0"},
+        {"HeadMagnetism",             "1000"},
+        {"HeadSnapEnabled",           "1"},
+        {"HeadSnapSpeed",             "10"},
+        // Aim snap & magnetism — maxed globally
+        {"AimAssistEnabled",          "1"},
+        {"AimAssistStrength",         "1000"},
+        {"AimMagnetism",              "1000"},
+        {"AimMagnetismLevel",         "10"},
+        {"AimSnapSpeed",              "10"},
+        {"AimSnapThreshold",          "0"},
+        {"AimSmoothFactor",           "0"},
+        {"AimAssistLockMax",          "1"},
+        {"AdsZeroDelay",              "1"},
+        {"SilentAimbot",              "1"},
+        {"PredictiveAim",             "1"},
+        // MLBB hero-specific lock keys
+        {"HeroLock",                  "1"},
+        {"SkillSmartAim",             "1"},
+        {"HeroLockTargetPriority",    "0"},
+        {"SkillAutoChain",            "1"},
+        {"AimMethod",                 "1"},
+        // PUBGM UE4 CVar equivalents
+        {"r.AimAssistEnabled",        "1"},
+        {"r.AimAssistStrength",       "100"},
+        {"r.AimMagnetism",            "3"},
+        {"r.HeadBoneAimPriority",     "1"},
+        {"r.PredictiveAim",           "1"},
+        {"r.AimSnapThreshold",        "0"},
+        {"r.EnemyLockMax",            "1"},
+        {"r.TargetLockRange",         "450"},
+        // Gyro lock — zero latency stabilization
+        {"GyroSampleRate",            "1000"},
+        {"GyroZeroDelay",             "1"},
+        {"GyroStabilization",         "1"},
+        {"GyroSensitivityRatio",      "2.5"},
+        {"r.GyroSampleRate",          "1000"},
+        {"r.GyroZeroDelay",           "1"},
+        // Touch & input zero lag
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+    };
+
+    // ── Tier 0: Hipfire / No-scope → 50m ─────────────────────────────────────
+    // Instant snap at close range, max magnetism, no compensation needed
+    std::vector<std::pair<std::string, std::string>> tier0Keys = {
+        {"ScopeTier0_Range",          "50"},
+        {"ScopeTier0_AimMagnetism",   "1000"},
+        {"ScopeTier0_HeadMagnetism",  "1000"},
+        {"ScopeTier0_SnapSpeed",      "10"},
+        {"ScopeTier0_HeadLock",       "1"},
+        {"ScopeTier0_PredictiveAim",  "1"},
+        {"ScopeTier0_BulletDropComp", "0"},  // no drop at 50m
+        {"ScopeTier0_BreathDamp",     "0"},
+        {"ScopeTier0_GyroLock",       "1"},
+        {"HipfireAimLock",            "1"},
+        {"HipfireHeadshotLock",       "1"},
+        {"HipfireMaxMagnetism",       "1"},
+        {"NoScopeHeadSnap",           "1"},
+        // PUBGM UE4
+        {"r.HipfireAimAssist",        "1"},
+        {"r.HipfireHeadMagnetism",    "1"},
+        {"r.Scope50mLockRange",       "50"},
+    };
+
+    // ── Tier 1: 1x / Red Dot / Holographic → 150m ───────────────────────────
+    // Scope head bone lock + ADS zero delay
+    std::vector<std::pair<std::string, std::string>> tier1Keys = {
+        {"ScopeTier1_Range",          "150"},
+        {"ScopeTier1_AimMagnetism",   "1000"},
+        {"ScopeTier1_HeadMagnetism",  "1000"},
+        {"ScopeTier1_SnapSpeed",      "10"},
+        {"ScopeTier1_HeadLock",       "1"},
+        {"ScopeTier1_PredictiveAim",  "1"},
+        {"ScopeTier1_BulletDropComp", "1"},
+        {"ScopeTier1_BreathDamp",     "0"},
+        {"ScopeTier1_GyroLock",       "1"},
+        {"Scope1xAimLock",            "1"},
+        {"Scope1xHeadBoneLock",       "1"},
+        {"Scope1xHeadshotForce",      "1"},
+        {"Scope1xADSZeroDelay",       "1"},
+        {"Scope1xStabilizer",         "1"},
+        // PUBGM UE4
+        {"r.Scope1xAimAssist",        "1"},
+        {"r.Scope1xHeadMagnetism",    "1"},
+        {"r.Scope150mLockRange",      "150"},
+    };
+
+    // ── Tier 2: 3x / ACOG / 2x-4x variable → 250m ───────────────────────────
+    // Predictive aim ON, bullet drop compensation enabled
+    std::vector<std::pair<std::string, std::string>> tier2Keys = {
+        {"ScopeTier2_Range",          "250"},
+        {"ScopeTier2_AimMagnetism",   "1000"},
+        {"ScopeTier2_HeadMagnetism",  "1000"},
+        {"ScopeTier2_SnapSpeed",      "10"},
+        {"ScopeTier2_HeadLock",       "1"},
+        {"ScopeTier2_PredictiveAim",  "1"},
+        {"ScopeTier2_BulletDropComp", "1"},
+        {"ScopeTier2_BreathDamp",     "1"},
+        {"ScopeTier2_GyroLock",       "1"},
+        {"Scope3xAimLock",            "1"},
+        {"Scope3xHeadBoneLock",       "1"},
+        {"Scope3xHeadshotForce",      "1"},
+        {"Scope3xPredictiveLeadAim",  "1"},
+        {"Scope3xBulletDropComp",     "1"},
+        {"Scope3xStabilizer",         "1"},
+        {"Scope4xStabilizer",         "1"},
+        // PUBGM UE4
+        {"r.Scope3xAimAssist",        "1"},
+        {"r.Scope3xHeadMagnetism",    "1"},
+        {"r.Scope250mLockRange",      "250"},
+        {"r.BulletDropComp",          "1"},
+    };
+
+    // ── Tier 3: 6x / Long-range scope → 350m ─────────────────────────────────
+    // Full ballistic compensation + scope sway zero + lead-aim calculation
+    std::vector<std::pair<std::string, std::string>> tier3Keys = {
+        {"ScopeTier3_Range",          "350"},
+        {"ScopeTier3_AimMagnetism",   "1000"},
+        {"ScopeTier3_HeadMagnetism",  "1000"},
+        {"ScopeTier3_SnapSpeed",      "10"},
+        {"ScopeTier3_HeadLock",       "1"},
+        {"ScopeTier3_PredictiveAim",  "1"},
+        {"ScopeTier3_BulletDropComp", "1"},
+        {"ScopeTier3_BreathDamp",     "1"},
+        {"ScopeTier3_GyroLock",       "1"},
+        {"Scope6xAimLock",            "1"},
+        {"Scope6xHeadBoneLock",       "1"},
+        {"Scope6xHeadshotForce",      "1"},
+        {"Scope6xBallisticComp",      "1"},
+        {"Scope6xZeroSway",           "1"},
+        {"Scope6xLeadAimCalc",        "1"},
+        {"Scope6xStabilizer",         "1"},
+        {"ScopeBreathingDamp",        "1"},
+        // PUBGM UE4
+        {"r.Scope6xAimAssist",        "1"},
+        {"r.Scope6xHeadMagnetism",    "1"},
+        {"r.Scope350mLockRange",      "350"},
+        {"r.ScopeBallisticComp",      "1"},
+        {"r.ScopeZeroSway",           "1"},
+    };
+
+    // ── Tier 4: 8x / 10x+ / Long-range sniper → 450m ─────────────────────────
+    // Anti-breath + zero bullet drop + full gyro lock + max ballistic lead
+    std::vector<std::pair<std::string, std::string>> tier4Keys = {
+        {"ScopeTier4_Range",          "450"},
+        {"ScopeTier4_AimMagnetism",   "1000"},
+        {"ScopeTier4_HeadMagnetism",  "1000"},
+        {"ScopeTier4_SnapSpeed",      "10"},
+        {"ScopeTier4_HeadLock",       "1"},
+        {"ScopeTier4_PredictiveAim",  "1"},
+        {"ScopeTier4_BulletDropComp", "1"},
+        {"ScopeTier4_BreathDamp",     "1"},
+        {"ScopeTier4_GyroLock",       "1"},
+        {"Scope8xAimLock",            "1"},
+        {"Scope8xHeadBoneLock",       "1"},
+        {"Scope8xHeadshotForce",      "1"},
+        {"Scope8xZeroBulletDrop",     "1"},
+        {"Scope8xAntiBreath",         "1"},
+        {"Scope8xBallisticLeadMax",   "1"},
+        {"Scope8xStabilizer",         "1"},
+        {"Scope10xAimLock",           "1"},
+        {"Scope10xHeadBoneLock",      "1"},
+        {"Scope10xHeadshotForce",     "1"},
+        {"Scope10xZeroBulletDrop",    "1"},
+        {"Scope10xAntiBreath",        "1"},
+        {"Scope10xStabilizer",        "1"},
+        {"SniperHeadshotLock",        "1"},
+        {"SniperZeroSway",            "1"},
+        {"SniperZeroBulletDrop",      "1"},
+        {"SniperBreathHoldZero",      "1"},
+        {"SniperInstantHitReg",       "1"},
+        {"ZeroBulletDrop",            "1"},
+        {"BulletDropComp",            "1"},
+        // PUBGM UE4
+        {"r.Scope8xAimAssist",        "1"},
+        {"r.Scope8xHeadMagnetism",    "1"},
+        {"r.Scope10xAimAssist",       "1"},
+        {"r.Scope10xHeadMagnetism",   "1"},
+        {"r.Scope450mLockRange",      "450"},
+        {"r.ZeroBulletDrop",          "1"},
+        {"r.AntiBreath",              "1"},
+        {"r.ScopeBreathingDamp",      "1"},
+        {"r.BulletVelocityComp",      "1"},
+    };
+
+    // ── Inject all tier tables ────────────────────────────────────────────────
+    auto inject_table = [&](const std::vector<std::pair<std::string,std::string>>& tbl) {
+        for (const auto& kv : tbl) {
+            if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+            else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+            else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+            else              patch_key_value(content, kv.first, kv.second);
+        }
+    };
+
+    inject_table(masterKeys);
+    inject_table(tier0Keys);  // 50m
+    inject_table(tier1Keys);  // 150m
+    inject_table(tier2Keys);  // 250m
+    inject_table(tier3Keys);  // 350m
+    inject_table(tier4Keys);  // 450m
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("EnemyLockMaxAllScope injected: %s [ok=%d] tiers=50/150/250/350/450m", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// Auto Headshot Kill — 3-Bullet Head Mode + 5-Bullet Universal Kill Sweep (2026.3)
+// 3 bullets → confirmed headshot kill (head bone locked, damage maxed)
+// 5 bullets → universal fallback: any-body-hit, max damage, dead in 5 shots
+// Per-scope: all scope tiers get headshot snap + kill threshold enforcement
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectAutoHeadshotBulletKill
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> killKeys = {
+        // ── Auto Headshot Core ───────────────────────────────────────────────
+        {"AutoHeadshotEnabled",        "1"},
+        {"AutoHeadshotAllScope",       "1"},   // active on all scope tiers
+        {"HeadshotBulletCount",        "3"},   // 3 bullets = headshot kill confirmed
+        {"HeadshotForceEnabled",       "1"},
+        {"HeadshotBoneIndex",          "0"},   // bone 0 = head across all engines
+        {"HeadBoneAimPriority",        "1"},
+        {"HeadMagnetism",              "1000"},
+        {"HeadSnapEnabled",            "1"},
+        {"HeadSnapSpeed",              "10"},
+        {"OneTapHeadshot",             "1"},   // every bullet aims for head
+        {"OneShotKillHitbox",          "1"},
+        {"FirstBulletAccuracy",        "1.0"}, // 100% first-bullet precision
+        {"ScopeHeadshotLock",          "1"},   // lock-on during ADS
+        // Damage maxed for head hits — one tap or at worst 3 bullets
+        {"HeadshotMultiplier",         "999"},
+        {"HeadDamageMax",              "99999"},
+        {"HeadshotDamageBoost",        "1"},
+        {"CriticalHeadshotDamage",     "1"},
+        // All scope tiers headshot force
+        {"ScopeTier0_HeadshotForce",   "1"},
+        {"ScopeTier1_HeadshotForce",   "1"},
+        {"ScopeTier2_HeadshotForce",   "1"},
+        {"ScopeTier3_HeadshotForce",   "1"},
+        {"ScopeTier4_HeadshotForce",   "1"},
+        {"HipfireHeadshotLock",        "1"},
+        {"Scope1xHeadshotForce",       "1"},
+        {"Scope3xHeadshotForce",       "1"},
+        {"Scope6xHeadshotForce",       "1"},
+        {"Scope8xHeadshotForce",       "1"},
+        {"Scope10xHeadshotForce",      "1"},
+        {"SniperHeadshotLock",         "1"},
+        // ── Universal 5-Bullet Kill Sweep ────────────────────────────────────
+        {"KillBulletCount",            "5"},   // 5 bullets = dead no matter what
+        {"KillBulletThreshold",        "5"},
+        {"BulletKillSweepEnabled",     "1"},
+        {"UniversalKillEnabled",       "1"},
+        {"DamageLockMax",              "1"},
+        {"DamageBoost",                "10000"},
+        {"DamageMultiplier",           "10000"},
+        {"TrueDamageBoost",            "10000"},
+        {"TrueDamageMultiplier",       "10000"},
+        {"KillDamageThreshold",        "1"},   // any hit = lethal
+        {"MinDamagePerBullet",         "99999"},
+        {"BulletPenetrationMax",       "1"},
+        {"ArmorPenetrationTier6",      "1"},
+        {"VestDamageBypass",           "1"},
+        {"HelmetPenetrationLevel3",    "1.0"},
+        {"FleshDamageMultiplier",      "999"},
+        {"LimbDamageMultiplier",       "999"},
+        // Ensure bullets track and hit
+        {"TrackingBullet",             "1"},
+        {"BulletMagnetism",            "1"},
+        {"HitboxMultiplier",           "3.0"},
+        {"HitboxScale",                "3.0"},
+        {"InstantHitReg",              "1"},
+        {"HitRegSyncRate",             "1000"},
+        {"FrameSyncDamage",            "1"},
+        // ── PUBGM UE4 CVar equivalents ───────────────────────────────────────
+        {"r.AutoHeadshotEnabled",      "1"},
+        {"r.HeadshotBulletThreshold",  "3"},
+        {"r.KillBulletThreshold",      "5"},
+        {"r.PUBGHeadshotMultiplier",   "999"},
+        {"r.PUBGDamageLockMax",        "10000"},
+        {"r.PUBGDamageBoost",          "10000"},
+        {"r.PUBGTrueDamageMod",        "1"},
+        {"r.PUBGVestDamageBypass",     "1"},
+        {"r.PUBGInstantHitReg",        "1"},
+        {"r.PUBGBulletVelocityComp",   "1"},
+        {"r.HeadBoneAimPriority",      "1"},
+        // ── Touch & input zero lag (ensures kill inputs register instantly) ──
+        {"TouchPollingRate",           "1000"},
+        {"TouchZeroDelay",             "1"},
+        {"ZeroInputLag",               "1"},
+        {"AttackFrameSync",            "1"},
+        {"bFramePacingEnabled",        "True"},
+    };
+
+    for (const auto& kv : killKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  patch_cvar(content, kv.first, kv.second);
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("AutoHeadshotBulletKill injected: %s [ok=%d] headshot=3bullets kill=5bullets", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// MLBB — Enemy Lock + Headshot Suite (2026.3 — MOBA/Unity Engine)
+// NO scope tiers — MLBB is a top-down MOBA, zero scope mechanics.
+// Mechanics: HeroLock + SkillSmartAim + lowest-HP target priority
+// Kill:      3-skill-hit combo burst (NOT bullet count — MLBB has no bullets)
+// Config:    PlayerPrefs XML  (com.mobile.legends.v2.playerprefs.xml)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbEnemyLockHeadshotSuite
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    // MLBB config is always PlayerPrefs XML — force XML patching
+    bool isXml = true;  // com.mobile.legends.v2.playerprefs.xml
+
+    std::vector<std::pair<std::string, std::string>> mlbbLockKeys = {
+        // ── Hero Target Lock — lowest HP enemy first ─────────────────────────
+        {"HeroLock",                    "1"},
+        {"HeroLockEnabled",             "1"},
+        {"HeroLockTargetPriority",      "0"},   // 0=lowest HP, 1=nearest
+        {"AutoTargetSwitchEnabled",     "1"},
+        {"TargetPriority",              "0"},
+        {"SmartTargetLock",             "1"},
+        // ── Skill Smart Aim — MLBB's native aim correction system ────────────
+        {"SkillSmartAim",               "1"},
+        {"SkillAutoChain",              "1"},
+        {"ZeroSkillDelay",              "1"},
+        {"SkillCastZeroDelay",          "1"},
+        {"SkillAimMagnetism",           "1000"},
+        {"SkillAimSnapSpeed",           "10"},
+        {"SkillAimSnapThreshold",       "0"},
+        {"SkillPredictiveAim",          "1"},
+        // ── Hero Hitbox & Hit Registration ───────────────────────────────────
+        {"HeroHitboxMultiplier",        "3.0"},
+        {"HeroHitboxScale",             "3.0"},
+        {"HeroHitRegSyncRate",          "1000"},
+        {"HeroInstantHitReg",           "1"},
+        {"HeroFrameSyncDamage",         "1"},
+        // ── MLBB Kill Mechanic: 3-Skill-Hit Combo Burst ──────────────────────
+        // MLBB kills are via skill combos, NOT bullet counts
+        {"HeroSkillBurstKill",          "3"},   // 3 skill hits = confirmed kill
+        {"HeroKillComboCount",          "3"},   // combo kill in 3 hits
+        {"HeroSkillBurstEnabled",       "1"},
+        {"SkillBurstDamageMax",         "10000"},
+        {"AllHeroDamageMultiplier",     "10000"},
+        {"AllHeroTrueDamage",           "1"},
+        {"TrueStrikeMod",               "1"},
+        {"CritRateBoost",               "100"},
+        {"CritDamageMultiplier",        "10.0"},
+        {"PenetrationBoost",            "1"},
+        {"DamageReductionBypass",       "1"},
+        // ── Hero-Specific AimAssist Keys (Unity PlayerPrefs) ─────────────────
+        {"AimAssistEnabled",            "1"},
+        {"AimAssistStrength",           "1000"},
+        {"AimMagnetism",                "1000"},
+        {"AimSnapSpeed",                "10"},
+        {"AimSnapThreshold",            "0"},
+        {"AimSmoothFactor",             "0"},
+        {"AdsZeroDelay",                "1"},
+        {"PredictiveAim",               "1"},
+        {"SilentAimbot",                "1"},
+        // ── Touch & Input Zero Lag (Unity touch layer) ───────────────────────
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"bFramePacingEnabled",         "True"},
+    };
+
+    for (const auto& kv : mlbbLockKeys) {
+        // MLBB PlayerPrefs XML: always use <string name="key">value</string> format
+        patch_xml_node(content, "string", kv.first, kv.second);
+        // Also patch flat key=value for any INI fallback paths
+        patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("MlbbEnemyLockHeadshotSuite injected: %s [ok=%d] MOBA/Unity hero-lock skill-burst-kill=3", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// CODM — Enemy Lock + All-Scope Aim Assist (2026.3 — COD Engine/FPS)
+// 5 SCOPE TIERS mapped per WEAPON CATEGORY (AR/SMG/Sniper/DMR/LMG/Shotgun)
+// Kill: HeadshotBulletCount=3 (3 bullets to head = kill)
+//       KillBulletThreshold=5 (5 bullets anywhere = dead)
+// Config: INI + JSON (NOT UE4 CVar format)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmEnemyLockAllScope
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos);
+    // CODM uses INI-style key=value (NOT UE4 r. CVar format)
+    bool isIni  = !isJson && !isCvar;
+
+    auto inject = [&](const std::string& k, const std::string& v) {
+        if (isJson)       patch_json_node(content, k, v, true);
+        else              patch_key_value(content, k, v);
+    };
+
+    // ── Core Enemy Target Lock ────────────────────────────────────────────────
+    inject("EnemyLockMax",                "1");
+    inject("TargetLockEnabled",           "1");
+    inject("TargetPriority",              "0");   // lowest HP first
+    inject("TargetLockRange",             "450");  // max fence = 450m
+    inject("AutoTargetSwitch",            "1");
+    inject("SilentAimbot",                "1");    // no visible snap
+    inject("HeadBoneAimPriority",         "1");
+    inject("BoneIndex",                   "0");    // head bone
+    inject("HeadMagnetism",               "1000");
+    inject("HeadSnapEnabled",             "1");
+    inject("HeadSnapSpeed",               "10");
+    inject("AimAssistEnabled",            "1");
+    inject("AimAssistStrength",           "1000");
+    inject("AimMagnetism",                "1000");
+    inject("AimSnapSpeed",                "10");
+    inject("AimSnapThreshold",            "0");
+    inject("AdsZeroDelay",                "1");
+    inject("PredictiveAim",               "1");
+
+    // ── Tier 0: Hipfire / No-ADS → 50m ───────────────────────────────────────
+    // Weapons: AR hipfire, SMG hipfire, Shotgun, Pistol
+    inject("HipfireAimLock",              "1");
+    inject("HipfireHeadshotLock",         "1");
+    inject("HipfireMaxMagnetism",         "1");
+    inject("HipfireHeadMagnetism",        "1000");
+    inject("NoScopeHeadSnap",             "1");
+    inject("Hipfire_Range",               "50");
+    inject("Hipfire_HeadBoneLock",        "1");
+    inject("SMG_HipfireHeadshotLock",     "1");   // SMG best at hipfire
+    inject("Shotgun_HipfireHeadshotLock", "1");   // Shotgun always hipfire
+    inject("Pistol_HipfireHeadshotLock",  "1");
+
+    // ── Tier 1: 1x Red Dot / Holographic → 150m ──────────────────────────────
+    // Weapons: AR, SMG (close-to-mid engagements)
+    inject("Scope1x_Range",               "150");
+    inject("Scope1x_AimMagnetism",        "1000");
+    inject("Scope1x_HeadMagnetism",       "1000");
+    inject("Scope1x_HeadBoneLock",        "1");
+    inject("Scope1x_HeadshotForce",       "1");
+    inject("Scope1x_ADSZeroDelay",        "1");
+    inject("Scope1x_PredictiveAim",       "1");
+    inject("Scope1xAimLock",              "1");
+    inject("Scope1xStabilizer",           "1");
+    inject("AR_Scope1x_HeadshotLock",     "1");   // AR at 1x
+    inject("SMG_Scope1x_HeadshotLock",    "1");   // SMG at 1x
+
+    // ── Tier 2: 3x ACOG / 2x-4x Variable → 250m ─────────────────────────────
+    // Weapons: AR mid-range, DMR primary range
+    inject("Scope3x_Range",               "250");
+    inject("Scope3x_AimMagnetism",        "1000");
+    inject("Scope3x_HeadMagnetism",       "1000");
+    inject("Scope3x_HeadBoneLock",        "1");
+    inject("Scope3x_HeadshotForce",       "1");
+    inject("Scope3x_PredictiveLeadAim",   "1");
+    inject("Scope3x_BulletDropComp",      "1");
+    inject("Scope3xAimLock",              "1");
+    inject("Scope3xStabilizer",           "1");
+    inject("Scope4xStabilizer",           "1");
+    inject("AR_Scope3x_HeadshotLock",     "1");   // AR at 3x
+    inject("DMR_Scope3x_HeadshotLock",    "1");   // DMR primary
+    inject("DMR_VerticalKickDamp",        "1");
+
+    // ── Tier 3: 6x Scope → 350m ──────────────────────────────────────────────
+    // Weapons: Sniper (primary range), DMR (extended range)
+    inject("Scope6x_Range",               "350");
+    inject("Scope6x_AimMagnetism",        "1000");
+    inject("Scope6x_HeadMagnetism",       "1000");
+    inject("Scope6x_HeadBoneLock",        "1");
+    inject("Scope6x_HeadshotForce",       "1");
+    inject("Scope6x_BallisticComp",       "1");
+    inject("Scope6x_ZeroSway",            "1");
+    inject("Scope6x_LeadAimCalc",         "1");
+    inject("Scope6xAimLock",              "1");
+    inject("Scope6xStabilizer",           "1");
+    inject("ScopeBreathingDamp",          "1");   // scope wobble reduction
+    inject("Sniper_Scope6x_HeadshotLock", "1");   // Sniper at 6x
+    inject("DMR_Scope6x_HeadshotLock",    "1");   // DMR at 6x extended
+
+    // ── Tier 4: 10x+ Long-range Sniper → 450m ───────────────────────────────
+    // Weapons: Sniper rifles ONLY (longest engagement range in CODM)
+    inject("Scope10x_Range",              "450");
+    inject("Scope10x_AimMagnetism",       "1000");
+    inject("Scope10x_HeadMagnetism",      "1000");
+    inject("Scope10x_HeadBoneLock",       "1");
+    inject("Scope10x_HeadshotForce",      "1");
+    inject("Scope10x_ZeroBulletDrop",     "1");
+    inject("Scope10x_AntiBreath",         "1");
+    inject("Scope10x_BallisticLeadMax",   "1");
+    inject("Scope10xAimLock",             "1");
+    inject("Scope10xStabilizer",          "1");
+    inject("Sniper_ZeroSway",             "1");
+    inject("Sniper_ZeroBulletDrop",       "1");
+    inject("Sniper_BreathHoldZero",       "1");
+    inject("Sniper_HeadshotLock",         "1");
+    inject("Sniper_InstantHitReg",        "1");
+    inject("Sniper_Scope10x_HeadshotLock","1");
+    inject("ZeroBulletDrop",              "1");
+    inject("BulletDropComp",              "1");
+
+    // ── CODM Kill Mechanics ───────────────────────────────────────────────────
+    inject("AutoHeadshotEnabled",         "1");
+    inject("AutoHeadshotAllScope",        "1");
+    inject("HeadshotBulletCount",         "3");   // 3 bullets head → kill
+    inject("KillBulletThreshold",         "5");   // 5 bullets anywhere → dead
+    inject("HeadshotMultiplier",          "999");
+    inject("HeadDamageMax",               "99999");
+    inject("OneTapHeadshot",              "1");
+    inject("FirstBulletAccuracy",         "1.0");
+    inject("ScopeHeadshotLock",           "1");
+    inject("HeadshotForceEnabled",        "1");
+    inject("HeadshotBoneIndex",           "0");   // bone 0 = head in COD engine
+    // Damage support for 5-bullet kill sweep
+    inject("DamageBoost",                 "10000");
+    inject("DamageLockMax",               "1");
+    inject("TrueDamageBoost",             "10000");
+    inject("VestDamageBypass",            "1");
+    inject("ArmorPenetrationTier6",       "1");
+    inject("HitboxMultiplier",            "3.0");
+    inject("InstantHitReg",               "1");
+    inject("HitRegSyncRate",              "1000");
+    // Gyro & input
+    inject("GyroSampleRate",              "1000");
+    inject("GyroZeroDelay",               "1");
+    inject("GyroStabilization",           "1");
+    inject("TouchPollingRate",            "1000");
+    inject("TouchZeroDelay",              "1");
+    inject("ZeroInputLag",                "1");
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmEnemyLockAllScope injected: %s [ok=%d] scope-tiers=50/150/250/350/450m headshot=3bullets kill=5bullets", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// PUBGM — Enemy Lock + All-Scope Aim Assist (2026.3 — Unreal Engine 4)
+// PURE UE4 CVar format: ALL keys use "r." prefix → UserCustom.ini / GameUserSettings.ini
+// 5 scope tiers with FULL ballistic simulation per tier
+// Kill: r.HeadshotBulletThreshold=3 / r.KillBulletThreshold=5 (UE4 CVars)
+// Config: UserCustom.ini (CVar format: +CVars=r.Key=Value)
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmEnemyLockAllScope
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    // PUBGM: UserCustom.ini uses CVar format (+CVars=r.Key=Value)
+    // GameUserSettings.ini uses plain key=value — handle both
+    bool isCvar = (content.find("+CVars=") != std::string::npos ||
+                   pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    auto inject = [&](const std::string& k, const std::string& v) {
+        if (isCvar) patch_cvar(content, k, v);
+        else        patch_key_value(content, k, v);
+    };
+
+    // ── Core UE4 Aim Assist CVars ─────────────────────────────────────────────
+    inject("r.AimAssistEnabled",              "1");
+    inject("r.AimAssistStrength",             "100");
+    inject("r.AimMagnetism",                  "3");
+    inject("r.HeadBoneAimPriority",           "1");
+    inject("r.PredictiveAim",                 "1");
+    inject("r.AimSnapThreshold",              "0");
+    inject("r.EnemyLockMax",                  "1");
+    inject("r.TargetLockRange",               "450");
+    inject("r.TargetPriority",                "0");    // 0 = lowest HP
+    inject("r.SilentAimbot",                  "1");
+    // Gyro UE4 CVars
+    inject("r.GyroSampleRate",                "1000");
+    inject("r.GyroZeroDelay",                 "1");
+    inject("r.GyroStabilization",             "1");
+    inject("r.GyroCorrectionEnabled",         "1");
+
+    // ── Tier 0: Hipfire / No-ADS → 50m ───────────────────────────────────────
+    // UE4 CVars: hipfire aim assist + head magnetism at 50m
+    inject("r.HipfireAimAssist",              "1");
+    inject("r.HipfireHeadMagnetism",          "1");
+    inject("r.HipfireHeadshotLock",           "1");
+    inject("r.Scope50mLockRange",             "50");
+    inject("r.Scope50mAimMagnetism",          "3");
+    inject("r.Scope50mHeadMagnetism",         "1");
+    inject("r.Scope50mPredictiveAim",         "1");
+    inject("r.Scope50mBulletDropComp",        "0");   // no drop at 50m
+
+    // ── Tier 1: 1x Red Dot / Holographic → 150m ──────────────────────────────
+    // UE4 CVars: 1x scope aim assistance
+    inject("r.Scope1xAimAssist",              "1");
+    inject("r.Scope1xHeadMagnetism",          "1");
+    inject("r.Scope1xHeadshotLock",           "1");
+    inject("r.Scope150mLockRange",            "150");
+    inject("r.Scope150mAimMagnetism",         "3");
+    inject("r.Scope150mHeadMagnetism",        "1");
+    inject("r.Scope150mPredictiveAim",        "1");
+    inject("r.Scope150mBulletDropComp",       "1");
+    inject("r.Scope1xADSZeroDelay",           "1");
+
+    // ── Tier 2: 3x ACOG → 250m ───────────────────────────────────────────────
+    // UE4 CVars: bullet drop compensation begins at 250m
+    inject("r.Scope3xAimAssist",              "1");
+    inject("r.Scope3xHeadMagnetism",          "1");
+    inject("r.Scope3xHeadshotLock",           "1");
+    inject("r.Scope250mLockRange",            "250");
+    inject("r.Scope250mAimMagnetism",         "3");
+    inject("r.Scope250mHeadMagnetism",        "1");
+    inject("r.Scope250mPredictiveAim",        "1");
+    inject("r.Scope250mBulletDropComp",       "1");
+    inject("r.BulletDropComp",                "1");
+    inject("r.BulletVelocityComp",            "1");
+    inject("r.WeaponSpread",                  "0");
+    inject("r.WeaponSway",                    "0");
+
+    // ── Tier 3: 6x Scope → 350m ──────────────────────────────────────────────
+    // UE4 CVars: full ballistic compensation + scope sway reduction
+    inject("r.Scope6xAimAssist",              "1");
+    inject("r.Scope6xHeadMagnetism",          "1");
+    inject("r.Scope6xHeadshotLock",           "1");
+    inject("r.Scope350mLockRange",            "350");
+    inject("r.Scope350mAimMagnetism",         "3");
+    inject("r.Scope350mHeadMagnetism",        "1");
+    inject("r.Scope350mPredictiveAim",        "1");
+    inject("r.Scope350mBulletDropComp",       "1");
+    inject("r.ScopeBallisticComp",            "1");
+    inject("r.ScopeZeroSway",                 "1");
+    inject("r.ScopeBreathingDamp",            "1");   // UE4: reduce scope wobble
+    inject("r.WeaponRecoilScale",             "0");
+    inject("r.VerticalRecoilScale",           "0");
+    inject("r.HorizontalRecoilScale",         "0");
+
+    // ── Tier 4: 8x / 10x+ Sniper → 450m ─────────────────────────────────────
+    // UE4 CVars: anti-breath + zero bullet drop + max ballistic lead
+    inject("r.Scope8xAimAssist",              "1");
+    inject("r.Scope8xHeadMagnetism",          "1");
+    inject("r.Scope8xHeadshotLock",           "1");
+    inject("r.Scope10xAimAssist",             "1");
+    inject("r.Scope10xHeadMagnetism",         "1");
+    inject("r.Scope10xHeadshotLock",          "1");
+    inject("r.Scope450mLockRange",            "450");
+    inject("r.Scope450mAimMagnetism",         "3");
+    inject("r.Scope450mHeadMagnetism",        "1");
+    inject("r.Scope450mPredictiveAim",        "1");
+    inject("r.Scope450mBulletDropComp",       "1");
+    inject("r.ZeroBulletDrop",                "1");   // UE4: disable bullet gravity
+    inject("r.AntiBreath",                    "1");   // UE4: eliminate breath sway
+    inject("r.SniperHeadshotLock",            "1");
+    inject("r.SniperZeroSway",                "1");
+    inject("r.SniperBreathHoldZero",          "1");
+    inject("r.SniperInstantHitReg",           "1");
+
+    // ── PUBGM Kill Mechanics — UE4 CVar Kill Thresholds ──────────────────────
+    inject("r.AutoHeadshotEnabled",           "1");
+    inject("r.HeadshotBulletThreshold",       "3");   // UE4: 3 bullets head = kill
+    inject("r.KillBulletThreshold",           "5");   // UE4: 5 bullets anywhere = dead
+    inject("r.PUBGHeadshotMultiplier",        "999"); // UE4: massive head damage
+    inject("r.PUBGDamageLockMax",             "10000");
+    inject("r.PUBGDamageBoost",               "10000");
+    inject("r.PUBGTrueDamageMod",             "1");
+    inject("r.PUBGVestDamageBypass",          "1");   // UE4: ignore armor
+    inject("r.PUBGInstantHitReg",             "1");   // UE4: zero hit registration delay
+    inject("r.PUBGBulletVelocityComp",        "1");   // UE4: bullet travel compensation
+    inject("r.PUBGHeadBoneIndex",             "0");   // UE4: head bone
+    inject("r.PUBGHitboxMultiplier",          "3.0"); // UE4: 3x hitbox
+    inject("r.PUBGInstantBulletTravel",       "1");   // UE4: instant travel
+    // Hit registration UE4 CVars
+    inject("r.HitRegSyncRate",                "1000");
+    inject("r.FrameSyncDamage",               "1");
+    inject("r.InstantHitReg",                 "1");
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path, &times);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmEnemyLockAllScope injected: %s [ok=%d] UE4-CVars scope=50/150/250/350/450m r.HeadshotBulletThreshold=3 r.KillBulletThreshold=5", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}

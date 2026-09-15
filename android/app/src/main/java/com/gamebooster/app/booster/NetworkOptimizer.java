@@ -384,8 +384,19 @@ public class NetworkOptimizer {
      */
     public static boolean setDualDataAndWifiAcceleration(boolean enabled) {
         boolean ok = true;
-        optimize5gAnd6gDataNetwork(enabled);
-        optimizeWifi6and7LowLatency(enabled);
+        if (enabled) {
+            CommandExecutor.executeSystemCommand("svc data enable");
+            CommandExecutor.executeSystemCommand("svc wifi enable");
+            CommandExecutor.executeSystemCommand("settings put global mobile_data_always_on 1");
+            CommandExecutor.executeSystemCommand("settings put global wifi_cellular_data_fallback 1");
+            CommandExecutor.executeSystemCommand("settings put global network_scoring_ui_enabled 0");
+            optimize5gAnd6gDataNetwork(true);
+            optimizeWifi6and7LowLatency(true);
+        } else {
+            CommandExecutor.executeSystemCommand("settings put global mobile_data_always_on 0");
+            optimize5gAnd6gDataNetwork(false);
+            optimizeWifi6and7LowLatency(false);
+        }
         return ok;
     }
 

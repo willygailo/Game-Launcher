@@ -121,14 +121,69 @@ profile.joy_perfect_beat_rhythm_lock = 1
 profile.arlott_demon_gaze_auto_stab = 1
 profile.suyou_stance_swap_zero_delay = 1
 
--- ── 🎯 Aim Assist, Magnetism & Zero Deadzone ──────────────────────────────────
-profile.aim_lock = true
-profile.adaptive_aim_strength = 100
-profile.aim_magnetism = 3
-profile.head_magnetism = 1
-profile.aim_snap_speed = 10
-profile.aim_smooth_factor = 0
-profile.aim_predict = true
+-- ── 🎯 MLBB Enemy Lock — Unity/MOBA Engine (2026.3) ────────────────────────────────────
+-- MLBB is a TOP-DOWN MOBA — NO scopes, NO bullet drop, NO ballistic simulation.
+-- Mechanics: HeroLock + SkillSmartAim + lowest-HP target priority.
+-- Kill logic: 3-skill-hit combo burst (MLBB has no bullets — skills deal damage).
+-- Config format: PlayerPrefs XML (com.mobile.legends.v2.playerprefs.xml)
+
+-- ── Hero Target Lock (lowest HP enemy first) ────────────────────────────────────
+profile.hero_lock                  = true
+profile.hero_lock_enabled          = true
+profile.hero_lock_target_priority  = 0    -- 0=lowest HP, 1=nearest
+profile.auto_target_switch         = true
+profile.target_priority            = 0
+profile.smart_target_lock          = true
+
+-- ── Skill Smart Aim — MLBB's native aim correction system ────────────────────
+profile.skill_smart_aim            = 1
+profile.skill_auto_chain           = 1
+profile.zero_skill_delay           = true
+profile.skill_cast_zero_delay      = true
+profile.skill_aim_magnetism        = 1000
+profile.skill_aim_snap_speed       = 10
+profile.skill_aim_snap_threshold   = 0
+profile.skill_predictive_aim       = true
+profile.zero_delay_skill_tap       = 1
+profile.fast_skill_cycle           = 1
+
+-- ── Hero Hitbox & Hit Registration ───────────────────────────────────────────
+profile.hero_hitbox_multiplier     = 3.0
+profile.hero_hitbox_scale          = 3.0
+profile.hero_hit_reg_sync_rate     = 1000
+profile.hero_instant_hit_reg       = true
+profile.hero_frame_sync_damage     = true
+
+-- ── MLBB Kill Mechanic: 3-Skill-Hit Combo Burst ──────────────────────────────
+-- MLBB kills via skill combos — NOT bullet counts (it's a MOBA)
+profile.hero_skill_burst_kill      = 3    -- 3 skill hits = confirmed kill
+profile.hero_kill_combo_count      = 3    -- land 3 hits to eliminate
+profile.hero_skill_burst_enabled   = true
+profile.skill_burst_damage_max     = 10000
+profile.all_hero_damage_multiplier = 10000
+profile.all_hero_true_damage       = true
+profile.true_strike_mod            = 1
+profile.crit_rate_boost            = 100
+profile.crit_damage_multiplier     = 10.0
+profile.penetration_boost          = true
+profile.damage_reduction_bypass    = true
+
+-- ── Aim Assist Keys (Unity PlayerPrefs XML) ───────────────────────────────────
+profile.aim_lock                   = true
+profile.aim_assist_lock_max        = true
+profile.adaptive_aim_strength      = 1000
+profile.aim_magnetism              = 1000
+profile.aim_snap_speed             = 10
+profile.aim_snap_threshold         = 0
+profile.aim_smooth_factor          = 0
+profile.aim_predict                = true
+profile.silent_aimbot              = true
+profile.ads_zero_delay             = true
+
+-- ── Touch & Input Zero Lag (Unity touch layer) ────────────────────────────────
+profile.touch_polling_rate         = 1000
+profile.touch_zero_delay           = true
+profile.zero_input_lag             = true
 
 -- ── 💥 Damage Boost & Penetration ─────────────────────────────────────────────
 profile.damage_boost = true

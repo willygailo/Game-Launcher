@@ -65,9 +65,45 @@ public class PubgConfigPatcher {
     }
 
     /**
+     * PUBGM Enemy Lock + All-Scope Aim Assist — Unreal Engine 4 (2026.3).
+     * PURE UE4 CVar format: ALL keys use r. prefix (UserCustom.ini).
+     * 5 scope tiers with full ballistic simulation:
+     * r.Scope50mLockRange, r.Scope150mLockRange, r.Scope250mLockRange,
+     * r.Scope350mLockRange (r.ScopeBallisticComp + r.ScopeBreathingDamp),
+     * r.Scope450mLockRange (r.ZeroBulletDrop + r.AntiBreath).
+     * r.EnemyLockMax=1, r.HeadBoneAimPriority=1, r.AimAssistEnabled=1.
+     * Config: UserCustom.ini (+CVars=r.Key=Value format).
+     */
+    public static void applyEnemyLockMaxAllScope(String packageName) {
+        if (packageName == null) return;
+        // PUBGM-specific: Unreal Engine 4 — pure r. CVar format, full ballistic sim
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectPubgmEnemyLockAllScope(path);
+        }
+        Log.i(TAG, "PUBGM EnemyLock applied (UE4 CVars scope=50/150/250/350/450m ballistics) for " + packageName);
+    }
+
+    /**
+     * PUBGM Auto Headshot Kill — UE4 CVar Kill Thresholds (2026.3).
+     * r.HeadshotBulletThreshold=3 → UE4 CVar: 3 bullets head = kill.
+     * r.KillBulletThreshold=5 → UE4 CVar: 5 bullets anywhere = dead.
+     * r.PUBGHeadshotMultiplier=999, r.PUBGVestDamageBypass=1.
+     * Config: UserCustom.ini (+CVars= format).
+     */
+    public static void applyAutoHeadshotBulletKill(String packageName) {
+        if (packageName == null) return;
+        // PUBGM-specific: UE4 CVar kill thresholds (r. prefix, NOT generic INI keys)
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectPubgmEnemyLockAllScope(path);
+        }
+        Log.i(TAG, "PUBGM HeadshotKill applied (UE4: r.HeadshotBulletThreshold=3, r.KillBulletThreshold=5) for " + packageName);
+    }
+
+    /**
      * Executes single-pass atomic batch injection for all PUBGM cheats:
      * Magic Bullet Aimbot, Hitbox 3.0x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load,
-     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, and Fast Reload.
+     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, Fast Reload,
+     * Enemy Lock MAX All-Scope (50/150/250/350/450m), Auto Headshot 3-bullet + 5-bullet kill.
      */
     public static void applyPubgmMasterSuite(String packageName) {
         if (packageName == null) return;
@@ -75,6 +111,9 @@ public class PubgConfigPatcher {
         applyPubgmFastAttackSpeed(packageName);
         applyFastReloadQuickSwap(packageName);
         applyPubgmInstantReloadChambering(packageName);
+        // 2026.3 Dame Aim Assist Suite
+        applyEnemyLockMaxAllScope(packageName);
+        applyAutoHeadshotBulletKill(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectUniversalCombatSuite(path);

@@ -75,6 +75,38 @@ public class MlbbConfigPatcher {
     }
 
     /**
+     * MLBB Enemy Lock + Headshot Suite — Unity/MOBA Engine (2026.3).
+     * NO scope tiers — MLBB is top-down MOBA, zero scope mechanics.
+     * HeroLock + SkillSmartAim + lowest-HP target priority (HeroLockTargetPriority=0).
+     * PlayerPrefs XML format (com.mobile.legends.v2.playerprefs.xml).
+     */
+    public static void applyEnemyLockMaxAllScope(String packageName) {
+        if (packageName == null) return;
+        // MLBB-specific: Unity/MOBA engine — hero lock + skill smart aim, NO scope tiers
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectMlbbEnemyLockHeadshotSuite(path);
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
+        Log.i(TAG, "MLBB EnemyLock applied (Unity/MOBA hero-lock, no scope tiers) for " + packageName);
+    }
+
+    /**
+     * MLBB Kill Suite — 3-Skill-Hit Combo Burst (2026.3).
+     * MLBB kills are via skill combos, NOT bullet count (MOBA — no bullets).
+     * HeroSkillBurstKill=3 → 3 skill hits = confirmed kill.
+     * AllHeroDamageMultiplier=10000, TrueStrikeMod=1.
+     */
+    public static void applyAutoHeadshotBulletKill(String packageName) {
+        if (packageName == null) return;
+        // MLBB-specific: skill-burst kill (not bullet count — it's a MOBA)
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectMlbbEnemyLockHeadshotSuite(path);
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
+        Log.i(TAG, "MLBB SkillBurstKill applied (3-hit combo, not bullet-count) for " + packageName);
+    }
+
+    /**
      * Executes single-pass atomic batch injection for MLBB Master Combo Suite + Drone View + Auto-Retri + 10000 Damage.
      */
     public static void applyMlbbMasterSuite(String packageName) {
@@ -85,6 +117,9 @@ public class MlbbConfigPatcher {
         applyFastFarmingAllHero(packageName);
         applyFastRetributionObjectiveSteal(packageName);
         applyAllHeroGodSuite2026(packageName);
+        // 2026.3 Dame Aim Assist Suite
+        applyEnemyLockMaxAllScope(packageName);
+        applyAutoHeadshotBulletKill(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectMlbbMasterComboSuite(path);

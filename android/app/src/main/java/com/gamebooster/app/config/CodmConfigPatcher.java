@@ -61,9 +61,42 @@ public class CodmConfigPatcher {
     }
 
     /**
+     * CODM Enemy Lock + All-Scope Aim Assist — COD Engine/FPS (2026.3).
+     * 5 scope tiers mapped per weapon category:
+     * Hipfire=50m (AR/SMG/Shotgun/Pistol), 1x=150m (AR/SMG),
+     * 3x=250m (AR/DMR), 6x=350m (Sniper/DMR), 10x+=450m (Sniper only).
+     * HeadshotBulletCount=3 (head kill), KillBulletThreshold=5 (body kill).
+     * Config: INI + JSON (NOT UE4 r. CVar format).
+     */
+    public static void applyEnemyLockMaxAllScope(String packageName) {
+        if (packageName == null) return;
+        // CODM-specific: COD Engine FPS — per-weapon scope tiers, INI/JSON format
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectCodmEnemyLockAllScope(path);
+        }
+        Log.i(TAG, "CODM EnemyLock applied (COD Engine FPS scope-tiers 50/150/250/350/450m) for " + packageName);
+    }
+
+    /**
+     * CODM Auto Headshot Kill — 3-Bullet Head + 5-Bullet Universal Kill (2026.3).
+     * HeadshotBulletCount=3 → 3 bullets to head = kill (COD Engine INI key).
+     * KillBulletThreshold=5 → 5 bullets anywhere = dead.
+     * BoneIndex=0 (head bone), HeadshotMultiplier=999.
+     */
+    public static void applyAutoHeadshotBulletKill(String packageName) {
+        if (packageName == null) return;
+        // CODM-specific: COD Engine bullet-count kill mechanics
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.nativeInjectCodmEnemyLockAllScope(path);
+        }
+        Log.i(TAG, "CODM AutoHeadshotKill applied (3-bullet head, 5-bullet kill, COD Engine) for " + packageName);
+    }
+
+    /**
      * Executes single-pass atomic batch injection for all CODM cheats:
      * No Recoil, No Spread, Aimbot Magnetism, Hitbox 3.0x, ESP Clarity, BSA Removal, Fast Load,
-     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, and Fast Reload.
+     * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, Fast Reload,
+     * Enemy Lock MAX All-Scope (50/150/250/350/450m), Auto Headshot 3-bullet + 5-bullet kill.
      */
     public static void applyCodmMasterSuite(String packageName) {
         if (packageName == null) return;
@@ -71,6 +104,9 @@ public class CodmConfigPatcher {
         applyFastAttackSpeed(packageName);
         applyFastReloadQuickSwap(packageName);
         applyCodmInstantReloadChambering(packageName);
+        // 2026.3 Dame Aim Assist Suite
+        applyEnemyLockMaxAllScope(packageName);
+        applyAutoHeadshotBulletKill(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectUniversalCombatSuite(path);

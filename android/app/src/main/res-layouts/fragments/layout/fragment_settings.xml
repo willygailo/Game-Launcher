@@ -124,39 +124,23 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Button
-                    android:id="@+id/btn_audio_presets"
+                <Switch
+                    android:id="@+id/switch_auto_purge_logs"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🎧 AUDIO PRESETS &amp; FOOTSTEP EQUALIZER"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:text="🧹 Auto Purge Game Logs &amp; Telemetry (Real-time Shizuku)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
 
-
-                <Button
-                    android:id="@+id/btn_purge_game_logs"
+                <Switch
+                    android:id="@+id/switch_art_speed_compile"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="🛡️ PURGE ALL GAME LOGS &amp; TELEMETRY"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btn_art_batch_compile"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_cyber_dark"
-                    android:text="⚡ ART SPEED-COMPILE ALL GAMES (AOT)"
+                    android:text="⚡ Auto ART Speed-Compile Games (AOT Shizuku Forcing)"
                     android:textColor="@color/accent_neon_green"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textSize="13sp" />
             </LinearLayout>
 
 
@@ -345,17 +329,6 @@
                     android:text="🔄 Auto Re-Inject on Map / Match Switch"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
-
-                <Button
-                    android:id="@+id/btn_apply_combat_now"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/btn_cyber_accent"
-                    android:text="⚔️ FORCE INJECT COMBAT SUITE NOW"
-                    android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- CARD 3: HARDWARE ENGINE & PERFORMANCE PRESETS -->
@@ -524,17 +497,6 @@
                     android:text="Exclusive next-gen kernel uclamp, 1000Hz OEM digitizers, 16KB memory page shield, &amp; ADPF 2.0 flags"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
-
-                <Button
-                    android:id="@+id/btn_apply_ultimate_android_engine"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/btn_cyber_cyan"
-                    android:text="⚡ 1-TAP ULTIMATE ANDROID 13–16 ENGINE (ALL-IN-ONE)"
-                    android:textColor="#080B11"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
 
                 <Switch
                     android:id="@+id/switch_uclamp_boost"

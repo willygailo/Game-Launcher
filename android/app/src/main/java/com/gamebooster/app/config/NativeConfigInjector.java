@@ -328,6 +328,57 @@ public class NativeConfigInjector {
      */
     public static native boolean nativeInjectRankedCombatFullSuite(String path);
 
+    // ── 2026.3 Dame Aim Assist — Enemy Lock MAX + Auto Headshot Kill ──────────
+
+    /**
+     * Enemy Lock MAX — All-Scope Multi-Range Aim Assist (2026.3 Dame Edition).
+     * 5 range-gated scope tiers: 50m / 150m / 250m / 350m / 450m.
+     * Per tier: head-bone hard-lock, aim magnetism=1000, predictive aim,
+     * ballistic compensation, gyro lock. Silent aimbot mode ON.
+     * Compatible: MLBB (PlayerPrefs XML), CODM (INI/JSON), PUBGM (UE4 CVar+INI).
+     */
+    public static native boolean nativeInjectEnemyLockMaxAllScope(String path);
+
+    /**
+     * Auto Headshot Bullet Kill — 3-Bullet Head Mode + 5-Bullet Universal Kill Sweep (2026.3).
+     * HeadshotBulletCount=3  → 3 bullets on head bone = confirmed kill.
+     * KillBulletThreshold=5  → 5 bullets anywhere = dead (fallback sweep).
+     * All scope tiers get headshot force enabled. Damage maxed to 99999.
+     * Compatible: MLBB, CODM, PUBGM, FreeFire, BloodStrike, DeltaForce.
+     */
+    public static native boolean nativeInjectAutoHeadshotBulletKill(String path);
+
+    // ── 2026.3 Game-Specific Enemy Lock — Each game has its own engine ────────
+
+    /**
+     * MLBB Enemy Lock + Headshot Suite — Unity/MOBA Engine (2026.3).
+     * NO scope tiers — MLBB is top-down MOBA, zero scope mechanics.
+     * HeroLock + SkillSmartAim + lowest-HP target priority.
+     * Kill via 3-skill-hit combo burst (HeroSkillBurstKill=3), NOT bullet count.
+     * Config: PlayerPrefs XML (com.mobile.legends.v2.playerprefs.xml)
+     */
+    public static native boolean nativeInjectMlbbEnemyLockHeadshotSuite(String path);
+
+    /**
+     * CODM Enemy Lock + All-Scope Aim Assist — COD Engine/FPS (2026.3).
+     * 5 scope tiers mapped per weapon category:
+     * Hipfire=50m (AR/SMG/Shotgun), 1x=150m (AR/SMG), 3x=250m (AR/DMR),
+     * 6x=350m (Sniper/DMR), 10x+=450m (Sniper only).
+     * HeadshotBulletCount=3, KillBulletThreshold=5.
+     * Config: INI + JSON (NOT UE4 r. CVar format).
+     */
+    public static native boolean nativeInjectCodmEnemyLockAllScope(String path);
+
+    /**
+     * PUBGM Enemy Lock + All-Scope Aim Assist — Unreal Engine 4 (2026.3).
+     * PURE UE4 CVar format — ALL keys use r. prefix (UserCustom.ini).
+     * Full ballistic simulation per scope tier: r.ScopeBreathingDamp,
+     * r.AntiBreath, r.ZeroBulletDrop, r.BulletVelocityComp.
+     * r.HeadshotBulletThreshold=3, r.KillBulletThreshold=5 (UE4 CVars).
+     * Config: UserCustom.ini (+CVars=r.Key=Value format).
+     */
+    public static native boolean nativeInjectPubgmEnemyLockAllScope(String path);
+
     /** Convenience wrapper: injectAdaptiveAimAssist with native-first fallback. */
     public static boolean injectAdaptiveAimAssist(String path) {
         if (path == null || path.trim().isEmpty()) return false;
@@ -359,6 +410,38 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try { if (nativeInjectRankedCombatFullSuite(path)) return true; } catch (Throwable t) {
                 Log.w(TAG, "injectRankedCombatFullSuite fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convenience wrapper: Enemy Lock MAX — All-Scope Multi-Range Aim Assist (2026.3 Dame Edition).
+     * 5 range-gated scope tiers: 50m / 150m / 250m / 350m / 450m.
+     * Head bone hard-lock, magnetism=1000, silent aimbot, gyro lock.
+     */
+    public static boolean injectEnemyLockMaxAllScope(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectEnemyLockMaxAllScope(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectEnemyLockMaxAllScope fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convenience wrapper: Auto Headshot Bullet Kill (2026.3 Dame Edition).
+     * 3 bullets → headshot kill. 5 bullets → universal kill sweep.
+     * All scope tiers enforced. Damage maxed to 99999 for head hits.
+     */
+    public static boolean injectAutoHeadshotBulletKill(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectAutoHeadshotBulletKill(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectAutoHeadshotBulletKill fallback: " + t.getMessage());
             }
         }
         return false;
