@@ -42,6 +42,7 @@ public class ShizukuConnectionManager {
 
     private volatile State state = State.IDLE;
     private final AtomicBoolean reconnectRunning = new AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicInteger currentAttempt = new java.util.concurrent.atomic.AtomicInteger(0);
     private volatile boolean enabled = true;
 
     private ShizukuConnectionManager() {}
@@ -143,6 +144,8 @@ public class ShizukuConnectionManager {
 
     /** Binder died — verify with confirmation ping before transitioning to DEAD. */
     public void onBinderDead() {
+        // Filter transient process-switching blips
+        sleepQuietly(150);
         boolean confirmedDead = true;
         try {
             if (Shizuku.pingBinder()) {
@@ -152,6 +155,7 @@ public class ShizukuConnectionManager {
 
         if (confirmedDead) {
             setState(State.DEAD);
+            currentAttempt.set(0);
             scheduleReconnect();
         } else {
             Log.d(TAG, "onBinderDead fired, but Shizuku.pingBinder() is still alive. Preserving READY state.");
@@ -261,7 +265,9 @@ public class ShizukuConnectionManager {
      */
     public void forceReconnectCheck() {
         if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
+        currentAttempt.set(0);
         try {
+            ShizukuManager.registerBinderListeners();
             boolean alive = Shizuku.pingBinder();
             boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
             if (alive && granted) {
@@ -280,12 +286,12 @@ public class ShizukuConnectionManager {
     private void scheduleReconnect() {
         if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
+            currentAttempt.set(0);
             return;
         }
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                int attempt = 0;
                 while (enabled) {
                     boolean alive;
                     boolean granted;
@@ -307,6 +313,7 @@ public class ShizukuConnectionManager {
                         return;
                     }
 
+                    int attempt = currentAttempt.getAndIncrement();
                     if (attempt == 0 || attempt % 15 == 0) {
                         Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku daemon checking (alive=" + alive + ", granted=" + granted + ")");
                     }
@@ -318,7 +325,7 @@ public class ShizukuConnectionManager {
                     } else {
                         if (state != State.DEAD) setState(State.DEAD);
                     }
-                    sleepQuietly(backoffMs(attempt++));
+                    sleepQuietly(backoffMs(attempt));
                 }
             } catch (Throwable t) {
                 Log.e(TAG, "Reconnect loop error", t);

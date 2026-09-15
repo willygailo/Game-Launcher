@@ -27,7 +27,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,15 +35,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.gamebooster.app.R;
-import com.gamebooster.app.booster.MaxHzForceChannel;
-import com.gamebooster.app.booster.NetworkOptimizer;
-import com.gamebooster.app.booster.PerformanceChannel;
-import com.gamebooster.app.booster.RamZramChannel;
-import com.gamebooster.app.booster.TouchLatencyChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.device.DeviceInfoChannel;
 import com.gamebooster.app.device.DisplayCapabilitiesDetector;
-import com.gamebooster.app.gamespace.GameSpaceDndManager;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -113,32 +106,9 @@ public class FloatingOverlayService extends Service {
     private TextView tvHudRam;
     private ProgressBar pbHudRam;
 
-    // Action buttons — original 6
-    private Button btnHudBoost;
-    private Button btnHudExtreme;
-    private Button btnHudCrosshair;
-    private Button btnHudDnd;
-    private Button btnHudTouch;
-    private Button btnHudNet;
+    private TextView tvHudAutoInjectStatus;
 
-    // Action buttons — 2026.2 Combat Suite
-    private Button btnHudInjectCombat;
-    private Button btnHudReInject;
-    private Button btnHudAimLock;
-    private Button btnHudDamageLock;
-
-    // Combat state
-    private boolean isCombatSuiteActive = false;
-    private boolean isAimLockActive = false;
-    private boolean isDamageLockActive = false;
-    private volatile String currentActiveGamePkg = null;
-    private static final int[] REFRESH_RATE_TIERS = {185};
-    private int currentHzIndex = 0;
     private HudMode currentMode = HudMode.PILL;
-    private boolean isDndActive = false;
-    private boolean isExtremeActive = true;
-    private boolean isTouchBoostActive = false;
-    private boolean isNetBoostActive = false;
     private int realTimeFps = 185;
     private int onePercentLowFps = 175;
     private int zeroPointOnePercentLowFps = 165;
@@ -199,7 +169,6 @@ public class FloatingOverlayService extends Service {
         overlayView = inflater.inflate(R.layout.floating_hud_layout, (ViewGroup) null, false);
 
         bindViews();
-        setupActionButtons();
 
         int layoutFlag = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
@@ -315,337 +284,7 @@ public class FloatingOverlayService extends Service {
         tvHudMa = overlayView.findViewById(R.id.tv_hud_ma);
         tvHudRam = overlayView.findViewById(R.id.tv_hud_ram);
         pbHudRam = overlayView.findViewById(R.id.pb_hud_ram);
-
-        // Action buttons
-        btnHudBoost = overlayView.findViewById(R.id.btn_hud_boost);
-        btnHudExtreme = overlayView.findViewById(R.id.btn_hud_extreme);
-        btnHudCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
-        btnHudDnd = overlayView.findViewById(R.id.btn_hud_dnd);
-        btnHudTouch = overlayView.findViewById(R.id.btn_hud_touch);
-        btnHudNet = overlayView.findViewById(R.id.btn_hud_net);
-    }
-
-    private void setupActionButtons() {
-        isDndActive = GameSpaceDndManager.isDndActive(getApplicationContext());
-        updateDndButtonVisual();
-        updateCrosshairButtonVisual();
-
-        // 1. Clean RAM & Trimming Cache
-        if (btnHudBoost != null) {
-            btnHudBoost.setOnClickListener(v -> {
-                performHaptic();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        Toast.makeText(getApplicationContext(),
-                                "⚡ RAM Cache Purged & Memory Trimmed",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 2. Extreme 185Hz Refresh Rate Enforcer
-        if (btnHudExtreme != null) {
-            btnHudExtreme.setOnClickListener(v -> {
-                performHaptic();
-                currentHzIndex = 0;
-                final int targetHz = 185;
-
-                AppExecutors.getInstance().executeCommand(() -> {
-                    PerformanceChannel.Profile profile = PerformanceChannel.Profile.EXTREME_PERFORMANCE;
-                    PerformanceChannel.applyProfileWithResult(getApplicationContext(), profile);
-                    MaxHzForceChannel.forceApply(targetHz);
-                    PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
-                    isExtremeActive = true;
-
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        btnHudExtreme.setText("🔥 " + targetHz + "Hz");
-                        Toast.makeText(getApplicationContext(),
-                                "🔥 Locked @ " + targetHz + "Hz (Max " + targetHz + " FPS)",
-                                Toast.LENGTH_SHORT).show();
-                        if (tvHudProfileBadge != null) {
-                            tvHudProfileBadge.setText("🔥 EXTREME 185Hz LOCKED • GAME DRIVER ON");
-                        }
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 3. Aim Crosshair Hub (Toggle + Preset Cycle on Long Click)
-        if (btnHudCrosshair != null) {
-            btnHudCrosshair.setOnClickListener(v -> {
-                performHaptic();
-                boolean active = CrosshairOverlayManager.toggleCrosshair(getApplicationContext());
-                updateCrosshairButtonVisual();
-                Toast.makeText(getApplicationContext(),
-                        active ? "🎯 Crosshair Overlay ACTIVE" : "🎯 Crosshair OFF",
-                        Toast.LENGTH_SHORT).show();
-                scheduleAutoCollapse();
-            });
-
-            btnHudCrosshair.setOnLongClickListener(v -> {
-                performHaptic();
-                cycleCrosshairPreset();
-                return true;
-            });
-        }
-
-        // 4. Gaming DND Shield
-        if (btnHudDnd != null) {
-            btnHudDnd.setOnClickListener(v -> {
-                performHaptic();
-                isDndActive = !isDndActive;
-                final boolean targetDnd = isDndActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean applied = GameSpaceDndManager.setGamingDndMode(getApplicationContext(), targetDnd);
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        updateDndButtonVisual();
-                        Toast.makeText(getApplicationContext(), applied
-                                        ? (targetDnd ? "🚫 Gaming DND Enabled (Silent)" : "🔔 Gaming DND Disabled")
-                                        : "DND permission required",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 5. Ultra Touch 1000Hz Response
-        if (btnHudTouch != null) {
-            btnHudTouch.setOnClickListener(v -> {
-                performHaptic();
-                isTouchBoostActive = !isTouchBoostActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    boolean ok = TouchLatencyChannel.enableUltraTouchResponse();
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (btnHudTouch != null) {
-                            btnHudTouch.setTextColor(isTouchBoostActive
-                                    ? Color.parseColor("#00FF66")
-                                    : Color.parseColor("#00F0FF"));
-                        }
-                        Toast.makeText(getApplicationContext(),
-                                "⚡ 1000Hz Ultra Touch Response Active",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 6. Low-Latency Gaming Net Boost
-        if (btnHudNet != null) {
-            btnHudNet.setOnClickListener(v -> {
-                performHaptic();
-                isNetBoostActive = !isNetBoostActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    NetworkOptimizer.applyGamingDns(getApplicationContext(), NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1);
-                    NetworkOptimizer.optimizeTcpBuffers();
-                    NetworkOptimizer.flushDnsCache();
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (btnHudNet != null) {
-                            btnHudNet.setTextColor(isNetBoostActive
-                                    ? Color.parseColor("#00FF66")
-                                    : Color.parseColor("#FFB800"));
-                        }
-                        Toast.makeText(getApplicationContext(),
-                                "📶 Low-Latency DNS & TCP Buffers Boosted",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // ── 2026.2 Combat Suite Buttons ────────────────────────────────────────
-
-        // 7. INJECT COMBAT — fire full ranked combat suite on detected game
-        btnHudInjectCombat = overlayView.findViewById(R.id.btn_hud_inject_combat);
-        if (btnHudInjectCombat != null) {
-            btnHudInjectCombat.setOnClickListener(v -> {
-                performHaptic();
-                isCombatSuiteActive = !isCombatSuiteActive;
-                final boolean active = isCombatSuiteActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String pkg = detectActiveGamePackage();
-                    if (pkg != null) {
-                        currentActiveGamePkg = pkg;
-                        com.gamebooster.app.config.GameAutoInjectDispatcher.resetPackageInjectionState(pkg);
-                        com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(
-                                getApplicationContext(), pkg, true);
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (btnHudInjectCombat != null) {
-                            btnHudInjectCombat.setText(active ? "⚔️ COMBAT ON" : "⚔️ INJECT");
-                            btnHudInjectCombat.setTextColor(active
-                                    ? Color.parseColor("#FF3366")
-                                    : Color.parseColor("#00F0FF"));
-                        }
-                        Toast.makeText(getApplicationContext(),
-                                pkg != null
-                                        ? "⚔️ Combat Suite Injected for " + pkg
-                                        : "⚔️ No active game detected",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 8. RE-INJECT — force re-inject after map change
-        btnHudReInject = overlayView.findViewById(R.id.btn_hud_reinject);
-        if (btnHudReInject != null) {
-            btnHudReInject.setOnClickListener(v -> {
-                performHaptic();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String pkg = currentActiveGamePkg != null
-                            ? currentActiveGamePkg : detectActiveGamePackage();
-                    if (pkg != null) {
-                        currentActiveGamePkg = pkg;
-                        com.gamebooster.app.services.MapChangeReInjector.forceReInjectNow(
-                                getApplicationContext(), pkg);
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        Toast.makeText(getApplicationContext(),
-                                pkg != null
-                                        ? "🔄 Re-Injected for " + pkg
-                                        : "🔄 No active game detected",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 9. AIM LOCK — per-scope adaptive aim toggle
-        btnHudAimLock = overlayView.findViewById(R.id.btn_hud_aim_lock);
-        if (btnHudAimLock != null) {
-            btnHudAimLock.setOnClickListener(v -> {
-                performHaptic();
-                isAimLockActive = !isAimLockActive;
-                final boolean active = isAimLockActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String pkg = currentActiveGamePkg != null
-                            ? currentActiveGamePkg : detectActiveGamePackage();
-                    if (pkg != null) {
-                        com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg);
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (btnHudAimLock != null) {
-                            btnHudAimLock.setText(active ? "🎯 AIM ON" : "🎯 AIM");
-                            btnHudAimLock.setTextColor(active
-                                    ? Color.parseColor("#00FF66")
-                                    : Color.parseColor("#00F0FF"));
-                        }
-                        Toast.makeText(getApplicationContext(),
-                                active ? "🎯 Adaptive Aim Lock Active" : "🎯 Aim Lock Off",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-
-        // 10. DAMAGE — damage overdrive toggle
-        btnHudDamageLock = overlayView.findViewById(R.id.btn_hud_damage);
-        if (btnHudDamageLock != null) {
-            btnHudDamageLock.setOnClickListener(v -> {
-                performHaptic();
-                isDamageLockActive = !isDamageLockActive;
-                final boolean active = isDamageLockActive;
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String pkg = currentActiveGamePkg != null
-                            ? currentActiveGamePkg : detectActiveGamePackage();
-                    if (pkg != null) {
-                        com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg);
-                        com.gamebooster.app.config.CommonConfigTuningInjector.applyRankedCombatFullSuite(pkg);
-                    }
-                    AppExecutors.getInstance().postToMainThread(() -> {
-                        if (btnHudDamageLock != null) {
-                            btnHudDamageLock.setText(active ? "💥 DMG ON" : "💥 DAMAGE");
-                            btnHudDamageLock.setTextColor(active
-                                    ? Color.parseColor("#FF8C00")
-                                    : Color.parseColor("#00F0FF"));
-                        }
-                        Toast.makeText(getApplicationContext(),
-                                active ? "💥 Damage Overdrive 10000x Active" : "💥 Damage Override Off",
-                                Toast.LENGTH_SHORT).show();
-                        scheduleAutoCollapse();
-                    });
-                });
-            });
-        }
-    }
-
-    /** Detect the currently active foreground game package. Returns null if none found. */
-    private String detectActiveGamePackage() {
-        try {
-            android.app.ActivityManager am = (android.app.ActivityManager)
-                    getSystemService(android.content.Context.ACTIVITY_SERVICE);
-            if (am == null) return null;
-            java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am.getRunningAppProcesses();
-            if (procs == null) return null;
-            for (android.app.ActivityManager.RunningAppProcessInfo p : procs) {
-                if (p.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    String pkg = p.processName;
-                    // Only return if it's a known game package
-                    if (pkg != null && (
-                            pkg.contains("mobile.legends") ||
-                            pkg.contains("codm") || pkg.contains("callofduty") ||
-                            pkg.contains("tencent.ig") || pkg.contains("pubg") ||
-                            pkg.contains("garena") || pkg.contains("freefire") ||
-                            com.gamebooster.app.games.GamePackageRegistry.getGameType(pkg) !=
-                                    com.gamebooster.app.games.GamePackageRegistry.GameType.OTHER)) {
-                        return pkg;
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "detectActiveGamePackage error: " + t.getMessage());
-        }
-        return null;
-    }
-
-    private void cycleCrosshairPreset() {
-        SharedPreferences prefs = getSharedPreferences(CrosshairOverlayService.PREF_NAME, MODE_PRIVATE);
-        String currentName = prefs.getString(CrosshairOverlayService.KEY_PRESET, CrosshairPreset.TACTICAL_CROSS.name());
-        CrosshairPreset[] presets = CrosshairPreset.values();
-        int nextIndex = 0;
-        for (int i = 0; i < presets.length; i++) {
-            if (presets[i].name().equals(currentName)) {
-                nextIndex = (i + 1) % presets.length;
-                break;
-            }
-        }
-        CrosshairPreset nextPreset = presets[nextIndex];
-        CrosshairOverlayService.updatePreset(getApplicationContext(), nextPreset);
-        Toast.makeText(getApplicationContext(), "🎯 Crosshair Style: " + nextPreset.getLabel(), Toast.LENGTH_SHORT).show();
-        updateCrosshairButtonVisual();
-    }
-
-    private void updateDndButtonVisual() {
-        if (btnHudDnd == null) return;
-        if (isDndActive) {
-            btnHudDnd.setTextColor(Color.parseColor("#00FF66"));
-            btnHudDnd.setText("🚫 DND ON");
-        } else {
-            btnHudDnd.setTextColor(Color.parseColor("#94A3B8"));
-            btnHudDnd.setText("🚫 DND");
-        }
-    }
-
-    private void updateCrosshairButtonVisual() {
-        if (btnHudCrosshair == null) return;
-        boolean active = CrosshairOverlayManager.isShowing();
-        if (active) {
-            btnHudCrosshair.setTextColor(Color.parseColor("#00FF66"));
-            btnHudCrosshair.setText("🎯 ON");
-        } else {
-            btnHudCrosshair.setTextColor(Color.parseColor("#FF8800"));
-            btnHudCrosshair.setText("🎯 AIM");
-        }
+        tvHudAutoInjectStatus = overlayView.findViewById(R.id.tv_hud_auto_inject_status);
     }
 
     private void setupDragListeners() {
@@ -685,6 +324,7 @@ public class FloatingOverlayService extends Service {
                             performHaptic();
                             if (currentMode == HudMode.PILL || currentMode == HudMode.MICRO_FPS) {
                                 switchHudMode(HudMode.EXPANDED_DOCK);
+                                scheduleAutoCollapse();
                             }
                         } else {
                             // Magnetic Edge Snapping with boundary clamp
@@ -764,7 +404,7 @@ public class FloatingOverlayService extends Service {
     private void scheduleAutoCollapse() {
         if (handler == null) return;
         handler.removeCallbacks(autoCollapseRunnable);
-        handler.postDelayed(autoCollapseRunnable, 1800);
+        handler.postDelayed(autoCollapseRunnable, 5000);
     }
 
     private final Choreographer.FrameCallback choreographerCallback = new Choreographer.FrameCallback() {

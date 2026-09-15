@@ -53,9 +53,34 @@ class ShizukuLifecycleManager private constructor(context: Context) :
 
     /**
      * Call in Activity.onResume() to re-verify status automatically after returning to the APK.
+     * Proactively forces an immediate binder re-check, re-binds the AIDL UserService,
+     * and performs a dual-pass evaluation to catch delayed binder recovery post-gaming.
      */
     fun onResumeCheck() {
+        // 1. Proactively force a connection check and reset backoff counters
+        ShizukuConnectionManager.getInstance().forceReconnectCheck()
+
+        // 2. Re-bind AIDL UserService if binder is alive
+        try {
+            if (Shizuku.pingBinder() && !ShizukuUserServiceConnector.getInstance().isServiceConnected) {
+                ShizukuUserServiceConnector.getInstance().bindService()
+            }
+        } catch (ignored: Throwable) {}
+
+        // 3. First pass refresh
         refreshStatus()
+
+        // 4. Follow-up pass after 350ms to allow binder IPC to settle post-heavy gaming
+        AppExecutors.getInstance().postDelayed({
+            try {
+                if (Shizuku.pingBinder()) {
+                    if (!ShizukuUserServiceConnector.getInstance().isServiceConnected) {
+                        ShizukuUserServiceConnector.getInstance().bindService()
+                    }
+                }
+            } catch (ignored: Throwable) {}
+            refreshStatus()
+        }, 350)
     }
 
     /**
@@ -77,6 +102,14 @@ class ShizukuLifecycleManager private constructor(context: Context) :
             }
         } else {
             false
+        }
+
+        if (binderAlive && permissionGranted) {
+            try {
+                if (!ShizukuUserServiceConnector.getInstance().isServiceConnected) {
+                    ShizukuUserServiceConnector.getInstance().bindService()
+                }
+            } catch (ignored: Throwable) {}
         }
 
         val connState = when {

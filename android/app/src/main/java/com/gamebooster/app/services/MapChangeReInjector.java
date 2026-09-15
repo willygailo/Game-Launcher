@@ -96,7 +96,7 @@ public final class MapChangeReInjector {
         Log.i(TAG, "🛑 MapChangeReInjector stopped");
     }
 
-    /** Force immediate re-injection for the currently active package (call from HUD button). */
+    /** Force immediate re-injection for the currently active package. */
     public static void forceReInjectNow(Context context, String gamePackage) {
         if (gamePackage == null) return;
         Context ctx = context != null ? context.getApplicationContext() : sAppContext;

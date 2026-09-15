@@ -334,174 +334,34 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- IN-GAME TURBO CONTROLS SECTION HEADER -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="IN-GAME TURBO CONTROLS"
-            android:textColor="@color/accent_cyan"
-            android:textSize="9sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
-
-        <!-- 2x3 TACTILE ACTION BUTTONS GRID -->
-        <!-- Row 1: Clean RAM, 185Hz Extreme, Crosshair -->
+        <!-- AUTO-INJECTION ACTIVE STATUS CHIP -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="8dp"
+            android:background="@drawable/hud_chip_bg"
+            android:paddingStart="8dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="5dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <Button
-                android:id="@+id/btn_hud_boost"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/hud_btn_cyber_primary"
-                android:padding="0dp"
-                android:text="⚡ CLEAN"
-                android:textColor="#000000"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/badge_neon_green" />
 
-            <Button
-                android:id="@+id/btn_hud_extreme"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/hud_btn_cyber_accent"
-                android:padding="0dp"
-                android:text="🔥 185Hz"
-                android:textColor="#000000"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_crosshair"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="3dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="🎯 AIM"
-                android:textColor="@color/accent_orange"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Row 2: DND, Ultra Touch 1000Hz, Low-Latency Net Boost -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_hud_dnd"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="🚫 DND"
-                android:textColor="@color/text_primary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_touch"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="⚡ TOUCH"
-                android:textColor="@color/accent_cyan"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_net"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="3dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="📶 NET"
-                android:textColor="@color/accent_amber"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Row 3: Combat Suite: Inject, Re-Inject, Aim Lock, Damage -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_hud_inject_combat"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="⚔️ INJECT"
-                android:textColor="@color/accent_cyan"
-                android:textSize="9sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_reinject"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="🔄 RE-INJECT"
+            <TextView
+                android:id="@+id/tv_hud_auto_inject_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡ AUTO-CONFIG ACTIVE • C++ / LUA ENGINE"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="9sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_aim_lock"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="🎯 AIM"
-                android:textColor="@color/accent_cyan"
-                android:textSize="9sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_hud_damage"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="2dp"
-                android:background="@drawable/hud_btn_cyber_dark"
-                android:padding="0dp"
-                android:text="💥 DMG"
-                android:textColor="@color/accent_orange"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:letterSpacing="0.04" />
         </LinearLayout>
     </LinearLayout>
 

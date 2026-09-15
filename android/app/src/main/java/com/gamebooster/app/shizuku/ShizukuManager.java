@@ -78,6 +78,7 @@ public class ShizukuManager {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
                     } catch (Throwable ignored) {}
+                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx, true);
                     triggerThrottledPostConnectionSync();
                     ShizukuConnectionManager.getInstance().onBinderReceived();
                 });
@@ -101,6 +102,7 @@ public class ShizukuManager {
                     try {
                         ShizukuUserServiceConnector.getInstance().bindService();
                     } catch (Throwable ignored) {}
+                    ShizukuPermissionEnforcer.enforceAllPermissions(ctx, true);
                     triggerThrottledPostConnectionSync();
                     ShizukuConnectionManager.getInstance().onBinderReceived();
                 });

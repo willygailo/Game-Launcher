@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import com.gamebooster.app.R
+import com.gamebooster.app.shizuku.ShizukuConnectionManager
 import com.gamebooster.app.shizuku.ShizukuLifecycleManager
 import com.gamebooster.app.shizuku.ShizukuStatus
 
@@ -136,7 +137,14 @@ class ShizukuStatusDashboardView @JvmOverloads constructor(
 
     private fun handleActionClick() {
         val manager = ShizukuLifecycleManager.getInstance(context)
-        val status = manager.getCurrentStatus()
+        var status = manager.getCurrentStatus()
+        
+        // If not reported alive, attempt immediate proactive reconnection first
+        if (!status.isBinderAlive) {
+            ShizukuConnectionManager.getInstance().forceReconnectCheck()
+            status = manager.refreshStatus()
+        }
+
         if (status.isBinderAlive && status.isPermissionGranted) {
             // Already active, trigger sync
             com.gamebooster.app.shizuku.ShizukuManager.handleShizukuCardClick(context)

@@ -27,20 +27,33 @@ public class ShizukuPermissionEnforcer {
      * Unlocks full file system access, legacy storage, appops, and system permissions for the launcher and detected games.
      */
     public static void enforceAllPermissions(Context context) {
+        enforceAllPermissions(context, false);
+    }
+
+    /**
+     * Unlocks permissions with optional forced bypass of the cooldown timer.
+     */
+    public static void enforceAllPermissions(Context context, boolean force) {
         if (context == null) return;
-        if (!com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive()
-                && !RishManager.isAvailable(context)) {
+        boolean shizukuReady = ShizukuExecutor.hasShizukuPermission()
+                || ShizukuManager.isShizukuRunningAndGranted()
+                || com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+        if (!shizukuReady && !RishManager.isAvailable(context)) {
             Log.w(TAG, "Cannot enforce permissions: Neither Root nor Shizuku is available.");
             return;
         }
 
-        synchronized (ENFORCE_LOCK) {
-            long now = System.currentTimeMillis();
-            if (now - lastEnforceTimestamp < ENFORCE_COOLDOWN_MS) {
-                Log.d(TAG, "enforceAllPermissions skipped: within cooldown.");
-                return;
+        if (!force) {
+            synchronized (ENFORCE_LOCK) {
+                long now = System.currentTimeMillis();
+                if (now - lastEnforceTimestamp < ENFORCE_COOLDOWN_MS) {
+                    Log.d(TAG, "enforceAllPermissions skipped: within cooldown.");
+                    return;
+                }
+                lastEnforceTimestamp = now;
             }
-            lastEnforceTimestamp = now;
+        } else {
+            lastEnforceTimestamp = System.currentTimeMillis();
         }
 
         AppExecutors.getInstance().executeCommand(() -> {
@@ -148,12 +161,16 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("cmd appops set moe.shizuku.privileged.api RUN_IN_BACKGROUND allow 2>/dev/null");
             batchCmds.add("cmd appops set moe.shizuku.privileged.api RUN_ANY_IN_BACKGROUND allow 2>/dev/null");
             batchCmds.add("cmd appops set moe.shizuku.privileged.api AUTO_START allow 2>/dev/null");
+            batchCmds.add("cmd appops set moe.shizuku.privileged.api SYSTEM_ALERT_WINDOW allow 2>/dev/null");
+            batchCmds.add("am set-standby-bucket moe.shizuku.privileged.api active 2>/dev/null");
+            batchCmds.add("am set-standby-bucket " + pkg + " active 2>/dev/null");
 
-            // 6. Prevent Android 12-16 Phantom Process Killer from terminating Shizuku daemon on Wi-Fi disconnect
+            // 6. Prevent Android 12-16 Phantom Process Killer & Wi-Fi Disconnect from terminating Shizuku daemon
             batchCmds.add("/system/bin/device_config set_sync_disabled_for_tests persistent 2>/dev/null");
             batchCmds.add("/system/bin/device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null");
             batchCmds.add("settings put global settings_enable_monitor_phantom_procs false 2>/dev/null");
             batchCmds.add("settings put global adb_allowed_connection_time 0 2>/dev/null");
+            batchCmds.add("settings put global adb_wifi_enabled 1 2>/dev/null");
 
             // 7. Fast Single-Batch Execution via Root (UID 0) or Shizuku (UID 2000)
             com.gamebooster.app.engine.CommandExecutor.executeBatchCommands(batchCmds);

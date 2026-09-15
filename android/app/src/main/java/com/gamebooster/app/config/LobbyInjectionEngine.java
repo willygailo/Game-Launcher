@@ -19,8 +19,7 @@ import java.util.concurrent.Executors;
  *  - Stage 2 (In-Lobby Live Injection): Executes automatically after a smart delay (default 18 seconds)
  *    when the game has finished loading assets, passed splash checksum verification, and entered the
  *    main home screen / lobby.
- *
- * Also provides an instant manual trigger for the floating gaming HUD overlay.
+ * Fully automated via background detection or programmatic trigger.
  */
 public final class LobbyInjectionEngine {
 
@@ -106,7 +105,7 @@ public final class LobbyInjectionEngine {
     }
 
     /**
-     * Manually triggers immediate in-lobby injection (e.g. from Floating Gaming HUD button).
+     * Manually or programmatically triggers immediate in-lobby injection.
      */
     public static void triggerManualLobbyInject(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) {
