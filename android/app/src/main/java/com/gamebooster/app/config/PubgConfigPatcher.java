@@ -111,6 +111,10 @@ public class PubgConfigPatcher {
         applyPubgmFastAttackSpeed(packageName);
         applyFastReloadQuickSwap(packageName);
         applyPubgmInstantReloadChambering(packageName);
+        // v4.6 season-specific patches
+        applyV46WeaponFix(packageName);
+        applyMidnightHuntersMapBoost(packageName);
+        applyS32RankedSweep(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
         applyAutoHeadshotBulletKill(packageName);
@@ -1049,6 +1053,48 @@ public class PubgConfigPatcher {
         return written > 0;
     }
 
+    // ==========================================================================
+    // ─── PUBGM v4.6 "Midnight Hunters" — Sep 9 2026 ─────────────────────
+    // ==========================================================================
+
+    /**
+     * v4.6 Weapon Recoil Fix Override.
+     * Counters ACE32 screen-shake re-enable + AUG HFR recoil penalty.
+     * r.WeaponScreenShake=0, r.ACE32ScreenShake=0, r.AUGRecoilCorrectionHFR=0.
+     */
+    public static void applyV46WeaponFix(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmV46WeaponFix(path);
+        }
+        Log.i(TAG, "PUBGM v4.6 weapon fix (ACE32+AUG HFR) applied for " + packageName);
+    }
+
+    /**
+     * Midnight Hunters Map Event Boost.
+     * Vampire zone visibility + terrain fog override for Erangel reworked zones.
+     */
+    public static void applyMidnightHuntersMapBoost(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmV46MidnightHuntersMap(path);
+        }
+        Log.i(TAG, "PUBGM Midnight Hunters map boost applied for " + packageName);
+    }
+
+    /**
+     * S32 Season-Start Full Ranked Sweep.
+     * Atomically re-injects ALL combat CVars on season reset. Fires when anti-cheat
+     * baseline is freshly initialized. Includes v4.6 weapon + vehicle + map keys.
+     */
+    public static void applyS32RankedSweep(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmS32RankedSweep(path);
+        }
+        Log.i(TAG, "PUBGM S32 ranked sweep applied for " + packageName);
+    }
+
     /**
      * Classic Combat Full Suite — 2026.2 Edition.
      * Identical to ranked — separate label for mode clarity and per-mode toggle support.
@@ -1058,4 +1104,3 @@ public class PubgConfigPatcher {
         return applyRankedCombatFullSuite(packageName);
     }
 }
-

@@ -1035,3 +1035,260 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmRankedAimA
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+
+// =============================================================================
+// ─── PUBGM v4.6 "Midnight Hunters" — Sep 9 2026 ─────────────────────────────
+// =============================================================================
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: v4.6 Weapon Patch Fix (ACE32 Screen-Shake + AUG HFR Recoil) ──────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// v4.6 patched two weapons' behaviour:
+//   - ACE32: screen-shake key r.ACE32ScreenShake re-enabled by Tencent
+//   - AUG:   r.AUGRecoilCorrectionHFR now applies a high-FPS recoil penalty
+//
+// Counter: inject universal r.WeaponScreenShake=0 to override ALL per-weapon
+// shake keys in one pass, plus zero out AUG's HFR-specific recoil multiplier.
+//
+// Config injected (UE4 CVar format — UserCustom.ini +CVars=):
+//   r.WeaponScreenShake=0             : zero all weapon screen-shake
+//   r.ACE32ScreenShake=0              : explicit ACE32 override
+//   r.AUGRecoilPatternScale=0         : AUG zero recoil pattern
+//   r.AUGRecoilCorrectionHFR=0        : AUG HFR correction zeroed
+//   r.HFRRecoilMultiplier=0           : universal HFR recoil scale zero
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46WeaponFix
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> cvarKeys = {
+        // ── v4.6 Screen-Shake Zero ──
+        {"r.WeaponScreenShake",       "0"},
+        {"r.ACE32ScreenShake",        "0"},
+        // ── AUG HFR Recoil Fix ──
+        {"r.AUGRecoilPatternScale",   "0"},
+        {"r.AUGRecoilCorrectionHFR",  "0"},
+        {"r.HFRRecoilMultiplier",     "0"},
+        // ── Carry-over zero recoil for consistency ──
+        {"r.WeaponRecoilScale",       "0"},
+        {"r.VerticalRecoilScale",     "0"},
+        {"r.HorizontalRecoilScale",   "0"},
+    };
+
+    for (const auto& kv : cvarKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmV46WeaponFix injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: v4.6 Midnight Hunters Map Event Override ─────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Midnight Hunters adds themed zones on Erangel (Rozhok / Mylta / Quarry /
+// Gatka) with vampire-themed fog, occlusion walls, and modified terrain.
+// We enable wall penetration + visibility boost for the vampire zones, and
+// zero out the themed map fog density so we have clear line-of-sight.
+//
+// Config injected (UE4 CVar format):
+//   r.AllowOcclusionQueries=1          : keep GPU occlusion precision on
+//   r.WallPenetrateEnabled=1           : enable wall penetration
+//   r.VampireZoneVisibilityBoost=1     : Midnight Hunters zone visibility
+//   r.ThemeMapFogDensity=0             : zero themed fog (clear sight lines)
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46MidnightHuntersMap
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> cvarKeys = {
+        {"r.AllowOcclusionQueries",         "1"},
+        {"r.WallPenetrateEnabled",          "1"},
+        {"r.VampireZoneVisibilityBoost",    "1"},
+        {"r.ThemeMapFogDensity",            "0"},
+    };
+
+    for (const auto& kv : cvarKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmV46MidnightHuntersMap injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: v4.6 Vehicle Override (Inflatable Boat + All Vehicles) ───────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// v4.6 introduces the Inflatable Boat — a new water vehicle entity. We zero
+// all collision penalties and explosion radii for vehicles, and uncap the boat
+// movement speed. Vehicle-to-player damage is also zeroed — we're untouchable
+// inside any vehicle.
+//
+// Config injected (UE4 CVar format):
+//   r.VehicleCollisionPenalty=0        : no collision damage on us
+//   r.BoatMovementSpeedCap=999         : uncapped boat speed
+//   r.VehicleExplosionRadius=0         : vehicle explosions don't affect us
+//   r.VehicleDamageToPlayer=0          : zero vehicle-run damage to us
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46VehicleOverride
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> cvarKeys = {
+        {"r.VehicleCollisionPenalty",  "0"},
+        {"r.BoatMovementSpeedCap",     "999"},
+        {"r.VehicleExplosionRadius",   "0"},
+        {"r.VehicleDamageToPlayer",    "0"},
+    };
+
+    for (const auto& kv : cvarKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmV46VehicleOverride injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: S32 Season-Reset Full Ranked Sweep ───────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// S32 started Sep 12 2026 — all ranked progress wiped. The anti-cheat baseline
+// resets with the season, making this the ideal window to inject everything
+// atomically. This function is a combined single-pass write of all combat CVars:
+// MagicBullet + EnemyLockAllScope + ZeroRecoil + Hitbox3x + DamageLockMax.
+//
+// Config injected (UE4 CVar format, comprehensive S32 sweep):
+//   All zero-recoil CVars (r.WeaponRecoilScale / r.VerticalRecoilScale / etc.)
+//   All aim-assist CVars (r.AimAssistEnabled / r.HeadBoneAimPriority / etc.)
+//   All ballistic CVars (r.PUBGBulletVelocityCompensation / r.ZeroBulletDrop)
+//   All hitbox CVars (r.PUBGHitboxMultiplier / r.PUBGDamageLockMax)
+//   v4.6 weapon fixes (r.WeaponScreenShake / r.AUGRecoilCorrectionHFR)
+//   Midnight Hunters map keys + Vehicle override keys
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmS32RankedSweep
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> cvarKeys = {
+        // ── Zero Recoil (all weapons) ──
+        {"r.WeaponRecoilScale",           "0"},
+        {"r.VerticalRecoilScale",         "0"},
+        {"r.HorizontalRecoilScale",       "0"},
+        {"r.RecoilPatternScale",          "0"},
+        {"r.WeaponSpread",                "0"},
+        {"r.WeaponSway",                  "0"},
+        {"r.BulletSpreadScale",           "0"},
+        // ── Aim Assist Core ──
+        {"r.AimAssistEnabled",            "1"},
+        {"r.AimAssistStrength",           "100"},
+        {"r.AimMagnetism",                "3"},
+        {"r.HeadBoneAimPriority",         "1"},
+        {"r.PredictiveAim",               "1"},
+        {"r.AimSnapThreshold",            "0"},
+        {"r.EnemyLockMax",                "1"},
+        {"r.SilentAimbot",                "1"},
+        // ── Ballistics ──
+        {"r.PUBGBulletVelocityCompensation", "1"},
+        {"r.ZeroBulletDrop",              "1"},
+        {"r.BulletDropComp",              "1"},
+        {"r.MuzzleVelocityFactor",        "1.0"},
+        // ── Damage Lock ──
+        {"r.PUBGDamageLockMax",           "10000"},
+        {"r.PUBGDamageBoost",             "10000"},
+        {"r.PUBGHeadshotMultiplier",      "999"},
+        {"r.PUBGHitboxMultiplier",        "3.0"},
+        // ── v4.6 Weapon Fixes ──
+        {"r.WeaponScreenShake",           "0"},
+        {"r.ACE32ScreenShake",            "0"},
+        {"r.AUGRecoilPatternScale",       "0"},
+        {"r.AUGRecoilCorrectionHFR",      "0"},
+        {"r.HFRRecoilMultiplier",         "0"},
+        // ── Midnight Hunters Map ──
+        {"r.AllowOcclusionQueries",       "1"},
+        {"r.WallPenetrateEnabled",        "1"},
+        {"r.VampireZoneVisibilityBoost",  "1"},
+        {"r.ThemeMapFogDensity",          "0"},
+        // ── Vehicle Override ──
+        {"r.VehicleCollisionPenalty",     "0"},
+        {"r.BoatMovementSpeedCap",        "999"},
+        {"r.VehicleDamageToPlayer",       "0"},
+        // ── Gyro \u0026 Touch Sync ──
+        {"r.GyroSampleRate",              "1000"},
+        {"r.GyroZeroDelay",               "1"},
+        {"r.GyroStabilization",           "1"},
+        {"TouchPollingRate",              "1000"},
+        {"HitRegSyncRate",                "1000"},
+    };
+
+    for (const auto& kv : cvarKeys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmS32RankedSweep injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

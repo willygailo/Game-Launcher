@@ -91,6 +91,22 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbFastRetributionObjectiveSteal(String path);
     public static native boolean nativeInjectMlbbAllHeroGodSuite2026(String path);
 
+    // ─── Season 42 / v4.6 / S8 — Season-Specific Injectors ────────────────────
+    // MLBB Season 42 "Starward Decade" (Sep 16 2026)
+    public static native boolean nativeInjectMlbbSeason42MashaOverride(String path);
+    public static native boolean nativeInjectMlbbSeason42LordStealUpdate(String path);
+    public static native boolean nativeInjectMlbbSeason42AllHeroRevampBoost(String path);
+    // PUBGM v4.6 "Midnight Hunters" (Sep 9 2026)
+    public static native boolean nativeInjectPubgmV46WeaponFix(String path);
+    public static native boolean nativeInjectPubgmV46MidnightHuntersMap(String path);
+    public static native boolean nativeInjectPubgmV46VehicleOverride(String path);
+    public static native boolean nativeInjectPubgmS32RankedSweep(String path);
+    // CODM Season 8 "Against All Fate" (Sep 9 2026)
+    public static native boolean nativeInjectCodmSeason8NewWeapons(String path);
+    public static native boolean nativeInjectCodmSeason8RoguelikeMode(String path);
+    public static native boolean nativeInjectCodmSeason8IsolatedPoi(String path);
+    public static native boolean nativeInjectCodmS8FullRankedSweep(String path);
+
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);
@@ -3348,6 +3364,178 @@ public class NativeConfigInjector {
             "MinimapEnemyPriority=1", "TouchPollingRate=1000", "HitRegSyncRate=1000"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbAllHeroGodSuite]");
+    }
+
+    // ─── Season 42 / v4.6 / S8 — Java Wrapper Methods ──────────────────────────
+
+    /** Season 42: Masha tearing-wounds mechanic override. */
+    public static boolean injectMlbbSeason42MashaOverride(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbSeason42MashaOverride(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "MashaWoundDmg=10000", "MashaWoundDuration=0", "MashaHealMultiplier=0",
+            "MashaPhalanxTimer=0", "MashaStackDecayRate=0", "MashaTearingProc=instant"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbS42MashaOverride]");
+    }
+
+    /** Season 42: Lord/Turtle HP threshold + Retri steal sync for new Lord design. */
+    public static boolean injectMlbbSeason42LordStealUpdate(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbSeason42LordStealUpdate(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "LordHpThreshold=1", "TurtleHpThreshold=1", "RetriStealSyncRate=1000",
+            "ObjectiveHpFloor=1", "SmartRetriTiming=instant", "LordPhase2Override=1",
+            "InstantSmite=1", "AutoRetriLordTurtle=1", "RetributionInstantCast=1", "RetriReactionTimeMs=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbS42LordSteal]");
+    }
+
+    /** Season 42: 7-hero visual-refresh revamp boost (Bruno/Brody/Clint/Kadita/Badang/LuoYi/Paquito). */
+    public static boolean injectMlbbSeason42AllHeroRevampBoost(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbSeason42AllHeroRevampBoost(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "BrunoRotationSpeed=10", "BrunoSkillTrackAcceleration=10",
+            "KaditaUndertowDuration=0", "BadangWallLockInstant=1", "LuoYiReverseInstant=1",
+            "PaquitoHeavyHandedInstant=1", "BrodyStarMarkZeroDelay=1", "ClintMasteryZeroCD=1",
+            "EmoteSlotZeroDelay=1", "SkillAutoChain=1", "ZeroDelaySkillTap=1", "TouchPollingRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbS42RevampBoost]");
+    }
+
+    /** PUBGM v4.6: ACE32 screen-shake re-enable counter + AUG HFR recoil patch. */
+    public static boolean injectPubgmV46WeaponFix(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmV46WeaponFix(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.WeaponScreenShake=0", "r.ACE32ScreenShake=0", "r.AUGRecoilPatternScale=0",
+            "r.AUGRecoilCorrectionHFR=0", "r.HFRRecoilMultiplier=0",
+            "r.WeaponRecoilScale=0", "r.VerticalRecoilScale=0", "r.HorizontalRecoilScale=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmV46WeaponFix]");
+    }
+
+    /** PUBGM v4.6: Midnight Hunters map event — vampire zone visibility + fog zero. */
+    public static boolean injectPubgmV46MidnightHuntersMap(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmV46MidnightHuntersMap(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.AllowOcclusionQueries=1", "r.WallPenetrateEnabled=1",
+            "r.VampireZoneVisibilityBoost=1", "r.ThemeMapFogDensity=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmMidnightHunters]");
+    }
+
+    /** PUBGM v4.6: Inflatable Boat + all vehicle override (collision + damage zero). */
+    public static boolean injectPubgmV46VehicleOverride(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmV46VehicleOverride(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.VehicleCollisionPenalty=0", "r.BoatMovementSpeedCap=999",
+            "r.VehicleExplosionRadius=0", "r.VehicleDamageToPlayer=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmV46Vehicle]");
+    }
+
+    /** PUBGM S32: Season-reset full ranked sweep — all combat CVars in a single atomic pass. */
+    public static boolean injectPubgmS32RankedSweep(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmS32RankedSweep(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.WeaponRecoilScale=0", "r.VerticalRecoilScale=0", "r.HorizontalRecoilScale=0",
+            "r.WeaponSpread=0", "r.WeaponSway=0", "r.AimAssistEnabled=1",
+            "r.AimAssistStrength=100", "r.HeadBoneAimPriority=1", "r.EnemyLockMax=1",
+            "r.PUBGDamageLockMax=10000", "r.PUBGHitboxMultiplier=3.0",
+            "r.WeaponScreenShake=0", "r.ACE32ScreenShake=0", "r.AUGRecoilCorrectionHFR=0",
+            "r.VampireZoneVisibilityBoost=1", "r.ThemeMapFogDensity=0",
+            "r.VehicleCollisionPenalty=0", "r.BoatMovementSpeedCap=999",
+            "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmS32Sweep]");
+    }
+
+    /** CODM Season 8: Static-HV SMG + ISO Hemlock AR zero-recoil + aim-assist. */
+    public static boolean injectCodmSeason8NewWeapons(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmSeason8NewWeapons(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "StaticHvRecoilScale=0", "StaticHvSpreadScale=0", "StaticHvAimAssist=1",
+            "IsoHemlockRecoilScale=0", "IsoHemlockSpreadScale=0",
+            "IsoHemlockBulletSpread=0", "IsoHemlockHeadshotBonus=999"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmS8NewWeapons]");
+    }
+
+    /** CODM Season 8: Honkai collab roguelike mode — silent aim + head priority. */
+    public static boolean injectCodmSeason8RoguelikeMode(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmSeason8RoguelikeMode(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "RoguelikeAimAssist=1", "RoguelikeSilentAim=1", "RoguelikeHeadPriority=1",
+            "RoguelikeAimMagnetism=1000", "RoguelikeNoSpread=1", "RoguelikeAimSnap=10"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmS8Roguelike]");
+    }
+
+    /** CODM Season 8: Isolated map new POI terrain bypass + ESP clarity. */
+    public static boolean injectCodmSeason8IsolatedPoi(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmSeason8IsolatedPoi(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "WallCheckRadius=0", "OcclusionBypassEnabled=1",
+            "WallPenetrateRange=450", "PoiVisibilityOverride=1", "EspClarityBoost=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmS8IsolatedPoi]");
+    }
+
+    /** CODM Season 8: Full ranked sweep — BR + MP + Ranked all-mode atomic injection. */
+    public static boolean injectCodmS8FullRankedSweep(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmS8FullRankedSweep(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "RecoilScale=0", "VerticalRecoilScale=0", "WeaponSpread=0", "WeaponSway=0",
+            "AimAssistEnabled=1", "AimAssistStrength=100", "AimMagnetism=3",
+            "DamageLockMax=10000", "HitboxScale=3.0", "HeadshotMultiplier=999",
+            "StaticHvRecoilScale=0", "IsoHemlockRecoilScale=0", "IsoHemlockHeadshotBonus=999",
+            "RoguelikeAimAssist=1", "RoguelikeSilentAim=1", "RoguelikeAimMagnetism=1000",
+            "WallCheckRadius=0", "OcclusionBypassEnabled=1", "WallPenetrateRange=450",
+            "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmS8FullSweep]");
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

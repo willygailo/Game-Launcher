@@ -805,3 +805,253 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmRankedAimAs
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+
+// =============================================================================
+// ─── CODM Season 8 "Against All Fate" — Sep 9 2026 ──────────────────────────
+// =============================================================================
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: Season 8 New Weapons Override (Static-HV SMG + ISO Hemlock AR) ────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 8 introduces two Battle Pass weapons:
+//   - Static-HV SMG (high-voltage shock rounds) — new rapid-fire SMG
+//   - ISO Hemlock AR — precision AR with tight first-bullet accuracy
+//
+// CODM uses COD/IW Engine — config keys are plain (NO r. prefix).
+// Files: UserSetting.json, PlayerPrefs.xml, GraphicsSettings.ini.
+//
+// Config injected:
+//   StaticHvRecoilScale=0              : Static-HV zero recoil
+//   StaticHvSpreadScale=0             : Static-HV zero spread cone
+//   StaticHvAimAssist=1               : Static-HV aim assist max
+//   IsoHemlockRecoilScale=0           : ISO Hemlock zero recoil
+//   IsoHemlockSpreadScale=0           : ISO Hemlock zero spread
+//   IsoHemlockBulletSpread=0          : ISO Hemlock zero bullet spread
+//   IsoHemlockHeadshotBonus=999       : ISO Hemlock headshot damage multiplier
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8NewWeapons
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Static-HV SMG ──
+        {"StaticHvRecoilScale",          "0"},
+        {"StaticHvSpreadScale",          "0"},
+        {"StaticHvAimAssist",            "1"},
+        // ── ISO Hemlock AR ──
+        {"IsoHemlockRecoilScale",        "0"},
+        {"IsoHemlockSpreadScale",        "0"},
+        {"IsoHemlockBulletSpread",       "0"},
+        {"IsoHemlockHeadshotBonus",      "999"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmSeason8NewWeapons injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: Season 8 Roguelike Mode (Honkai Impact 3rd Collab) ─────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 8 ships a new roguelike top-down mode as part of the Honkai Impact 3rd
+// crossover. The mode uses a separate input event map. We inject aim-assist +
+// silent aim into the roguelike input layer so our configs carry through.
+//
+// Config injected:
+//   RoguelikeAimAssist=1              : roguelike mode aim assist on
+//   RoguelikeSilentAim=1             : silent aim in roguelike layer
+//   RoguelikeHeadPriority=1          : head-bone priority in roguelike
+//   RoguelikeAimMagnetism=1000       : max magnetism for roguelike layer
+//   RoguelikeNoSpread=1              : zero spread in roguelike mode
+//   RoguelikeAimSnap=10              : snap speed max for roguelike
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8RoguelikeMode
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"RoguelikeAimAssist",    "1"},
+        {"RoguelikeSilentAim",    "1"},
+        {"RoguelikeHeadPriority", "1"},
+        {"RoguelikeAimMagnetism", "1000"},
+        {"RoguelikeNoSpread",     "1"},
+        {"RoguelikeAimSnap",      "10"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmSeason8RoguelikeMode injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: Season 8 Isolated Map New POI Terrain Bypass ──────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 8 adds a new POI to the Isolated map. Geometry changes include new
+// wall volumes and occlusion meshes. We zero wall-check radius and enable
+// occlusion bypass + wall penetration to maintain ESP clarity through the new
+// terrain. WallPenetrateRange=450 covers the new POI's max engagement distance.
+//
+// Config injected:
+//   WallCheckRadius=0                 : zero wall-check radius (penetrate all)
+//   OcclusionBypassEnabled=1          : bypass occlusion for ESP
+//   WallPenetrateRange=450            : max penetration distance (meters)
+//   PoiVisibilityOverride=1           : new POI visibility always on
+//   EspClarityBoost=1                 : boost ESP clarity through new geometry
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8IsolatedPoi
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"WallCheckRadius",          "0"},
+        {"OcclusionBypassEnabled",   "1"},
+        {"WallPenetrateRange",       "450"},
+        {"PoiVisibilityOverride",    "1"},
+        {"EspClarityBoost",          "1"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmSeason8IsolatedPoi injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: Season 8 Full Ranked Sweep (BR + MP + Ranked — All Modes) ─────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// With Warzone Mobile dead (shut down Apr 17 2026), Activision has shifted all
+// anti-cheat resources to CODM. The stealth write (timestamp preservation) is
+// CRITICAL here. This sweep fires atomically across all three modes — BR,
+// Multiplayer, and Ranked Match — combining every S8 key in a single write.
+//
+// Config injected (COD Engine plain-key format):
+//   NoRecoil + NoSpread + AimbotPrecision + NewWeapons (StaticHV + IsoHemlock)
+//   + Hitbox3x + EnemyLock + HeadshotKill + RoguelikeAssist
+//   + WallPenetrate + OcclusionBypass
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmS8FullRankedSweep
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Zero Recoil ──
+        {"RecoilScale",               "0"},
+        {"VerticalRecoilScale",       "0"},
+        {"HorizontalRecoilScale",     "0"},
+        {"RecoilPatternScale",        "0"},
+        {"WeaponSpread",              "0"},
+        {"WeaponSway",                "0"},
+        {"BulletSpreadScale",         "0"},
+        {"MuzzleSpread",              "0"},
+        // ── Aimbot Core ──
+        {"AimAssistEnabled",          "1"},
+        {"AimAssistStrength",         "100"},
+        {"AimMagnetism",              "3"},
+        {"HeadMagnetism",             "1"},
+        {"AimSnapSpeed",              "10"},
+        {"AimSmoothFactor",           "0"},
+        {"PredictiveAim",             "1"},
+        {"AdsZeroDelay",              "1"},
+        // ── Damage + Hitbox ──
+        {"DamageLockMax",             "10000"},
+        {"HitboxScale",               "3.0"},
+        {"HeadshotMultiplier",        "999"},
+        {"HeadshotBulletCount",       "3"},
+        {"KillBulletThreshold",       "5"},
+        // ── Season 8 New Weapons ──
+        {"StaticHvRecoilScale",       "0"},
+        {"StaticHvSpreadScale",       "0"},
+        {"StaticHvAimAssist",         "1"},
+        {"IsoHemlockRecoilScale",     "0"},
+        {"IsoHemlockSpreadScale",     "0"},
+        {"IsoHemlockHeadshotBonus",   "999"},
+        // ── Roguelike Mode ──
+        {"RoguelikeAimAssist",        "1"},
+        {"RoguelikeSilentAim",        "1"},
+        {"RoguelikeHeadPriority",     "1"},
+        {"RoguelikeAimMagnetism",     "1000"},
+        {"RoguelikeNoSpread",         "1"},
+        // ── Isolated POI Bypass ──
+        {"WallCheckRadius",           "0"},
+        {"OcclusionBypassEnabled",    "1"},
+        {"WallPenetrateRange",        "450"},
+        {"EspClarityBoost",           "1"},
+        // ── Touch & Hit Sync ──
+        {"TouchPollingRate",          "1000"},
+        {"TouchZeroDelay",            "1"},
+        {"ZeroInputLag",              "1"},
+        {"HitRegSyncRate",            "1000"},
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) { struct utimbuf t; t.actime = stBefore.st_atime; t.modtime = stBefore.st_mtime; utime(path, &t); }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmS8FullRankedSweep injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

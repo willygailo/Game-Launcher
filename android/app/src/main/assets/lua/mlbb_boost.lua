@@ -219,4 +219,42 @@ profile.ranked_combat_suite = true
 profile.classic_combat_suite = true
 profile.map_reinjection = true
 
+-- ── 🌟 Season 42 "Starward Decade" — Sep 16 2026 ──────────────────────────
+profile.season                    = 42
+profile.season_name               = "Starward Decade"
+profile.season_start              = "2026-09-16"
+
+-- Masha rework: tearing_wounds passive override
+profile.masha_wound_dmg           = 10000   -- wound proc damage max
+profile.masha_wound_duration      = 0       -- DoT cleared instantly
+profile.masha_heal_multiplier     = 0       -- heal proc zeroed
+profile.masha_phalanx_timer       = 0       -- instant phalanx swap
+profile.masha_stack_decay_rate    = 0       -- wound stacks never decay
+profile.masha_tearing_proc        = "instant"
+
+-- Sanctum Island Lord: redesigned Phase 2 + new HP threshold
+profile.lord_hp_threshold         = 1       -- steal triggers at 1 HP
+profile.turtle_hp_threshold       = 1
+profile.lord_phase2_override      = 1       -- new Phase 2 logic bypass
+profile.retri_steal_sync_rate     = 1000   -- steal packet rate 1000 Hz
+profile.object_hp_floor           = 1
+profile.smart_retri_timing        = "instant"
+
+-- 7 Hero visual-refresh revamp boost (Bruno / Brody / Clint / Kadita / Badang / LuoYi / Paquito)
+profile.bruno_rotation_speed          = 10   -- control responsiveness buff
+profile.bruno_skill_track_accel       = 10
+profile.kadita_undertow_duration      = 0    -- zero Undertow CC window
+profile.badang_wall_lock_instant      = 1
+profile.luoyi_reverse_instant         = 1
+profile.paquito_heavy_handed_instant  = 1
+profile.brody_star_mark_zero_delay    = 1
+profile.clint_mastery_zero_cd         = 1
+profile.emote_slot_zero_delay         = 1    -- 6-slot emote wheel fix
+
+-- Season 42 ranked combat suite
+profile.season42_master_suite     = true
+profile.season42_masha_override   = true
+profile.season42_lord_steal       = true
+profile.season42_revamp_boost     = true
+
 return profile

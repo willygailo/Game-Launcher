@@ -2413,3 +2413,157 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroGodS
 }
 
 
+// =============================================================================
+// ─── MLBB Season 42 "Starward Decade" — Sep 16 2026 ─────────────────────────
+// =============================================================================
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Season 42 Masha Rework Override ───────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 42 introduces the "tearing_wounds" passive for Masha — a stack-based
+// DoT mechanic that stacks wound charges and decays over time. We zero all of
+// her incoming wound-stack-related decay keys so the mechanic cannot hurt us,
+// and pin wound damage to 10000 so Masha's output is locked at max DPS.
+//
+// Config injected (PlayerPrefs XML):
+//   MashaWoundDmg=10000          : wound stack damage output max
+//   MashaWoundDuration=0         : zero wound DoT duration (clears instantly)
+//   MashaHealMultiplier=0        : zero her heal-on-wound proc (our HP unaffected)
+//   MashaPhalanxTimer=0          : instant Phalanx stance swap timing
+//   MashaStackDecayRate=0        : wound stacks never decay — held at max
+//   MashaTearingProc=instant     : tearing proc fires instantly, no ramp-up window
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42MashaOverride
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Masha Season 42 Tearing Wounds Override ──
+        {"MashaWoundDmg",         "10000"},
+        {"MashaWoundDuration",    "0"},
+        {"MashaHealMultiplier",   "0"},
+        {"MashaPhalanxTimer",     "0"},
+        {"MashaStackDecayRate",   "0"},
+        {"MashaTearingProc",      "instant"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbSeason42MashaOverride");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Season 42 Lord Steal HP Threshold Update ──────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 42 redesigns the Lord (new Phase 2 + visual rework) and the Turtle,
+// changing the HP floor at which Retribution steal triggers. We force both
+// thresholds to 1 HP — guaranteed steal on every Retri cast — and sync the
+// steal rate to 1000 Hz to prevent any frame-drop miss window.
+//
+// Config injected (PlayerPrefs XML):
+//   LordHpThreshold=1            : steal triggers at 1 HP (always)
+//   TurtleHpThreshold=1          : Turtle steal at 1 HP
+//   RetriStealSyncRate=1000      : steal packet rate 1000 Hz
+//   ObjectiveHpFloor=1           : generic objective HP floor
+//   SmartRetriTiming=instant     : no cast-delay on Retribution
+//   LordPhase2Override=1         : override new Phase 2 threshold logic
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42LordStealUpdate
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Season 42 Lord/Turtle Thresholds ──
+        {"LordHpThreshold",        "1"},
+        {"TurtleHpThreshold",      "1"},
+        {"RetriStealSyncRate",     "1000"},
+        {"ObjectiveHpFloor",       "1"},
+        {"SmartRetriTiming",       "instant"},
+        {"LordPhase2Override",     "1"},
+        // ── Carry-over retri keys for compatibility ──
+        {"InstantSmite",           "1"},
+        {"AutoRetriLordTurtle",    "1"},
+        {"RetributionInstantCast", "1"},
+        {"RetriReactionTimeMs",    "0"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbSeason42LordStealUpdate");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: Season 42 All-Hero Visual-Refresh Revamp Boost ────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Season 42 ships visual refreshes for 7 heroes — Bruno, Brody, Clint, Kadita,
+// Badang, Luo Yi, Paquito. Moonton tied new skill-timing config keys to these
+// visual refreshes. We override each to maximum/zero-delay values. Bruno in
+// particular got a "control responsiveness" buff that introduced new rotation
+// speed keys — we pin those to 10 (max). Also patches the 6-slot Emote Wheel
+// zero-delay flag to prevent input bleed into skill slots.
+//
+// Config injected (PlayerPrefs XML):
+//   BrunoRotationSpeed=10              : max rotation (1-10 scale)
+//   BrunoSkillTrackAcceleration=10     : skill 1 tracking acceleration max
+//   KaditaUndertowDuration=0           : zero Undertow crowd-control window
+//   BadangWallLockInstant=1            : Badang Qigong Fist wall-lock instant
+//   LuoYiReverseInstant=1              : Luo Yi reversal chain fires instantly
+//   PaquitoHeavyHandedInstant=1        : Paquito combo window zero delay
+//   BrodyStarMarkZeroDelay=1           : Brody star-mark proc zero delay
+//   ClintMasteryZeroCD=1               : Clint passive mastery zero CD
+//   EmoteSlotZeroDelay=1               : 6-slot emote wheel no input bleed
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42AllHeroRevampBoost
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Bruno — Control Responsiveness Update ──
+        {"BrunoRotationSpeed",          "10"},
+        {"BrunoSkillTrackAcceleration", "10"},
+        // ── Kadita — Undertow skill rework ──
+        {"KaditaUndertowDuration",      "0"},
+        // ── Badang — Qigong Fist wall-lock ──
+        {"BadangWallLockInstant",       "1"},
+        // ── Luo Yi — Reversal chain ──
+        {"LuoYiReverseInstant",         "1"},
+        // ── Paquito — Heavy Handed combo window ──
+        {"PaquitoHeavyHandedInstant",   "1"},
+        // ── Brody — Star mark proc ──
+        {"BrodyStarMarkZeroDelay",      "1"},
+        // ── Clint — Passive mastery ──
+        {"ClintMasteryZeroCD",          "1"},
+        // ── 6-Slot Emote Wheel ──
+        {"EmoteSlotZeroDelay",          "1"},
+        // ── Global Revamp Timing Baseline ──
+        {"SkillAutoChain",              "1"},
+        {"ZeroDelaySkillTap",           "1"},
+        {"TouchPollingRate",            "1000"},
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbSeason42AllHeroRevampBoost");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

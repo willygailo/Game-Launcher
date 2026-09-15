@@ -56,21 +56,25 @@ public class MlbbConfigPatcher {
 
     /**
      * Fast Retribution Instant Smite & Objective Steal (Lord / Turtle) — 2026 Edition.
+     * Season 42 update: LordHpThreshold=1, LordPhase2Override=1 for new Lord design.
      */
     public static void applyFastRetributionObjectiveSteal(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbFastRetributionObjectiveSteal(path);
+            NativeConfigInjector.injectMlbbSeason42LordStealUpdate(path);
         }
     }
 
     /**
      * Universal All Hero God Suite & Micro Hero Overdrives — 2026 Edition.
+     * Season 42 update: includes revamp hero boost (Bruno/Brody/Clint/Kadita/Badang/LuoYi/Paquito).
      */
     public static void applyAllHeroGodSuite2026(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbAllHeroGodSuite2026(path);
+            NativeConfigInjector.injectMlbbSeason42AllHeroRevampBoost(path);
         }
     }
 
@@ -108,6 +112,7 @@ public class MlbbConfigPatcher {
 
     /**
      * Executes single-pass atomic batch injection for MLBB Master Combo Suite + Drone View + Auto-Retri + 10000 Damage.
+     * Season 42 update: includes Masha rework override, Lord steal update, and 7-hero revamp boost.
      */
     public static void applyMlbbMasterSuite(String packageName) {
         if (packageName == null) return;
@@ -117,6 +122,9 @@ public class MlbbConfigPatcher {
         applyFastFarmingAllHero(packageName);
         applyFastRetributionObjectiveSteal(packageName);
         applyAllHeroGodSuite2026(packageName);
+        // Season 42 new hero-specific overrides
+        applyMashaSeason42Override(packageName);
+        applySeason42RevampHeroBoost(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
         applyAutoHeadshotBulletKill(packageName);
@@ -1185,6 +1193,57 @@ public class MlbbConfigPatcher {
         return written > 0;
     }
 
+    // ==========================================================================
+    // ─── MLBB Season 42 "Starward Decade" — Sep 16 2026 ─────────────────────
+    // ==========================================================================
+
+    /**
+     * Season 42 Masha Rework Override.
+     * Neutralizes tearing_wounds passive: wounds deal 10000, heal=0, stack decay=0.
+     */
+    public static void applyMashaSeason42Override(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbSeason42MashaOverride(path);
+        }
+        Log.i(TAG, "MLBB S42 Masha tearing-wounds override applied for " + packageName);
+    }
+
+    /**
+     * Season 42 Lord/Turtle HP Threshold Update.
+     * Forces LordHpThreshold=1, LordPhase2Override=1, RetriStealSyncRate=1000
+     * for Sanctum Island redesigned Lord + new retri steal window.
+     */
+    public static void applyLordStealSeason42Update(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbSeason42LordStealUpdate(path);
+        }
+        Log.i(TAG, "MLBB S42 Lord steal threshold update applied for " + packageName);
+    }
+
+    /**
+     * Season 42 All-Hero Visual-Refresh Revamp Boost.
+     * Injects new skill-timing keys for 7 refreshed heroes:
+     * Bruno/Brody/Clint/Kadita/Badang/LuoYi/Paquito + 6-slot Emote Wheel fix.
+     */
+    public static void applySeason42RevampHeroBoost(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbSeason42AllHeroRevampBoost(path);
+        }
+        Log.i(TAG, "MLBB S42 7-hero revamp boost applied for " + packageName);
+    }
+
+    /**
+     * Classic Combat Full Suite — 2026.2 Edition.
+     * Identical payload to Ranked — separate label for clarity and per-mode toggle support.
+     */
+    public static boolean applyClassicCombatFullSuite(String packageName) {
+        Log.i(TAG, "MLBB ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
+        return applyRankedCombatFullSuite(packageName);
+    }
+
     /**
      * Ranked Combat Full Suite — 2026.2 Edition.
      * Master 24-layer payload: AdaptiveAim + AdaptiveNoRecoil + Damage10000 + FastCD +
@@ -1202,15 +1261,6 @@ public class MlbbConfigPatcher {
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         Log.i(TAG, "MLBB RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
         return written > 0;
-    }
-
-    /**
-     * Classic Combat Full Suite — 2026.2 Edition.
-     * Identical payload to Ranked — separate label for clarity and per-mode toggle support.
-     */
-    public static boolean applyClassicCombatFullSuite(String packageName) {
-        Log.i(TAG, "MLBB ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
-        return applyRankedCombatFullSuite(packageName);
     }
 }
 

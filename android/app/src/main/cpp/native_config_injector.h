@@ -1524,6 +1524,130 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectValorantLowLatencyHeadshot
   (JNIEnv *, jclass, jstring);
 
+// =============================================================================
+// ─── MLBB Season 42 "Starward Decade" — Sep 16 2026 ─────────────────────────
+// =============================================================================
+
+/*
+ * nativeInjectMlbbSeason42MashaOverride
+ * Season 42 Masha rework: tearing-wounds mechanic neutralized.
+ * Keys: MashaWoundDmg=10000, MashaWoundDuration=0, MashaHealMultiplier=0,
+ *       MashaPhalanxTimer=0, MashaStackDecayRate=0, MashaTearingProc=instant
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42MashaOverride
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbSeason42LordStealUpdate
+ * Season 42 Lord/Turtle HP threshold + Retribution steal sync for new Lord design.
+ * Keys: LordHpThreshold=1, TurtleHpThreshold=1, RetriStealSyncRate=1000,
+ *       ObjectiveHpFloor=1, SmartRetriTiming=instant, LordPhase2Override=1
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42LordStealUpdate
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbSeason42AllHeroRevampBoost
+ * Season 42 visual-refresh hero suite (Bruno/Brody/Clint/Kadita/Badang/LuoYi/Paquito).
+ * Keys: BrunoRotationSpeed=10, BrunoSkillTrackAcceleration=10,
+ *       KaditaUndertowDuration=0, BadangWallLockInstant=1, LuoYiReverseInstant=1,
+ *       EmoteSlotZeroDelay=1
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbSeason42AllHeroRevampBoost
+  (JNIEnv *, jclass, jstring);
+
+// =============================================================================
+// ─── PUBGM v4.6 "Midnight Hunters" — Sep 9 2026 ─────────────────────────────
+// =============================================================================
+
+/*
+ * nativeInjectPubgmV46WeaponFix
+ * v4.6 patch counter: universal screen-shake zero + AUG HFR recoil override.
+ * Keys: r.WeaponScreenShake=0, r.ACE32ScreenShake=0, r.AUGRecoilPatternScale=0,
+ *       r.AUGRecoilCorrectionHFR=0, r.HFRRecoilMultiplier=0
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46WeaponFix
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmV46MidnightHuntersMap
+ * Midnight Hunters event: vampire-zone wall occlusion + terrain fog override.
+ * Keys: r.AllowOcclusionQueries=1, r.WallPenetrateEnabled=1,
+ *       r.VampireZoneVisibilityBoost=1, r.ThemeMapFogDensity=0
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46MidnightHuntersMap
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmV46VehicleOverride
+ * Inflatable Boat + all vehicle collision/damage override for v4.6.
+ * Keys: r.VehicleCollisionPenalty=0, r.BoatMovementSpeedCap=999,
+ *       r.VehicleExplosionRadius=0, r.VehicleDamageToPlayer=0
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmV46VehicleOverride
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmS32RankedSweep
+ * S32 season-start full sweep: re-injects ALL combat CVars atomically.
+ * Combines MagicBullet + EnemyLockAllScope + ZeroRecoil + Hitbox3x + DamageLockMax.
+ * Designed for season-reset timing when anti-cheat baseline is freshly initialized.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmS32RankedSweep
+  (JNIEnv *, jclass, jstring);
+
+// =============================================================================
+// ─── CODM Season 8 "Against All Fate" — Sep 9 2026 ──────────────────────────
+// =============================================================================
+
+/*
+ * nativeInjectCodmSeason8NewWeapons
+ * Season 8 new weapons: Static-HV SMG + ISO Hemlock AR zero-recoil + aim-assist injection.
+ * Keys: StaticHvRecoilScale=0, StaticHvSpreadScale=0, StaticHvAimAssist=1,
+ *       IsoHemlockRecoilScale=0, IsoHemlockSpreadScale=0,
+ *       IsoHemlockBulletSpread=0, IsoHemlockHeadshotBonus=999
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8NewWeapons
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmSeason8RoguelikeMode
+ * Honkai Impact 3rd collab roguelike mode: silent aim + headshot priority injection.
+ * Keys: RoguelikeAimAssist=1, RoguelikeSilentAim=1, RoguelikeHeadPriority=1,
+ *       RoguelikeAimMagnetism=1000, RoguelikeNoSpread=1, RoguelikeAimSnap=10
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8RoguelikeMode
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmSeason8IsolatedPoi
+ * New Isolated map POI terrain bypass + ESP clarity boost for S8 geometry.
+ * Keys: WallCheckRadius=0, OcclusionBypassEnabled=1, WallPenetrateRange=450,
+ *       PoiVisibilityOverride=1, EspClarityBoost=1
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSeason8IsolatedPoi
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmS8FullRankedSweep
+ * Season 8 full ranked sweep: all-mode (BR + MP + Ranked) atomic injection.
+ * Combines NoRecoil + NoSpread + AimbotPrecision + NewWeapons + Hitbox3x
+ *         + EnemyLock + HeadshotKill + RoguelikeAssist in single atomic write pass.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmS8FullRankedSweep
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

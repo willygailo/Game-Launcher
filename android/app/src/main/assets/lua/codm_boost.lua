@@ -169,4 +169,44 @@ profile.ranked_combat_suite = true
 profile.classic_combat_suite = true
 profile.map_reinjection = true
 
+-- ── ⚔️ Season 8 "Against All Fate" — Sep 9 2026 ────────────────────────
+profile.season                    = 8
+profile.season_name               = "Against All Fate"
+profile.season_start              = "2026-09-09"
+
+-- Season 8 New Battle Pass Weapons
+-- Static-HV SMG (high-voltage shock rounds)
+profile.static_hv_recoil_scale    = 0     -- zero recoil
+profile.static_hv_spread_scale    = 0     -- zero spread cone
+profile.static_hv_aim_assist      = 1     -- aim assist max
+-- ISO Hemlock AR (precision first-bullet accuracy)
+profile.iso_hemlock_recoil_scale  = 0
+profile.iso_hemlock_spread_scale  = 0
+profile.iso_hemlock_bullet_spread = 0
+profile.iso_hemlock_headshot_bonus = 999  -- guaranteed headshot burst kill
+
+-- Season 8 Roguelike Mode (Honkai Impact 3rd Collab)
+profile.roguelike_mode            = true
+profile.roguelike_aim_assist      = 1
+profile.roguelike_silent_aim      = 1
+profile.roguelike_head_priority   = 1
+profile.roguelike_aim_magnetism   = 1000
+profile.roguelike_no_spread       = 1
+profile.roguelike_aim_snap        = 10
+
+-- Season 8 Isolated Map New POI Terrain Bypass
+profile.wall_check_radius         = 0    -- zero wall-check radius
+profile.occlusion_bypass_enabled  = 1    -- bypass new POI occlusion meshes
+profile.wall_penetrate_range      = 450  -- covers max new POI range
+profile.poi_visibility_override   = 1
+profile.esp_clarity_boost         = 1
+
+-- Season 8 full sweep flags (BR + MP + Ranked)
+profile.s8_full_ranked_sweep      = true
+profile.s8_new_weapons_override   = true
+profile.s8_roguelike_mode         = true
+profile.s8_isolated_poi_bypass    = true
+-- stealth_write is CRITICAL for CODM anti-cheat (Warzone Mobile dead, AC focus 100% CODM)
+profile.stealth_write             = true
+
 return profile

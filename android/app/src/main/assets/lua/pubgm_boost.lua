@@ -199,4 +199,35 @@ profile.ranked_combat_suite = true
 profile.classic_combat_suite = true
 profile.map_reinjection = true
 
+-- ── 🌙 v4.6 "Midnight Hunters" & S32 — Sep 9 2026 ────────────────────────
+profile.version                   = "4.6"
+profile.version_name              = "Midnight Hunters"
+profile.season32_start            = "2026-09-01"
+profile.pak_filename              = "game_patch_4.6.0.21556.pak"
+
+-- v4.6 Weapon Fix: ACE32 screen-shake + AUG HFR recoil counter
+profile.r_weapon_screen_shake     = 0    -- kill all per-weapon shake
+profile.r_ace32_screen_shake      = 0    -- explicit ACE32 override
+profile.r_aug_recoil_pattern_scale = 0   -- AUG zero recoil pattern
+profile.r_aug_recoil_correction_hfr = 0  -- AUG HFR correction zero
+profile.r_hfr_recoil_multiplier   = 0    -- universal HFR recoil zero
+
+-- v4.6 Midnight Hunters Map Event (Erangel: Rozhok / Mylta / Quarry / Gatka)
+profile.r_allow_occlusion_queries    = 1    -- GPU occlusion precision on
+profile.r_wall_penetrate_enabled     = 1    -- wall penetration on
+profile.r_vampire_zone_visibility    = 1    -- vampire-zone visibility boost
+profile.r_theme_map_fog_density      = 0    -- zero themed fog
+
+-- v4.6 Inflatable Boat + All Vehicle Override
+profile.r_vehicle_collision_penalty  = 0    -- zero collision damage
+profile.r_boat_movement_speed_cap    = 999  -- uncapped boat speed
+profile.r_vehicle_explosion_radius   = 0
+profile.r_vehicle_damage_to_player   = 0
+
+-- S32 season-reset ranked sweep flags
+profile.s32_ranked_sweep          = true
+profile.v46_weapon_fix            = true
+profile.midnight_hunters_map      = true
+profile.v46_vehicle_override      = true
+
 return profile

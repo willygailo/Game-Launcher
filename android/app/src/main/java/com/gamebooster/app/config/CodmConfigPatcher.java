@@ -104,6 +104,10 @@ public class CodmConfigPatcher {
         applyFastAttackSpeed(packageName);
         applyFastReloadQuickSwap(packageName);
         applyCodmInstantReloadChambering(packageName);
+        // Season 8 new content patches
+        applySeason8NewWeaponsOverride(packageName);
+        applyRoguelikeModeAimAssist(packageName);
+        applyS8FullRankedSweep(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
         applyAutoHeadshotBulletKill(packageName);
@@ -1239,9 +1243,54 @@ public class CodmConfigPatcher {
         for (String path : paths) {
             if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
         }
+        try { applySeason8NewWeaponsOverride(packageName); } catch (Throwable ignored) {}
+        try { applyRoguelikeModeAimAssist(packageName); } catch (Throwable ignored) {}
+        try { applyS8FullRankedSweep(packageName); } catch (Throwable ignored) {}
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         Log.i(TAG, "CODM RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
         return written > 0;
+    }
+
+    // ==========================================================================
+    // ─── CODM Season 8 "Against All Fate" — Sep 9 2026 ───────────────────────
+    // ==========================================================================
+
+    /**
+     * Season 8 New Weapon Recoil Zero.
+     * Static-HV SMG + ISO Hemlock AR: zero recoil/spread, aim-assist=1.
+     * IsoHemlockHeadshotBonus=999 for guaranteed headshot burst kill.
+     */
+    public static void applySeason8NewWeaponsOverride(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmSeason8NewWeapons(path);
+        }
+        Log.i(TAG, "CODM S8 Static-HV + ISO Hemlock override applied for " + packageName);
+    }
+
+    /**
+     * Roguelike Mode Aim Assist (Honkai Impact 3rd Collab).
+     * Injects silent aim + head priority into the new top-down roguelike input layer.
+     */
+    public static void applyRoguelikeModeAimAssist(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmSeason8RoguelikeMode(path);
+        }
+        Log.i(TAG, "CODM S8 Roguelike mode aim assist applied for " + packageName);
+    }
+
+    /**
+     * S8 Full Ranked Sweep — BR + MP + Ranked, all-mode atomic injection.
+     * Critical: uses stealth write (timestamp preservation). Warzone Mobile dead —
+     * Activision anti-cheat focus now 100% on CODM.
+     */
+    public static void applyS8FullRankedSweep(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmS8FullRankedSweep(path);
+        }
+        Log.i(TAG, "CODM S8 full ranked sweep (BR+MP+Ranked) applied for " + packageName);
     }
 
     /**
