@@ -189,6 +189,9 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         super.onResume();
         com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().addConnectionListener(connListener);
         ShizukuManager.addStateListener(this);
+        if (getContext() != null) {
+            com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
+        }
 
         try {
             if (getContext() != null) {
@@ -248,6 +251,9 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             if (videoHomeBg != null) videoHomeBg.pause();
             if (videoHeroBanner != null) videoHeroBanner.pause();
         } else {
+            if (getContext() != null) {
+                com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
+            }
             applyVideoBackgroundState();
             loadAndScanGames(true);
         }

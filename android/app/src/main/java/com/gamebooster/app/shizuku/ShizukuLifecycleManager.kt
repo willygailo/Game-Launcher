@@ -52,9 +52,10 @@ class ShizukuLifecycleManager private constructor(context: Context) :
     }
 
     /**
-     * Call in Activity.onResume() to re-verify status automatically after returning to the APK.
+     * Call in Activity.onResume() or Fragment onHiddenChanged to re-verify status automatically
+     * after returning to the APK from games or background state.
      * Proactively forces an immediate binder re-check, re-binds the AIDL UserService,
-     * and performs a dual-pass evaluation to catch delayed binder recovery post-gaming.
+     * and performs a triple-pulse evaluation to catch delayed binder recovery post-gaming.
      */
     fun onResumeCheck() {
         // 1. Proactively force a connection check and reset backoff counters
@@ -67,10 +68,23 @@ class ShizukuLifecycleManager private constructor(context: Context) :
             }
         } catch (ignored: Throwable) {}
 
-        // 3. First pass refresh
+        // Pass 1: Instant evaluation (0ms)
         refreshStatus()
 
-        // 4. Follow-up pass after 350ms to allow binder IPC to settle post-heavy gaming
+        // Pass 2: Quick recovery pass (250ms) as IPC stabilizes
+        AppExecutors.getInstance().postDelayed({
+            try {
+                if (Shizuku.pingBinder()) {
+                    if (!ShizukuUserServiceConnector.getInstance().isServiceConnected) {
+                        ShizukuUserServiceConnector.getInstance().bindService()
+                    }
+                    ShizukuConnectionManager.getInstance().whitelistServicesFromDoze()
+                }
+            } catch (ignored: Throwable) {}
+            refreshStatus()
+        }, 250)
+
+        // Pass 3: Deep recovery pass (750ms) for high-load games that heavily froze background daemons
         AppExecutors.getInstance().postDelayed({
             try {
                 if (Shizuku.pingBinder()) {
@@ -80,7 +94,7 @@ class ShizukuLifecycleManager private constructor(context: Context) :
                 }
             } catch (ignored: Throwable) {}
             refreshStatus()
-        }, 350)
+        }, 750)
     }
 
     /**

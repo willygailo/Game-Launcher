@@ -78,8 +78,11 @@ public final class GameManagerSessionEngine {
         GameSessionSettings.begin(appContext, pkg);
         GameManagerStatus.getInstance().setActiveSession(pkg);
 
-        // ── 2. Grant full combo storage access ───────────────────────────────
+        // ── 2. Grant full combo storage access & Whitelist Shizuku from Doze ───
         GameConfigStorageAccessEngine.grantAllPathsAccess(appContext, pkg);
+        try {
+            com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().whitelistServicesFromDoze();
+        } catch (Throwable ignored) {}
 
         // ── 3. Acquire Sustained Performance Lock & Low-Latency WiFi Lock ────
         try {

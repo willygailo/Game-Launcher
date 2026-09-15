@@ -204,6 +204,12 @@ public class AutoGameMonitorService extends Service {
                     com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
                 }
 
+                // Proactively resurrect Shizuku binder and sync status immediately after game exit
+                try {
+                    com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+                    com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
+                } catch (Throwable ignored) {}
+
                 final com.gamebooster.app.overlay.GameSessionReport report =
                         com.gamebooster.app.overlay.GameSessionRecorder.getInstance().endSession(getApplicationContext());
 

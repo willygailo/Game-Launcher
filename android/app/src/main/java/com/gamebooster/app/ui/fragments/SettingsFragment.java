@@ -1549,7 +1549,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     public void onResume() {
         super.onResume();
         if (videoSettingsBg != null) videoSettingsBg.play();
-        com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+        if (getContext() != null) {
+            com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
+        } else {
+            com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+        }
         refreshAllStatuses();
     }
 
@@ -1566,6 +1570,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             if (videoSettingsBg != null) videoSettingsBg.pause();
         } else {
             if (videoSettingsBg != null) videoSettingsBg.play();
+            if (getContext() != null) {
+                com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
+            } else {
+                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+            }
             refreshAllStatuses();
             renderDiagnostics();
         }

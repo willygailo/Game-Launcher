@@ -292,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
         checkAndShowPostGameReport(intent);
     }
 

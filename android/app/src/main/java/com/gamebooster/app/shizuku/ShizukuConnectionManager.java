@@ -99,6 +99,7 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                whitelistServicesFromDoze();
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
@@ -131,6 +132,7 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                whitelistServicesFromDoze();
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
@@ -261,7 +263,7 @@ public class ShizukuConnectionManager {
 
     /**
      * Proactively forces an immediate check of the Shizuku binder state.
-     * Called on network changes (Wi-Fi disconnect / mobile data switch) or app resume.
+     * Called on network changes, game exits, or app resume.
      */
     public void forceReconnectCheck() {
         if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
@@ -275,11 +277,34 @@ public class ShizukuConnectionManager {
                 if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                     ShizukuUserServiceConnector.getInstance().bindService();
                 }
+                whitelistServicesFromDoze();
                 ShizukuManager.triggerThrottledPostConnectionSync();
                 return;
             }
         } catch (Throwable ignored) {}
         scheduleReconnect();
+    }
+
+    /**
+     * Privileged background protection:
+     * Exempts both Shizuku daemon and Game Booster from Android Doze and LMKD killing during games.
+     */
+    public void whitelistServicesFromDoze() {
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                if (isReady()) {
+                    // Doze whitelist
+                    ShizukuExecutor.executeShizukuCommand("dumpsys deviceidle whitelist +moe.shizuku.privileged.api");
+                    ShizukuExecutor.executeShizukuCommand("dumpsys deviceidle whitelist +com.gamebooster.app");
+                    // AppOps background execution permission
+                    ShizukuExecutor.executeShizukuCommand("cmd appops set moe.shizuku.privileged.api RUN_IN_BACKGROUND allow");
+                    ShizukuExecutor.executeShizukuCommand("cmd appops set com.gamebooster.app RUN_IN_BACKGROUND allow");
+                    Log.i(TAG, "Shizuku & GameLauncher whitelisted against Doze/LMKD sleep");
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to apply Doze whitelist", t);
+            }
+        });
     }
 
     /** Background reconnection loop: persistent keepalive, exponential backoff into steady heartbeat. */
@@ -309,12 +334,13 @@ public class ShizukuConnectionManager {
                         if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                             ShizukuUserServiceConnector.getInstance().bindService();
                         }
+                        whitelistServicesFromDoze();
                         ShizukuManager.triggerThrottledPostConnectionSync();
                         return;
                     }
 
                     int attempt = currentAttempt.getAndIncrement();
-                    if (attempt == 0 || attempt % 15 == 0) {
+                    if (attempt == 0 || attempt % 10 == 0) {
                         Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku daemon checking (alive=" + alive + ", granted=" + granted + ")");
                     }
 
@@ -325,6 +351,9 @@ public class ShizukuConnectionManager {
                     } else {
                         if (state != State.DEAD) setState(State.DEAD);
                     }
+
+                    // Keepalive heartbeat: when attempt reaches maximum backoff, continue polling every 4s
+                    // instead of terminating, ensuring background recovery after long gaming.
                     sleepQuietly(backoffMs(attempt));
                 }
             } catch (Throwable t) {
@@ -337,8 +366,9 @@ public class ShizukuConnectionManager {
 
     private static long backoffMs(int attempt) {
         if (attempt <= 0) return BASE_BACKOFF_MS;
+        if (attempt >= 10) return 4000; // Steady heartbeat after 10 retries
         long delay = BASE_BACKOFF_MS;
-        for (int i = 1; i < Math.min(attempt, 5); i++) {
+        for (int i = 1; i < Math.min(attempt, 4); i++) {
             delay *= 2;
         }
         return Math.min(delay, MAX_BACKOFF_MS);
