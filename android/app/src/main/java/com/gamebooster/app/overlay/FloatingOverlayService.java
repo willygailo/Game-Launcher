@@ -62,6 +62,11 @@ public class FloatingOverlayService extends Service {
     public static final String KEY_HUD_Y = "hud_last_pos_y";
     public static final String KEY_HUD_MODE = "hud_viewport_mode";
 
+    public static final String ACTION_TOGGLE_HUD = "com.gamebooster.app.action.TOGGLE_HUD";
+    public static final String ACTION_HIDE_HUD = "com.gamebooster.app.action.HIDE_HUD";
+    public static final String ACTION_SHOW_HUD = "com.gamebooster.app.action.SHOW_HUD";
+    public static final String ACTION_CLOSE_HUD = "com.gamebooster.app.action.CLOSE_HUD";
+
     private static final String TAG = "FloatingOverlayService";
     private static final String CHANNEL_ID = "game_booster_overlay_channel";
     private static final int NOTIF_ID = 888;
@@ -70,7 +75,9 @@ public class FloatingOverlayService extends Service {
     public enum HudMode {
         PILL,
         MICRO_FPS,
-        EXPANDED_DOCK
+        EXPANDED_DOCK,
+        HIDDEN_EDGE,
+        FULL_INVISIBLE
     }
 
     private WindowManager windowManager;
@@ -85,6 +92,8 @@ public class FloatingOverlayService extends Service {
     private View layoutMicroFps;
     private View layoutExpandedDock;
     private View layoutHudHeader;
+    private View layoutEdgeHandle;
+    private View viewEdgeHandleDot;
 
     // Collapsed Pill views
     private View viewPillGlowDot;
@@ -249,8 +258,13 @@ public class FloatingOverlayService extends Service {
         // Micro
         tvMicroFps = overlayView.findViewById(R.id.tv_micro_fps);
 
+        // Edge handle
+        layoutEdgeHandle = overlayView.findViewById(R.id.layout_edge_handle);
+        viewEdgeHandleDot = overlayView.findViewById(R.id.view_edge_handle_dot);
+
         // Header controls
         View btnMicroToggle = overlayView.findViewById(R.id.btn_hud_micro_toggle);
+        View btnHide = overlayView.findViewById(R.id.btn_hud_hide);
         View btnMinimize = overlayView.findViewById(R.id.btn_hud_minimize);
         View btnClose = overlayView.findViewById(R.id.btn_hud_close);
 
@@ -258,6 +272,13 @@ public class FloatingOverlayService extends Service {
             btnMicroToggle.setOnClickListener(v -> {
                 performHaptic();
                 switchHudMode(HudMode.MICRO_FPS);
+            });
+        }
+        if (btnHide != null) {
+            btnHide.setOnClickListener(v -> {
+                performHaptic();
+                Toast.makeText(getApplicationContext(), "⚡ HUD Hidden — Tap edge strip to restore", Toast.LENGTH_SHORT).show();
+                switchHudMode(HudMode.HIDDEN_EDGE);
             });
         }
         if (btnMinimize != null) {
@@ -294,6 +315,7 @@ public class FloatingOverlayService extends Service {
             private float initialTouchX;
             private float initialTouchY;
             private boolean isClick = false;
+            private long lastClickTimestamp = 0;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -322,6 +344,20 @@ public class FloatingOverlayService extends Service {
                     case MotionEvent.ACTION_UP:
                         if (isClick) {
                             performHaptic();
+                            long now = System.currentTimeMillis();
+                            if (now - lastClickTimestamp < 350) {
+                                // Double-Tap Detected -> Quick Hide / Unhide Toggle
+                                lastClickTimestamp = 0;
+                                if (currentMode == HudMode.HIDDEN_EDGE) {
+                                    switchHudMode(HudMode.PILL);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "⚡ HUD Hidden — Tap edge strip to restore", Toast.LENGTH_SHORT).show();
+                                    switchHudMode(HudMode.HIDDEN_EDGE);
+                                }
+                                return true;
+                            }
+                            lastClickTimestamp = now;
+
                             if (currentMode == HudMode.PILL || currentMode == HudMode.MICRO_FPS) {
                                 switchHudMode(HudMode.EXPANDED_DOCK);
                                 scheduleAutoCollapse();
@@ -333,9 +369,9 @@ public class FloatingOverlayService extends Service {
                                 int viewWidth = overlayView.getWidth();
                                 int midPoint = screenWidth / 2;
                                 if (params.x + (viewWidth / 2) < midPoint) {
-                                    params.x = 12; // Snap Left
+                                    params.x = (currentMode == HudMode.HIDDEN_EDGE) ? 0 : 12; // Snap Left
                                 } else {
-                                    params.x = Math.max(12, screenWidth - viewWidth - 12); // Snap Right
+                                    params.x = (currentMode == HudMode.HIDDEN_EDGE) ? Math.max(0, screenWidth - viewWidth) : Math.max(12, screenWidth - viewWidth - 12); // Snap Right
                                 }
                                 params.y = Math.max(20, Math.min(params.y, getResources().getDisplayMetrics().heightPixels - 150));
                                 windowManager.updateViewLayout(overlayView, params);
@@ -356,6 +392,46 @@ public class FloatingOverlayService extends Service {
         if (layoutCollapsedPill != null) layoutCollapsedPill.setOnTouchListener(dragListener);
         if (layoutMicroFps != null) layoutMicroFps.setOnTouchListener(dragListener);
         if (layoutHudHeader != null) layoutHudHeader.setOnTouchListener(dragListener);
+
+        // Edge handle touch listener: single click to restore Pill mode, drag up/down along edge
+        if (layoutEdgeHandle != null) {
+            layoutEdgeHandle.setOnTouchListener(new View.OnTouchListener() {
+                private int startY;
+                private float rawY;
+                private boolean isTap = false;
+
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startY = params.y;
+                            rawY = event.getRawY();
+                            isTap = true;
+                            return true;
+                        case MotionEvent.ACTION_MOVE:
+                            if (Math.abs(event.getRawY() - rawY) > 10) isTap = false;
+                            params.y = startY + (int)(event.getRawY() - rawY);
+                            if (windowManager != null && overlayView != null) {
+                                windowManager.updateViewLayout(overlayView, params);
+                            }
+                            return true;
+                        case MotionEvent.ACTION_UP:
+                            if (isTap) {
+                                performHaptic();
+                                switchHudMode(HudMode.PILL);
+                            } else {
+                                if (windowManager != null && overlayView != null) {
+                                    params.y = Math.max(20, Math.min(params.y, getResources().getDisplayMetrics().heightPixels - 150));
+                                    windowManager.updateViewLayout(overlayView, params);
+                                    getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putInt(KEY_HUD_Y, params.y).apply();
+                                }
+                            }
+                            return true;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     private void switchHudMode(HudMode mode) {
@@ -372,16 +448,22 @@ public class FloatingOverlayService extends Service {
             } catch (Exception ignored) {}
         }
         updateTelemetryData();
+        updateNotification();
     }
 
     private void applyViewportVisibility(HudMode mode) {
         if (layoutCollapsedPill == null || layoutMicroFps == null || layoutExpandedDock == null) return;
+
+        if (overlayView != null) {
+            overlayView.setVisibility(View.VISIBLE);
+        }
 
         switch (mode) {
             case PILL:
                 layoutCollapsedPill.setVisibility(View.VISIBLE);
                 layoutMicroFps.setVisibility(View.GONE);
                 layoutExpandedDock.setVisibility(View.GONE);
+                if (layoutEdgeHandle != null) layoutEdgeHandle.setVisibility(View.GONE);
                 overlayView.setAlpha(0.85f);
                 break;
 
@@ -389,6 +471,7 @@ public class FloatingOverlayService extends Service {
                 layoutCollapsedPill.setVisibility(View.GONE);
                 layoutMicroFps.setVisibility(View.VISIBLE);
                 layoutExpandedDock.setVisibility(View.GONE);
+                if (layoutEdgeHandle != null) layoutEdgeHandle.setVisibility(View.GONE);
                 overlayView.setAlpha(0.70f);
                 break;
 
@@ -396,7 +479,34 @@ public class FloatingOverlayService extends Service {
                 layoutCollapsedPill.setVisibility(View.GONE);
                 layoutMicroFps.setVisibility(View.GONE);
                 layoutExpandedDock.setVisibility(View.VISIBLE);
+                if (layoutEdgeHandle != null) layoutEdgeHandle.setVisibility(View.GONE);
                 overlayView.setAlpha(1.0f);
+                break;
+
+            case HIDDEN_EDGE:
+                layoutCollapsedPill.setVisibility(View.GONE);
+                layoutMicroFps.setVisibility(View.GONE);
+                layoutExpandedDock.setVisibility(View.GONE);
+                if (layoutEdgeHandle != null) layoutEdgeHandle.setVisibility(View.VISIBLE);
+                overlayView.setAlpha(0.40f);
+                if (windowManager != null && params != null) {
+                    int screenWidth = getResources().getDisplayMetrics().widthPixels;
+                    if (params.x < screenWidth / 2) {
+                        params.x = 0;
+                    } else {
+                        params.x = Math.max(0, screenWidth - 24);
+                    }
+                }
+                break;
+
+            case FULL_INVISIBLE:
+                layoutCollapsedPill.setVisibility(View.GONE);
+                layoutMicroFps.setVisibility(View.GONE);
+                layoutExpandedDock.setVisibility(View.GONE);
+                if (layoutEdgeHandle != null) layoutEdgeHandle.setVisibility(View.GONE);
+                if (overlayView != null) {
+                    overlayView.setVisibility(View.GONE);
+                }
                 break;
         }
     }
@@ -645,7 +755,40 @@ public class FloatingOverlayService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && intent.getAction() != null) {
+            String action = intent.getAction();
+            if (ACTION_TOGGLE_HUD.equals(action)) {
+                performHaptic();
+                if (currentMode == HudMode.HIDDEN_EDGE || currentMode == HudMode.FULL_INVISIBLE) {
+                    switchHudMode(HudMode.PILL);
+                    Toast.makeText(getApplicationContext(), "⚡ Gaming HUD Restored", Toast.LENGTH_SHORT).show();
+                } else {
+                    switchHudMode(HudMode.HIDDEN_EDGE);
+                    Toast.makeText(getApplicationContext(), "⚡ Gaming HUD Hidden", Toast.LENGTH_SHORT).show();
+                }
+                updateNotification();
+            } else if (ACTION_HIDE_HUD.equals(action)) {
+                performHaptic();
+                switchHudMode(HudMode.HIDDEN_EDGE);
+                updateNotification();
+            } else if (ACTION_SHOW_HUD.equals(action)) {
+                performHaptic();
+                switchHudMode(HudMode.PILL);
+                updateNotification();
+            } else if (ACTION_CLOSE_HUD.equals(action)) {
+                stopSelf();
+            }
+        }
         return START_STICKY;
+    }
+
+    private void updateNotification() {
+        try {
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) {
+                nm.notify(NOTIF_ID, createNotification());
+            }
+        } catch (Throwable ignored) {}
     }
 
     @Override
@@ -689,12 +832,32 @@ public class FloatingOverlayService extends Service {
     }
 
     private Notification createNotification() {
+        Intent toggleIntent = new Intent(this, FloatingOverlayService.class);
+        toggleIntent.setAction(ACTION_TOGGLE_HUD);
+        android.app.PendingIntent togglePending = android.app.PendingIntent.getService(
+                this, 101, toggleIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+        );
+
+        Intent closeIntent = new Intent(this, FloatingOverlayService.class);
+        closeIntent.setAction(ACTION_CLOSE_HUD);
+        android.app.PendingIntent closePending = android.app.PendingIntent.getService(
+                this, 102, closeIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+        );
+
+        boolean isHidden = (currentMode == HudMode.HIDDEN_EDGE || currentMode == HudMode.FULL_INVISIBLE);
+        String actionTitle = isHidden ? "👁️ Show HUD" : "🙈 Hide HUD";
+        String statusText = isHidden ? "HUD is Hidden (tap action to show)" : "FPS, RAM, Thermals & Ping active";
+
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GAME SPACE — Performance HUD")
-                .setContentText("FPS, RAM, Thermals & Network telemetry active")
+                .setContentText(statusText)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
+                .addAction(R.mipmap.ic_launcher, actionTitle, togglePending)
+                .addAction(R.mipmap.ic_launcher, "✖️ Close", closePending)
                 .build();
     }
 }

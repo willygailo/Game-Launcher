@@ -144,6 +144,19 @@
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp" />
 
+            <!-- Hide HUD to Edge Handle Button -->
+            <TextView
+                android:id="@+id/btn_hud_hide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👁️"
+                android:textColor="@color/accent_amber"
+                android:textSize="13sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
             <!-- Minimize to Pill Button -->
             <TextView
                 android:id="@+id/btn_hud_minimize"
@@ -363,6 +376,30 @@
                 android:textStyle="bold"
                 android:letterSpacing="0.04" />
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- ================================================================= -->
+    <!-- VIEWPORT 4: GHOST EDGE HANDLE / HIDDEN DOCK MODE                 -->
+    <!-- ================================================================= -->
+    <LinearLayout
+        android:id="@+id/layout_edge_handle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/hud_edge_handle_bg"
+        android:paddingStart="3dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="3dp"
+        android:paddingBottom="8dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:elevation="6dp"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/view_edge_handle_dot"
+            android:layout_width="4dp"
+            android:layout_height="28dp"
+            android:background="@drawable/badge_neon_green" />
     </LinearLayout>
 
 </FrameLayout>
