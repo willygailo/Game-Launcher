@@ -70,7 +70,7 @@ public class LuaProfileBridge {
             }
 
             // Resolve target config path for the package
-            List<String> paths = GameConfigPathResolver.resolveConfigPaths(pkg);
+            List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
             if (paths == null || paths.isEmpty()) {
                 Log.d(TAG, "No config paths found for " + pkg);
                 return false;

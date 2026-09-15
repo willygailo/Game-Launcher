@@ -898,5 +898,17 @@ public final class CommonConfigTuningInjector {
         }
         Log.i(TAG, "Universal RankedCombatFullSuite2026 applied for " + packageName);
     }
+
+    /**
+     * Universal Instant Sprint Turbo — 2026.2 Edition.
+     */
+    public static void applyInstantSprintTurbo(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectInstantSprintTurbo(path);
+        }
+        Log.i(TAG, "Universal InstantSprintTurbo applied for " + packageName);
+    }
 }
 

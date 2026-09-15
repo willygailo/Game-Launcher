@@ -72,6 +72,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectDamageLockMax(String path);
     // 2026: Aim Assist Lock Max — locks angular tracking, hero magnetism, zero ADS lag
     public static native boolean nativeInjectAimAssistLockMax(String path);
+    // 2026: Vulkan Optimization — async shader compilation, pipeline cache, and GPU features
+    public static native boolean nativeInjectVulkanOptimization(String path);
     // 2026: Direct Lua Profile Batch Stream Injection
     public static native boolean nativeInjectLuaProperties(String path, String[] keys, String[] values);
 

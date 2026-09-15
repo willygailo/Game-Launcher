@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -68,6 +69,7 @@ public class FloatingOverlayService extends Service {
     public static final String KEY_HUD_Y = "hud_last_pos_y";
     public static final String KEY_HUD_MODE = "hud_viewport_mode";
 
+    private static final String TAG = "FloatingOverlayService";
     private static final String CHANNEL_ID = "game_booster_overlay_channel";
     private static final int NOTIF_ID = 888;
     private static boolean isRunning = false;

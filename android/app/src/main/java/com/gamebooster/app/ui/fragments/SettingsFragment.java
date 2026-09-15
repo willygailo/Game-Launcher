@@ -1471,6 +1471,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnFacebookProfile.setOnClickListener(v -> openUrl("https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"));
         }
 
+        setupCombatEnhancementSuiteSection(view);
         refreshAllStatuses();
         return view;
     }

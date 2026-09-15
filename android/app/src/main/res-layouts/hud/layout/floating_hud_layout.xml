@@ -442,6 +442,67 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Row 3: Combat Suite: Inject, Re-Inject, Aim Lock, Damage -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_hud_inject_combat"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="⚔️ INJECT"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_reinject"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="🔄 RE-INJECT"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_aim_lock"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="🎯 AIM"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_hud_damage"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="2dp"
+                android:background="@drawable/hud_btn_cyber_dark"
+                android:padding="0dp"
+                android:text="💥 DMG"
+                android:textColor="@color/accent_orange"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

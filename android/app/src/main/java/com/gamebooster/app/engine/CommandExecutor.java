@@ -36,6 +36,14 @@ public class CommandExecutor {
         return PrivilegeBridgeEngine.executePrivilegedBatch(commands);
     }
 
+    public static boolean executeBatch(List<String> commands) {
+        if (commands == null || commands.isEmpty()) {
+            return true;
+        }
+        List<String> results = PrivilegeBridgeEngine.executePrivilegedBatch(commands);
+        return results != null && !results.isEmpty();
+    }
+
     public static boolean setSystemProperty(String key, String value) {
         String cmd = "setprop " + key + " " + value;
         String result = executeSystemCommand(cmd);
