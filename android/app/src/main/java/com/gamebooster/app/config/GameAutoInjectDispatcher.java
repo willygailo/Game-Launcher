@@ -292,6 +292,12 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyFastFarmingAllHero(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyFastRetributionObjectiveSteal(pkg); } catch (Throwable ignored) {}
         try { MlbbConfigPatcher.applyAllHeroGodSuite2026(pkg); } catch (Throwable ignored) {}
+        // ─── Season 42 Starward Decade (Sep 16 2026) ─────────────────────
+        try { MlbbConfigPatcher.applyMashaSeason42Override(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applyLordStealSeason42Update(pkg); } catch (Throwable ignored) {}
+        try { MlbbConfigPatcher.applySeason42RevampHeroBoost(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.3 God Mode Suite: Infinite Lifesteal, Armor 10000+, Unlimited Energy, Drone View ───
+        try { MlbbConfigPatcher.applyMlbbGodModeFullOverdrive(pkg); } catch (Throwable ignored) {}
         // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
         // Adaptive Aim: per-scope gyro + smooth head snap (all heroes, all maps)
         try { MlbbConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
@@ -305,6 +311,7 @@ public final class GameAutoInjectDispatcher {
 
     private static void injectPubgm(String pkg) {
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
+        try { PubgConfigPatcher.applyPubgmGodModeFullOverdrive(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmMasterSuite(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyRankedMastery(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.patchUltraExtreme165(pkg); } catch (Throwable ignored) {}
@@ -344,6 +351,9 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmBallisticsVelocityPenetration(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyFastLoadAsyncStreaming(pkg); } catch (Throwable ignored) {}
+        // ─── PUBGM v4.6 Midnight Hunters (Sep 9 2026) ──────────────────────
+        try { PubgConfigPatcher.applyV46WeaponFix(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyMidnightHuntersMapBoost(pkg); } catch (Throwable ignored) {}
         // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
         // Adaptive Aim: per-scope gyro + UE4 predictive aim (all weapons, all maps)
         try { PubgConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
@@ -396,6 +406,12 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyCodmBsaRemovalRangeOverdrive(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyFastLoadShaderBypass(pkg); } catch (Throwable ignored) {}
+        // ─── CODM Season 8 Against All Fate (Sep 9 2026) ───────────────────
+        try { CodmConfigPatcher.applySeason8NewWeaponsOverride(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyRoguelikeModeAimAssist(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyS8FullRankedSweep(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.3 God Mode Suite: Zero Recoil, Head-Lock, 10000+ Damage, Slide Cancel, Instant Chambering ───
+        try { CodmConfigPatcher.applyCodmGodModeFullOverdrive(pkg); } catch (Throwable ignored) {}
         // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
         // Adaptive Aim: per-scope gyro + ADS snap (all weapons, all maps)
         try { CodmConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
@@ -430,6 +446,10 @@ public final class GameAutoInjectDispatcher {
         try { FreeFireConfigPatcher.applyMultiRangeHeadshotCalibration(pkg); } catch (Throwable ignored) {}
         try { FreeFireConfigPatcher.applyUniversalZeroDelaySkillTapAllHero(pkg); } catch (Throwable ignored) {}
         try { CommonConfigTuningInjector.applyUniversalCombatMechanicsOverdrive(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.2 Combat Enhancement Suite ──────────────────────────────
+        try { FreeFireConfigPatcher.applyAdaptiveAimAssist(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyAdaptiveNoRecoil(pkg); } catch (Throwable ignored) {}
+        try { FreeFireConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectHok(String pkg) {

@@ -2432,6 +2432,94 @@ public class NativeConfigInjector {
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbCritPenetration]");
     }
 
+    /**
+     * MLBB Infinite Lifesteal & Omni-Vamp 10000+ Suite.
+     * Instant 100% lifesteal on basic attacks and skills + spell vamp + anti-heal immunity.
+     */
+    public static boolean injectMlbbInfiniteLifestealOmniVamp(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "LifestealBoost=10000", "LifestealPercent=100", "LifestealMultiplier=100.0",
+            "PhysicalLifesteal=10000", "MagicLifesteal=10000", "SpellVampBoost=10000",
+            "SpellVampPercent=100", "OmniVamp=10000", "OmniVampBoost=10000",
+            "AlucardLifesteal=10000", "AlucardOmniVamp=10000", "AlucardLifestealMax=1",
+            "HPRegenRate=10000", "HPRegenBoost=10000", "PassiveHPRegen=10000",
+            "InstantHealOnHit=10000", "AntiHealBypass=1", "AntiHealImmunity=1",
+            "LifestealCoefficient=10.0", "SpellVampCoefficient=10.0",
+            "LifeStealRate=10.0", "LifeStealMax=1.0", "HealEfficiency=10.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbLifestealGodSuite]");
+    }
+
+    /**
+     * MLBB God Armor 10000+ & True Defense Suite.
+     * Max physical defense + magic defense + 100% damage reduction + 10000 HP shield + CC resistance.
+     */
+    public static boolean injectMlbbGodArmorTrueDefense(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "PhysicalDefense=10000", "MagicDefense=10000", "ArmorMax=10000",
+            "DamageReduction=1.0", "DamageReductionPercent=100", "DamageReductionMax=1",
+            "PhysicalShield=10000", "MagicShield=10000", "ShieldMultiplier=10.0",
+            "ShieldBoost=10000", "ShieldAbsorption=1.0", "PassiveShieldRegen=10000",
+            "MaxHPBoost=10000", "MaxHealthMultiplier=10.0", "TrueDamageImmunity=1",
+            "AntiCritReduction=1.0", "CrowdControlReduction=1.0", "TenacityMax=1.0",
+            "ResilienceBoost=1.0", "ImmortalityReviveZeroCD=1", "AthenaShieldInstantProc=1",
+            "AntiqueCuirassDmgReduction=1.0", "BladeArmorReflectDamage=10000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbGodArmorSuite]");
+    }
+
+    /**
+     * MLBB Unlimited Mana, Energy & Zero Skill Cooldown Suite.
+     * Unlimited Fanny/Ling/Nolan energy, zero mana cost, 0.001s skill cooldown + instant ult.
+     */
+    public static boolean injectMlbbUnlimitedManaEnergy(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "ZeroManaCost=1", "InfiniteMana=1", "ManaRegenRate=10000",
+            "ZeroEnergyCost=1", "InfiniteEnergy=1", "EnergyRegenRate=10000",
+            "FannyEnergyMax=1", "FannyUnlimitedEnergy=1", "FannyZeroCableCost=1",
+            "LingEnergyMax=1", "LingUnlimitedEnergy=1", "LingZeroWallCost=1",
+            "NolanRiftEnergyMax=1", "HayabusaEnergyMax=1", "LesleyEnergyMax=1",
+            "SkillCDRatio=0.001", "CooldownReduction=1.0", "MaxCooldownReduction=1.0",
+            "UltInstantReset=1", "SkillAutoChain=1", "SkillInstantCast=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbUnlimitedEnergySuite]");
+    }
+
+    /**
+     * MLBB Ultra Drone View Panoramic FOV Suite.
+     * High camera perspective, wide map field-of-view, zero fog of war interference.
+     */
+    public static boolean injectMlbbUltraDroneViewMaxFov(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "CameraHeight=3", "FOVBoost=1.5", "DroneView=1", "PanoramicFOV=1.5",
+            "MapClarity=1", "MinimapEnemyPriority=1", "FogOfWarRemoval=1",
+            "UltraWallhackEspClarity=1", "HeroLockRange=9999", "VisionRangeBoost=2.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbUltraDroneView]");
+    }
+
+    /**
+     * MLBB God Mode Full Overdrive (All-in-One Master Cheat).
+     */
+    public static boolean injectMlbbGodModeFullOverdrive(String path) {
+        boolean ok1 = injectMlbbInfiniteLifestealOmniVamp(path);
+        boolean ok2 = injectMlbbGodArmorTrueDefense(path);
+        boolean ok3 = injectMlbbUnlimitedManaEnergy(path);
+        boolean ok4 = injectMlbbUltraDroneViewMaxFov(path);
+        boolean ok5 = injectMlbbDamage10000AttackSpeedMax(path);
+        boolean ok6 = injectMlbbFastFarmingAllHero(path);
+        boolean ok7 = injectMlbbFastRetributionObjectiveSteal(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7;
+    }
+
     public static boolean injectPubgmBallisticsVelocityPenetration(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
@@ -2494,6 +2582,152 @@ public class NativeConfigInjector {
             "PelletSpreadADS=0.0", "PumpActionCycleMs=0"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[CodmBsaRange]");
+    }
+
+    /**
+     * CODM Instant Chambering & Quick Draw Sniper Overdrive.
+     * Zero-delay bolt cycling, instant weapon swap, and sleight-of-hand reload.
+     */
+    public static boolean injectCodmInstantChamberingQuickDraw(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "FastBoltPullSpeed=10.0", "BoltActionCycleMs=0", "PumpActionCycleMs=0",
+            "ReloadSpeedMultiplier=10.0", "QuickDrawFactor=10.0", "WeaponSwitchZeroDelay=1",
+            "SprintToFireDelayMs=0", "ADSTransitionTimeMs=0", "QuickScopeAccuracyThreshold=1.0",
+            "BlankScopeAccuracy=1.0", "SniperADSIdleSway=0.0", "AntiBreath=1", "SniperBreathHoldZero=1",
+            "HitFlinchScale=0.0", "ScreenShakeScale=0.0", "ScopeVisualBob=0.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmInstantChambering]");
+    }
+
+    /**
+     * CODM Slide-Cancel & God-Speed Mobility Overdrive.
+     * Zero slide delay, instant slide-hop cancel, max sprint acceleration, 1000Hz touch & joystick response.
+     */
+    public static boolean injectCodmSlideCancelMobility(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "SlideDelayMs=0", "SlideCancelEnabled=1", "SlideSpeedBoost=3.0",
+            "SprintAcceleration=10.0", "MaxSprintSpeed=10.0", "SprintDelayZero=1",
+            "JumpFatigueRemoval=1", "FastMantle=1", "MantleSpeedBoost=3.0",
+            "JoystickZeroDeadzone=1", "JoystickResponseLevel=3", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "InputBufferRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmSlideCancelMobility]");
+    }
+
+    /**
+     * CODM God Mode Full Overdrive (All-in-One Master Cheat Suite).
+     */
+    public static boolean injectCodmGodModeFullOverdrive(String path) {
+        boolean ok1 = injectNoRecoilNoSpread(path);
+        boolean ok2 = false;
+        if (sNativeLibraryLoaded) {
+            try {
+                ok2 = nativeInjectCodmEnemyLockAllScope(path);
+            } catch (Throwable ignored) {
+            }
+        }
+        if (!ok2) {
+            ok2 = injectAimHeadLock(path) || injectAimAssistLockMax(path);
+        }
+        boolean ok3 = injectCodmDamage10000AttackSpeedMax(path);
+        boolean ok4 = injectCodmBsaRemovalRangeOverdrive(path);
+        boolean ok5 = injectCodmInstantChamberingQuickDraw(path);
+        boolean ok6 = injectCodmSlideCancelMobility(path);
+        boolean ok7 = injectHitboxMultiplier(path, 3.0f);
+        boolean ok8 = injectUltraWallhackEspClarity(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
+    }
+
+    /**
+     * PUBGM Zero Recoil & Absolute Zero Sway (UE4 +CVars=r. format + INI keys).
+     */
+    public static boolean injectPubgmZeroRecoilNoSway(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "ZeroRecoil=1", "RecoilPitch=0.0", "RecoilYaw=0.0",
+            "WeaponSway=0.0", "BreathingShake=0.0", "CameraShakeIntensity=0.0",
+            "SpreadFactor=0.0", "HipFireSpread=0.0", "M416_VerticalRecoilMin=0",
+            "BerylM762_HorizontalBounce=0", "AKM_FirstShotKick=0",
+            "+CVars=r.PUBGZeroRecoil=1",
+            "+CVars=r.PUBGRecoilPitch=0.0",
+            "+CVars=r.PUBGRecoilYaw=0.0",
+            "+CVars=r.PUBGWeaponSway=0.0",
+            "+CVars=r.PUBGBreathingShake=0.0",
+            "+CVars=r.PUBGCameraShake=0.0",
+            "+CVars=r.RecoilCompensationFactor=0.0",
+            "+CVars=r.SpreadFactor=0.0",
+            "+CVars=r.HipFireSpread=0.0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmZeroRecoil]");
+    }
+
+    /**
+     * PUBGM Magic Bullet & Instant Hit Scan Simulation (UE4 CVars).
+     */
+    public static boolean injectPubgmMagicBulletInstantHit(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "MagicBullet=1", "BulletVelocity=99999", "InstantBulletTravel=1",
+            "ZeroBulletDrop=1", "BulletGravity=0.0", "BulletPenetration=100.0",
+            "InstantHitReg=1", "HitScanSimulation=1",
+            "+CVars=r.PUBGMagicBullet=1",
+            "+CVars=r.PUBGBulletVelocity=99999",
+            "+CVars=r.PUBGInstantBulletTravel=1",
+            "+CVars=r.PUBGBulletDrop=0.0",
+            "+CVars=r.PUBGBulletGravity=0.0",
+            "+CVars=r.PUBGBulletPenetration=100.0",
+            "+CVars=r.PUBGInstantHitReg=1",
+            "+CVars=r.PUBGHitScanSimulation=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmMagicBullet]");
+    }
+
+    /**
+     * PUBGM Sniper Instant Chambering & Quick ADS (AWM/M24/Kar98k/AMR).
+     */
+    public static boolean injectPubgmSniperInstantChamber(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        String[] keys = {
+            "SniperInstantChamber=1", "BoltCycleLatency=0.001", "QuickScopeADS=0.01",
+            "SprintToFireDelay=0", "SniperRechamberInstant=1", "BoltActionQuickCycle=1",
+            "+CVars=r.PUBGSniperInstantChamber=1",
+            "+CVars=r.PUBGBoltCycleLatency=0.001",
+            "+CVars=r.PUBGQuickScopeADS=0.01",
+            "+CVars=r.PUBGSprintToFireDelay=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmSniperChamber]");
+    }
+
+    /**
+     * PUBGM God Mode Full Overdrive (Master Cheat Suite).
+     */
+    public static boolean injectPubgmGodModeFullOverdrive(String path) {
+        boolean ok1 = injectPubgmZeroRecoilNoSway(path);
+        boolean ok2 = false;
+        if (sNativeLibraryLoaded) {
+            try {
+                ok2 = nativeInjectPubgmEnemyLockAllScope(path);
+            } catch (Throwable ignored) {
+            }
+        }
+        if (!ok2) {
+            ok2 = injectAimHeadLock(path) || injectAimAssistLockMax(path);
+        }
+        boolean ok3 = injectPubgmDamage10000AttackSpeedMax(path);
+        boolean ok4 = injectPubgmMagicBulletInstantHit(path);
+        boolean ok5 = injectPubgmSniperInstantChamber(path);
+        boolean ok6 = injectPubgmBallisticsVelocityPenetration(path);
+        boolean ok7 = injectHitboxMultiplier(path, 3.5f);
+        boolean ok8 = injectUltraWallhackEspClarity(path);
+        boolean ok9 = injectPubgmFastLoadAsyncStreaming(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
     }
 
     public static boolean injectUniversalCombatMechanicsOverdrive(String path) {

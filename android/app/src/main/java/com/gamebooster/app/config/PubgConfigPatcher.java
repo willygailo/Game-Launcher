@@ -101,32 +101,87 @@ public class PubgConfigPatcher {
 
     /**
      * Executes single-pass atomic batch injection for all PUBGM cheats:
-     * Magic Bullet Aimbot, Hitbox 3.0x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load,
+     * Magic Bullet Aimbot, Hitbox 3.5x, ESP Clarity, Zero Recoil, Ballistics Penetration, Fast Load,
      * Damage 10000x Overdrive, Fast Attack Speed, Instant Chambering, Fast Reload,
-     * Enemy Lock MAX All-Scope (50/150/250/350/450m), Auto Headshot 3-bullet + 5-bullet kill.
+     * Enemy Lock MAX All-Scope (50/150/250/350/450m), Auto Headshot 3-bullet + 5-bullet kill,
+     * and God Mode Full Overdrive.
      */
     public static void applyPubgmMasterSuite(String packageName) {
         if (packageName == null) return;
-        applyDamage10000AttackSpeedMax(packageName);
-        applyPubgmFastAttackSpeed(packageName);
-        applyFastReloadQuickSwap(packageName);
-        applyPubgmInstantReloadChambering(packageName);
-        // v4.6 season-specific patches
-        applyV46WeaponFix(packageName);
-        applyMidnightHuntersMapBoost(packageName);
-        applyS32RankedSweep(packageName);
-        // 2026.3 Dame Aim Assist Suite
-        applyEnemyLockMaxAllScope(packageName);
-        applyAutoHeadshotBulletKill(packageName);
+        applyPubgmGodModeFullOverdrive(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectUniversalCombatSuite(path);
             NativeConfigInjector.injectSilentAimbot(path);
-            NativeConfigInjector.injectHitboxMultiplier(path, 3.0f);
+            NativeConfigInjector.injectHitboxMultiplier(path, 3.5f);
             NativeConfigInjector.injectUltraWallhackEspClarity(path);
             NativeConfigInjector.injectPubgmBallisticsVelocityPenetration(path);
             NativeConfigInjector.injectPubgmFastLoadAsyncStreaming(path);
         }
+    }
+
+    /**
+     * PUBGM Zero Recoil & Absolute Zero Sway.
+     */
+    public static void applyPubgmZeroRecoilNoSway(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmZeroRecoilNoSway(path);
+        }
+    }
+
+    /**
+     * PUBGM Magic Bullet & Instant Hit Scan Simulation.
+     */
+    public static void applyPubgmMagicBulletInstantHit(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmMagicBulletInstantHit(path);
+        }
+    }
+
+    /**
+     * PUBGM Sniper Instant Chambering (AWM, M24, Kar98k, AMR).
+     */
+    public static void applyPubgmSniperInstantChamber(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmSniperInstantChamber(path);
+        }
+    }
+
+    /**
+     * PUBGM 3.5x Hitbox Expander Overdrive.
+     */
+    public static void applyPubgmHitboxExpander35(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectHitboxMultiplier(path, 3.5f);
+        }
+    }
+
+    /**
+     * PUBGM God Mode Full Overdrive (Master Cheat Suite).
+     */
+    public static void applyPubgmGodModeFullOverdrive(String packageName) {
+        if (packageName == null) return;
+        applyPubgmZeroRecoilNoSway(packageName);
+        applyEnemyLockMaxAllScope(packageName);
+        applyAutoHeadshotBulletKill(packageName);
+        applyDamage10000AttackSpeedMax(packageName);
+        applyPubgmFastAttackSpeed(packageName);
+        applyPubgmMagicBulletInstantHit(packageName);
+        applyPubgmSniperInstantChamber(packageName);
+        applyFastReloadQuickSwap(packageName);
+        applyPubgmInstantReloadChambering(packageName);
+        applyPubgmHitboxExpander35(packageName);
+        applyV46WeaponFix(packageName);
+        applyMidnightHuntersMapBoost(packageName);
+        applyS32RankedSweep(packageName);
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectPubgmGodModeFullOverdrive(path);
+        }
+        Log.i(TAG, "PUBGM God Mode Full Overdrive Master Suite applied for " + packageName);
     }
 
     /**

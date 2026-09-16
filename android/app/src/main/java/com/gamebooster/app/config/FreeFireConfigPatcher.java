@@ -407,6 +407,44 @@ public class FreeFireConfigPatcher {
         CommonConfigTuningInjector.applyAntiLog(packageName);
     }
 
+    // ─── 2026.2 Combat Enhancement Suite ─────────────────────────────────────
+
+    public static boolean applyAdaptiveAimAssist(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveAimAssist(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "FreeFire AdaptiveAimAssist2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyAdaptiveNoRecoil(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectAdaptiveNoRecoil(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "FreeFire AdaptiveNoRecoil2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
+    public static boolean applyRankedCombatFullSuite(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "FreeFire RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
+        return written > 0;
+    }
+
     private static List<String> getConfigPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
     }

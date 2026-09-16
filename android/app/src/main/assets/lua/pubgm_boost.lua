@@ -176,28 +176,49 @@ profile.sprint_delay_zero = true
 profile.auto_sprint = true
 profile.slide_delay_ms = 0
 
--- Damage Boost
-profile.damage_boost = true
-profile.r_pubg_damage_lock_max = 10000
-profile.r_pubg_damage_boost = 10000
-profile.r_pubg_headshot_multiplier = 5.0
-profile.r_pubg_true_damage_mod = 1
-profile.r_pubg_vest_damage_bypass = 1
-profile.armor_penetration_tier6 = 1
-profile.hit_reg_sync_rate = 1000
+-- ── 🔱 PUBGM God Mode Master Overdrive (2026.3 Native Suite) ──────────────────
+profile.god_mode_full_overdrive      = true
+profile.r_pubg_zero_recoil           = 1
+profile.r_pubg_recoil_pitch          = 0.0
+profile.r_pubg_recoil_yaw            = 0.0
+profile.r_pubg_weapon_sway           = 0.0
+profile.r_pubg_breathing_shake       = 0.0
+profile.r_pubg_camera_shake          = 0.0
+profile.r_pubg_spread_factor         = 0.0
+profile.r_pubg_hip_fire_spread       = 0.0
+profile.r_pubg_magic_bullet          = 1
+profile.r_pubg_bullet_velocity       = 99999
+profile.r_pubg_instant_bullet_travel = 1
+profile.r_pubg_bullet_drop           = 0.0
+profile.r_pubg_bullet_gravity        = 0.0
+profile.r_pubg_bullet_penetration    = 100.0
+profile.r_pubg_instant_hit_reg       = 1
+profile.r_pubg_head_bone_index       = 0   -- UE4: bone 0 = head hard-lock
+profile.r_pubg_hitbox_multiplier     = 3.5 -- UE4: 3.5x hitbox scale
+profile.r_pubg_headshot_multiplier   = 999.0
+profile.r_pubg_damage_lock_max       = 10000
+profile.r_pubg_damage_boost          = 10000
+profile.r_pubg_true_damage_mod       = 1
+profile.r_pubg_vest_damage_bypass    = 1
+profile.r_pubg_sniper_instant_chamber= 1
+profile.r_pubg_bolt_cycle_time       = 0
+profile.r_pubg_fog_density           = 0
+profile.r_pubg_grass_culling         = 0
+profile.armor_penetration_tier6      = 1
+profile.hit_reg_sync_rate            = 1000
 
--- Fast Reload
-profile.fast_reload = true
-profile.reload_speed_multiplier = 10.0
-profile.instant_chambering = true
-profile.bolt_action_cycle_time = 0
-profile.sniper_rechamber_instant = true
-profile.quick_swap = true
+-- Fast Reload & Chambering
+profile.fast_reload                  = true
+profile.reload_speed_multiplier      = 10.0
+profile.instant_chambering           = true
+profile.bolt_action_cycle_time       = 0
+profile.sniper_rechamber_instant     = true
+profile.quick_swap                   = true
 
 -- Ranked & Classic: All Map Coverage
-profile.ranked_combat_suite = true
-profile.classic_combat_suite = true
-profile.map_reinjection = true
+profile.ranked_combat_suite          = true
+profile.classic_combat_suite         = true
+profile.map_reinjection              = true
 
 -- ── 🌙 v4.6 "Midnight Hunters" & S32 — Sep 9 2026 ────────────────────────
 profile.version                   = "4.6"

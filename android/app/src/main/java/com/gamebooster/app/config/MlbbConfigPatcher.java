@@ -35,6 +35,70 @@ public class MlbbConfigPatcher {
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbArmorAllHero(path);
         }
+        applyMlbbGodArmorTrueDefense(packageName);
+    }
+
+    /**
+     * MLBB Infinite Lifesteal & Omni-Vamp 10000+ Suite.
+     */
+    public static void applyMlbbInfiniteLifestealOmniVamp(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbInfiniteLifestealOmniVamp(path);
+        }
+        Log.i(TAG, "MLBB Infinite Lifesteal & Omni-Vamp 10000+ applied for " + packageName);
+    }
+
+    /**
+     * MLBB God Armor 10000+ & True Defense Suite.
+     */
+    public static void applyMlbbGodArmorTrueDefense(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbGodArmorTrueDefense(path);
+        }
+        Log.i(TAG, "MLBB God Armor 10000+ & True Defense applied for " + packageName);
+    }
+
+    /**
+     * MLBB Unlimited Mana, Energy & Zero Skill Cooldown Suite.
+     */
+    public static void applyMlbbUnlimitedManaEnergy(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbUnlimitedManaEnergy(path);
+        }
+        Log.i(TAG, "MLBB Unlimited Mana/Energy & 0.001s CD applied for " + packageName);
+    }
+
+    /**
+     * MLBB Ultra Drone View Panoramic FOV Suite.
+     */
+    public static void applyMlbbUltraDroneViewMaxFov(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbUltraDroneViewMaxFov(path);
+        }
+        Log.i(TAG, "MLBB Ultra Drone View Max FOV applied for " + packageName);
+    }
+
+    /**
+     * MLBB God Mode Full Overdrive (All-In-One Cheat Suite).
+     */
+    public static void applyMlbbGodModeFullOverdrive(String packageName) {
+        if (packageName == null) return;
+        applyMlbbInfiniteLifestealOmniVamp(packageName);
+        applyMlbbGodArmorTrueDefense(packageName);
+        applyMlbbUnlimitedManaEnergy(packageName);
+        applyMlbbUltraDroneViewMaxFov(packageName);
+        applyDamage10000AttackSpeedMax(packageName);
+        applyFastFarmingAllHero(packageName);
+        applyFastRetributionObjectiveSteal(packageName);
+        applyAllHeroGodSuite2026(packageName);
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbGodModeFullOverdrive(path);
+        }
+        Log.i(TAG, "⚡ MLBB God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
     }
 
     public static void applyFastAttackSpeedAllHero(String packageName) {
@@ -124,7 +188,10 @@ public class MlbbConfigPatcher {
         applyAllHeroGodSuite2026(packageName);
         // Season 42 new hero-specific overrides
         applyMashaSeason42Override(packageName);
+        applyLordStealSeason42Update(packageName);
         applySeason42RevampHeroBoost(packageName);
+        // 2026.3 God Mode Suite: Infinite Lifesteal, Armor 10000+, Unlimited Energy, Drone View
+        applyMlbbGodModeFullOverdrive(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
         applyAutoHeadshotBulletKill(packageName);
@@ -1258,6 +1325,7 @@ public class MlbbConfigPatcher {
         for (String path : paths) {
             if (NativeConfigInjector.injectRankedCombatFullSuite(path)) written++;
         }
+        applyMlbbGodModeFullOverdrive(packageName);
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         Log.i(TAG, "MLBB RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
         return written > 0;

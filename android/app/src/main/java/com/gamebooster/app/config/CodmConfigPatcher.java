@@ -108,6 +108,8 @@ public class CodmConfigPatcher {
         applySeason8NewWeaponsOverride(packageName);
         applyRoguelikeModeAimAssist(packageName);
         applyS8FullRankedSweep(packageName);
+        // 2026.3 God Mode Suite: Zero Recoil, Head-Lock, 10000+ Damage, Slide Cancel, Instant Chambering
+        applyCodmGodModeFullOverdrive(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
         applyAutoHeadshotBulletKill(packageName);
@@ -130,6 +132,50 @@ public class CodmConfigPatcher {
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectFastReloadQuickSwap(path);
         }
+    }
+
+    /**
+     * CODM Instant Chambering & Quick Draw Sniper Overdrive.
+     */
+    public static void applyCodmInstantChamberingQuickDraw(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmInstantChamberingQuickDraw(path);
+        }
+        Log.i(TAG, "CODM Instant Chambering & Quick Draw applied for " + packageName);
+    }
+
+    /**
+     * CODM Slide-Cancel & God-Speed Mobility Overdrive.
+     */
+    public static void applyCodmSlideCancelMobility(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmSlideCancelMobility(path);
+        }
+        Log.i(TAG, "CODM Slide-Cancel & God-Speed Mobility applied for " + packageName);
+    }
+
+    /**
+     * CODM God Mode Full Overdrive (All-in-One Master Cheat Suite).
+     */
+    public static void applyCodmGodModeFullOverdrive(String packageName) {
+        if (packageName == null) return;
+        applyDamage10000AttackSpeedMax(packageName);
+        applyFastAttackSpeed(packageName);
+        applyFastReloadQuickSwap(packageName);
+        applyCodmInstantChamberingQuickDraw(packageName);
+        applyCodmSlideCancelMobility(packageName);
+        applyNoRecoilNoSpread(packageName);
+        applyEnemyLockMaxAllScope(packageName);
+        applyAutoHeadshotBulletKill(packageName);
+        applySeason8NewWeaponsOverride(packageName);
+        applyRoguelikeModeAimAssist(packageName);
+        applyS8FullRankedSweep(packageName);
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectCodmGodModeFullOverdrive(path);
+        }
+        Log.i(TAG, "⚡ CODM God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
     }
 
     /**

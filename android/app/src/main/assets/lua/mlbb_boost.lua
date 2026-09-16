@@ -203,6 +203,75 @@ profile.ult_cd_reduction = 1.0
 profile.zero_skill_cost = true
 profile.max_ult_charge = true
 
+-- ── 🛡️ GOD ARMOR & TRUE DEFENSE 10000+ ─────────────────────────────────────────
+profile.god_armor_mode = true
+profile.physical_defense = 10000
+profile.magic_defense = 10000
+profile.armor_max = 10000
+profile.damage_reduction = 1.0
+profile.damage_reduction_percent = 100
+profile.physical_shield = 10000
+profile.magic_shield = 10000
+profile.shield_multiplier = 10.0
+profile.shield_boost = 10000
+profile.shield_absorption = 1.0
+profile.passive_shield_regen = 10000
+profile.max_hp_boost = 10000
+profile.true_damage_immunity = 1
+profile.anti_crit_reduction = 1.0
+profile.crowd_control_reduction = 1.0
+profile.tenacity_max = 1.0
+profile.immortality_revive_zero_cd = 1
+profile.athena_shield_instant_proc = 1
+profile.antique_cuirass_dmg_reduction = 1.0
+profile.blade_armor_reflect_damage = 10000
+
+-- ── 🩸 INFINITE LIFESTEAL & OMNI-VAMP 10000+ ───────────────────────────────────
+profile.infinite_lifesteal = true
+profile.lifesteal_boost = 10000
+profile.lifesteal_percent = 100
+profile.lifesteal_multiplier = 100.0
+profile.physical_lifesteal = 10000
+profile.magic_lifesteal = 10000
+profile.spell_vamp_boost = 10000
+profile.spell_vamp_percent = 100
+profile.omni_vamp = 10000
+profile.omni_vamp_boost = 10000
+profile.alucard_lifesteal_max = 10000
+profile.alucard_omni_vamp = 10000
+profile.hp_regen_rate = 10000
+profile.hp_regen_boost = 10000
+profile.passive_hp_regen = 10000
+profile.instant_heal_on_hit = 10000
+profile.anti_heal_bypass = 1
+profile.anti_heal_immunity = 1
+profile.lifesteal_coefficient = 10.0
+profile.spell_vamp_coefficient = 10.0
+
+-- ── 🌀 UNLIMITED MANA, ENERGY & 0.001s COOLDOWN ───────────────────────────────
+profile.unlimited_mana_energy = true
+profile.zero_mana_cost = 1
+profile.infinite_mana = 1
+profile.mana_regen_rate = 10000
+profile.zero_energy_cost = 1
+profile.infinite_energy = 1
+profile.energy_regen_rate = 10000
+profile.fanny_unlimited_energy_lock = 1
+profile.ling_unlimited_energy_lock = 1
+profile.nolan_unlimited_energy_lock = 1
+profile.skill_zero_cd = 1
+profile.ult_instant_reset = 1
+
+-- ── 👁️ ULTRA DRONE VIEW MAX PANORAMIC FOV ─────────────────────────────────────
+profile.ultra_drone_view = true
+profile.camera_height = 3
+profile.fov_boost = 1.5
+profile.drone_view = 1
+profile.panoramic_fov = 1.5
+profile.fog_of_war_removal = 1
+profile.ultra_wallhack_esp_clarity = 1
+profile.vision_range_boost = 2.0
+
 -- ── 🏃 Movement, Touch & Drone View ──────────────────────────────────────────
 profile.fast_run = true
 profile.movement_speed_boost = true

@@ -138,31 +138,48 @@ profile.scope_headshot_lock         = true
 profile.headshot_multiplier         = 999
 profile.head_damage_max             = 99999
 
--- Fast Reload
+-- Fast Reload & Instant Chambering Sniper Overdrive
 profile.fast_reload = true
 profile.reload_speed_multiplier = 10.0
 profile.sleight_of_hand = true
 profile.instant_chambering = true
 profile.bolt_cycle_instant = true
+profile.bolt_action_cycle_ms = 0
+profile.fast_bolt_pull_speed = 10.0
+profile.quick_draw_factor = 10.0
 profile.quick_swap = true
 profile.draw_speed_boost = 10.0
+profile.blank_scope_accuracy = 1.0
+profile.quick_scope_accuracy_threshold = 1.0
 
--- Damage Boost
+-- Damage Boost & 3x Hitbox Armor Shredder
 profile.damage_boost = true
 profile.damage_multiplier = 10000
+profile.damage_lock_max = 10000
 profile.true_damage_boost = true
-profile.headshot_multiplier = 5.0
+profile.headshot_multiplier = 999.0
 profile.crit_rate_boost = 100
 profile.penetration_boost = true
 profile.vest_damage_bypass = true
+profile.helmet_penetration_level3 = 1.0
+profile.hitbox_multiplier = 3.0
+profile.one_shot_kill_hitbox = 1
 profile.hit_reg_sync_rate = 1000
 
--- Fast Run / Movement
+-- Fast Run, Slide-Cancel & Mobility Overdrive
 profile.fast_run = true
 profile.sprint_speed_max = true
-profile.slide_speed_boost = true
+profile.sprint_acceleration = 10.0
+profile.slide_delay_ms = 0
+profile.slide_cancel_enabled = 1
+profile.slide_speed_boost = 3.0
+profile.jump_fatigue_removal = 1
+profile.fast_mantle = 1
 profile.joystick_zero_deadzone = true
+profile.joystick_response_level = 3
 profile.zero_input_lag = true
+profile.touch_polling_rate = 1000
+profile.touch_zero_delay = true
 
 -- Ranked & Classic: All Map Coverage
 profile.ranked_combat_suite = true
