@@ -111,8 +111,13 @@ class ShizukuStatusDashboardView @JvmOverloads constructor(
             tvNetwork.text = "Online"
             tvNetwork.setTextColor(COLOR_CYAN)
         } else {
-            tvNetwork.text = "Offline"
-            tvNetwork.setTextColor(COLOR_OFFLINE)
+            if (status.isBinderAlive) {
+                tvNetwork.text = "Offline (IPC Active ⚡)"
+                tvNetwork.setTextColor(COLOR_ACTIVE)
+            } else {
+                tvNetwork.text = "Offline"
+                tvNetwork.setTextColor(COLOR_OFFLINE)
+            }
         }
 
         // App Status

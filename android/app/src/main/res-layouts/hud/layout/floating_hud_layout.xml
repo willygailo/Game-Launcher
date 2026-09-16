@@ -376,6 +376,139 @@
                 android:textStyle="bold"
                 android:letterSpacing="0.04" />
         </LinearLayout>
+
+        <!-- ESPORTS IN-GAME TURBO ACTION CONTROLS (FULLY WORKING) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚡ TURBO CONTROLS"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Row 1: RAM Boost + 185Hz Lock -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_hud_ram_boost"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="🚀 RAM Boost"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+
+                <Button
+                    android:id="@+id/btn_hud_185hz"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="⚡ 185Hz Lock"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+            </LinearLayout>
+
+            <!-- Row 2: Crosshair + Gaming DND -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_hud_crosshair"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="🎯 Crosshair"
+                    android:textColor="@color/text_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+
+                <Button
+                    android:id="@+id/btn_hud_dnd"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="🔕 Gaming DND"
+                    android:textColor="@color/text_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+            </LinearLayout>
+
+            <!-- Row 3: Shadow Boost + Screenshot -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_hud_visual_filter"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="👁️ Filter: Off"
+                    android:textColor="@color/accent_amber"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+
+                <Button
+                    android:id="@+id/btn_hud_screenshot"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="📸 Screenshot"
+                    android:textColor="@color/text_primary"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+            </LinearLayout>
+
+            <!-- Full-Width Tuck / Hide Button -->
+            <Button
+                android:id="@+id/btn_hud_hide_dock"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/hud_chip_bg"
+                android:text="🙈 TUCK HUD TO EDGE (NO OBSTRUCTION)"
+                android:textColor="@color/accent_cyan"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                android:padding="0dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- ================================================================= -->

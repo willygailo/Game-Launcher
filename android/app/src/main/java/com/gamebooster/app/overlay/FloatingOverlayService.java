@@ -27,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -129,7 +130,21 @@ public class FloatingOverlayService extends Service {
     private int livePingMs = 28;
     private String networkTypeStr = "Wi-Fi";
 
-    private final Runnable autoCollapseRunnable = () -> switchHudMode(HudMode.PILL);
+    private static volatile boolean sSessionDismissed = false;
+
+    public static boolean isSessionDismissed() {
+        return sSessionDismissed;
+    }
+
+    public static void setSessionDismissed(boolean dismissed) {
+        sSessionDismissed = dismissed;
+    }
+
+    private final Runnable autoCollapseRunnable = () -> {
+        if (currentMode == HudMode.EXPANDED_DOCK) {
+            switchHudMode(HudMode.PILL);
+        }
+    };
 
     public static boolean isOverlayRunning() {
         return isRunning;
@@ -290,7 +305,8 @@ public class FloatingOverlayService extends Service {
         if (btnClose != null) {
             btnClose.setOnClickListener(v -> {
                 performHaptic();
-                Toast.makeText(getApplicationContext(), "⚡ Gaming HUD Closed", Toast.LENGTH_SHORT).show();
+                setSessionDismissed(true);
+                Toast.makeText(getApplicationContext(), "⚡ Gaming HUD Closed for this match", Toast.LENGTH_SHORT).show();
                 stopSelf();
             });
         }
@@ -306,6 +322,143 @@ public class FloatingOverlayService extends Service {
         tvHudRam = overlayView.findViewById(R.id.tv_hud_ram);
         pbHudRam = overlayView.findViewById(R.id.pb_hud_ram);
         tvHudAutoInjectStatus = overlayView.findViewById(R.id.tv_hud_auto_inject_status);
+
+        // ─────────────────────────────────────────────────────────────────
+        // 6 Interactive Esports Turbo Buttons (Fully Functional)
+        // ─────────────────────────────────────────────────────────────────
+
+        // 1. RAM Boost & Cache Purge
+        Button btnRamBoost = overlayView.findViewById(R.id.btn_hud_ram_boost);
+        if (btnRamBoost != null) {
+            btnRamBoost.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                Toast.makeText(getApplicationContext(), "🚀 Purging Cache & Boosting RAM...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.RamZramChannel.trimMemoryAndCleanCache(getApplicationContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        updateTelemetryData();
+                        Toast.makeText(getApplicationContext(), "⚡ RAM Purged & Optimized!", Toast.LENGTH_SHORT).show();
+                    });
+                });
+            });
+        }
+
+        // 2. 185Hz Extreme Overdrive Lock
+        Button btn185Hz = overlayView.findViewById(R.id.btn_hud_185hz);
+        if (btn185Hz != null) {
+            btn185Hz.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.MaxHzForceChannel.forceApply(185);
+                });
+                Toast.makeText(getApplicationContext(), "⚡ 185Hz Extreme Overdrive Locked!", Toast.LENGTH_SHORT).show();
+                updateTelemetryData();
+            });
+        }
+
+        // 3. Crosshair Aim Assist Overlay Toggle
+        Button btnCrosshair = overlayView.findViewById(R.id.btn_hud_crosshair);
+        if (btnCrosshair != null) {
+            boolean isCrosshairActive = com.gamebooster.app.overlay.CrosshairOverlayService.isRunning();
+            btnCrosshair.setText(isCrosshairActive ? "🎯 Crosshair: ON" : "🎯 Crosshair: OFF");
+            btnCrosshair.setTextColor(isCrosshairActive ? Color.parseColor("#00FF66") : Color.parseColor("#E2E8F0"));
+
+            btnCrosshair.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                boolean running = com.gamebooster.app.overlay.CrosshairOverlayService.isRunning();
+                if (!running) {
+                    com.gamebooster.app.overlay.CrosshairOverlayService.startOverlay(getApplicationContext());
+                    btnCrosshair.setText("🎯 Crosshair: ON");
+                    btnCrosshair.setTextColor(Color.parseColor("#00FF66"));
+                    Toast.makeText(getApplicationContext(), "🎯 Crosshair Aim Assist Active", Toast.LENGTH_SHORT).show();
+                } else {
+                    com.gamebooster.app.overlay.CrosshairOverlayService.stopOverlay(getApplicationContext());
+                    btnCrosshair.setText("🎯 Crosshair: OFF");
+                    btnCrosshair.setTextColor(Color.parseColor("#E2E8F0"));
+                    Toast.makeText(getApplicationContext(), "Crosshair Disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        // 4. Gaming DND Toggle
+        Button btnDnd = overlayView.findViewById(R.id.btn_hud_dnd);
+        if (btnDnd != null) {
+            boolean isDndActive = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
+            btnDnd.setText(isDndActive ? "🔕 DND: ON" : "🔔 DND: OFF");
+            btnDnd.setTextColor(isDndActive ? Color.parseColor("#00FF66") : Color.parseColor("#E2E8F0"));
+
+            btnDnd.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                boolean active = com.gamebooster.app.gamespace.GameSpaceDndManager.isDndActive(getApplicationContext());
+                com.gamebooster.app.gamespace.GameSpaceDndManager.setGamingDndMode(getApplicationContext(), !active);
+                btnDnd.setText(!active ? "🔕 DND: ON" : "🔔 DND: OFF");
+                btnDnd.setTextColor(!active ? Color.parseColor("#00FF66") : Color.parseColor("#E2E8F0"));
+                Toast.makeText(getApplicationContext(), !active ? "🔕 Gaming DND Enabled" : "🔔 Gaming DND Disabled", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        // 5. Visual Shader Filter Switcher
+        Button btnFilter = overlayView.findViewById(R.id.btn_hud_visual_filter);
+        if (btnFilter != null) {
+            com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType curr =
+                    com.gamebooster.app.overlay.VisualFilterOverlayService.getCurrentFilter();
+            btnFilter.setText("👁️ " + curr.label);
+
+            btnFilter.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType current =
+                        com.gamebooster.app.overlay.VisualFilterOverlayService.getCurrentFilter();
+                com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType next;
+                if (current == com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF) {
+                    next = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.SNIPER_SHADOW_BOOST;
+                } else if (current == com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.SNIPER_SHADOW_BOOST) {
+                    next = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.VIBRANT_SATURATION;
+                } else if (current == com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.VIBRANT_SATURATION) {
+                    next = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.NIGHT_ANTI_GLARE;
+                } else {
+                    next = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF;
+                }
+                com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(getApplicationContext(), next);
+                btnFilter.setText("👁️ " + next.label);
+                Toast.makeText(getApplicationContext(), "👁️ Shader: " + next.label, Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        // 6. Clean Screenshot Dispatcher
+        Button btnScreenshot = overlayView.findViewById(R.id.btn_hud_screenshot);
+        if (btnScreenshot != null) {
+            btnScreenshot.setOnClickListener(v -> {
+                performHaptic();
+                switchHudMode(HudMode.HIDDEN_EDGE);
+                handler.postDelayed(() -> {
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        java.io.File picDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES);
+                        java.io.File outDir = new java.io.File(picDir, "Screenshots");
+                        if (!outDir.exists()) outDir.mkdirs();
+                        String shotPath = new java.io.File(outDir, "Game_" + System.currentTimeMillis() + ".png").getAbsolutePath();
+                        com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("screencap -p " + shotPath);
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            Toast.makeText(getApplicationContext(), "📸 Screenshot saved to Pictures/Screenshots", Toast.LENGTH_SHORT).show();
+                        });
+                    });
+                }, 300);
+            });
+        }
+
+        // 7. Full-Width Tuck to Edge Button
+        Button btnHideDock = overlayView.findViewById(R.id.btn_hud_hide_dock);
+        if (btnHideDock != null) {
+            btnHideDock.setOnClickListener(v -> {
+                performHaptic();
+                Toast.makeText(getApplicationContext(), "⚡ HUD Hidden — Tap edge strip to restore", Toast.LENGTH_SHORT).show();
+                switchHudMode(HudMode.HIDDEN_EDGE);
+            });
+        }
     }
 
     private void setupDragListeners() {
@@ -316,6 +469,8 @@ public class FloatingOverlayService extends Service {
             private float initialTouchY;
             private boolean isClick = false;
             private long lastClickTimestamp = 0;
+            private final Handler clickDebounceHandler = new Handler(Looper.getMainLooper());
+            private Runnable pendingClickRunnable = null;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -346,21 +501,36 @@ public class FloatingOverlayService extends Service {
                             performHaptic();
                             long now = System.currentTimeMillis();
                             if (now - lastClickTimestamp < 350) {
-                                // Double-Tap Detected -> Quick Hide / Unhide Toggle
+                                // Double-Tap Detected -> Cancel pending single-tap & HIDE TO EDGE
                                 lastClickTimestamp = 0;
+                                if (pendingClickRunnable != null) {
+                                    clickDebounceHandler.removeCallbacks(pendingClickRunnable);
+                                    pendingClickRunnable = null;
+                                }
                                 if (currentMode == HudMode.HIDDEN_EDGE) {
                                     switchHudMode(HudMode.PILL);
+                                    Toast.makeText(getApplicationContext(), "⚡ HUD Restored", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "⚡ HUD Hidden — Tap edge strip to restore", Toast.LENGTH_SHORT).show();
                                     switchHudMode(HudMode.HIDDEN_EDGE);
+                                    Toast.makeText(getApplicationContext(), "⚡ HUD Hidden — Tap edge strip to restore", Toast.LENGTH_SHORT).show();
                                 }
                                 return true;
                             }
                             lastClickTimestamp = now;
 
+                            // Debounce single tap: wait 280ms so double-tap can cancel it
                             if (currentMode == HudMode.PILL || currentMode == HudMode.MICRO_FPS) {
-                                switchHudMode(HudMode.EXPANDED_DOCK);
-                                scheduleAutoCollapse();
+                                if (pendingClickRunnable != null) {
+                                    clickDebounceHandler.removeCallbacks(pendingClickRunnable);
+                                }
+                                pendingClickRunnable = () -> {
+                                    if (currentMode == HudMode.PILL || currentMode == HudMode.MICRO_FPS) {
+                                        switchHudMode(HudMode.EXPANDED_DOCK);
+                                        scheduleAutoCollapse();
+                                    }
+                                    pendingClickRunnable = null;
+                                };
+                                clickDebounceHandler.postDelayed(pendingClickRunnable, 280);
                             }
                         } else {
                             // Magnetic Edge Snapping with boundary clamp
@@ -436,6 +606,12 @@ public class FloatingOverlayService extends Service {
 
     private void switchHudMode(HudMode mode) {
         this.currentMode = mode;
+
+        // CRITICAL FIX: Kill any pending auto-collapse timers whenever leaving expanded dock!
+        if (handler != null) {
+            handler.removeCallbacks(autoCollapseRunnable);
+        }
+
         applyViewportVisibility(mode);
 
         getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit()
@@ -514,7 +690,9 @@ public class FloatingOverlayService extends Service {
     private void scheduleAutoCollapse() {
         if (handler == null) return;
         handler.removeCallbacks(autoCollapseRunnable);
-        handler.postDelayed(autoCollapseRunnable, 5000);
+        if (currentMode == HudMode.EXPANDED_DOCK) {
+            handler.postDelayed(autoCollapseRunnable, 8000);
+        }
     }
 
     private final Choreographer.FrameCallback choreographerCallback = new Choreographer.FrameCallback() {

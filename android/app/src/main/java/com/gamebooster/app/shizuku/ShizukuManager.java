@@ -334,13 +334,15 @@ public class ShizukuManager {
         if (context == null) return;
         new AlertDialog.Builder(context)
                 .setTitle("📶 SHIZUKU OFFLINE & WI-FI PERSISTENCE")
-                .setMessage("💡 HOW SHIZUKU WORKS OFFLINE:\n\n" +
-                        "1. Local Binder IPC:\n" +
-                        "Shizuku does NOT require Wi-Fi to execute commands. Once authorized, communication is 100% internal kernel Binder IPC.\n\n" +
+                .setMessage("💡 HOW SHIZUKU WORKS OFFLINE (v13.6.0+):\n\n" +
+                        "1. Local Kernel Binder IPC:\n" +
+                        "Shizuku does NOT require Wi-Fi to execute commands. Once authorized, communication is 100% internal kernel Binder IPC (/dev/binder).\n\n" +
                         "2. Auto-Immunity Applied:\n" +
-                        "The app automatically exempts Shizuku from battery optimization and disables Android's Phantom Process Killer so the daemon survives Wi-Fi disconnects.\n\n" +
-                        "3. Starting Shizuku Without Wi-Fi Router:\n" +
-                        "Turn ON your phone's 'Personal Hotspot' in Android Settings. Even with no internet, Wireless Debugging can pair and start Shizuku over the hotspot interface. Once started, turn off hotspot—Shizuku stays active until reboot!")
+                        "Game Booster automatically disables Android's Phantom Process Killer and whitelists Shizuku from Doze/LMKD so the daemon is never killed when Wi-Fi turns off.\n\n" +
+                        "3. Shizuku v13.6.0 Auto-Start Without Root (Android 13+):\n" +
+                        "In Shizuku App Settings, enable 'Start on boot / Start on trusted WLAN'. Shizuku will auto-start without needing root or PC pairing whenever your device connects.\n\n" +
+                        "4. Starting Shizuku Without Any Wi-Fi Router:\n" +
+                        "Turn ON your phone's 'Personal Hotspot' in Settings (no data/load needed). Wireless Debugging will bind locally and let you start Shizuku. Once started, turn off hotspot—Shizuku stays active until reboot!")
                 .setPositiveButton("GOT IT", null)
                 .show();
     }

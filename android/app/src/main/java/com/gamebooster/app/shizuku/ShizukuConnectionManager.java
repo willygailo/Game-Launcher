@@ -146,22 +146,27 @@ public class ShizukuConnectionManager {
 
     /** Binder died — verify with confirmation ping before transitioning to DEAD. */
     public void onBinderDead() {
-        // Filter transient process-switching blips
-        sleepQuietly(150);
-        boolean confirmedDead = true;
-        try {
-            if (Shizuku.pingBinder()) {
-                confirmedDead = false;
+        // Filter transient network/Wi-Fi switching and process-switching blips
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean confirmedDead = true;
+            for (int i = 0; i < 3; i++) {
+                sleepQuietly(200);
+                try {
+                    if (Shizuku.pingBinder()) {
+                        confirmedDead = false;
+                        break;
+                    }
+                } catch (Throwable ignored) {}
             }
-        } catch (Throwable ignored) {}
 
-        if (confirmedDead) {
-            setState(State.DEAD);
-            currentAttempt.set(0);
-            scheduleReconnect();
-        } else {
-            Log.d(TAG, "onBinderDead fired, but Shizuku.pingBinder() is still alive. Preserving READY state.");
-        }
+            if (confirmedDead) {
+                setState(State.DEAD);
+                currentAttempt.set(0);
+                scheduleReconnect();
+            } else {
+                Log.d(TAG, "onBinderDead blip detected, but Shizuku.pingBinder() recovered. Preserving READY state.");
+            }
+        });
     }
 
     /** A bind attempt failed after waiting — keep state consistent. */
@@ -299,7 +304,10 @@ public class ShizukuConnectionManager {
                     // AppOps background execution permission
                     ShizukuExecutor.executeShizukuCommand("cmd appops set moe.shizuku.privileged.api RUN_IN_BACKGROUND allow");
                     ShizukuExecutor.executeShizukuCommand("cmd appops set com.gamebooster.app RUN_IN_BACKGROUND allow");
-                    Log.i(TAG, "Shizuku & GameLauncher whitelisted against Doze/LMKD sleep");
+                    // Disable Phantom Process Killer on Android 12-16 so Shizuku and elevated child daemons are never killed
+                    ShizukuExecutor.executeShizukuCommand("/system/bin/device_config put activity_manager max_phantom_processes 2147483647");
+                    ShizukuExecutor.executeShizukuCommand("/system/bin/setprop persist.sys.fflag.override.settings_enable_monitor_phantom_procs false");
+                    Log.i(TAG, "Shizuku & GameLauncher whitelisted against Doze/LMKD sleep & Phantom Process Killer disabled");
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "Failed to apply Doze whitelist", t);

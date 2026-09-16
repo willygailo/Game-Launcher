@@ -168,13 +168,13 @@ public class AutoGameMonitorService extends Service {
 
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                     com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
-                    if (!FloatingOverlayService.isOverlayRunning()) {
+                    if (!FloatingOverlayService.isOverlayRunning() && !FloatingOverlayService.isSessionDismissed()) {
                         FloatingOverlayService.startOverlay(getApplicationContext());
                     }
 
                     AppExecutors.getInstance().postToMainThread(() ->
                             android.widget.Toast.makeText(getApplicationContext(), "🎮 GAME-MANAGER: " + currentPackage
-                                    + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
+                                     + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
                 }
             } else if (lastActiveGamePackage != null) {
                 // Ignore transient system packages (in-game overlays, keyboards, Google Play login, dialogs, webviews)
@@ -195,6 +195,7 @@ public class AutoGameMonitorService extends Service {
                 consecutiveUnfocusedCount = 0;
                 lastSessionEndTimeMs = System.currentTimeMillis(); // record exit time for cooldown
                 com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(null);
+                FloatingOverlayService.setSessionDismissed(false); // Reset dismissal for next game
 
                 // End GameManager Session and revert to baseline
                 com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
