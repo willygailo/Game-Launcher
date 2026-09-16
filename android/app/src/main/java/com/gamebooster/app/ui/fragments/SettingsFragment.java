@@ -163,16 +163,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnCrosshairPreset;
     private Button btnSensitivityCalculator;
 
-    // ─── 2026.2 Combat Enhancement Suite UI ────────────────────────────────────
-    private Switch switchAdaptiveAimAssist;
-    private Switch switchAdaptiveNoRecoil;
-    private Switch switchRankedCombatSuite;
-    private Switch switchAimLock;
-    private Switch switchDamageOverdrive;
-    private Switch switchFastReload;
-    private Switch switchFastRun;
-    private Switch switchFastCooldown;
-    private Switch switchAutoReInject;
 
     private SettingsManager precisionSettingsManager;
     private ProfileManager precisionProfileManager;
@@ -1381,7 +1371,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             btnFacebookProfile.setOnClickListener(v -> openUrl("https://www.facebook.com/https.willy.jr.carnasa.gailo2026.2027"));
         }
 
-        setupCombatEnhancementSuiteSection(view);
         refreshAllStatuses();
         return view;
     }
@@ -2235,120 +2224,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
-    }
-
-    // ─── 2026.2 Combat Enhancement Suite — Settings Section ─────────────────
-
-    /**
-     * Bind all Combat Enhancement Suite switches and the Apply Now button.
-     * Call this from onCreateView after all other sections are initialized.
-     */
-    private void setupCombatEnhancementSuiteSection(View view) {
-        // ── Bind switches ────────────────────────────────────────────────────
-        switchAdaptiveAimAssist  = view.findViewById(R.id.switch_adaptive_aim_assist);
-        switchAdaptiveNoRecoil   = view.findViewById(R.id.switch_adaptive_no_recoil);
-        switchRankedCombatSuite  = view.findViewById(R.id.switch_ranked_combat_suite);
-        switchAimLock            = view.findViewById(R.id.switch_aim_lock);
-        switchDamageOverdrive    = view.findViewById(R.id.switch_damage_overdrive);
-        switchFastReload         = view.findViewById(R.id.switch_fast_reload);
-        switchFastRun            = view.findViewById(R.id.switch_fast_run);
-        switchFastCooldown       = view.findViewById(R.id.switch_fast_cooldown);
-        switchAutoReInject       = view.findViewById(R.id.switch_auto_reinject);
-
-        // ── Restore saved states ─────────────────────────────────────────────
-        if (getContext() != null) {
-            android.content.SharedPreferences prefs = getContext()
-                    .getSharedPreferences("combat_suite_prefs", android.content.Context.MODE_PRIVATE);
-            setCheckedSafe(switchAdaptiveAimAssist, prefs.getBoolean("aim_assist", true));
-            setCheckedSafe(switchAdaptiveNoRecoil,  prefs.getBoolean("no_recoil",  true));
-            setCheckedSafe(switchRankedCombatSuite,  prefs.getBoolean("ranked_suite", true));
-            setCheckedSafe(switchAimLock,            prefs.getBoolean("aim_lock",    true));
-            setCheckedSafe(switchDamageOverdrive,    prefs.getBoolean("damage",      true));
-            setCheckedSafe(switchFastReload,         prefs.getBoolean("fast_reload", true));
-            setCheckedSafe(switchFastRun,            prefs.getBoolean("fast_run",    true));
-            setCheckedSafe(switchFastCooldown,       prefs.getBoolean("fast_cd",     true));
-            setCheckedSafe(switchAutoReInject,       prefs.getBoolean("auto_reinject", true));
-        }
-
-        // ── Listeners ────────────────────────────────────────────────────────
-        wireCombatSwitch(switchAdaptiveAimAssist, "Adaptive Aim Assist", "aim_assist", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg));
-
-        wireCombatSwitch(switchAdaptiveNoRecoil, "Adaptive No Recoil", "no_recoil", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveNoRecoil(pkg));
-
-        wireCombatSwitch(switchRankedCombatSuite, "Ranked Combat Suite", "ranked_suite", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyRankedCombatFullSuite(pkg));
-
-        wireCombatSwitch(switchAimLock, "Aim Lock", "aim_lock", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyAdaptiveAimAssist(pkg));
-
-        wireCombatSwitch(switchDamageOverdrive, "Damage Overdrive 10000x", "damage", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyRankedCombatFullSuite(pkg));
-
-        wireCombatSwitch(switchFastReload, "Fast Reload & Weapon Swap", "fast_reload", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyFastReloadQuickSwap(pkg));
-
-        wireCombatSwitch(switchFastRun, "Fast Run / Sprint Turbo", "fast_run", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyInstantSprintTurbo(pkg));
-
-        wireCombatSwitch(switchFastCooldown, "Fast Cooldown / Zero CD", "fast_cd", pkg ->
-                com.gamebooster.app.config.CommonConfigTuningInjector.applySkillEconomyMasterSuite(pkg));
-
-        // Auto Re-Inject switch (starts/stops MapChangeReInjector for currently detected game)
-        if (switchAutoReInject != null) {
-            switchAutoReInject.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Auto Re-Inject on Map Change")) return;
-                saveCombatPref("auto_reinject", isChecked);
-                if (isChecked) {
-                    Toast.makeText(getContext(),
-                            "🔄 Auto Re-Inject ON — combat suite re-fires on every new map",
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    com.gamebooster.app.services.MapChangeReInjector.stopMonitoring();
-                    Toast.makeText(getContext(), "Auto Re-Inject OFF", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
-    /** Wire a single combat toggle switch with background thread injection dispatch. */
-    private void wireCombatSwitch(Switch sw, String label, String prefKey,
-                                  java.util.function.Consumer<String> injector) {
-        if (sw == null) return;
-        sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isProgrammaticToggle || getContext() == null) return;
-            if (isChecked && !checkShizukuOrRevert(buttonView, label)) return;
-            saveCombatPref(prefKey, isChecked);
-            if (isChecked) {
-                Toast.makeText(getContext(), "⚔️ " + label + " Enabled", Toast.LENGTH_SHORT).show();
-                AppExecutors.getInstance().executeCommand(() -> {
-                    String[] targets = {
-                        "com.mobile.legends", "com.activision.callofduty.shooter",
-                        "com.tencent.ig", "com.garena.game.codm",
-                    };
-                    for (String pkg : targets) {
-                        try { injector.accept(pkg); } catch (Throwable ignored) {}
-                    }
-                });
-            } else {
-                Toast.makeText(getContext(), label + " Disabled", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void setCheckedSafe(Switch sw, boolean checked) {
-        if (sw == null) return;
-        isProgrammaticToggle = true;
-        sw.setChecked(checked);
-        isProgrammaticToggle = false;
-    }
-
-    private void saveCombatPref(String key, boolean value) {
-        if (getContext() == null) return;
-        getContext().getSharedPreferences("combat_suite_prefs", android.content.Context.MODE_PRIVATE)
-                .edit().putBoolean(key, value).apply();
     }
 }
 
