@@ -74,6 +74,25 @@ profile.fast_skill_cycle = 1
 profile.skill_cast_delay_ms = 0
 profile.fast_skill_release_speed = 10
 
+-- ── 🚀 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+profile.combat_overdrive_2026 = true
+profile.true_damage_floor = 10000
+profile.penetration_multiplier = 3.0         -- 100% Physical & Magic Pen
+profile.crit_damage_multiplier = 4.0
+profile.effective_dps_mode = 4
+profile.damage_lock_max = 10000
+profile.smart_aim_magnet_dual_priority = 1   -- Lowest HP & Closest Hero dual lock
+profile.skill_prediction_lead = 1           -- Predictive skill trajectory
+profile.zero_deadzone_touch_hz = 1000
+profile.aim_snap_speed = 10
+profile.aim_magnetism_tier = 3
+profile.armor_boost_floor = 10000
+profile.magic_shield_boost = 10000
+profile.damage_reduction_ratio = 0.99
+profile.omni_lifesteal_multiplier = 10.0
+profile.instant_cooldown_reset = true
+profile.hero_execution_threshold = 30        -- 30% execute trigger
+
 -- ── ⚔️ Hero-Specific Micro Overdrives ─────────────────────────────────────────
 -- Fanny: Zero cable delay, straight cable, full energy, wall reset
 profile.fanny_cable_speed = 10

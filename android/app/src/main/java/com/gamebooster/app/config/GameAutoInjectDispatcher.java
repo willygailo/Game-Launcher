@@ -307,6 +307,8 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // Classic Combat Full Suite: identical payload — guarantees classic mode coverage
         try { MlbbConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+        try { MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -363,6 +365,8 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // Classic Combat Full Suite: guarantees classic mode coverage
         try { PubgConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+        try { PubgConfigPatcher.applyPubgmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -421,6 +425,8 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyRankedCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // Classic Combat Full Suite: guarantees classic mode coverage
         try { CodmConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
+        // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+        try { CodmConfigPatcher.applyCodmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {

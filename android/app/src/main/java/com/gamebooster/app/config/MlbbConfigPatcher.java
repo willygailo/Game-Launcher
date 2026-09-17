@@ -1330,5 +1330,22 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "MLBB RankedCombatFullSuite2026 applied (" + written + " paths) for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026.4 Latest Combat Overdrive (Damage Assist, Aim Lock, Armor Overdrive).
+     */
+    public static boolean applyMlbbCombatOverdrive2026(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.nativeInjectMlbbCombatOverdrive2026(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ MLBB 2026.4 Combat Overdrive (Damage + Aim + Armor) applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
 

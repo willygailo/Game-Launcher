@@ -1292,3 +1292,83 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── PUBGM: 2026.4 Latest Combat Overdrive (Damage, Aim Lock, Armor) ─────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmCombatOverdrive2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos || pathStr.rfind("UserCustom.ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 💥 Bullet Velocity & Damage Assist ──
+        {"r.CombatOverdrive2026",         "1"},
+        {"r.MuzzleVelocityFactor",        "3.0"},
+        {"r.PUBGBulletVelocityCompensation", "1"},
+        {"r.HitRegPacketSync",            "1000"},
+        {"HitRegSyncRate",                "1000"},
+        {"r.ArmorShredder",               "1"},
+        {"r.DamageMultiplierFloor",       "10000"},
+        {"r.DamageLockMax",               "10000"},
+        {"DamageLockMax",                 "10000"},
+
+        // ── 🎯 Head Bone Aim Lock & Silent Magnetism ──
+        {"r.HeadBonePriority",            "1"},
+        {"r.HeadBoneAimPriority",         "1"},
+        {"r.BoneIndex",                   "0"},        // Bone 0 = Head
+        {"r.AimAssistEnabled",            "1"},
+        {"r.AimAssistStrength",           "100"},
+        {"r.AimMagnetism",                "3"},
+        {"r.AimSnapThreshold",            "0"},
+        {"r.AllScopeSnapSpeed",           "10"},
+        {"r.LeadPredictionHz",            "1000"},
+        {"r.PredictiveAim",               "1"},
+        {"r.SilentAimbot",                "1"},
+
+        // ── 🛡️ Armor, Shield & Damage Absorption ──
+        {"r.PlayerDamageReduction",       "0.95"},
+        {"r.KineticShieldBoost",          "10000"},
+        {"r.FallDamageImmunity",          "1"},
+        {"r.VehicleCollisionPenalty",     "0"},
+        {"r.VehicleDamageToPlayer",       "0"},
+
+        // ── ⚡ Zero Delay Gyro & Touch ──
+        {"r.GyroSampleRate",              "1000"},
+        {"r.GyroZeroDelay",               "1"},
+        {"r.GyroStabilization",           "1"},
+        {"TouchPollingRate",              "1000"},
+        {"r.OneFrameThreadLag",           "0"},
+        {"r.FinishCurrentFrame",          "0"},
+        {"bFramePacingEnabled",           "True"},
+        {"AllowOcclusionQueries",         "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmCombatOverdrive2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+

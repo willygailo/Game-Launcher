@@ -2567,3 +2567,72 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: 2026.4 Latest Combat Overdrive (Damage, Aim Lock, Armor) ──────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbCombatOverdrive2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 💥 Damage Assist & Penetration Floor ──
+        {"CombatOverdrive2026",         "1"},
+        {"DamageLockMax",               "10000"},
+        {"TrueDamageFloor",             "10000"},
+        {"EffectiveDPSMode",            "4"},
+        {"PhysicalDamageBase",          "10000"},
+        {"MagicDamageBase",             "10000"},
+        {"PenetrationMultiplier",       "3.0"},
+        {"PhysicalPenetration",         "100"},
+        {"MagicPenetration",            "100"},
+        {"CritRateBoost",               "100"},
+        {"CritDamageMultiplier",        "4.0"},
+        {"HitRegSyncRate",              "1000"},
+        {"FrameSyncDamage",             "1"},
+        {"HeroExecutionThreshold",      "30"},
+
+        // ── 🎯 Aim Lock & Smart Reticle Magnetism ──
+        {"SmartAimMagnetDualPriority",  "1"},
+        {"SkillSmartAim",               "1"},
+        {"HeroLockPriority",            "0"},        // 0 = Lowest HP hero
+        {"SkillPredictionLead",         "1"},
+        {"AimSnapSpeed",                "10"},
+        {"AimMagnetismTier",            "3"},
+        {"ZeroDeadzoneTouchHz",         "1000"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+
+        // ── 🛡️ Armor & Immortal Lifesteal Overdrive ──
+        {"ArmorBoostFloor",             "10000"},
+        {"PhysicalDefense",             "10000"},
+        {"MagicDefense",                "10000"},
+        {"MagicShieldBoost",            "10000"},
+        {"PhysicalShield",              "10000"},
+        {"DamageReductionRatio",        "0.99"},
+        {"DamageReduction",             "0.99"},
+        {"OmniLifestealMultiplier",     "10.0"},
+        {"LifestealBoost",              "1"},
+        {"SpellVampBoost",              "1"},
+
+        // ── ⚡ Skill Economy & Unlimited Mobility ──
+        {"UnlimitedEnergy",             "1"},
+        {"UnlimitedMana",               "1"},
+        {"InstantCooldownReset",        "1"},
+        {"CooldownReduction",           "0"},
+        {"FastSkillCycle",              "1"},
+        {"ZeroSkillDelay",              "1"},
+        {"ZeroDelaySkillTap",           "1"},
+        {"SkillCastDelayMs",            "0"},
+        {"FastSkillReleaseSpeed",       "10"},
+        {"SkillAutoChain",              "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "MlbbCombatOverdrive2026");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+

@@ -2610,3 +2610,69 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     LOGI("PubgmEnemyLockAllScope injected: %s [ok=%d] UE4-CVars scope=50/150/250/350/450m r.HeadshotBulletThreshold=3 r.KillBulletThreshold=5", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── Universal: 2026.4 Armor & Shield Fortification Lock ─────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalArmorShieldLock
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"ArmorBoostFloor",             "10000"},
+        {"KineticShieldBoost",          "10000"},
+        {"PhysicalDefense",             "10000"},
+        {"MagicDefense",                "10000"},
+        {"DamageReductionRatio",        "0.95"},
+        {"DamageReduction",             "0.95"},
+        {"FallDamageImmunity",          "1"},
+        {"VehicleCollisionPenalty",     "0"},
+        {"FlakJacketExplosionLock",     "1"},
+        {"StunFlashImmunity",           "1"},
+        {"r.PlayerDamageReduction",       "0.95"},
+        {"r.KineticShieldBoost",          "10000"},
+        {"r.VehicleCollisionPenalty",     "0"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UniversalArmorShieldLock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── Universal: 2026.4 Aim Magnet & Zero-Deadzone Lock ───────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalAimMagnetLock
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"AimAssistLockMax",            "1"},
+        {"AimMagnetism",                "1000"},
+        {"AimMagnetismTier",            "3"},
+        {"AimSnapSpeed",                "10"},
+        {"AimSnapThreshold",            "0"},
+        {"HeadBonePriority",            "1"},
+        {"HeadMagnetism",               "1000"},
+        {"AdsZeroDelay",                "1"},
+        {"ZeroDeadzoneTouchHz",         "1000"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"r.AimAssistStrength",           "100"},
+        {"r.AimMagnetism",                "3"},
+        {"r.HeadBonePriority",            "1"},
+        {"r.BoneIndex",                   "0"},
+        {"r.GyroSampleRate",              "1000"},
+        {"r.GyroZeroDelay",               "1"}
+    };
+
+    bool ok = apply_keys_to_file(pathStr, path, keys, "UniversalAimMagnetLock");
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+

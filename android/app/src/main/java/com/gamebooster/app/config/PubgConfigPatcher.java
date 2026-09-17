@@ -1158,4 +1158,21 @@ public class PubgConfigPatcher {
         Log.i(TAG, "PUBGM ClassicCombatFullSuite2026 → dispatching RankedCombatFullSuite for " + packageName);
         return applyRankedCombatFullSuite(packageName);
     }
+
+    /**
+     * 2026.4 Latest Combat Overdrive (Damage Assist, Aim Lock, Armor Overdrive).
+     */
+    public static boolean applyPubgmCombatOverdrive2026(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.nativeInjectPubgmCombatOverdrive2026(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ PUBGM 2026.4 Combat Overdrive (Damage + Aim + Armor) applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }

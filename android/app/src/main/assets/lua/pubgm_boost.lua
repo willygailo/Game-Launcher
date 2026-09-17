@@ -251,6 +251,19 @@ profile.v46_weapon_fix            = true
 profile.midnight_hunters_map      = true
 profile.v46_vehicle_override      = true
 
+-- ── 🚀 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+profile.r_combat_overdrive_2026   = 1
+profile.r_bullet_velocity_factor  = 3.0         -- 3.0x muzzle velocity (zero bullet drop)
+profile.r_armor_shredder          = 1           -- Instant Lv3 vest/helmet shredder
+profile.r_player_damage_reduction = 0.95        -- 95% incoming damage absorption
+profile.r_fall_damage_immunity    = 1           -- Zero fall damage
+profile.r_head_bone_priority      = 1           -- Head bone index 0 hard-lock
+profile.r_bone_index              = 0
+profile.r_lead_prediction_hz      = 1000        -- 1000Hz lead prediction calculation
+profile.r_hit_reg_packet_sync     = 1000        -- Frame-sync hit registration
+profile.r_all_scope_snap_speed    = 10          -- Instant scope acquisition
+profile.r_kinetic_shield_boost    = 10000       -- Max armor health pool
+
 -- ── 🛡️ ACE TWO-PASS BYPASS (Q2 2026 — Krafton/Tencent ACE upgrade) ──────────────────
 -- ACE Q2 2026 now validates CVar value ranges AND scans memory every 1.8s.
 -- Strategy: Pass 1 writes legit-looking graphics CVars (cover track).

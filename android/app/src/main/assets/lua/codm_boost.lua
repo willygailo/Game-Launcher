@@ -34,6 +34,18 @@ profile.weapon_sway = 0
 profile.gyro_stabilization = 1
 profile.gyro_sample_rate = 1000
 
+-- ── 🚀 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
+profile.combat_overdrive_2026       = true
+profile.kinetic_armor_overdrive     = 10000       -- 10,000 Kinetic defense floor
+profile.damage_reduction_ratio      = 0.95        -- 95% incoming damage absorption
+profile.flak_jacket_explosion_lock  = 1           -- Zero explosive damage
+profile.laser_beam_zero_spread      = true        -- Zero weapon spread on all optics
+profile.ads_zero_delay_instant      = true        -- 0ms ADS transition
+profile.head_magnetism_max          = 1000        -- Max head magnetism
+profile.hit_reg_packet_sync_1000hz  = true        -- 1000Hz hit packet sync
+profile.damage_floor_max            = 10000       -- Max damage floor
+profile.aim_snap_speed_instant      = 10          -- Maximum snap acquisition
+
 -- ── 🎯 Enemy Lock MAX — Dame Aim Assist + Multi-Range + Auto Headshot (2026.3) ──────────
 -- Enemy lock: targets lowest HP enemy first, head-bone hard-lock
 profile.enemy_lock_max              = true

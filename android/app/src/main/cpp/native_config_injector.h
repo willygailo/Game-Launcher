@@ -1648,6 +1648,53 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmS8FullRankedSweep
   (JNIEnv *, jclass, jstring);
 
+/*
+ * ── 2026.4 Latest Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ──
+ */
+
+/*
+ * nativeInjectMlbbCombatOverdrive2026
+ * Injects 10,000 True Damage, Dual-Priority Smart Aim, 10,000 Armor/Magic Shield,
+ * 100% Penetration, 4.0x Crit, Omni-Lifesteal, and Zero-Delay Cooldown.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbCombatOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmCombatOverdrive2026
+ * Injects 3.0x Muzzle Velocity, Head Bone Lock, 10,000 Damage Lock, 95% Damage Reduction,
+ * Lv3 Armor Shredder, and 1000Hz Hit-Reg Packet Sync.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmCombatOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmCombatOverdrive2026
+ * Injects Laser Beam Zero Spread, Kinetic Armor 10000, 1000Hz Gyro Stabilization,
+ * ADS 0-Delay Instant Zoom, and Max Damage Floor.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmCombatOverdrive2026
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalArmorShieldLock
+ * Universal Armor Fortification: 10000 Armor/Shield, 95% damage absorption, zero collision penalty.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalArmorShieldLock
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectUniversalAimMagnetLock
+ * Universal Aim Assist: Max magnetism, zero deadzone, 1000Hz touch & gyro.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalAimMagnetLock
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

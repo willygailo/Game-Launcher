@@ -107,6 +107,13 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmSeason8IsolatedPoi(String path);
     public static native boolean nativeInjectCodmS8FullRankedSweep(String path);
 
+    // 2026.4 Latest Combat Overdrive Methods (Damage Assist, Aim Lock, Armor Overdrive)
+    public static native boolean nativeInjectMlbbCombatOverdrive2026(String path);
+    public static native boolean nativeInjectPubgmCombatOverdrive2026(String path);
+    public static native boolean nativeInjectCodmCombatOverdrive2026(String path);
+    public static native boolean nativeInjectUniversalArmorShieldLock(String path);
+    public static native boolean nativeInjectUniversalAimMagnetLock(String path);
+
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);

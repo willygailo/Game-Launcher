@@ -1055,3 +1055,85 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: 2026.4 Latest Combat Overdrive (Damage, Aim Lock, Armor) ──────────
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmCombatOverdrive2026
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 💥 Damage Assist & Laser-Beam Zero Spread ──
+        {"CombatOverdrive2026",         "1"},
+        {"DamageFloorMax",              "10000"},
+        {"DamageLockMax",               "10000"},
+        {"HitRegSyncRate",              "1000"},
+        {"HitRegPacketSync1000Hz",      "1"},
+        {"WeaponSpread",                "0"},
+        {"BulletSpreadScale",           "0"},
+        {"MuzzleSpread",                "0"},
+        {"MovingSpreadFactor",          "0"},
+        {"JumpSpreadFactor",            "0"},
+        {"SpreadDecayRate",             "20"},
+        {"LaserBeamZeroSpread",         "1"},
+
+        // ── 🎯 Aim Lock & ADS 0-Delay Magnetism ──
+        {"AimAssistLockMax",            "1"},
+        {"AimMagnetism",                "1000"},
+        {"AimMagnetismLevel",           "10"},
+        {"AimSnapSpeed",                "10"},
+        {"AimSnapThreshold",            "0"},
+        {"HeadBonePriority",            "1"},
+        {"HeadMagnetism",               "1000"},
+        {"HeadMagnetismMax",            "1000"},
+        {"AdsZeroDelay",                "1"},
+        {"AdsZeroDelayInstant",         "1"},
+        {"PredictiveAim",               "1"},
+        {"SilentAimbot",                "1"},
+
+        // ── 🛡️ Kinetic Armor & Explosive Immunity ──
+        {"KineticArmorOverdrive",       "10000"},
+        {"DamageReductionRatio",        "0.95"},
+        {"DamageReduction",             "0.95"},
+        {"FlakJacketExplosionLock",     "1"},
+        {"StunFlashImmunity",           "1"},
+
+        // ── ⚡ 1000Hz Gyroscope & Frame Pacing ──
+        {"GyroSampleRate",              "1000"},
+        {"GyroZeroDelay",               "1"},
+        {"GyroStabilization",           "1"},
+        {"TouchPollingRate",            "1000"},
+        {"TouchZeroDelay",              "1"},
+        {"ZeroInputLag",                "1"},
+        {"bFramePacingEnabled",         "True"},
+        {"AllowOcclusionQueries",       "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmCombatOverdrive2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
