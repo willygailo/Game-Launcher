@@ -1787,8 +1787,40 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAutoMapGlitch3s
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbFastSovereignOverdrive
+ * Injects 2026 MLBB Fast Sovereign Overdrive Suite:
+ * Fast Farming, Fast Skills, Fast Combo, Fast Item, Fast Level, Fast Turtle, Fast Lord, Fast Coin, Fast Roam.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastSovereignOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmSovereignOverdriveBypass
+ * Injects 2026 PUBGM Sovereign Overdrive & Security Bypass Suite:
+ * Magic Bullet 2.0, Wall Penetration, Zero Recoil Laser Lock, Zero Shake,
+ * No Grass, 12x Sprint Turbo, Silent Movement, and Anti-Cheat Inotify/Timestamp Cloaking.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmSovereignOverdriveBypass
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmSovereignOverdriveBypass
+ * Injects 2026 CODM Sovereign Overdrive & Security Bypass Suite:
+ * Zero BSA, Laser Beam Spread Lock, 360° Hitbox, Silent Head Lock, 500m Wall Penetration,
+ * Dead Silence, Ghost UAV Immunity, 12x Slide-Cancel Turbo, and TiMi/ACE Inotify Cloaking.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSovereignOverdriveBypass
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif // GAMEBOOSTER_NATIVE_CONFIG_INJECTOR_H
+
+
+

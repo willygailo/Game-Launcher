@@ -434,4 +434,37 @@ profile.session_drift_damage      = true       -- drift: damage multiplier
 profile.session_drift_lifesteal   = true       -- drift: lifesteal value
 profile.session_drift_cd          = true       -- drift: cooldown ratio
 
+-- ── 🚀 2026 MLBB FAST SOVEREIGN OVERDRIVE SUITE ─────────────────────────────
+-- Fast Farming, Fast Skills, Fast Combo, Fast Item, Fast Level, Fast Turtle, Fast Lord, Fast Coin
+profile.fast_farming_overdrive        = true
+profile.jungle_clear_multiplier       = 10.0
+profile.creep_damage_max              = 10000
+profile.minion_instant_clear          = true
+profile.fast_coin_multiplier          = 10.0
+profile.passive_gold_per_sec          = 10
+profile.fast_level_multiplier         = 10.0
+profile.fast_exp_accumulation         = true
+profile.fast_item_instant_buy         = true
+profile.quick_item_swap_enabled       = true
+profile.immortal_winter_swap_ms       = 0
+profile.fast_skills_overdrive         = true
+profile.skill_cast_delay_ms           = 0
+profile.fast_skill_release_speed      = 10.0
+profile.skill_animation_cancel_speed  = 10.0
+profile.fast_combo_chain_speed        = 10.0
+profile.instant_combo_snap            = true
+profile.cooldown_reduction_ratio      = 0.99
+profile.fast_turtle_slayer            = true
+profile.turtle_damage_multiplier      = 10000
+profile.auto_smite_turtle             = true
+profile.fast_lord_slayer              = true
+profile.lord_damage_multiplier        = 10000
+profile.auto_retri_lord               = true
+profile.lord_retri_hp_calc            = true
+profile.objective_instant_burst       = 10000
+profile.fast_movement_speed           = 10.0
+profile.river_speed_boost             = 2.0
+profile.zero_turn_delay               = 1
+
 return profile
+

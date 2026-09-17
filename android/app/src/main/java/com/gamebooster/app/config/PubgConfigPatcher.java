@@ -178,11 +178,13 @@ public class PubgConfigPatcher {
         applyV46WeaponFix(packageName);
         applyMidnightHuntersMapBoost(packageName);
         applyS32RankedSweep(packageName);
+        applyPubgmSovereignOverdriveBypass(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectPubgmGodModeFullOverdrive(path);
         }
         Log.i(TAG, "PUBGM God Mode Full Overdrive Master Suite applied for " + packageName);
     }
+
 
     /**
      * PUBGM Fast Reload & Quick Weapon Swap — 2026 Edition.
@@ -1193,4 +1195,24 @@ public class PubgConfigPatcher {
         Log.i(TAG, "⚡ PUBGM 2026 Full Scope (100m-450m) + Bullet Tracking + Fast Overdrive applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 PUBGM Sovereign Overdrive & Security Bypass Suite.
+     * Magic Bullet 2.0, Wall Penetration, Laser Recoil Lock, Zero Shake,
+     * No Grass, 12x Sprint Turbo, Silent Movement, Inotify & Timestamp Cloaking.
+     */
+    public static boolean applyPubgmSovereignOverdriveBypass(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmSovereignOverdriveBypass(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ PUBGM 2026 Sovereign Overdrive & Bypass Suite applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
+

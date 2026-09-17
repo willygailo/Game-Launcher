@@ -323,4 +323,37 @@ profile.session_drift_rcs         = true        -- drift: RCS strength
 profile.session_drift_hs_cap      = true        -- drift: HS ratio cap (±3%)
 profile.session_drift_aim         = true        -- drift: aim magnetism level
 
+-- ── 🚀 2026 CODM SOVEREIGN OVERDRIVE & ADVANCED BYPASS SUITE ───────────────
+-- Combat & Ballistics Overdrive (Zero BSA, Laser Beam, Silent Aim)
+profile.zero_bsa_lock                 = true
+profile.bullet_spread_accuracy        = 0.0
+profile.flinch_resistance             = 1.0
+profile.hitbox_radius_multiplier      = 3.5
+profile.silent_aimbot_v2              = true
+profile.wall_penetrate_range          = 500
+profile.instant_target_acquisition    = true
+profile.damage_floor_max              = 10000
+
+-- MP & BR Perk Overclock
+profile.dead_silence_always_active    = true
+profile.ghost_uav_immunity_active     = true
+profile.quick_fix_instant_heal        = true
+profile.kinetic_armor_floor           = 10000
+profile.armor_plate_repair_speed      = 10.0
+profile.safe_zone_damage_immunity     = true
+
+-- Movement & Animation Overdrive
+profile.slide_cancel_speed_mult       = 12.0
+profile.bunny_hop_momentum_keep       = true
+profile.ads_transition_zero_delay     = true
+profile.instant_chambering_swap       = true
+profile.fast_scope_ads_speed          = 10.0
+
+-- Anti-Cheat Stealth Bypass Flags
+profile.bypass_inotify_cloaking       = true
+profile.bypass_timestamp_restore      = true
+profile.bypass_selinux_preserve       = true
+profile.bypass_session_micro_drift    = true
+
 return profile
+

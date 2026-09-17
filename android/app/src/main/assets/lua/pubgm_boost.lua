@@ -360,4 +360,39 @@ profile.session_drift_recoil      = true        -- drift: recoil floor values
 profile.session_drift_aim         = true        -- drift: aim assist strength
 profile.session_drift_esp_radius  = true        -- drift: ESP radius
 
+-- ── 🚀 2026 PUBGM SOVEREIGN OVERDRIVE & ADVANCED BYPASS SUITE ───────────────
+-- Combat & Ballistics 2.0 (Magic Bullet, Wall Penetration, Laser Recoil Lock)
+profile.r_magic_bullet_2             = 1
+profile.r_hitbox_sphere_radius       = 3.5
+profile.r_bullet_wall_penetration    = 1
+profile.r_max_wall_penetrate_dist    = 500
+profile.r_vehicle_bullet_penetration = 1
+profile.r_laser_beam_recoil_lock     = 1
+profile.r_ads_spread_zero            = 1
+
+-- Vision & Camera Stabilization (Zero Shake, No Grass, Clear View Distance)
+profile.r_zero_camera_shake          = 1
+profile.r_view_distance_scale        = 3.5
+profile.r_fog_removal                = 1
+profile.r_grass_density_cull         = 0
+profile.r_player_silhouette_boost    = 1
+profile.r_zero_shadow_quality        = 0
+
+-- Mobility, Vault & Weapon Handling Turbo
+profile.r_sprint_turbo_multiplier    = 12.0
+profile.r_vault_speed_multiplier     = 10.0
+profile.r_silent_footstep_damp       = 1
+profile.r_auto_loot_instant          = 1
+profile.r_auto_loot_range            = 15.0
+profile.r_weapon_swap_zero_delay     = 1
+profile.r_fast_chambering_speed      = 10.0
+profile.r_fast_reload_speed          = 10.0
+
+-- Anti-Cheat Security Bypass Flags
+profile.bypass_inotify_cloaking      = true
+profile.bypass_timestamp_restore     = true
+profile.bypass_selinux_preserve      = true
+profile.bypass_session_micro_drift   = true
+
 return profile
+

@@ -172,11 +172,13 @@ public class CodmConfigPatcher {
         applySeason8NewWeaponsOverride(packageName);
         applyRoguelikeModeAimAssist(packageName);
         applyS8FullRankedSweep(packageName);
+        applyCodmSovereignOverdriveBypass(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectCodmGodModeFullOverdrive(path);
         }
         Log.i(TAG, "⚡ CODM God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
     }
+
 
     /**
      * CODM Instant Reload & Bolt-Action Chambering Overdrive — 2026 Edition.
@@ -1382,5 +1384,25 @@ public class CodmConfigPatcher {
         Log.i(TAG, "⚡ CODM 2026 Full Scope (100m-450m) + Bullet Tracking + Fast Reload Overdrive applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 CODM Sovereign Overdrive & Security Bypass Suite.
+     * Zero BSA, Laser Recoil Lock, 360° Hitbox, Silent Head Lock, 500m Wall Pen,
+     * Dead Silence, Ghost UAV Immunity, 12x Slide-Cancel Turbo, TiMi Inotify Cloak.
+     */
+    public static boolean applyCodmSovereignOverdriveBypass(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodmSovereignOverdriveBypass(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ CODM 2026 Sovereign Overdrive & Bypass Suite applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
+
 

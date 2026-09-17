@@ -95,6 +95,18 @@ public class MlbbConfigPatcher {
     }
 
     /**
+     * MLBB 2026 Fast Sovereign Overdrive Suite.
+     * Fast Farming, Fast Skills, Fast Combo, Fast Item, Fast Level, Fast Turtle, Fast Lord, Fast Coin, Fast Roam.
+     */
+    public static void applyMlbbFastSovereignOverdrive(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbFastSovereignOverdrive(path);
+        }
+        Log.i(TAG, "⚡ MLBB 2026 Fast Sovereign Overdrive Suite applied for " + packageName);
+    }
+
+    /**
      * MLBB God Mode Full Overdrive (All-In-One Cheat Suite).
      */
     public static void applyMlbbGodModeFullOverdrive(String packageName) {
@@ -104,6 +116,7 @@ public class MlbbConfigPatcher {
         applyMlbbUnlimitedManaEnergy(packageName);
         applyMlbbUltraDroneViewMaxFov(packageName);
         applyMlbbAutoMapGlitch3s(packageName);
+        applyMlbbFastSovereignOverdrive(packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyFastFarmingAllHero(packageName);
         applyFastRetributionObjectiveSteal(packageName);
@@ -113,6 +126,7 @@ public class MlbbConfigPatcher {
         }
         Log.i(TAG, "⚡ MLBB God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
     }
+
 
     public static void applyFastAttackSpeedAllHero(String packageName) {
         if (packageName == null) return;
@@ -149,11 +163,13 @@ public class MlbbConfigPatcher {
      */
     public static void applyAllHeroGodSuite2026(String packageName) {
         if (packageName == null) return;
+        applyMlbbFastSovereignOverdrive(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbAllHeroGodSuite2026(path);
             NativeConfigInjector.injectMlbbSeason42AllHeroRevampBoost(path);
         }
     }
+
 
     /**
      * MLBB Enemy Lock + Headshot Suite — Unity/MOBA Engine (2026.3).

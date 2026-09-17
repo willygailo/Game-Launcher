@@ -2785,3 +2785,94 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAutoMapGlit
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbAutoMapGlitch3s");
 }
 
+// =============================================================================
+// ─── MLBB: 2026 Fast Sovereign Overdrive Suite ────────────────────────────────
+// Fast Farming, Fast Skills, Fast Combo, Fast Item, Fast Level,
+// Fast Turtle, Fast Lord, Fast Coin, Fast Roam & Movement
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastSovereignOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🌾 Fast Farming & Instant Jungle Clear ──
+        {"FastFarmingOverdrive",         "1"},
+        {"JungleClearSpeed",             "10"},
+        {"CreepDamageMax",               "10000"},
+        {"MinionWaveInstantClear",       "1"},
+        {"JunglePathfindingZeroLag",     "1"},
+        {"CreepAggroInstantReset",       "1"},
+
+        // ── ⚡ Fast Skills & Cooldown Acceleration ──
+        {"FastSkillsOverdrive",          "1"},
+        {"SkillCastDelayMs",             "0"},
+        {"ZeroSkillDelay",               "1"},
+        {"FastSkillReleaseSpeed",        "10"},
+        {"SkillAnimationCancelSpeed",    "10"},
+        {"ZeroDelaySkillTap",            "1"},
+        {"FastSkillCycle",               "1"},
+        {"InstantCooldownReset",         "1"},
+        {"CooldownReductionRatio",       "0.99"},
+
+        // ── ⚔️ Fast Combo & Auto Chain ──
+        {"FastComboAutoChain",           "1"},
+        {"ComboExecutionSpeed",          "10"},
+        {"SmartSkillChainQueue",         "1"},
+        {"InstantComboSnap",             "1"},
+        {"SkillChainBufferRate",         "1000"},
+        {"AimSnapSpeed",                 "10"},
+        {"AimSmoothFactor",              "0"},
+        {"SkillSmartAim",                "1"},
+
+        // ── 🛍️ Fast Item & Instant Shop Swap ──
+        {"FastItemPurchase",             "1"},
+        {"InstantShopBuy",               "1"},
+        {"QuickItemSwap",                "1"},
+        {"ImmortalWinterInstantSwap",    "1"},
+        {"ShopAutoBuyPriority",          "1"},
+        {"ZeroShopOpenDelay",            "1"},
+
+        // ── 📈 Fast Level & Exp Overdrive ──
+        {"FastLevelUp",                  "1"},
+        {"ExpRateMultiplier",            "10"},
+        {"PassiveExpAccumulation",       "10"},
+        {"FastExpRate",                  "10"},
+        {"LevelScalingOverdrive",        "1"},
+
+        // ── 🐢 Fast Turtle & Instant Harvest ──
+        {"FastTurtleSlayer",             "1"},
+        {"TurtleDamageMultiplier",       "10000"},
+        {"AutoSmiteTurtle",              "1"},
+        {"TurtleShieldBypass",           "1"},
+
+        // ── 👑 Fast Lord & Objective Steal ──
+        {"FastLordSlayer",               "1"},
+        {"LordDamageMultiplier",         "10000"},
+        {"AutoRetriLord",                "1"},
+        {"ObjectiveHpThresholdCalc",     "1"},
+        {"ObjectiveInstantBurst",        "10000"},
+        {"RetributionTrueDamageFloor",   "10000"},
+
+        // ── 💰 Fast Coin & Gold Overdrive ──
+        {"FastCoinOverdrive",            "1"},
+        {"GoldRateMultiplier",           "10"},
+        {"CreepGoldMultiplier",          "10"},
+        {"MinionGoldMultiplier",         "10"},
+        {"PassiveGoldPerSecond",         "10"},
+        {"BountyGoldBoost",              "10"},
+
+        // ── 🏃 Fast Roam, Movement & Input Overdrive ──
+        {"FastMovementSpeed",            "10"},
+        {"RiverSpeedBoost",              "2"},
+        {"ZeroTurnDelay",                "1"},
+        {"TouchPollingRate",             "1000"},
+        {"TouchZeroDelay",               "1"},
+        {"ZeroInputLag",                 "1"},
+        {"InputBufferRate",              "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"AllowOcclusionQueries",        "1"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbFastSovereignOverdrive2026");
+}
+
+

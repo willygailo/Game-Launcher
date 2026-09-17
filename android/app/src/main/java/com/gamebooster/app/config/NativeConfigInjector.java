@@ -119,6 +119,9 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmFullScopeBulletTrackingOverdrive(String path);
     public static native boolean nativeInjectCodmFullScopeBulletTrackingFastReload(String path);
     public static native boolean nativeInjectMlbbAutoMapGlitch3s(String path);
+    public static native boolean nativeInjectMlbbFastSovereignOverdrive(String path);
+    public static native boolean nativeInjectPubgmSovereignOverdriveBypass(String path);
+    public static native boolean nativeInjectCodmSovereignOverdriveBypass(String path);
 
     // 2026 Advanced Security & Anti-Tamper Native Bypass Suite
     public static native boolean nativeSecurityBypassStripXattrs(String path);
@@ -2637,6 +2640,41 @@ public class NativeConfigInjector {
     }
 
     /**
+     * MLBB 2026 Fast Sovereign Overdrive Suite.
+     * Fast Farming, Fast Skills, Fast Combo, Fast Item, Fast Level, Fast Turtle, Fast Lord, Fast Coin, Fast Roam.
+     */
+    public static boolean injectMlbbFastSovereignOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbFastSovereignOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "FastFarmingOverdrive=1", "JungleClearSpeed=10", "CreepDamageMax=10000", "MinionWaveInstantClear=1",
+            "JunglePathfindingZeroLag=1", "CreepAggroInstantReset=1",
+            "FastSkillsOverdrive=1", "SkillCastDelayMs=0", "ZeroSkillDelay=1", "FastSkillReleaseSpeed=10",
+            "SkillAnimationCancelSpeed=10", "ZeroDelaySkillTap=1", "FastSkillCycle=1", "InstantCooldownReset=1",
+            "CooldownReductionRatio=0.99",
+            "FastComboAutoChain=1", "ComboExecutionSpeed=10", "SmartSkillChainQueue=1", "InstantComboSnap=1",
+            "SkillChainBufferRate=1000", "AimSnapSpeed=10", "AimSmoothFactor=0", "SkillSmartAim=1",
+            "FastItemPurchase=1", "InstantShopBuy=1", "QuickItemSwap=1", "ImmortalWinterInstantSwap=1",
+            "ShopAutoBuyPriority=1", "ZeroShopOpenDelay=1",
+            "FastLevelUp=1", "ExpRateMultiplier=10", "PassiveExpAccumulation=10", "FastExpRate=10", "LevelScalingOverdrive=1",
+            "FastTurtleSlayer=1", "TurtleDamageMultiplier=10000", "AutoSmiteTurtle=1", "TurtleShieldBypass=1",
+            "FastLordSlayer=1", "LordDamageMultiplier=10000", "AutoRetriLord=1", "ObjectiveHpThresholdCalc=1",
+            "ObjectiveInstantBurst=10000", "RetributionTrueDamageFloor=10000",
+            "FastCoinOverdrive=1", "GoldRateMultiplier=10", "CreepGoldMultiplier=10", "MinionGoldMultiplier=10",
+            "PassiveGoldPerSecond=10", "BountyGoldBoost=10",
+            "FastMovementSpeed=10", "RiverSpeedBoost=2", "ZeroTurnDelay=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "InputBufferRate=1000",
+            "bFramePacingEnabled=True", "AllowOcclusionQueries=1", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbFastSovereignOverdrive2026]");
+    }
+
+    /**
      * MLBB God Mode Full Overdrive (All-in-One Master Cheat).
      */
     public static boolean injectMlbbGodModeFullOverdrive(String path) {
@@ -2648,8 +2686,10 @@ public class NativeConfigInjector {
         boolean ok6 = injectMlbbFastFarmingAllHero(path);
         boolean ok7 = injectMlbbFastRetributionObjectiveSteal(path);
         boolean ok8 = injectMlbbAutoMapGlitch3s(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
+        boolean ok9 = injectMlbbFastSovereignOverdrive(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
     }
+
 
     public static boolean injectPubgmBallisticsVelocityPenetration(String path) {
         if (path == null) return false;
@@ -2750,6 +2790,46 @@ public class NativeConfigInjector {
     }
 
     /**
+     * CODM 2026 Sovereign Overdrive & Security Bypass Suite.
+     * Zero BSA, Laser Recoil Lock, 360° Hitbox, Silent Head Lock, 500m Wall Pen,
+     * Dead Silence, Ghost UAV Immunity, 12x Slide-Cancel Turbo, TiMi Inotify Cloak.
+     */
+    public static boolean injectCodmSovereignOverdriveBypass(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmSovereignOverdriveBypass(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "BulletSpreadAccuracy=0", "InitialSpread=0", "MaxSpread=0",
+            "WeaponSpread=0", "WeaponSway=0", "BulletSpreadScale=0", "SpreadDecayRate=100",
+            "AdsSpreadZero=1", "HipSpreadZero=1", "RecoilScale=0", "VerticalRecoilScale=0",
+            "HorizontalRecoilScale=0", "RecoilPatternScale=0", "FlinchResistance=1.0",
+            "MuzzleVelocityFactor=1.0", "HitboxRadiusMultiplier=3.5", "HitboxScale=3.5",
+            "SilentAimbot=1", "HeadBonePriority=1", "HeadBoneAimPriority=1", "BoneIndex=0",
+            "AimAssistEnabled=1", "AimAssistStrength=100", "AimMagnetism=3",
+            "AimSnapThreshold=0", "AimSnapSpeed=10", "PredictiveAim=1",
+            "WallPenetrateRange=500", "WallPenetrationRange=500", "DamageFloorMax=10000",
+            "DamageLockMax=10000", "HeadshotMultiplier=999",
+            "DeadSilenceAlwaysActive=1", "GhostPerkAlwaysActive=1", "QuickFixHealthInstant=1",
+            "KineticArmorOverdrive=10000", "ArmorRepairSpeedMultiplier=10.0",
+            "SafeZoneDamageImmunity=1", "FlakJacketExplosionLock=1",
+            "DamageReductionRatio=0.99", "DamageReduction=0.99",
+            "SlideCancelSpeedMultiplier=12.0", "SlideSpeedMultiplier=12.0", "SlideDelayMs=0",
+            "BunnyHopVelocityBoost=1.5", "SprintSpeedMultiplier=12.0",
+            "FastScopeAdsDelay=0", "AdsAnimSpeedScale=10", "FastWeaponSwapDelay=0",
+            "WeaponSwapDelayMs=0", "ChamberingSpeedMultiplier=10.0",
+            "ReloadSpeedMultiplier=10.0", "ReloadDelayMs=0",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "HitRegSyncRate=1000", "bFramePacingEnabled=True", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmSovereignOverdriveBypass2026]");
+    }
+
+    /**
      * CODM God Mode Full Overdrive (All-in-One Master Cheat Suite).
      */
     public static boolean injectCodmGodModeFullOverdrive(String path) {
@@ -2770,8 +2850,10 @@ public class NativeConfigInjector {
         boolean ok6 = injectCodmSlideCancelMobility(path);
         boolean ok7 = injectHitboxMultiplier(path, 3.0f);
         boolean ok8 = injectUltraWallhackEspClarity(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
+        boolean ok9 = injectCodmSovereignOverdriveBypass(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
     }
+
 
     /**
      * PUBGM Zero Recoil & Absolute Zero Sway (UE4 +CVars=r. format + INI keys).
@@ -2837,6 +2919,43 @@ public class NativeConfigInjector {
     }
 
     /**
+     * PUBGM 2026 Sovereign Overdrive & Security Bypass Suite.
+     * Magic Bullet 2.0, Wall Penetration, Laser Recoil Lock, Zero Shake,
+     * No Grass, 12x Sprint Turbo, Silent Movement, Inotify & Timestamp Cloaking.
+     */
+    public static boolean injectPubgmSovereignOverdriveBypass(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmSovereignOverdriveBypass(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "r.PUBGBulletVelocityCompensation=1.5", "r.HitboxSphereRadius=3.5",
+            "r.BulletThroughWallPenetration=1", "r.MaxWallPenetrationDistance=500",
+            "r.VehicleBulletPenetration=1", "r.PenetrationDamageFloor=10000",
+            "r.HeadBoneAimPriority=1", "r.AimMagnetism=3", "r.AimAssistEnabled=1",
+            "r.AimAssistStrength=100", "r.AimSnapThreshold=0", "r.SilentAimbot=1", "r.PredictiveAim=1",
+            "r.WeaponRecoilScale=0", "r.VerticalRecoilScale=0", "r.HorizontalRecoilScale=0",
+            "r.RecoilPatternScale=0", "r.WeaponSpread=0", "r.WeaponSway=0",
+            "r.BulletSpreadScale=0", "r.SpreadDecayRate=100", "r.AdsSpreadZero=1", "r.MuzzleVelocityFactor=1.0",
+            "r.CameraShake=0", "r.CameraSmoothFactor=0", "r.ViewDistanceScale=3.5",
+            "r.Fog=0", "r.GrassDensity=0", "r.PostProcessAAQuality=0", "r.ShadowQuality=0",
+            "r.FoliageCullDistance=0", "r.PlayerSilhouetteBoost=1",
+            "r.SprintSpeedMultiplier=12.0", "r.VaultSpeedMultiplier=10.0", "r.FootstepAudioDamp=1",
+            "r.StaminaInfinite=1", "r.FallDamageImmunity=1", "r.ParachuteDropSpeed=5.0",
+            "r.AutoLootRange=15.0", "r.AutoLootZeroDelay=1", "r.FastWeaponSwapDelay=0",
+            "r.FastScopeAdsDelay=0", "r.ChamberingSpeedMultiplier=10.0", "r.ReloadSpeedMultiplier=10.0",
+            "r.PlayerDamageReduction=0.99", "r.KineticShieldBoost=10000",
+            "r.GyroSampleRate=1000", "r.GyroZeroDelay=1", "r.GyroStabilization=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "HitRegSyncRate=1000",
+            "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0", "bFramePacingEnabled=True", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[PubgmSovereignOverdriveBypass2026]");
+    }
+
+    /**
      * PUBGM God Mode Full Overdrive (Master Cheat Suite).
      */
     public static boolean injectPubgmGodModeFullOverdrive(String path) {
@@ -2858,8 +2977,10 @@ public class NativeConfigInjector {
         boolean ok7 = injectHitboxMultiplier(path, 3.5f);
         boolean ok8 = injectUltraWallhackEspClarity(path);
         boolean ok9 = injectPubgmFastLoadAsyncStreaming(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
+        boolean ok10 = injectPubgmSovereignOverdriveBypass(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10;
     }
+
 
     public static boolean injectUniversalCombatMechanicsOverdrive(String path) {
         if (path == null) return false;

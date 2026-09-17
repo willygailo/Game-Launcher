@@ -315,9 +315,12 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg); } catch (Throwable ignored) {}
         // ─── 2026 3-Second Auto Map Glitch & Enemy Ghost Radar (3s Periodic Desync + Bush Occlusion Bypass) ────
         try { MlbbConfigPatcher.applyMlbbAutoMapGlitch3s(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Fast Sovereign Overdrive Suite (Fast Farm, Skills, Combo, Item, Level, Turtle, Lord, Coin) ────
+        try { MlbbConfigPatcher.applyMlbbFastSovereignOverdrive(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
+
         Log.i(TAG, "🎯 Injecting PUBGM Magic Bullet Aimbot, All-Gun, All-Scope, Zero Recoil, Spread & Velocity Overrides...");
         try { PubgConfigPatcher.applyPubgmGodModeFullOverdrive(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyPubgmMasterSuite(pkg); } catch (Throwable ignored) {}
@@ -375,7 +378,10 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyPubgmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Specialized: Full-Scope Lock (100m-450m) + 3.0x Bullet Tracking + Fast Overdrive ────
         try { PubgConfigPatcher.applyPubgmFullScopeBulletTrackingOverdrive(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Sovereign Overdrive & Advanced Security Bypass Suite (Magic Bullet 2.0, Zero Shake, Inotify Cloaking) ────
+        try { PubgConfigPatcher.applyPubgmSovereignOverdriveBypass(pkg); } catch (Throwable ignored) {}
     }
+
 
     private static void injectCodm(String pkg) {
         Log.i(TAG, "🔫 Injecting CODM No Recoil, No Spread, All-Gun, All-Scope & Aimbot Magnetism...");
@@ -437,7 +443,10 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyCodmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Specialized: Attack Aim Assist + Bullet Tracking + All-Scope (100m-450m) + Fast Reload Overdrive ────
         try { CodmConfigPatcher.applyCodmFullScopeBulletTrackingFastReload(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Sovereign Overdrive & Advanced Security Bypass Suite (Zero BSA, 360° Hitbox, TiMi Inotify Cloak) ────
+        try { CodmConfigPatcher.applyCodmSovereignOverdriveBypass(pkg); } catch (Throwable ignored) {}
     }
+
 
     private static void injectFreeFire(String pkg) {
         Log.i(TAG, "🔥 Injecting Free Fire Auto-Headshot, All-Gun & All-Scope Calibration...");
