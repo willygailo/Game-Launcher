@@ -206,6 +206,8 @@ public class EsportsAudioEnhancer {
             bypassCommands.add("setprop ro.audio.flinger_standbytime_ms 100");
             bypassCommands.add("setprop af.fast_track_multiplier 1");
             bypassCommands.add("setprop persist.sys.audio.latency 0");
+            bypassCommands.add("setprop persist.audio.vr.enable 1");
+            bypassCommands.add("setprop persist.vendor.audio.spatial.latency 0");
             bypassCommands.add("cmd media_session volume --stream 3 --set 15");
 
             PrivilegeBridgeEngine.executePrivilegedBatch(bypassCommands);

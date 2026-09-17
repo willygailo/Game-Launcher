@@ -1670,7 +1670,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             for (com.gamebooster.app.games.GameAppInfo g : installedGames) {
                 String pkg = g.getPackageName();
                 com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(getContext(), pkg, true);
-                if (targetHz >= 165) {
+                if (targetHz >= 185) {
+                    if (pkg.contains("tencent.ig") || pkg.contains("pubg")) {
+                        PubgConfigPatcher.patchSuperSmooth165(pkg);
+                        CommandExecutor.executeSystemCommand("cmd game set --fps 185 " + pkg + " 2>/dev/null");
+                    } else if (pkg.contains("mobile.legends")) {
+                        MlbbConfigPatcher.patchUltraExtreme185(pkg);
+                    } else if (pkg.contains("callofduty") || pkg.contains("cod")) {
+                        CodmConfigPatcher.patchUltraExtreme165(pkg);
+                        CommandExecutor.executeSystemCommand("cmd game set --fps 185 " + pkg + " 2>/dev/null");
+                    }
+                } else if (targetHz >= 165) {
                     if (pkg.contains("tencent.ig") || pkg.contains("pubg")) {
                         PubgConfigPatcher.patchSuperSmooth165(pkg);
                     } else if (pkg.contains("mobile.legends")) {

@@ -28,9 +28,12 @@ public class GameSpaceDndManager {
                 .putBoolean(KEY_DND_ENABLED, enable)
                 .apply();
 
-        // Toggle heads-up notifications (banner popups) via ADB/Shizuku or System Settings
+        // Toggle heads-up notifications (banner popups) and bubbles via ADB/Shizuku or System Settings
         CommandExecutor.executeSystemCommand(
-                "settings put global heads_up_notifications_enabled " + (enable ? "0" : "1")
+                "settings put global heads_up_notifications_enabled " + (enable ? "0" : "1") + "; " +
+                "cmd notification set_bubbles " + (enable ? "0" : "1") + " 2>/dev/null; " +
+                "settings put secure notification_bubbles " + (enable ? "0" : "1") + " 2>/dev/null; " +
+                "cmd notification set_zen_mode " + (enable ? "1" : "0") + " 2>/dev/null"
         );
 
         // Toggle system DND if permission granted

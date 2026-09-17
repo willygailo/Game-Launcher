@@ -47,6 +47,10 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("persist.sys.vivo.gamemode.touch", "1");
         ok &= CommandExecutor.setSystemProperty("persist.sys.nubia.touch_sampling_rate", "1000");
         ok &= CommandExecutor.setSystemProperty("persist.sys.redmagic.touch_mode", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.goodix.touch_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.synaptics.touch_rate", "1000");
+        ok &= CommandExecutor.setSystemProperty("persist.sys.hyperos.touch_boost", "1");
+        ok &= CommandExecutor.setSystemProperty("persist.vendor.samsung.touch_boost", "1");
         ok &= CommandExecutor.setSystemProperty("persist.mot.touch.sampling_rate", "1000");
 
         // 4. InputFlinger & Input Dispatch Thread Latency Elimination
@@ -111,6 +115,10 @@ public class TouchLatencyChannel {
                 "setprop persist.sys.vivo.gamemode.touch 1",
                 "setprop persist.sys.nubia.touch_sampling_rate 1000",
                 "setprop persist.sys.redmagic.touch_mode 1",
+                "setprop persist.vendor.goodix.touch_rate 1000",
+                "setprop persist.vendor.synaptics.touch_rate 1000",
+                "setprop persist.sys.hyperos.touch_boost 1",
+                "setprop persist.vendor.samsung.touch_boost 1",
                 "setprop persist.mot.touch.sampling_rate 1000",
                 "setprop debug.inputflinger.touch_boost 1",
                 "setprop debug.inputflinger.fling_boost 1",

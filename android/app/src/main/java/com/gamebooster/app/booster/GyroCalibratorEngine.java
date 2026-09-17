@@ -44,6 +44,9 @@ public class GyroCalibratorEngine {
             CommandExecutor.executeSystemCommand("setprop persist.sys.sensor.gyro_delay 0");
             CommandExecutor.executeSystemCommand("setprop debug.qualcomm.sns.hal.gyro_fast 1");
             CommandExecutor.executeSystemCommand("setprop persist.vendor.sensors.gyro_sample_rate 1000");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.sensor.gyro.rate 1000");
+            CommandExecutor.executeSystemCommand("setprop persist.sys.samsung.sensor_rate 1000");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.sensor.fast_rate 1");
 
             Log.i(TAG, "⚡ Gyro Zero-Drift Calibration applied: X=" + biasX + ", Y=" + biasY + ", Z=" + biasZ + " @ 1000Hz");
         } catch (Throwable t) {

@@ -163,9 +163,13 @@ public final class AntiLogPatcher {
                 "setprop log.tag.RenderThread 0",
                 "setprop log.tag.SurfaceFlinger 0",
                 "setprop log.tag.HWUI 0",
-                // Flush system logcat buffers
+                // Flush system logcat buffers and clamp ring-buffer to 64K to eliminate I/O stutter
                 "logcat -c",
-                "logcat -b all -c"
+                "logcat -b all -c",
+                "logcat -G 64K 2>/dev/null",
+                "dumpsys dropbox --clean 2>/dev/null",
+                "rm -rf /data/tombstones/* 2>/dev/null",
+                "rm -rf /data/anr/* 2>/dev/null"
         };
 
         StringBuilder sb = new StringBuilder();

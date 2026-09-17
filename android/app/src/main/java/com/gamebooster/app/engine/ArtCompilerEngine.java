@@ -88,8 +88,11 @@ public final class ArtCompilerEngine {
     public static boolean compilePackageSync(String packageName, CompileFilter filter) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         String mode = (filter != null ? filter.filterName : CompileFilter.SPEED.filterName);
-        String cmd = "cmd package compile -m " + mode + " -f " + packageName.trim();
+        // 2026 Android 14-16 AOT compilation with layout pre-inflation and secondary dex support
+        String cmd = "cmd package compile -m " + mode + " -f --compile-layouts " + packageName.trim() + " 2>/dev/null || cmd package compile -m " + mode + " -f " + packageName.trim();
         String output = executePrivileged(cmd);
+        // Also ensure secondary dex files are compiled for large titles like MLBB & PUBGM
+        executePrivileged("cmd package compile -m " + mode + " --secondary-dex " + packageName.trim() + " 2>/dev/null");
         Log.i(TAG, "compilePackageSync [" + packageName + "] (" + mode + "): " + output);
         return output != null && (output.contains("Success") || (!output.contains("Error") && !output.contains("Exception")));
     }
