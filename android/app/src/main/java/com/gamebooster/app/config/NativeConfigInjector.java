@@ -119,6 +119,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmFullScopeBulletTrackingOverdrive(String path);
     public static native boolean nativeInjectCodmFullScopeBulletTrackingFastReload(String path);
 
+    // 2026 Advanced Security & Anti-Tamper Native Bypass Suite
+    public static native boolean nativeSecurityBypassStripXattrs(String path);
+    public static native boolean nativeSecurityBypassCloakTimestamps(String targetPath, String sourcePath);
+    public static native boolean nativeSecurityBypassAtomicSwap(String stagedPath, String targetPath);
+    public static native boolean nativeSecurityBypassEnforcePermissions(String path, int uid, int gid, int mode);
+
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);
@@ -513,6 +519,50 @@ public class NativeConfigInjector {
             try { if (nativeInjectCodmFullScopeBulletTrackingFastReload(path)) return true; } catch (Throwable t) {
                 Log.w(TAG, "injectCodmFullScopeBulletTrackingFastReload fallback: " + t.getMessage());
             }
+        }
+        return false;
+    }
+
+    /**
+     * Native Security Bypass: Strips foreign and audit extended attributes (xattrs).
+     */
+    public static boolean securityBypassStripXattrs(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeSecurityBypassStripXattrs(path); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Native Security Bypass: High-precision timestamp cloaking via utime.
+     */
+    public static boolean securityBypassCloakTimestamps(String targetPath, String sourcePath) {
+        if (targetPath == null || sourcePath == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeSecurityBypassCloakTimestamps(targetPath, sourcePath); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Native Security Bypass: Atomic staging-to-target rename swap for inotify evasion.
+     */
+    public static boolean securityBypassAtomicSwap(String stagedPath, String targetPath) {
+        if (stagedPath == null || targetPath == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeSecurityBypassAtomicSwap(stagedPath, targetPath); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Native Security Bypass: Direct POSIX permission and ownership enforcement.
+     */
+    public static boolean securityBypassEnforcePermissions(String path, int uid, int gid, int mode) {
+        if (path == null) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeSecurityBypassEnforcePermissions(path, uid, gid, mode); } catch (Throwable ignored) {}
         }
         return false;
     }

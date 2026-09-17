@@ -126,6 +126,8 @@ public final class GameAutoInjectDispatcher {
             }
             GameConfigStorageAccessEngine.grantAllPathsAccess(context, pkg);
             GameSecurityBypassEngine.unlockForInjection(pkg);
+            GameSecurityBypassEngine.enforceDeviceIntegrityProperties();
+            GameSecurityBypassEngine.sinkholeTelemetryEndpoints(pkg);
         } catch (Throwable t) {
             Log.w(TAG, "⚠️ Pre-flight storage access grant note for " + pkg + ": " + t.getMessage());
         }

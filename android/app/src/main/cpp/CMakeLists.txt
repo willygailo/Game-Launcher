@@ -16,6 +16,7 @@ add_library(
     codm_injector.cpp
     other_games_injector.cpp
     universal_combat_injector.cpp
+    native_security_bypass.cpp
 )
 
 target_compile_options(

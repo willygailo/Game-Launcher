@@ -1743,6 +1743,42 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullScopeBulletTrackingFastReload
   (JNIEnv *, jclass, jstring);
 
+// =============================================================================
+// ─── 2026 Advanced Security, Anti-Tamper & Anti-Ban Bypass Suite ─────────────
+// =============================================================================
+
+/*
+ * nativeSecurityBypassStripXattrs
+ * Removes foreign/audit extended attributes (xattrs) from target configuration files.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSecurityBypassStripXattrs
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeSecurityBypassCloakTimestamps
+ * Synchronizes atime and mtime of target file with source reference file (e.g. base.apk).
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSecurityBypassCloakTimestamps
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * nativeSecurityBypassAtomicSwap
+ * Performs atomic in-place file replacement via renameat/rename to evade inotify file watchers.
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSecurityBypassAtomicSwap
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * nativeSecurityBypassEnforcePermissions
+ * POSIX native chmod and chown enforcement.
+ * Signature: (Ljava/lang/String;III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSecurityBypassEnforcePermissions
+  (JNIEnv *, jclass, jstring, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

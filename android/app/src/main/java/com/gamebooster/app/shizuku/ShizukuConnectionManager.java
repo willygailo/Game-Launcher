@@ -111,8 +111,15 @@ public class ShizukuConnectionManager {
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
+                // Auto-Connect: binder alive but ungranted -> prompt user immediately
+                ShizukuAutoConnectEngine.requestPermissionAuto();
             } else {
                 setState(State.BINDING);
+                // Trigger fast multi-pulse scan before falling back to exponential backoff
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuAutoConnectEngine.triggerMultiPulseScan(ctx);
+                }
                 scheduleReconnect();
             }
         } catch (Throwable t) {
@@ -144,8 +151,14 @@ public class ShizukuConnectionManager {
                 ShizukuManager.triggerThrottledPostConnectionSync();
             } else if (alive) {
                 setState(State.IDLE);
+                // Auto-Connect: binder alive but ungranted -> prompt user immediately
+                ShizukuAutoConnectEngine.requestPermissionAuto();
             } else {
                 setState(State.BINDING);
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuAutoConnectEngine.triggerMultiPulseScan(ctx);
+                }
             }
         } catch (Throwable t) {
             Log.w(TAG, "onBinderReceived error", t);

@@ -125,16 +125,16 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                 TweakManagerRepository.initializeStates(getApplicationContext());
                 com.gamebooster.app.shizuku.RishManager.initialize(getApplicationContext());
 
+                // Zero-Touch Auto-Connect: Fast multi-pulse binder scan + foreground permission dispatch
+                com.gamebooster.app.shizuku.ShizukuAutoConnectEngine.pulseConnect(MainActivity.this);
+
                 // Bind Shizuku AIDL UserService & Auto-Grant Privileges
                 com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().bindService();
-                if (ShizukuExecutor.isShizukuAvailable() && !ShizukuExecutor.hasShizukuPermission()) {
-                    // Auto-Active: request Shizuku permission immediately on app start
-                    AppExecutors.getInstance().postToMainThread(ShizukuManager::requestShizukuPermission);
-                } else if (ShizukuExecutor.hasShizukuPermission()) {
+                if (ShizukuExecutor.hasShizukuPermission()) {
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
-                } else {
+                } else if (!ShizukuExecutor.isShizukuAvailable()) {
                     // Auto-Active: Shizuku not running — auto-prompt activation once per install
                     android.content.SharedPreferences prefs =
                             getSharedPreferences("game_booster_prefs", MODE_PRIVATE);
@@ -313,12 +313,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     protected void onResume() {
         super.onResume();
         com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(this);
+        com.gamebooster.app.shizuku.ShizukuAutoConnectEngine.pulseConnect(this);
         com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        com.gamebooster.app.shizuku.ShizukuAutoConnectEngine.clearForegroundActivity(this);
         ShizukuManager.removeStateListener(this);
     }
 

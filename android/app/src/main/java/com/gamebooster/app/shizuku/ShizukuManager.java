@@ -91,7 +91,7 @@ public class ShizukuManager {
         Log.i(TAG, "Shizuku binder connected cleanly.");
         try {
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
+                ShizukuAutoConnectEngine.requestPermissionAuto();
             } else {
                 Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
                 if (ctx != null) {
@@ -236,13 +236,7 @@ public class ShizukuManager {
     }
 
     public static void requestShizukuPermission() {
-        try {
-            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error requesting Shizuku permission", e);
-        }
+        ShizukuAutoConnectEngine.requestPermissionAuto();
     }
 
     public static boolean isShizukuInstalled(Context context) {

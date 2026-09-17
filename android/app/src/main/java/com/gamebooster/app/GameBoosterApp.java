@@ -54,6 +54,7 @@ public class GameBoosterApp extends Application {
             com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(this).init();
             com.gamebooster.app.shizuku.ShizukuManager.registerBinderListeners();
             com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
+            com.gamebooster.app.shizuku.ShizukuAutoConnectEngine.startEarlyAutoConnect(this);
         } catch (Throwable t) {
             Log.w(TAG, "Shizuku early initialization error: " + t.getMessage());
         }

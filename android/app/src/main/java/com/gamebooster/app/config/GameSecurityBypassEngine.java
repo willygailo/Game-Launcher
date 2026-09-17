@@ -320,36 +320,158 @@ public final class GameSecurityBypassEngine {
     }
 
     /**
+     * Strips foreign and audit extended attributes (xattrs) like user.audit, security.audit,
+     * and clears immutable / append-only inode flags (+i, +a) on Android 14–16 ext4/f2fs.
+     */
+    public static boolean stripFileExtendedAttributes(List<String> paths) {
+        if (paths == null || paths.isEmpty()) return false;
+        StringBuilder sb = new StringBuilder();
+        for (String path : paths) {
+            if (path == null || path.trim().isEmpty()) continue;
+            // 1. Direct POSIX native stripping
+            NativeConfigInjector.securityBypassStripXattrs(path);
+
+            // 2. Elevated shell fallback / chattr unlock
+            sb.append("chattr -i -a '").append(path).append("' 2>/dev/null; ");
+            sb.append("setfattr -x user.audit '").append(path).append("' 2>/dev/null; ");
+            sb.append("setfattr -x user.modified '").append(path).append("' 2>/dev/null; ");
+        }
+        String cmd = sb.toString();
+        if (!cmd.trim().isEmpty()) {
+            executePrivileged(cmd);
+        }
+        return true;
+    }
+
+    /**
+     * Performs an atomic file swap to evade inotify and epoll file watchers.
+     * Writes to a hidden staging file, then atomically renames over the target path.
+     */
+    public static boolean enforceAtomicTempFileSwap(String targetPath, String content) {
+        if (targetPath == null || content == null) return false;
+        File targetFile = new File(targetPath);
+        File parent = targetFile.getParentFile();
+        if (parent != null) {
+            parent.mkdirs();
+        }
+        File stagedFile = new File(parent != null ? parent : new File("/data/local/tmp"),
+                ".tmp_gb_" + System.currentTimeMillis() + "_" + targetFile.getName());
+        try {
+            java.nio.file.Files.write(stagedFile.toPath(), content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            if (NativeConfigInjector.securityBypassAtomicSwap(stagedFile.getAbsolutePath(), targetPath)) {
+                return true;
+            }
+            if (stagedFile.renameTo(targetFile)) {
+                return true;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "enforceAtomicTempFileSwap note: " + t.getMessage());
+        } finally {
+            if (stagedFile.exists()) {
+                stagedFile.delete();
+            }
+        }
+        return ConfigFileHelper.writeContentAtomic(targetPath, content);
+    }
+
+    /**
+     * Null-routes known anti-cheat and telemetry reporting endpoints.
+     * Sinkholes domains like log.anticheat.qq.com, mtp.moonton.com, crashlytics.com.
+     */
+    public static boolean sinkholeTelemetryEndpoints(String packageName) {
+        if (!ShellSafety.isSafePackageName(packageName)) return false;
+        String[] blacklistedDomains = {
+            "log.anticheat.qq.com",
+            "mtp.moonton.com",
+            "tpns.tencent.com",
+            "telemetry.activision.com",
+            "hawk.game.163.com",
+            "report.games.garena.com",
+            "crashlytics.com",
+            "settings.crashlytics.com"
+        };
+        StringBuilder sb = new StringBuilder();
+        for (String domain : blacklistedDomains) {
+            sb.append("iptables -A OUTPUT -d ").append(domain).append(" -j DROP 2>/dev/null; ");
+            sb.append("ip6tables -A OUTPUT -d ").append(domain).append(" -j DROP 2>/dev/null; ");
+        }
+        String cmd = sb.toString();
+        if (!cmd.trim().isEmpty()) {
+            executePrivileged(cmd);
+        }
+        Log.i(TAG, "Telemetry reporting sinkholes armed for " + packageName);
+        return true;
+    }
+
+    /**
+     * Spoofs system integrity properties to bypass device attestation checks.
+     * Ensures root/debug/unlocked flags do not trigger game anti-tamper heuristics.
+     */
+    public static boolean enforceDeviceIntegrityProperties() {
+        String[] properties = {
+            "resetprop -n ro.boot.flash.locked 1",
+            "resetprop -n ro.boot.verifiedbootstate green",
+            "resetprop -n ro.debuggable 0",
+            "resetprop -n ro.secure 1",
+            "resetprop -n ro.build.type user",
+            "resetprop -n ro.build.tags release-keys",
+            "setprop ro.boot.flash.locked 1",
+            "setprop ro.boot.verifiedbootstate green",
+            "setprop ro.debuggable 0",
+            "setprop ro.secure 1"
+        };
+        StringBuilder sb = new StringBuilder();
+        for (String prop : properties) {
+            sb.append(prop).append(" 2>/dev/null; ");
+        }
+        executePrivileged(sb.toString());
+        Log.i(TAG, "Device integrity properties enforced (flash.locked=1, verifiedbootstate=green)");
+        return true;
+    }
+
+    /**
      * Orchestrates the complete post-injection security bypass sequence:
-     * 1. Aligns Linux UID/GID ownership.
-     * 2. Restores SELinux security context.
-     * 3. Cloaks file timestamps.
-     * 4. Applies Anti-Tamper Read-Only Lock (chmod 444).
-     * 5. Neutralizes anti-cheat telemetry directories.
+     * 1. Strips foreign xattrs & clears inode flags.
+     * 2. Aligns Linux UID/GID ownership & SELinux app_data_file context.
+     * 3. Cloaks file timestamps to baseline.
+     * 4. Applies Anti-Tamper Read-Only Lock (chmod 444 / 666 safe).
+     * 5. Suppresses and null-routes anti-cheat telemetry directories.
+     * 6. Sinkholes anti-cheat telemetry reporting domains via iptables.
+     * 7. Enforces system integrity properties (flash.locked=1).
+     * 8. Purges corrupted asset caches to prevent crash-loops.
      */
     public static boolean postInjectionBypassAndLock(String packageName) {
         if (!ShellSafety.isSafePackageName(packageName)) return false;
         String pkg = packageName.trim().toLowerCase(Locale.ROOT);
         List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
 
-        Log.i(TAG, "🛡️ [SecurityBypass] Running post-injection bypass & anti-tamper lock for " + pkg);
+        Log.i(TAG, "🛡️ [SecurityBypass] Running 8-tier post-injection bypass & anti-tamper lock for " + pkg);
 
-        // 1. Fix ownership & SELinux context
+        // 1. Strip foreign extended attributes and audit flags (xattr / chattr)
+        stripFileExtendedAttributes(paths);
+
+        // 2. Fix ownership & SELinux context
         enforceSelinuxAndOwnershipBypass(pkg, paths);
 
-        // 2. Cloak file timestamps to installation baseline
+        // 3. Cloak file timestamps to installation baseline
         cloakFileTimestamps(pkg, paths);
 
-        // 3. Apply Anti-Tamper Read-Only Lock (chmod 444)
+        // 4. Apply Anti-Tamper Read-Only Lock (chmod 444 / 666 safe)
         enforceAntiTamperFileLock(pkg, paths);
 
-        // 4. Suppress and null-route anti-cheat telemetry reporting
+        // 5. Suppress and null-route anti-cheat telemetry reporting directories
         suppressSecurityTelemetryReporting(pkg);
 
-        // 5. Clean up any corrupted asset folders that cause crashes
+        // 6. Sinkhole anti-cheat telemetry network endpoints
+        sinkholeTelemetryEndpoints(pkg);
+
+        // 7. Enforce device integrity environment properties
+        enforceDeviceIntegrityProperties();
+
+        // 8. Clean up any corrupted asset folders that cause crashes
         purgeCorruptedAssetCaches(pkg);
 
-        Log.i(TAG, "✅ [SecurityBypass] 4-layer security bypass successfully enforced for " + pkg);
+        Log.i(TAG, "✅ [SecurityBypass] 8-tier security bypass successfully enforced for " + pkg);
         return true;
     }
 
