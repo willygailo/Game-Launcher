@@ -95,7 +95,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             });
         }
 
-        // Register Shizuku binder lifecycle listeners and subscribe state change listener
+        // Initialize Shizuku lifecycle manager and register listeners
+        com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).init();
         ShizukuManager.registerBinderListeners();
         ShizukuManager.addStateListener(this);
 
@@ -225,7 +226,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     public void onBinderStateChanged(boolean alive) {
         runOnUiThread(() -> {
             if (isFinishing() || isDestroyed()) return;
-            if (!alive) {
+            boolean reallyAlive = alive || com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
+            if (!reallyAlive) {
                 lastReportedAlive = false;
                 Log.d("MainActivity", "Shizuku disconnected");
             } else {
@@ -235,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                     ShizukuManager.triggerThrottledPostConnectionSync();
                 }
             }
+            com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).refreshStatus();
         });
     }
 

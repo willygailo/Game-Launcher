@@ -93,6 +93,18 @@ profile.omni_lifesteal_multiplier = 10.0
 profile.instant_cooldown_reset = true
 profile.hero_execution_threshold = 30        -- 30% execute trigger
 
+-- ── ⚡ 2026 Advanced Basic Attack, Resource Regen & Lifesteal Suite ─────────────
+profile.basic_attack_damage_overdrive = 10000  -- Basic attack 10k damage lock
+profile.basic_attack_true_damage = true       -- All basic attacks deal true damage
+profile.basic_attack_speed_ratio = 10.0       -- 10x basic attack animation speed
+profile.basic_attack_interval = 0             -- Zero interval between basic attacks
+profile.hp_regen_rate = 1000                  -- 1000 HP per tick regen
+profile.mana_regen_rate = 1000                -- Infinite mana pool
+profile.energy_regen_rate = 1000              -- Infinite energy (Fanny/Ling/Haya/Nolan)
+profile.all_hero_true_lifesteal = 10.0        -- 100% physical lifesteal + spellvamp
+profile.stamina_fury_infinite = true          -- Unlimited rage/fury for fighter heroes
+profile.zero_skill_mana_cost = true           -- 0 mana/energy cost on all skills
+
 -- ── ⚔️ Hero-Specific Micro Overdrives ─────────────────────────────────────────
 -- Fanny: Zero cable delay, straight cable, full energy, wall reset
 profile.fanny_cable_speed = 10

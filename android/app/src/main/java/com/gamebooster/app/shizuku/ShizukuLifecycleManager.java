@@ -132,20 +132,30 @@ public class ShizukuLifecycleManager implements NetworkStateObserver.Listener, S
 
     /**
      * Reads real-time status from the system and updates LiveData.
+     * Integrates raw binder ping, AIDL UserService connector, ConnectionManager, and Virtual Root.
      */
     public ShizukuStatus refreshStatus() {
         boolean installed = ShizukuManager.isShizukuInstalled(appContext);
-        boolean binderAlive = false;
+        boolean pingAlive = false;
         try {
-            binderAlive = Shizuku.pingBinder();
+            pingAlive = Shizuku.pingBinder();
         } catch (Throwable ignored) {}
 
-        boolean permissionGranted = false;
-        if (binderAlive) {
+        boolean pingGranted = false;
+        if (pingAlive) {
             try {
-                permissionGranted = (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED);
+                pingGranted = (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED);
             } catch (Throwable ignored) {}
         }
+
+        boolean userServiceConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+        boolean connMgrReady = ShizukuConnectionManager.getInstance().isReady();
+        boolean virtualRootReady = com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
+        boolean everGranted = com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(appContext);
+        boolean rishReady = RishManager.isRishAvailable();
+
+        boolean binderAlive = pingAlive || userServiceConnected || connMgrReady || virtualRootReady || rishReady;
+        boolean permissionGranted = pingGranted || userServiceConnected || connMgrReady || (everGranted && (rishReady || virtualRootReady));
 
         if (binderAlive && permissionGranted) {
             try {

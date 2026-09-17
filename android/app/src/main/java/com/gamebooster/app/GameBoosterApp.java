@@ -51,6 +51,7 @@ public class GameBoosterApp extends Application {
 
         // 2.1 Process-wide Shizuku Sticky Binder Listeners & Connection Lifecycle
         try {
+            com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(this).init();
             com.gamebooster.app.shizuku.ShizukuManager.registerBinderListeners();
             com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().start();
         } catch (Throwable t) {

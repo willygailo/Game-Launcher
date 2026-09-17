@@ -264,6 +264,21 @@ profile.r_hit_reg_packet_sync     = 1000        -- Frame-sync hit registration
 profile.r_all_scope_snap_speed    = 10          -- Instant scope acquisition
 profile.r_kinetic_shield_boost    = 10000       -- Max armor health pool
 
+-- ── 🔭 Multi-Range Scope Lock 100m-450m (All Scopes & All Guns Working) ───────
+profile.scope_lock_all_scopes_all_guns = 1
+profile.scope_100m_iron_reddot_lock    = 1      -- 100m Iron sight, Red Dot, Holo lock
+profile.scope_200m_2x_3x_lock          = 1      -- 200m 2x and 3x scope lock
+profile.scope_300m_4x_acog_lock        = 1      -- 300m 4x ACOG lock
+profile.scope_400m_6x_adjusted_lock    = 1      -- 400m 6x scope lock
+profile.scope_450m_8x_sniper_lock      = 1      -- 450m 8x / 10x+ sniper lock
+profile.r_bullet_tracking_magnetism    = 3.0    -- 3x bullet curve to enemy bone 0
+profile.r_hitbox_multiplier            = 3.0    -- 3x hitbox registration zone
+profile.r_fast_scope_ads               = 1      -- 0ms instant ADS scope-in
+profile.r_fast_sprint_turbo            = 1      -- Instant sprint speed
+profile.r_fast_weapon_swap             = 1      -- Zero delay weapon draw/holster
+profile.r_fast_reload_chambering       = 1      -- Fast reload speed
+profile.r_all_gun_recoil_zero          = 1      -- All gun zero recoil working
+
 -- ── 🛡️ ACE TWO-PASS BYPASS (Q2 2026 — Krafton/Tencent ACE upgrade) ──────────────────
 -- ACE Q2 2026 now validates CVar value ranges AND scans memory every 1.8s.
 -- Strategy: Pass 1 writes legit-looking graphics CVars (cover track).

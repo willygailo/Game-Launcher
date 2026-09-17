@@ -73,6 +73,14 @@ public class ShizukuConnectionManager {
             state = newState;
         }
         Log.i(TAG, "State → " + newState);
+        if (newState == State.READY) {
+            try {
+                android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+                if (ctx != null) {
+                    ShizukuLifecycleManager.getInstance(ctx).refreshStatus();
+                }
+            } catch (Throwable ignored) {}
+        }
         for (ConnectionListener l : listeners) {
             try {
                 l.onConnectionStateChanged(newState);
@@ -191,9 +199,10 @@ public class ShizukuConnectionManager {
         boolean binderAlive = false;
         boolean permissionGranted = false;
         try {
-            binderAlive = Shizuku.pingBinder();
+            binderAlive = Shizuku.pingBinder() || ShizukuUserServiceConnector.getInstance().isServiceConnected();
             if (binderAlive) {
-                permissionGranted = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+                permissionGranted = (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED)
+                        || ShizukuUserServiceConnector.getInstance().isServiceConnected();
             }
         } catch (Throwable t) {
             binderAlive = false;
@@ -217,7 +226,7 @@ public class ShizukuConnectionManager {
             // Secondary confirmation check before declaring DEAD to filter out transient blips
             sleepQuietly(60);
             try {
-                binderAlive = Shizuku.pingBinder();
+                binderAlive = Shizuku.pingBinder() || ShizukuUserServiceConnector.getInstance().isServiceConnected();
             } catch (Throwable ignored) {}
 
             if (!binderAlive) {
@@ -246,8 +255,14 @@ public class ShizukuConnectionManager {
 
     public boolean isReady() {
         try {
-            return Shizuku.pingBinder()
-                    && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (Shizuku.pingBinder()
+                    && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                return true;
+            }
+            return false;
         } catch (Throwable t) {
             return false;
         }
@@ -333,6 +348,12 @@ public class ShizukuConnectionManager {
                         granted = false;
                     }
 
+                    boolean aidlConnected = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+                    if (!alive && aidlConnected) {
+                        alive = true;
+                        granted = true;
+                    }
+
                     if (alive && granted) {
                         // Shizuku binder and permission are active!
                         setState(State.READY);
@@ -354,7 +375,13 @@ public class ShizukuConnectionManager {
                     } else if (attempt < 3) {
                         if (state != State.BINDING) setState(State.BINDING);
                     } else {
-                        if (state != State.DEAD) setState(State.DEAD);
+                        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()
+                                && !com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady()) {
+                            if (state != State.DEAD) setState(State.DEAD);
+                        } else {
+                            if (state != State.READY) setState(State.READY);
+                            return;
+                        }
                     }
 
                     // Keepalive heartbeat: when attempt reaches maximum backoff, continue polling every 4s

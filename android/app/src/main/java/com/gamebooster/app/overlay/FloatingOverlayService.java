@@ -915,6 +915,16 @@ public class FloatingOverlayService extends Service {
             if (pbHudRam != null) {
                 pbHudRam.setProgress(m.ramUsagePct);
             }
+            if (tvHudAutoInjectStatus != null) {
+                boolean shizukuLive = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+                if (shizukuLive) {
+                    tvHudAutoInjectStatus.setText("⚡ SHIZUKU ACTIVE (UID 2000) • AUTO-CONFIG");
+                    tvHudAutoInjectStatus.setTextColor(Color.parseColor("#00FF66"));
+                } else {
+                    tvHudAutoInjectStatus.setText("⚡ AUTO-CONFIG ACTIVE • C++ / LUA ENGINE");
+                    tvHudAutoInjectStatus.setTextColor(Color.parseColor("#00FFCC"));
+                }
+            }
         }
     }
 

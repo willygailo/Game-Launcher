@@ -1669,7 +1669,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
 
                 // Quick badge metrics
-                boolean shizukuOk = ShizukuManager.isShizukuRunningAndGranted();
+                boolean shizukuOk = ShizukuManager.isShizukuRunningAndGranted()
+                        || com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
                 boolean aidlOk = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected();
                 boolean isWifi = false;
                 try {
@@ -1701,7 +1702,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         tvDiagStatus.setText(text);
                     }
                     if (tvDiagBadgeShizuku != null) {
-                        tvDiagBadgeShizuku.setText(finalShizuku ? "⚡ SHIZUKU: GRANTED (UID 2000)" : "⚠️ SHIZUKU: DISCONNECTED");
+                        tvDiagBadgeShizuku.setText(finalShizuku ? "⚡ SHIZUKU: ACTIVE (UID 2000)" : "⚠️ SHIZUKU: DISCONNECTED");
                         tvDiagBadgeShizuku.setTextColor(finalShizuku ? android.graphics.Color.parseColor("#00F0FF") : android.graphics.Color.parseColor("#FF5555"));
                     }
                     if (tvDiagBadgeAidl != null) {

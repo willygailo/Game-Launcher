@@ -237,8 +237,14 @@ public final class DiagnosticsExporter {
         boolean shizukuAlive = false;
         boolean shizukuGranted = false;
         try {
-            shizukuAlive = Shizuku.pingBinder();
-            shizukuGranted = shizukuAlive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            boolean pingAlive = Shizuku.pingBinder();
+            boolean pingGranted = pingAlive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            boolean aidlAlive = ShizukuUserServiceConnector.getInstance().isServiceConnected();
+            boolean virtualRoot = com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
+            boolean rish = RishManager.isRishAvailable();
+
+            shizukuAlive = pingAlive || aidlAlive || virtualRoot || rish;
+            shizukuGranted = pingGranted || aidlAlive || virtualRoot;
         } catch (Throwable ignored) {}
 
         lines.add("Shizuku Binder Service: " + (shizukuAlive ? "🟢 CONNECTED (IPC Active)" : "🔴 DISCONNECTED (Requires Shizuku App)"));

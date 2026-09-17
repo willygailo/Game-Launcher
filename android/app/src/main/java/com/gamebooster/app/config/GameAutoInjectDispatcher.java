@@ -309,6 +309,8 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
         try { MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Specialized: Basic Attack Overclock + True Damage Floor + Infinite Regen + Life-Still + Armor ────
+        try { MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -367,6 +369,8 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
         try { PubgConfigPatcher.applyPubgmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Specialized: Full-Scope Lock (100m-450m) + 3.0x Bullet Tracking + Fast Overdrive ────
+        try { PubgConfigPatcher.applyPubgmFullScopeBulletTrackingOverdrive(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectCodm(String pkg) {
@@ -427,6 +431,8 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyClassicCombatFullSuite(pkg); } catch (Throwable ignored) {}
         // ─── 2026.4 Combat Overdrive Suite (Damage Assist, Aim Lock, Armor Overdrive) ────
         try { CodmConfigPatcher.applyCodmCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Specialized: Attack Aim Assist + Bullet Tracking + All-Scope (100m-450m) + Fast Reload Overdrive ────
+        try { CodmConfigPatcher.applyCodmFullScopeBulletTrackingFastReload(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectFreeFire(String pkg) {

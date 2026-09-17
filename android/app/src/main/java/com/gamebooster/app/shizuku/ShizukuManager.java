@@ -114,7 +114,7 @@ public class ShizukuManager {
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {
         Log.w(TAG, "Shizuku binder died / service disconnected.");
         ShizukuConnectionManager.getInstance().onBinderDead();
-        notifyStateChanged(false);
+        notifyStateChanged(isShizukuRunningAndGranted());
     };
 
     public static void registerBinderListeners() {
@@ -177,12 +177,26 @@ public class ShizukuManager {
 
     /**
      * Checks if Shizuku is currently running, binder is alive, and permission is granted.
-     * This is the master gatekeeper for all APK features.
+     * Integrates direct Shizuku binder, AIDL UserService, and Virtual Root channels.
      */
     public static boolean isShizukuRunningAndGranted() {
         try {
-            if (!Shizuku.pingBinder()) return false;
-            return Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                return true;
+            }
+            if (ShizukuConnectionManager.getInstance().isReady()) {
+                return true;
+            }
+            Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null && com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(ctx)) {
+                if (RishManager.isRishAvailable() || ShizukuExecutor.hasShizukuPermission()) {
+                    return true;
+                }
+            }
+            return false;
         } catch (Throwable e) {
             return false;
         }

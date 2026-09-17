@@ -2636,3 +2636,108 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 }
 
 
+// =============================================================================
+// ─── MLBB 2026 NEW: Basic Attack + Regen + Lifesteal + Armor Overdrive ───────
+// =============================================================================
+//
+// Specialist function targeting MLBB PlayerPrefs XML / plain-key configs.
+//
+// Keys injected:
+//   basic_attack_damage_overdrive = 10000  : floor for all basic attack damage
+//   basic_attack_speed_ratio      = 10.0   : 10x attack animation speed
+//   basic_attack_true_damage      = 1      : bypasses armor calculation
+//   hp_regen_rate                 = 1000   : HP regen per engine tick
+//   mana_regen_rate               = 1000   : mana regen per engine tick
+//   energy_regen_rate             = 1000   : energy regen per engine tick
+//   life_still_passive_tick       = 1000   : life-still passive HP recovery
+//   all_hero_true_lifesteal       = 10.0   : 10x lifesteal on every hit
+//   spellvamp_ratio               = 10.0   : 10x spell vamp
+//   zero_skill_mana_cost          = 1      : all skills zero mana cost
+//   zero_skill_energy_cost        = 1      : all skills zero energy cost
+//   PhysicalDefense               = 10000  : max physical armor
+//   MagicDefense                  = 10000  : max magic armor
+//   ArmorBoostFloor               = 10000  : armor floor key
+//   DamageReductionRatio          = 0.99   : 99% damage reduction
+//   OmniLifestealMultiplier       = 10.0   : omni lifesteal (physical+magic)
+//   LifestealBoost                = 1      : lifesteal boost flag
+//   SpellVampBoost                = 1      : spell vamp flag
+//   InstantHpFullRestore          = 1      : instant HP restore on low HP
+//   UnlimitedMana                 = 1      : unlimited mana pool
+//   UnlimitedEnergy               = 1      : unlimited energy pool
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbBasicAttackRegenOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🗡️ Basic Attack Damage Overdrive ──
+        {"basic_attack_damage_overdrive",  "10000"},
+        {"basic_attack_speed_ratio",       "10.0"},
+        {"basic_attack_true_damage",       "1"},
+        {"DamageLockMax",                  "10000"},
+        {"TrueDamageFloor",                "10000"},
+        {"CritRateBoost",                  "100"},
+        {"CritDamageMultiplier",           "4.0"},
+        {"PenetrationBoost",               "1"},
+        {"PenetrationMultiplier",          "3.0"},
+        {"HitRegSyncRate",                 "1000"},
+        {"FrameSyncDamage",                "1"},
+
+        // ── 💚 HP / Mana / Energy Regen Overdrive ──
+        {"hp_regen_rate",                  "1000"},
+        {"mana_regen_rate",                "1000"},
+        {"energy_regen_rate",              "1000"},
+        {"life_still_passive_tick",        "1000"},
+        {"HpRegenMultiplier",              "10.0"},
+        {"ManaRegenMultiplier",            "10.0"},
+        {"EnergyRegenMultiplier",          "10.0"},
+        {"InstantHpFullRestore",           "1"},
+        {"PassiveLifeStill",               "1"},
+        {"LifeStillRate",                  "1000"},
+
+        // ── 🩸 Lifesteal + Spellvamp ──
+        {"all_hero_true_lifesteal",        "10.0"},
+        {"spellvamp_ratio",                "10.0"},
+        {"OmniLifestealMultiplier",        "10.0"},
+        {"LifestealBoost",                 "1"},
+        {"SpellVampBoost",                 "1"},
+        {"OmniVampRate",                   "10.0"},
+        {"LifestealOnHit",                 "1"},
+        {"SpellLifestealOnCast",           "1"},
+
+        // ── ⚡ Zero Skill Economy (Mana / Energy Cost) ──
+        {"zero_skill_mana_cost",           "1"},
+        {"zero_skill_energy_cost",         "1"},
+        {"UnlimitedMana",                  "1"},
+        {"UnlimitedEnergy",                "1"},
+        {"ZeroSkillDelay",                 "1"},
+        {"SkillCastDelayMs",               "0"},
+        {"InstantCooldownReset",           "1"},
+        {"CooldownReduction",              "0"},
+
+        // ── 🛡️ Armor / Defense ──
+        {"PhysicalDefense",                "10000"},
+        {"MagicDefense",                   "10000"},
+        {"ArmorBoostFloor",                "10000"},
+        {"PhysicalShield",                 "10000"},
+        {"MagicShieldBoost",               "10000"},
+        {"DamageReductionRatio",           "0.99"},
+        {"DamageReduction",                "0.99"},
+
+        // ── 🎯 Aim Lock Core (MLBB Basic Attack Targeting) ──
+        {"AimMagnetism",                   "3"},
+        {"HeadMagnetism",                  "1"},
+        {"AimSnapSpeed",                   "10"},
+        {"AimSmoothFactor",                "0"},
+        {"AimMethod",                      "1"},
+        {"SkillSmartAim",                  "1"},
+        {"HeroLock",                       "1"},
+
+        // ── 🚀 Touch / Input Overdrive ──
+        {"TouchPollingRate",               "1000"},
+        {"TouchZeroDelay",                 "1"},
+        {"ZeroInputLag",                   "1"},
+        {"bFramePacingEnabled",            "True"},
+        {"AllowOcclusionQueries",          "1"},
+        {"r.OneFrameThreadLag",            "0"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbBasicAttackRegenOverdrive2026");
+}

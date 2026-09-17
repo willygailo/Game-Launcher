@@ -114,6 +114,11 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectUniversalArmorShieldLock(String path);
     public static native boolean nativeInjectUniversalAimMagnetLock(String path);
 
+    // 2026 Specialized Overdrives: MLBB Basic Attack & Infinite Regen, PUBGM Full-Scope 100-450m & Bullet Tracking, CODM Attack Aim Assist & Fast Reload
+    public static native boolean nativeInjectMlbbBasicAttackRegenOverdrive(String path);
+    public static native boolean nativeInjectPubgmFullScopeBulletTrackingOverdrive(String path);
+    public static native boolean nativeInjectCodmFullScopeBulletTrackingFastReload(String path);
+
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
     public static native boolean nativeInjectZeroRecoil(String path, float recoilScale, int stability);
@@ -465,6 +470,48 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try { if (nativeInjectAutoHeadshotBulletKill(path)) return true; } catch (Throwable t) {
                 Log.w(TAG, "injectAutoHeadshotBulletKill fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * MLBB 2026: Basic Attack Overclock + True Damage Floor + Infinite Regen (HP/Mana/Energy) + Life-Still + 10000 Armor.
+     */
+    public static boolean injectMlbbBasicAttackRegenOverdrive(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbBasicAttackRegenOverdrive(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectMlbbBasicAttackRegenOverdrive fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * PUBGM 2026: Full Scope Lock (100m/200m/300m/400m/450m) + Bullet Tracking 3.0x + Fast ADS/Sprint/Reload/Swap Overdrive.
+     */
+    public static boolean injectPubgmFullScopeBulletTrackingOverdrive(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmFullScopeBulletTrackingOverdrive(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectPubgmFullScopeBulletTrackingOverdrive fallback: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * CODM 2026: Attack Aim Assist Lock + Bullet Tracking Lock 3.0x + All-Scope Lock (100m-450m) + 0ms Fast Reload/Sprint Overdrive.
+     */
+    public static boolean injectCodmFullScopeBulletTrackingFastReload(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmFullScopeBulletTrackingFastReload(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectCodmFullScopeBulletTrackingFastReload fallback: " + t.getMessage());
             }
         }
         return false;

@@ -1364,5 +1364,23 @@ public class CodmConfigPatcher {
         Log.i(TAG, "⚡ CODM 2026.4 Combat Overdrive (Damage + Aim + Armor) applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 Specialized: Attack Aim Assist Lock + Bullet Tracking Lock 3.0x + All-Scope Lock (100m, 200m, 300m, 400m, 450m — all scopes & all guns)
+     * + 0ms Fast Reload / Chambering + Fast Sprint Turbo + Fast Scope / ADS + Slide Cancel Fast Overdrive.
+     */
+    public static boolean applyCodmFullScopeBulletTrackingFastReload(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodmFullScopeBulletTrackingFastReload(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ CODM 2026 Full Scope (100m-450m) + Bullet Tracking + Fast Reload Overdrive applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
 

@@ -1175,4 +1175,22 @@ public class PubgConfigPatcher {
         Log.i(TAG, "⚡ PUBGM 2026.4 Combat Overdrive (Damage + Aim + Armor) applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 Specialized: Full-Scope Lock (100m, 200m, 300m, 400m, 450m — all scopes & all guns working)
+     * + 3.0x Bullet Tracking Magnetism + Fast ADS + Fast Sprint Turbo + Fast Reload/Chambering/Swap Overdrive.
+     */
+    public static boolean applyPubgmFullScopeBulletTrackingOverdrive(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectPubgmFullScopeBulletTrackingOverdrive(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ PUBGM 2026 Full Scope (100m-450m) + Bullet Tracking + Fast Overdrive applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }

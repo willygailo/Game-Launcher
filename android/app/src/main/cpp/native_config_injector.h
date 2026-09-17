@@ -1695,6 +1695,54 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectUniversalAimMagnetLock
   (JNIEnv *, jclass, jstring);
 
+// =============================================================================
+// ─── 2026 NEW: Specialized Per-Game Overdrive Functions ──────────────────────
+// =============================================================================
+
+/*
+ * nativeInjectMlbbBasicAttackRegenOverdrive
+ * MLBB 2026 Specialist:
+ *   - Basic Attack Damage overclock: 10000 base + 10x speed ratio
+ *   - HP / Mana / Energy regen rate: 1000 per tick
+ *   - All-hero true lifesteal 10x + spellvamp
+ *   - Zero skill mana/energy cost
+ *   - Armor / Physical-Defense / Magic-Defense: 10000+
+ *   - Life-still (passive HP recovery) constant tick
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbBasicAttackRegenOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmFullScopeBulletTrackingOverdrive
+ * PUBGM 2026 Specialist:
+ *   - Scope tier locks: 100m iron/RDS, 200m 2x/3x, 300m 4x/ACOG,
+ *                       400m 6x adjusted, 450m 8x sniper
+ *   - All-gun all-scope working across every weapon class
+ *   - Bullet tracking magnetism 3.0x + 3x hitbox expansion
+ *   - Fast ADS/scope zero delay
+ *   - Fast sprint turbo (infinite stamina)
+ *   - Fast weapon swap + fast reload/chambering
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFullScopeBulletTrackingOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmFullScopeBulletTrackingFastReload
+ * CODM 2026 Specialist:
+ *   - Attack aim assist lock: max strength + zero deadzone
+ *   - Bullet tracking lock: 3.0x magnetism, zero spread laser beam
+ *   - All scope lock: 100m, 200m, 300m, 400m, 450m — all guns
+ *   - Fast reload + fast chambering: 0ms delay
+ *   - Fast sprint turbo
+ *   - Fast scope / fast ADS
+ *   - Slide cancel fast
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullScopeBulletTrackingFastReload
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

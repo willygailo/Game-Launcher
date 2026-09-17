@@ -111,4 +111,13 @@ public class ShizukuStatusArchitectureTest {
         java.io.File pak = new java.io.File("src/main/assets/paks/game_patch_4.6.0.21556.pak");
         assertTrue("game_patch_4.6.0.21556.pak must exist in assets/paks/", pak.exists() && pak.length() > 0);
     }
+
+    @Test
+    public void testUnifiedShizukuStatusCheck() {
+        // Assert that unified status check safely resolves without null pointers
+        boolean running = ShizukuManager.isShizukuRunningAndGranted();
+        assertNotNull(running);
+        assertNotNull(com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady());
+        assertNotNull(com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive());
+    }
 }

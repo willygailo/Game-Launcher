@@ -75,6 +75,8 @@ public class ShizukuStatusDashboardView extends LinearLayout {
     public void bindLifecycle(LifecycleOwner lifecycleOwner) {
         if (lifecycleOwner == null) return;
         ShizukuLifecycleManager manager = ShizukuLifecycleManager.getInstance(getContext());
+        // Apply immediate status synchronously to eliminate any stale or flash of disconnected state
+        updateStatus(manager.refreshStatus());
         manager.getStatusLiveData().observe(lifecycleOwner, this::updateStatus);
     }
 
@@ -164,7 +166,7 @@ public class ShizukuStatusDashboardView extends LinearLayout {
 
     private void handleActionClick() {
         ShizukuLifecycleManager manager = ShizukuLifecycleManager.getInstance(getContext());
-        ShizukuStatus status = manager.getCurrentStatus();
+        ShizukuStatus status = manager.refreshStatus();
 
         // If not reported alive, attempt immediate proactive reconnection first
         if (!status.isBinderAlive()) {
@@ -178,6 +180,9 @@ public class ShizukuStatusDashboardView extends LinearLayout {
         } else if (status.isBinderAlive()) {
             // Service is up, request permission
             manager.requestPermission();
+        } else if (com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady()) {
+            // Virtual Root / Rish channel active
+            ShizukuManager.handleShizukuCardClick(getContext());
         } else {
             // Not running, show dialog / open Shizuku
             manager.showRequiredDialog(getContext(), "Game Booster Pro");

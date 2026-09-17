@@ -1371,4 +1371,157 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── PUBGM 2026 NEW: Full-Scope Bullet Tracking + Fast All Overdrive ─────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmFullScopeBulletTrackingOverdrive
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos
+                   || pathStr.rfind("UserCustom.ini") != std::string::npos
+                   || pathStr.rfind(".ini") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🔭 100m: Iron Sight + RDS ──
+        {"r.Scope100mIronSightLock",          "1"},
+        {"r.Scope100mRdsDotLock",             "1"},
+        {"scope_100m_iron_reddot_lock",       "1"},
+        {"r.IronSightAimLock",                "1"},
+        {"r.RdsDotAimLock",                   "1"},
+        {"r.IronSightHeadshotMultiplier",     "999"},
+        {"r.RdsHeadshotMultiplier",           "999"},
+        // ── 🔭 200m: 2x + 3x Magnifier ──
+        {"r.Scope200m2xMagnifierLock",        "1"},
+        {"r.Scope200m3xMagnifierLock",        "1"},
+        {"scope_200m_2x_3x_lock",             "1"},
+        {"r.2xScopeAimLock",                  "1"},
+        {"r.3xScopeAimLock",                  "1"},
+        {"r.2xHeadshotMultiplier",            "999"},
+        {"r.3xHeadshotMultiplier",            "999"},
+        // ── 🔭 300m: 4x ACOG + Prism ──
+        {"r.Scope300m4xAcogLock",             "1"},
+        {"r.Scope300mPrismLock",              "1"},
+        {"scope_300m_4x_acog_lock",           "1"},
+        {"r.4xScopeAimLock",                  "1"},
+        {"r.PrismScopeAimLock",               "1"},
+        {"r.4xHeadshotMultiplier",            "999"},
+        {"r.PrismHeadshotMultiplier",         "999"},
+        // ── 🔭 400m: 6x Adjusted + VSS ──
+        {"r.Scope400m6xAdjustedLock",         "1"},
+        {"r.Scope400mVSSLock",                "1"},
+        {"scope_400m_6x_adjusted_lock",       "1"},
+        {"r.6xScopeAimLock",                  "1"},
+        {"r.VSSScopeAimLock",                 "1"},
+        {"r.6xHeadshotMultiplier",            "999"},
+        {"r.VSSHeadshotMultiplier",           "999"},
+        // ── 🔭 450m: 8x Sniper + CQBR ──
+        {"r.Scope450m8xSniperLock",           "1"},
+        {"r.Scope450mCQBRLock",               "1"},
+        {"scope_450m_8x_sniper_lock",         "1"},
+        {"r.8xScopeAimLock",                  "1"},
+        {"r.CQBRScopeAimLock",                "1"},
+        {"r.8xHeadshotMultiplier",            "999"},
+        {"r.CQBRHeadshotMultiplier",          "999"},
+        // ── 🔫 All-Gun All-Scope Working ──
+        {"r.ARScopeAimLock",                  "1"},
+        {"r.SMGScopeAimLock",                 "1"},
+        {"r.SNIPERScopeAimLock",              "1"},
+        {"r.SGScopeAimLock",                  "1"},
+        {"r.LMGScopeAimLock",                 "1"},
+        {"r.SRScopeAimLock",                  "1"},
+        {"r.AllWeaponScopeAimLock",           "1"},
+        {"r.AllScopeSnapSpeed",               "10"},
+        {"r.AllScopeHeadshotLock",            "1"},
+        // ── 🎯 Bullet Tracking 3.0x ──
+        {"r.BulletTrackingMagnetism",         "3.0"},
+        {"r_bullet_tracking_magnetism",       "3.0"},
+        {"r.BulletTrackingHitboxScale",       "3.0"},
+        {"r.BulletMagnetism",                 "3"},
+        {"r.SilentAimbot",                    "1"},
+        {"r.PredictiveAim",                   "1"},
+        {"r.LeadPredictionHz",                "1000"},
+        {"r.AimAssistEnabled",                "1"},
+        {"r.AimAssistStrength",               "100"},
+        {"r.AimMagnetism",                    "3"},
+        {"r.AimSnapThreshold",                "0"},
+        {"r.HeadBoneAimPriority",             "1"},
+        {"r.PUBGBulletVelocityCompensation",  "1"},
+        {"r.WeaponSpread",                    "0"},
+        {"r.WeaponSway",                      "0"},
+        {"r.WeaponRecoilScale",               "0"},
+        {"r.RecoilPatternScale",              "0"},
+        {"r.VerticalRecoilScale",             "0"},
+        {"r.HorizontalRecoilScale",           "0"},
+        {"r.BulletSpreadScale",               "0"},
+        {"r.MuzzleVelocityFactor",            "1.0"},
+        // ── ⚡ Fast Scope / Fast ADS ──
+        {"r.FastScopeAdsDelay",               "0"},
+        {"r.AdsAnimSpeedScale",               "10"},
+        {"r_fast_scope_ads",                  "1"},
+        {"FastScopeSwitch",                   "1"},
+        {"AdsZeroDelay",                      "1"},
+        // ── 🏃 Fast Sprint Turbo ──
+        {"r.SprintSpeedMultiplier",           "10.0"},
+        {"r.StaminaRecoveryRate",             "10.0"},
+        {"r.StaminaInfinite",                 "1"},
+        {"r_fast_sprint_turbo",               "1"},
+        {"FastSprintTurbo",                   "1"},
+        {"SprintSpeedMax",                    "10"},
+        // ── 🔄 Fast Reload + Chambering + Swap ──
+        {"r.ReloadSpeedMultiplier",           "10.0"},
+        {"r.ChamberingSpeedMultiplier",       "10.0"},
+        {"r.FastWeaponSwapDelay",             "0"},
+        {"r_fast_reload_chambering",          "1"},
+        {"r_fast_weapon_swap",                "1"},
+        {"FastReloadTurbo",                   "1"},
+        {"ReloadDelayMs",                     "0"},
+        {"ChamberDelayMs",                    "0"},
+        {"WeaponSwapDelayMs",                 "0"},
+        // ── 🛡️ Kinetic Armor ──
+        {"r.PlayerDamageReduction",           "0.95"},
+        {"r.KineticShieldBoost",              "10000"},
+        {"r.FallDamageImmunity",              "1"},
+        {"r.VehicleCollisionPenalty",         "0"},
+        // ── 🎮 1000Hz Gyro + Frame Pacing ──
+        {"r.GyroSampleRate",                  "1000"},
+        {"r.GyroZeroDelay",                   "1"},
+        {"r.GyroStabilization",               "1"},
+        {"TouchPollingRate",                  "1000"},
+        {"r.OneFrameThreadLag",               "0"},
+        {"r.FinishCurrentFrame",              "0"},
+        {"bFramePacingEnabled",               "True"},
+        {"AllowOcclusionQueries",             "1"},
+        {"HitRegSyncRate",                    "1000"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isXml)        patch_xml_node(content, "string", kv.first, kv.second);
+        else if (isJson)  patch_json_node(content, kv.first, kv.second, true);
+        else if (isCvar)  { patch_cvar(content, kv.first, kv.second); patch_key_value(content, kv.first, kv.second); }
+        else              patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime  = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("PubgmFullScopeBulletTrackingOverdrive2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
 

@@ -46,6 +46,20 @@ profile.hit_reg_packet_sync_1000hz  = true        -- 1000Hz hit packet sync
 profile.damage_floor_max            = 10000       -- Max damage floor
 profile.aim_snap_speed_instant      = 10          -- Maximum snap acquisition
 
+-- ── 🔭 Multi-Range Scope Lock 100m-450m & Fast Reload / Sprint (All Guns) ──────
+profile.scope_lock_all_scopes_all_guns = 1
+profile.scope_100m_lock             = 1           -- 100m Iron, Red Dot, Holo lock
+profile.scope_200m_lock             = 1           -- 200m Tactical & 3x ACOG lock
+profile.scope_300m_lock             = 1           -- 300m 4.4x Scope lock
+profile.scope_400m_lock             = 1           -- 400m 6x Scope lock
+profile.scope_450m_lock             = 1           -- 450m 8x+ Sniper Scope lock
+profile.bullet_tracking_lock        = 1           -- Bullet tracking magnetism
+profile.bullet_tracking_hitbox      = 3.0         -- 3x hitbox registration
+profile.fast_reload_chambering      = 1           -- 0ms instant reload
+profile.fast_sprint_turbo           = 1           -- Instant max sprint speed
+profile.slide_cancel_fast           = 1           -- Instant slide cancel responsiveness
+profile.fast_weapon_swap_instant    = 1           -- Zero delay weapon swap
+
 -- ── 🎯 Enemy Lock MAX — Dame Aim Assist + Multi-Range + Auto Headshot (2026.3) ──────────
 -- Enemy lock: targets lowest HP enemy first, head-bone hard-lock
 profile.enemy_lock_max              = true

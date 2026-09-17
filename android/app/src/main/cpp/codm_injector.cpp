@@ -1136,4 +1136,160 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── CODM 2026 NEW: Full-Scope Bullet Tracking + Fast Reload Overdrive ────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmFullScopeBulletTrackingFastReload
+  (JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🎯 Attack Aim Assist Lock (max strength, zero deadzone) ──
+        {"AimAssistEnabled",              "1"},
+        {"AimAssistStrength",             "100"},
+        {"AimAssistMaxStrength",          "1000"},
+        {"AimMagnetism",                  "3"},
+        {"AimMagnetismMax",               "1000"},
+        {"HeadMagnetism",                 "1000"},
+        {"HeadMagnetismMax",              "1000"},
+        {"AimSnapSpeed",                  "10"},
+        {"AimSmoothFactor",               "0"},
+        {"AdsZeroDelay",                  "1"},
+        {"AdsZeroDelayInstant",           "1"},
+        {"PredictiveAim",                 "1"},
+        {"SilentAimbot",                  "1"},
+        {"HeadBonePriority",              "1"},
+
+        // ── 🎯 Bullet Tracking Lock (3.0x magnetism, zero spread, laser beam) ──
+        {"bullet_tracking_lock",          "1"},
+        {"bullet_tracking_hitbox",        "3.0"},
+        {"BulletTrackingMagnetism",       "3.0"},
+        {"BulletTrackingHitboxScale",     "3.0"},
+        {"BulletMagnetism",               "3"},
+        {"WeaponSpread",                  "0"},
+        {"WeaponSway",                    "0"},
+        {"RecoilScale",                   "0"},
+        {"VerticalRecoilScale",           "0"},
+        {"HorizontalRecoilScale",         "0"},
+        {"RecoilPatternScale",            "0"},
+        {"BulletSpreadScale",             "0"},
+        {"SpreadDecayRate",               "10"},
+        {"StaticHvRecoilScale",           "0"},
+        {"HitboxExpansion",               "3.0"},
+        {"LaserBeamAccuracy",             "1"},
+        {"MuzzleVelocityFactor",          "1.0"},
+
+        // ── 🔭 All Scope Lock 100m ──
+        {"scope_100m_lock",               "1"},
+        {"Scope100mIronSightLock",        "1"},
+        {"Scope100mRdsDotLock",           "1"},
+        {"Scope100mHeadshotMultiplier",   "999"},
+        // ── 🔭 All Scope Lock 200m ──
+        {"scope_200m_lock",               "1"},
+        {"Scope200m2xLock",               "1"},
+        {"Scope200m3xLock",               "1"},
+        {"Scope200mHeadshotMultiplier",   "999"},
+        // ── 🔭 All Scope Lock 300m ──
+        {"scope_300m_lock",               "1"},
+        {"Scope300m4xAcogLock",           "1"},
+        {"Scope300mHeadshotMultiplier",   "999"},
+        // ── 🔭 All Scope Lock 400m ──
+        {"scope_400m_lock",               "1"},
+        {"Scope400m6xLock",               "1"},
+        {"Scope400mHeadshotMultiplier",   "999"},
+        // ── 🔭 All Scope Lock 450m ──
+        {"scope_450m_lock",               "1"},
+        {"Scope450m8xSniperLock",         "1"},
+        {"Scope450mHeadshotMultiplier",   "999"},
+        // ── 🔫 All Gun — All Scope Working ──
+        {"AllWeaponScopeAimLock",         "1"},
+        {"AllScopeSnapSpeed",             "10"},
+        {"AllScopeHeadshotLock",          "1"},
+        {"ARScopeAimLock",                "1"},
+        {"SMGScopeAimLock",               "1"},
+        {"SNIPERScopeAimLock",            "1"},
+        {"LMGScopeAimLock",               "1"},
+        {"SGScopeAimLock",                "1"},
+        {"MarksmanScopeAimLock",          "1"},
+
+        // ── 🔄 Fast Reload + Chambering (0ms) ──
+        {"fast_reload_chambering",        "1"},
+        {"FastReloadTurbo",               "1"},
+        {"ReloadSpeedMultiplier",         "10.0"},
+        {"ChamberingSpeedMultiplier",     "10.0"},
+        {"ReloadDelayMs",                 "0"},
+        {"ChamberDelayMs",                "0"},
+        {"WeaponSwapDelayMs",             "0"},
+        {"FastWeaponSwapDelay",           "0"},
+        {"MagSwapTurbo",                  "1"},
+
+        // ── 🏃 Fast Sprint Turbo ──
+        {"fast_sprint_turbo",             "1"},
+        {"FastSprintTurbo",               "1"},
+        {"SprintSpeedMultiplier",         "10.0"},
+        {"StaminaRecoveryRate",           "10.0"},
+        {"StaminaInfinite",               "1"},
+        {"SprintSpeedMax",                "10"},
+
+        // ── ⚡ Fast Scope / Fast ADS ──
+        {"FastScopeSwitch",               "1"},
+        {"FastScopeAdsDelay",             "0"},
+        {"AdsAnimSpeedScale",             "10"},
+        {"Scope2xStabilizer",             "1"},
+        {"Scope4xStabilizer",             "1"},
+        {"Scope8xStabilizer",             "1"},
+
+        // ── 💨 Slide Cancel Fast ──
+        {"slide_cancel_fast",             "1"},
+        {"SlideSpeedMultiplier",          "10.0"},
+        {"SlideDelayMs",                  "0"},
+
+        // ── 🛡️ Kinetic Armor + Explosive Immunity ──
+        {"KineticArmorOverdrive",         "10000"},
+        {"DamageReductionRatio",          "0.95"},
+        {"DamageReduction",               "0.95"},
+        {"FlakJacketExplosionLock",       "1"},
+        {"StunFlashImmunity",             "1"},
+
+        // ── 🎮 1000Hz Gyro + Input ──
+        {"GyroSampleRate",                "1000"},
+        {"GyroZeroDelay",                 "1"},
+        {"GyroStabilization",             "1"},
+        {"TouchPollingRate",              "1000"},
+        {"TouchZeroDelay",                "1"},
+        {"ZeroInputLag",                  "1"},
+        {"bFramePacingEnabled",           "True"},
+        {"AllowOcclusionQueries",         "1"},
+        {"HitRegSyncRate",                "1000"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "int", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime  = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmFullScopeBulletTrackingFastReload2026 injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+
 

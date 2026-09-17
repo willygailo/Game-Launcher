@@ -1347,5 +1347,22 @@ public class MlbbConfigPatcher {
         Log.i(TAG, "⚡ MLBB 2026.4 Combat Overdrive (Damage + Aim + Armor) applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 Specialized: Basic Attack Overclock + True Damage Floor (10,000) + Infinite HP/Mana/Energy Regen + Life-Still + 10,000 Armor.
+     */
+    public static boolean applyMlbbBasicAttackRegenOverdrive(String packageName) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectMlbbBasicAttackRegenOverdrive(path)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ MLBB 2026 Basic Attack + Regen + Armor Overdrive applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
 
