@@ -379,6 +379,17 @@ public class PerformanceChannel {
                     "setprop persist.sys.wifi.power_save 0\n" +
                     "setprop persist.vendor.wifi.powersave 0\n" +
                     "cmd wifi set-power-save-enabled disabled 2>/dev/null\n" +
+                    "settings put global wifi_sleep_policy 2 2>/dev/null\n" +
+                    "settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null\n" +
+                    "setprop persist.vendor.wifi.twt_disable 1 2>/dev/null\n" +
+                    "cmd netpolicy set restrict-background false 2>/dev/null\n" +
+                    "cmd connectivity set-background-data true 2>/dev/null\n" +
+                    "settings put global restrict_background_data 0 2>/dev/null\n" +
+                    "settings put global data_saver_enabled 0 2>/dev/null\n" +
+                    "settings put global low_power 0 2>/dev/null\n" +
+                    "settings put global low_power_sticky 0 2>/dev/null\n" +
+                    "cmd power set-mode 0 2>/dev/null\n" +
+                    "cmd deviceidle disable 2>/dev/null\n" +
                     "setprop net.dns1 1.1.1.1\n" +
                     "setprop net.dns2 8.8.8.8\n" +
                     "settings put global private_dns_specifier one.one.one.one\n" +

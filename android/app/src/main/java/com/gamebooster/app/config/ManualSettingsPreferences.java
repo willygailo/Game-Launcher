@@ -49,6 +49,39 @@ public class ManualSettingsPreferences {
     private static final String KEY_TM_GLOBE_SUPERCHARGER = "pref_tm_globe_supercharger";
     private static final String KEY_WIFI_5G_6G_7G_TURBO = "pref_wifi_5g_6g_7g_turbo";
     private static final String KEY_AUTO_DNS_FLUSH = "pref_auto_dns_flush";
+    private static final String KEY_DISABLE_DATA_SAVER = "pref_disable_data_saver";
+    private static final String KEY_DISABLE_BATTERY_SAVER = "pref_disable_battery_saver";
+    private static final String KEY_DISABLE_WIFI_SAVER = "pref_disable_wifi_saver";
+
+    public static void setDisableDataSaverEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_DISABLE_DATA_SAVER, enabled).apply();
+    }
+
+    public static boolean isDisableDataSaverEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_DISABLE_DATA_SAVER, true);
+    }
+
+    public static void setDisableBatterySaverEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_DISABLE_BATTERY_SAVER, enabled).apply();
+    }
+
+    public static boolean isDisableBatterySaverEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_DISABLE_BATTERY_SAVER, true);
+    }
+
+    public static void setDisableWifiSaverEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_DISABLE_WIFI_SAVER, enabled).apply();
+    }
+
+    public static boolean isDisableWifiSaverEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_DISABLE_WIFI_SAVER, true);
+    }
 
     public static void setTcpBbrBuffersEnabled(Context context, boolean enabled) {
         if (context == null) return;
@@ -418,7 +451,33 @@ public class ManualSettingsPreferences {
                 executeCmd("settings put global updatable_driver_production_opt_in_apps \"" + targetPkgs + "\"");
             }
 
-            // 6. Network Low-Latency, 5G/6G & Dual WiFi/Cellular Boost
+            // 6. Network Low-Latency, 5G/6G, Savers Disabling & Dual WiFi/Cellular Boost
+            if (isDisableDataSaverEnabled(context)) {
+                executeCmd("cmd netpolicy set restrict-background false 2>/dev/null");
+                executeCmd("cmd connectivity set-background-data true 2>/dev/null");
+                executeCmd("settings put global restrict_background_data 0 2>/dev/null");
+                executeCmd("settings put global data_saver_enabled 0 2>/dev/null");
+            }
+            if (isDisableBatterySaverEnabled(context)) {
+                executeCmd("settings put global low_power 0 2>/dev/null");
+                executeCmd("settings put global low_power_sticky 0 2>/dev/null");
+                executeCmd("settings put global low_power_trigger_level 0 2>/dev/null");
+                executeCmd("cmd power set-mode 0 2>/dev/null");
+                executeCmd("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+                executeCmd("dumpsys deviceidle disable 2>/dev/null");
+                executeCmd("cmd deviceidle disable 2>/dev/null");
+            }
+            if (isDisableWifiSaverEnabled(context)) {
+                executeCmd("settings put global wifi_power_save 0 2>/dev/null");
+                executeCmd("setprop persist.sys.wifi.power_save 0 2>/dev/null");
+                executeCmd("setprop persist.vendor.wifi.powersave 0 2>/dev/null");
+                executeCmd("cmd wifi set-power-save-enabled disabled 2>/dev/null");
+                executeCmd("settings put global wifi_sleep_policy 2 2>/dev/null");
+                executeCmd("settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null");
+                executeCmd("setprop persist.sys.wifi.energy.saving 0 2>/dev/null");
+                executeCmd("setprop persist.sys.wifi.wmm_power_save 0 2>/dev/null");
+                executeCmd("setprop persist.vendor.wifi.twt_disable 1 2>/dev/null");
+            }
             if (isWifiLowLatencyEnabled(context)) {
                 executeCmd("cmd wifi set-low-latency-mode enabled");
                 executeCmd("setprop net.tcp.delack.default 1");

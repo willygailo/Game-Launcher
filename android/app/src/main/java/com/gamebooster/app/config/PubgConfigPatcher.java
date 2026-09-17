@@ -626,7 +626,9 @@ public class PubgConfigPatcher {
 // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
-        return GameConfigPathResolver.getPathsForGame(pkg);
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        GameConfigPathResolver.ensureDirectoriesForPaths(paths);
+        return paths;
     }
 
     /**

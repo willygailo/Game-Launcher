@@ -64,6 +64,10 @@ public class ConfigPatcherTest {
         assertTrue(rel.contains("files/dragon2017/assets/Document/QualityConfig.json"));
         assertTrue(rel.contains("files/Dragon2017/assets/Document/QualityConfig.json"));
         assertTrue(rel.contains("files/dragon2017/assets/Document/BattleConfig.json"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/android/QualityConfig.json"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/android/BattleConfig.json"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/android/GraphicSetting.json"));
+        assertTrue(rel.contains("files/dragon2017/assets/Document/android/PerformanceConfig.json"));
         assertTrue(rel.contains("files/battle_config/QualityConfig.json"));
     }
 
@@ -110,10 +114,12 @@ public class ConfigPatcherTest {
         assertTrue(codmRel.contains("files/il2cpp/boot.config"));
         // JSON configs
         assertTrue(codmRel.contains("files/Config/UserSetting.json"));
+        assertTrue(codmRel.contains("files/Config/GraphicSetting.json"));
         assertTrue(codmRel.contains("files/Config/HardwareProfile.json"));
         assertTrue(codmRel.contains("files/Config/GraphicsSettings_2026.json"));
         assertTrue(codmRel.contains("files/cod_prefs.json"));
         // INI configs
+        assertTrue(codmRel.contains("files/Config/CustomSettings.ini"));
         assertTrue(codmRel.contains("files/GraphicsSettings.ini"));
         assertTrue(codmRel.contains("files/ControlsSettings.ini"));
         assertTrue(codmRel.contains("files/GameSettings.ini"));
@@ -658,6 +664,60 @@ public class ConfigPatcherTest {
             pubgmFile.delete();
             codmFile.delete();
         }
+    }
+
+    @Test
+    public void testEnsureDirectoriesAndConfigFilesExist() throws java.io.IOException {
+        java.io.File tempDir = java.io.File.createTempFile("gamebooster_ensure_", "");
+        tempDir.delete();
+        tempDir.mkdirs();
+        try {
+            java.io.File subXml = new java.io.File(tempDir, "shared_prefs/test.playerprefs.xml");
+            java.io.File subJson = new java.io.File(tempDir, "files/dragon2017/assets/Document/android/QualityConfig.json");
+            java.io.File subIni = new java.io.File(tempDir, "files/UE4Game/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini");
+
+            List<String> targetPaths = java.util.Arrays.asList(
+                    subXml.getAbsolutePath(),
+                    subJson.getAbsolutePath(),
+                    subIni.getAbsolutePath()
+            );
+
+            // 1. Test directory creation
+            GameConfigPathResolver.ensureDirectoriesForPaths(targetPaths);
+            assertTrue(subXml.getParentFile().exists());
+            assertTrue(subJson.getParentFile().exists());
+            assertTrue(subIni.getParentFile().exists());
+
+            // 2. Test baseline file synthesis
+            GameConfigPathResolver.ensureConfigFilesExist(targetPaths);
+            assertTrue(subXml.exists());
+            assertTrue(subJson.exists());
+            assertTrue(subIni.exists());
+
+            // 3. Verify synthesized baseline contents
+            String xmlContent = new String(java.nio.file.Files.readAllBytes(subXml.toPath()));
+            assertTrue(xmlContent.contains("<map>"));
+
+            String jsonContent = new String(java.nio.file.Files.readAllBytes(subJson.toPath()));
+            assertTrue(jsonContent.contains("{"));
+
+            String iniContent = new String(java.nio.file.Files.readAllBytes(subIni.toPath()));
+            assertTrue(iniContent.contains("[UserCustom]"));
+        } finally {
+            deleteRecursive(tempDir);
+        }
+    }
+
+    private static void deleteRecursive(java.io.File file) {
+        if (file.isDirectory()) {
+            java.io.File[] children = file.listFiles();
+            if (children != null) {
+                for (java.io.File c : children) {
+                    deleteRecursive(c);
+                }
+            }
+        }
+        file.delete();
     }
 }
 

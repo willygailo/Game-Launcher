@@ -552,9 +552,10 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("setNetworkQoS", e);
             }
         }
-        String netVal = prioritize ? "true" : "false";
-        String bgVal = prioritize ? "false" : "true";
-        String res = ShizukuExecutor.executeShizukuCommand("cmd netpolicy set restrict-background " + netVal + " 2>/dev/null; cmd connectivity set-background-data " + bgVal + " 2>/dev/null");
+        // When prioritizing gaming traffic, disable Data Saver and ensure background packet flow is enabled
+        String netVal = prioritize ? "false" : "true";
+        String bgVal = prioritize ? "true" : "false";
+        String res = ShizukuExecutor.executeShizukuCommand("cmd netpolicy set restrict-background " + netVal + " 2>/dev/null; cmd connectivity set-background-data " + bgVal + " 2>/dev/null; settings put global restrict_background_data " + (prioritize ? "0" : "1") + " 2>/dev/null");
         return res != null && !res.startsWith("ERROR");
     }
 

@@ -1023,10 +1023,10 @@ public class MlbbConfigPatcher {
         for (String p : raw) {
             if (p == null) continue;
             String lower = p.toLowerCase().replace('\\', '/');
-            // Strictly exclude any game asset / manifest / checksum paths
-            if (lower.contains("/assets/document/android") || lower.contains("/assets/version")
+            // Strictly exclude any binary game asset / manifest / checksum paths
+            if (lower.contains("/assets/version") || lower.contains("/assets/comlibs")
                     || lower.contains("md5.xml") || lower.contains("rescheck") || lower.contains("realversion")
-                    || lower.contains("splitlib") || lower.contains("mola_config")) {
+                    || lower.contains("splitlib") || lower.contains("mola_config") || lower.contains("res_skip")) {
                 continue;
             }
             if (lower.endsWith(".xml")) {
@@ -1039,6 +1039,7 @@ public class MlbbConfigPatcher {
             }
             filtered.add(p);
         }
+        GameConfigPathResolver.ensureDirectoriesForPaths(filtered);
         return filtered;
     }
 

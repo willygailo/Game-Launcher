@@ -1059,7 +1059,9 @@ public class CodmConfigPatcher {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
-        return GameConfigPathResolver.getPathsForGame(pkg);
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        GameConfigPathResolver.ensureDirectoriesForPaths(paths);
+        return paths;
     }
 
     private static boolean applyPatch(String path, int targetFps) {

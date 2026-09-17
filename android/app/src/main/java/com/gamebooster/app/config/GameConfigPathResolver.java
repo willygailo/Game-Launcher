@@ -74,8 +74,8 @@ public class GameConfigPathResolver {
                 String cmd = "find " + scanRoots + " -maxdepth 8 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"boot.config\" \\) "
                         + "! -name \"*.so\" ! -name \"*.apk\" ! -name \"*.unity3d\" ! -name \"*.bundle\" ! -name \"*.bytes\" ! -name \"*.obb\" ! -name \"*.mp4\" ! -name \"*.bank\" "
                         + "! -path \"*/lib/*\" ! -path \"*/cache/*\" ! -path \"*/code_cache/*\" ! -path \"*/crashlytics/*\" "
-                        + "! -path \"*/assets/*/*.xml\" ! -path \"*/assets/Document/android/*\" ! -path \"*/assets/version/*\" ! -path \"*/assets/UI/*\" ! -path \"*/assets/Art/*\" ! -path \"*/assets/Audio/*\" "
-                        + "! -name \"*MD5*\" ! -name \"*Check*\" ! -name \"*version*\" ! -name \"*mola*\" ! -name \"*Offline*\" ! -name \"*SplitLib*\" 2>/dev/null";
+                        + "! -path \"*/assets/*/*.xml\" ! -path \"*/assets/version/*\" ! -path \"*/assets/UI/*\" ! -path \"*/assets/Art/*\" ! -path \"*/assets/Audio/*\" "
+                        + "! -name \"*MD5*\" ! -name \"*Check*\" ! -name \"*version*\" ! -name \"*mola*\" ! -name \"*Offline*\" ! -name \"*SplitLib*\" ! -name \"*res_skip*\" 2>/dev/null";
                 String output = ShizukuExecutor.executeShizukuCommand(cmd);
 
                 if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
@@ -144,7 +144,7 @@ public class GameConfigPathResolver {
 
         // 1. Blacklisted directories: runtime binaries, caches, crashlytics, and game engine asset trees
         if (lower.contains("/lib/") || lower.contains("/cache/") || lower.contains("/code_cache/") || lower.contains("/crashlytics/")
-                || lower.contains("/assets/document/android/") || lower.contains("/assets/version/") || lower.contains("/assets/comlibs/")
+                || lower.contains("/assets/version/") || lower.contains("/assets/comlibs/")
                 || lower.contains("/assets/astarpath/") || lower.contains("/assets/ui/") || lower.contains("/assets/art/")
                 || lower.contains("/assets/audio/") || lower.contains("/assets/scenes/") || lower.contains("/assets/prefabs/")
                 || lower.contains("/assets/unitypackages/") || lower.contains("/files/modeversion/") || lower.contains("/files/il2cpp/")
@@ -167,7 +167,7 @@ public class GameConfigPathResolver {
         if (fileName.contains("md5") || fileName.contains("rescheck") || fileName.contains("checksum")
                 || fileName.contains("splitlib") || fileName.contains("realversion") || fileName.contains("mola_config")
                 || fileName.contains("newbieoffline") || fileName.contains("mode_versions") || fileName.contains("conffilter")
-                || fileName.contains("filelist") || fileName.contains("buildinfo")) {
+                || fileName.contains("filelist") || fileName.contains("buildinfo") || fileName.contains("res_skip")) {
             return false;
         }
 
@@ -205,7 +205,7 @@ public class GameConfigPathResolver {
                         || name.equals("comlibs") || name.equals("astarpath") || name.equals("ui") || name.equals("art")
                         || name.equals("audio") || name.equals("scenes") || name.equals("prefabs") || name.equals("modeversion")
                         || name.equals("il2cpp") || name.equals("unity") || name.equals("metadata") || name.equals("logs")
-                        || name.equals("crashes") || (name.equals("android") && f.getParent() != null && f.getParent().toLowerCase().contains("assets"))) {
+                        || name.equals("crashes") || (name.equals("android") && f.getParent() != null && f.getParent().toLowerCase().contains("assets/version"))) {
                     continue;
                 }
                 scanDirectoryForConfigsJava(f, depth + 1, maxDepth, outPaths);
@@ -238,16 +238,65 @@ public class GameConfigPathResolver {
      */
     public static void ensureDirectoriesForPaths(List<String> paths) {
         if (paths == null || paths.isEmpty()) return;
+        Set<String> parentDirs = new LinkedHashSet<>();
         for (String path : paths) {
             if (path == null || path.trim().isEmpty()) continue;
             try {
                 File f = new File(path);
                 File parent = f.getParentFile();
-                if (parent != null && !parent.exists()) {
-                    parent.mkdirs();
+                if (parent != null) {
+                    if (!parent.exists()) {
+                        parent.mkdirs();
+                    }
+                    parentDirs.add(parent.getAbsolutePath());
                 }
             } catch (Throwable ignored) {}
             ShizukuFileManager.ensureParentDirectory(path);
+        }
+        if (ShizukuExecutor.hasShizukuPermission() && !parentDirs.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String dir : parentDirs) {
+                sb.append("mkdir -p \"").append(dir).append("\" 2>/dev/null; chmod 777 \"").append(dir).append("\" 2>/dev/null; ");
+            }
+            ShizukuExecutor.executeShizukuCommand(sb.toString());
+        }
+    }
+
+    /**
+     * Ensures target configuration files exist on device storage with valid baseline templates.
+     * Prevents game engine crashes and enables native injection on freshly installed games.
+     */
+    public static void ensureConfigFilesExist(List<String> paths) {
+        if (paths == null || paths.isEmpty()) return;
+        ensureDirectoriesForPaths(paths);
+        for (String path : paths) {
+            if (path == null || path.trim().isEmpty()) continue;
+            try {
+                File f = new File(path);
+                if (!f.exists() || f.length() == 0) {
+                    String lower = path.toLowerCase();
+                    String template = "";
+                    if (lower.endsWith(".xml")) {
+                        template = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
+                    } else if (lower.endsWith(".json")) {
+                        template = "{\n}\n";
+                    } else if (lower.endsWith(".ini") || lower.endsWith(".cfg") || lower.endsWith("boot.config")) {
+                        if (lower.contains("usercustom")) {
+                            template = "[UserCustom]\n";
+                        } else {
+                            template = "# GameBooster 2026 Config File\n";
+                        }
+                    }
+                    if (!template.isEmpty()) {
+                        ConfigFileHelper.writeContentAtomic(path, template);
+                        if (ShizukuExecutor.hasShizukuPermission()) {
+                            ShizukuExecutor.executeShizukuCommand("chmod 666 \"" + path + "\" 2>/dev/null");
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to initialize baseline config template for " + path + ": " + t.getMessage());
+            }
         }
     }
 
@@ -322,6 +371,36 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/GraphicSetting.json");
             rel.add("files/dragon2017/assets/Document/GameConfig.json");
             rel.add("files/dragon2017/assets/Document/HeroConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/QualityConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/QualityConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/BattleConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/BattleConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/GraphicSetting.json");
+            rel.add("files/Dragon2017/assets/Document/android/GraphicSetting.json");
+            rel.add("files/dragon2017/assets/Document/android/PerformanceConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/PerformanceConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/GameConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/GameConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/HeroConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/HeroConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/Config.json");
+            rel.add("files/Dragon2017/assets/Document/android/Config.json");
+            rel.add("files/dragon2017/assets/Document/android/HighFPSConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/HighFPSConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/CameraConfig.json");
+            rel.add("files/Dragon2017/assets/Document/android/CameraConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/ResolutionConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/FpsSetting.json");
+            rel.add("files/dragon2017/assets/Document/android/CombatConfig.json");
+            rel.add("files/dragon2017/assets/Document/android/DroneViewConfig.json");
+            rel.add("files/dragon2017/assets/Document/HighFPSConfig.json");
+            rel.add("files/dragon2017/assets/Document/CameraConfig.json");
+            rel.add("files/dragon2017/assets/Document/ResolutionConfig.json");
+            rel.add("files/dragon2017/assets/Document/FpsSetting.json");
+            rel.add("files/dragon2017/assets/Document/CombatConfig.json");
+            rel.add("files/dragon2017/assets/Document/DroneViewConfig.json");
+            rel.add("files/dragon2017/assets/boot.config");
+            rel.add("files/boot.config");
             rel.add("files/Config/QualityConfig.json");
             rel.add("files/battle_config/QualityConfig.json");
             rel.add("files/battle_config/BattleConfig.json");
@@ -441,7 +520,12 @@ public class GameConfigPathResolver {
             rel.add("files/Config/HardwareProfile.json");
             rel.add("files/config/UserSetting.json");
             rel.add("files/config/HardwareProfile.json");
+            rel.add("files/Config/GraphicSetting.json");
+            rel.add("files/config/GraphicSetting.json");
+            rel.add("files/Config/CustomSettings.ini");
+            rel.add("files/config/CustomSettings.ini");
             rel.add("files/Config/GraphicsSettings_2026.json");
+            rel.add("files/config/GraphicsSettings_2026.json");
             rel.add("files/GraphicsSettings.ini");
             rel.add("files/config/GraphicsSettings.ini");
             rel.add("files/ControlsSettings.ini");

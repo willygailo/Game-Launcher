@@ -423,11 +423,105 @@ public class NetworkOptimizer {
     }
 
     /**
+     * Completely disables Android OS Data Saver restrictions:
+     * - Disables background data restriction policy
+     * - Allows background data globally
+     * - Disables global restrict_background_data
+     */
+    public static boolean disableDataSaver() {
+        try {
+            CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background false 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd connectivity set-background-data true 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global restrict_background_data 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global data_saver_enabled 0 2>/dev/null");
+            Log.i(TAG, "🚫 Data Saver completely disabled for uncapped throughput.");
+            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to disable data saver", t);
+            return false;
+        }
+    }
+
+    /**
+     * Completely disables Android OS Battery Saver / Low Power Mode:
+     * - Clears low_power mode
+     * - Clears sticky low power mode
+     * - Sets battery saver trigger level to 0
+     * - Sets power mode to 0 (normal) and requests fixed performance mode
+     * - Disables Doze mode (deviceidle) to eliminate background socket freezes
+     */
+    public static boolean disableBatterySaver() {
+        try {
+            CommandExecutor.executeSystemCommand("settings put global low_power 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global low_power_sticky 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global low_power_trigger_level 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd power set-mode 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd power set-fixed-performance-mode-enabled true 2>/dev/null");
+            CommandExecutor.executeSystemCommand("dumpsys deviceidle disable 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd deviceidle disable 2>/dev/null");
+            Log.i(TAG, "⚡ Battery Saver / Low Power Mode & Doze throttling disabled.");
+            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to disable battery saver", t);
+            return false;
+        }
+    }
+
+    /**
+     * Completely disables Wi-Fi power saving and chip sleep:
+     * - Disables chip sleep policy and power_save
+     * - Disables Wi-Fi suspend optimizations
+     * - Disables 802.11 TWT (Target Wake Time) power save sleep
+     * - Disables WMM power save
+     * - Forces low latency and high performance mode
+     */
+    public static boolean disableWifiPowerSaver() {
+        try {
+            CommandExecutor.executeSystemCommand("settings put global wifi_power_save 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("setprop persist.sys.wifi.power_save 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.powersave 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd wifi set-power-save-enabled disabled 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global wifi_sleep_policy 2 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("setprop persist.sys.wifi.energy.saving 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("setprop persist.sys.wifi.wmm_power_save 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.twt_disable 1 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd wifi force-low-latency-mode enabled 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd wifi force-hi-perf-mode enabled 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global wifi_scan_always_enabled 0 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd wifi set-scan-always-available 0 2>/dev/null");
+            Log.i(TAG, "📶 Wi-Fi Power Saver & chip sleep disabled for zero jitter.");
+            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to disable wifi power saver", t);
+            return false;
+        }
+    }
+
+    /**
+     * Disables Data Saver, Battery Saver, and Wi-Fi Saver simultaneously
+     * for super fast, zero-throttling gaming internet.
+     */
+    public static boolean disableAllSaversForSuperFastInternet(Context context) {
+        boolean ok = true;
+        ok &= disableDataSaver();
+        ok &= disableBatterySaver();
+        ok &= disableWifiPowerSaver();
+        if (context != null) {
+            NativeFrameworkBridge.acquireLowLatencyWifiLock(context);
+        }
+        return ok;
+    }
+
+    /**
      * 1-Tap Comprehensive Network & Latency Optimization.
      * Optimizes 5G/6G, Wi-Fi 6/7, TCP BBR, hardware tethering, and flushes DNS cache.
      */
     public static boolean optimizeAllDataAndWifi(Context context) {
         try {
+            // 0. Disable Data Saver, Battery Saver & Wi-Fi Saver (Super Fast Internet Base)
+            disableAllSaversForSuperFastInternet(context);
+
             // 1. Dual Multipath Handover
             setDualDataAndWifiAcceleration(true);
             if (context != null) {
@@ -526,9 +620,10 @@ public class NetworkOptimizer {
             CommandExecutor.executeSystemCommand("setprop net.dns1 " + carrier.dnsPrimary);
             CommandExecutor.executeSystemCommand("setprop net.dns2 8.8.4.4");
 
-            // 4. Background network throttle clamp & 2026 5G slicing
-            CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background true");
-            CommandExecutor.executeSystemCommand("cmd connectivity set-background-data false");
+            // 4. Disable Data Saver restriction & enable 2026 5G slicing for uncapped gaming throughput
+            CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background false 2>/dev/null");
+            CommandExecutor.executeSystemCommand("cmd connectivity set-background-data true 2>/dev/null");
+            CommandExecutor.executeSystemCommand("settings put global restrict_background_data 0 2>/dev/null");
             CommandExecutor.executeSystemCommand("setprop persist.radio.slicing_enabled 1");
             CommandExecutor.executeSystemCommand("setprop persist.vendor.radio.5g_sa 1");
 
@@ -602,6 +697,7 @@ public class NetworkOptimizer {
      */
     public static boolean enableRankedLowLatencySocketTuning(Context context) {
         try {
+            disableAllSaversForSuperFastInternet(context);
             optimizeTcpBuffers();
             optimizeWifi6and7LowLatency(true);
             optimize5gAnd6gDataNetwork(true);

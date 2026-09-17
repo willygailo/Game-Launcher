@@ -120,6 +120,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     // Network Settings UI (Pure Manual ON/OFF Switches - Android 13 to 16)
     private TextView tvLiveNetworkTelemetry;
+    private Switch switchDisableDataSaver;
+    private Switch switchDisableBatterySaver;
+    private Switch switchDisableWifiSaver;
     private Switch switchTcpBbrBuffers;
     private Switch switchTntSmartSupercharger;
     private Switch switchTmGlobeSupercharger;
@@ -784,6 +787,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         // Card 4: Network & Latency Optimization (Pure Manual ON/OFF Toggles - Android 13 to 16)
         tvLiveNetworkTelemetry = view.findViewById(R.id.tv_live_network_telemetry);
+        switchDisableDataSaver = view.findViewById(R.id.switch_disable_data_saver);
+        switchDisableBatterySaver = view.findViewById(R.id.switch_disable_battery_saver);
+        switchDisableWifiSaver = view.findViewById(R.id.switch_disable_wifi_saver);
         switchTcpBbrBuffers = view.findViewById(R.id.switch_tcp_bbr_buffers);
         switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
         switchTntSmartSupercharger = view.findViewById(R.id.switch_tnt_smart_supercharger);
@@ -802,6 +808,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         if (getContext() != null) {
             isProgrammaticToggle = true;
+            if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(ManualSettingsPreferences.isDisableDataSaverEnabled(getContext()));
+            if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(ManualSettingsPreferences.isDisableBatterySaverEnabled(getContext()));
+            if (switchDisableWifiSaver != null) switchDisableWifiSaver.setChecked(ManualSettingsPreferences.isDisableWifiSaverEnabled(getContext()));
             if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(ManualSettingsPreferences.isTcpBbrBuffersEnabled(getContext()));
             if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
             if (switchTntSmartSupercharger != null) switchTntSmartSupercharger.setChecked(ManualSettingsPreferences.isTntSmartSuperchargerEnabled(getContext()));
@@ -817,6 +826,69 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             updateDnsUiState(ManualSettingsPreferences.getGamingDns(getContext()));
             updateLiveTelemetryUi();
             isProgrammaticToggle = false;
+        }
+
+        if (switchDisableDataSaver != null) {
+            switchDisableDataSaver.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Disable Data Saver")) return;
+                ManualSettingsPreferences.setDisableDataSaverEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        NetworkOptimizer.disableDataSaver();
+                    } else {
+                        CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background true 2>/dev/null; settings put global restrict_background_data 1 2>/dev/null");
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            updateLiveTelemetryUi();
+                            Toast.makeText(getContext(), isChecked ? "🚫 Data Saver Disabled (Uncapped Game Data)" : "Data Saver Policy Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchDisableBatterySaver != null) {
+            switchDisableBatterySaver.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Disable Battery Saver")) return;
+                ManualSettingsPreferences.setDisableBatterySaverEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        NetworkOptimizer.disableBatterySaver();
+                    } else {
+                        CommandExecutor.executeSystemCommand("settings put global low_power 1 2>/dev/null");
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            updateLiveTelemetryUi();
+                            Toast.makeText(getContext(), isChecked ? "⚡ Battery Saver / Throttling Disabled (Peak Mode)" : "Battery Saver Normal Mode Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (switchDisableWifiSaver != null) {
+            switchDisableWifiSaver.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isProgrammaticToggle || getContext() == null) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Disable Wi-Fi Saver")) return;
+                ManualSettingsPreferences.setDisableWifiSaverEnabled(getContext(), isChecked);
+                AppExecutors.getInstance().executeCommand(() -> {
+                    if (isChecked) {
+                        NetworkOptimizer.disableWifiPowerSaver();
+                    } else {
+                        CommandExecutor.executeSystemCommand("settings put global wifi_power_save 1 2>/dev/null; setprop persist.sys.wifi.power_save 1 2>/dev/null; cmd wifi set-power-save-enabled enabled 2>/dev/null");
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            updateLiveTelemetryUi();
+                            Toast.makeText(getContext(), isChecked ? "📶 Wi-Fi Saver Disabled (Zero Sleep & Anti-Jitter)" : "Wi-Fi Normal Power Mode Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
         }
 
         if (switchTcpBbrBuffers != null) {
@@ -1649,6 +1721,11 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (tel.isWifiLockHeld) {
                     sb.append("  •  ⚡ Wi-Fi 5G/6G/7G MLO: Active");
                 }
+                if (ManualSettingsPreferences.isDisableDataSaverEnabled(ctx) &&
+                    ManualSettingsPreferences.isDisableBatterySaverEnabled(ctx) &&
+                    ManualSettingsPreferences.isDisableWifiSaverEnabled(ctx)) {
+                    sb.append("  •  🚀 Savers: Disabled (Uncapped)");
+                }
                 tvLiveNetworkTelemetry.setText(sb.toString());
             });
         });
@@ -1804,6 +1881,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
                 if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
                 if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
+                if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(ManualSettingsPreferences.isDisableDataSaverEnabled(getContext()));
+                if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(ManualSettingsPreferences.isDisableBatterySaverEnabled(getContext()));
+                if (switchDisableWifiSaver != null) switchDisableWifiSaver.setChecked(ManualSettingsPreferences.isDisableWifiSaverEnabled(getContext()));
                 if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(ManualSettingsPreferences.isTcpBbrBuffersEnabled(getContext()));
                 if (switch5g6gData != null) switch5g6gData.setChecked(ManualSettingsPreferences.is5g6gDataEnabled(getContext()));
                 if (switchTntSmartSupercharger != null) switchTntSmartSupercharger.setChecked(ManualSettingsPreferences.isTntSmartSuperchargerEnabled(getContext()));

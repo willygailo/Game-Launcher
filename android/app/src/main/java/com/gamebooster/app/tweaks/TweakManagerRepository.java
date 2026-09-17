@@ -270,9 +270,9 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "disable_battery_saver",
                 "Disable Low Power Mode / Battery Throttling",
-                "Forces disable of Android global low power battery saver mode",
-                "settings put global low_power 0",
-                "settings put global low_power 1",
+                "Forces disable of Android global low power battery saver mode, clears sticky flags, and prevents Doze throttling",
+                "settings put global low_power 0; settings put global low_power_sticky 0; settings put global low_power_trigger_level 0; cmd power set-mode 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; dumpsys deviceidle disable 2>/dev/null; cmd deviceidle disable 2>/dev/null",
+                "settings put global low_power 1; cmd power set-mode 1 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -720,10 +720,20 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "disable_data_saver",
+                "Disable Data Saver & Uncap Background Throughput",
+                "Completely disables Android system Data Saver and background packet clamping to maximize game bandwidth",
+                "cmd netpolicy set restrict-background false 2>/dev/null; cmd connectivity set-background-data true 2>/dev/null; settings put global restrict_background_data 0 2>/dev/null; settings put global data_saver_enabled 0 2>/dev/null",
+                "cmd netpolicy set restrict-background true 2>/dev/null; settings put global restrict_background_data 1 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "wifi_power_save_disable",
                 "Wi-Fi Power Save Poll & DTIM Sleep Disable",
                 "Prevents Wi-Fi modem firmware from entering power saving DTIM sleep cycles, ensuring zero-millisecond ping spikes in online matches",
-                "settings put global wifi_power_save 0; setprop persist.sys.wifi.power_save 0; setprop persist.vendor.wifi.powersave 0; cmd wifi set-power-save-enabled disabled 2>/dev/null",
+                "settings put global wifi_power_save 0; setprop persist.sys.wifi.power_save 0; setprop persist.vendor.wifi.powersave 0; cmd wifi set-power-save-enabled disabled 2>/dev/null; settings put global wifi_sleep_policy 2 2>/dev/null; settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null; setprop persist.vendor.wifi.twt_disable 1 2>/dev/null; cmd wifi force-low-latency-mode enabled 2>/dev/null; cmd wifi force-hi-perf-mode enabled 2>/dev/null",
                 "settings put global wifi_power_save 1; setprop persist.sys.wifi.power_save 1; cmd wifi set-power-save-enabled enabled 2>/dev/null",
                 TweakCategory.NETWORK_LATENCY,
                 true

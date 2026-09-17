@@ -568,10 +568,11 @@ public class UserService extends IUserService.Stub {
 
     @Override
     public boolean setNetworkQoS(boolean prioritize) {
-        String netVal = prioritize ? "true" : "false";
-        String bgVal = prioritize ? "false" : "true";
+        String netVal = prioritize ? "false" : "true";
+        String bgVal = prioritize ? "true" : "false";
         String cmd = "cmd netpolicy set restrict-background " + netVal + " 2>/dev/null; "
-                   + "cmd connectivity set-background-data " + bgVal + " 2>/dev/null";
+                   + "cmd connectivity set-background-data " + bgVal + " 2>/dev/null; "
+                   + "settings put global restrict_background_data " + (prioritize ? "0" : "1") + " 2>/dev/null";
         String res = execCommand(cmd);
         return res != null && !res.startsWith("ERROR");
     }

@@ -62,4 +62,13 @@ public class NetworkOptimizerTest {
         assertNotNull(telemetry.activeInterface);
         assertNotNull(telemetry.activeDns);
     }
+
+    @Test
+    public void testDisableSavers() {
+        // Ensure the saver disabling routines execute gracefully without exceptions
+        org.junit.Assert.assertTrue(NetworkOptimizer.disableDataSaver());
+        org.junit.Assert.assertTrue(NetworkOptimizer.disableBatterySaver());
+        org.junit.Assert.assertTrue(NetworkOptimizer.disableWifiPowerSaver());
+        org.junit.Assert.assertTrue(NetworkOptimizer.disableAllSaversForSuperFastInternet(null));
+    }
 }

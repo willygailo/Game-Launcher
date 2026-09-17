@@ -91,14 +91,26 @@ public class CombatEngineChannel {
         commands.add("setprop persist.sys.gyro.filter 1");
         commands.add("setprop persist.sys.gyro.delay 0");
 
-        // ── 4. Hit-Registration & Damage Speed: Combat Network Low Latency ───
+        // ── 4. Hit-Registration & Damage Speed: Combat Network Low Latency & Uncapped Savers ───
         commands.add("cmd wifi force-low-latency-mode enabled 2>/dev/null");
         commands.add("cmd wifi force-hi-perf-mode enabled 2>/dev/null");
+        commands.add("cmd wifi set-power-save-enabled disabled 2>/dev/null");
+        commands.add("settings put global wifi_power_save 0 2>/dev/null");
+        commands.add("settings put global wifi_sleep_policy 2 2>/dev/null");
+        commands.add("settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null");
+        commands.add("setprop persist.vendor.wifi.twt_disable 1 2>/dev/null");
+        commands.add("cmd netpolicy set restrict-background false 2>/dev/null");
+        commands.add("cmd connectivity set-background-data true 2>/dev/null");
+        commands.add("settings put global restrict_background_data 0 2>/dev/null");
+        commands.add("settings put global data_saver_enabled 0 2>/dev/null");
+        commands.add("settings put global low_power 0 2>/dev/null");
+        commands.add("settings put global low_power_sticky 0 2>/dev/null");
+        commands.add("cmd power set-mode 0 2>/dev/null");
+        commands.add("cmd deviceidle disable 2>/dev/null");
         commands.add("setprop net.ipv4.tcp_congestion_control bbr");
         commands.add("setprop net.tcp.delack.mode 1");
         commands.add("setprop net.tcp.buffersize.5g 524288,1048576,8388608,262144,524288,4194304");
         commands.add("setprop net.tcp.buffersize.6g 524288,1048576,8388608,262144,524288,4194304");
-        commands.add("cmd netpolicy set restrict-background false 2>/dev/null");
 
         // ── 5. Visual Frame Pacing: SurfaceFlinger Zero-Delay Buffers ────────
         commands.add("setprop debug.gr.swapinterval 0");
