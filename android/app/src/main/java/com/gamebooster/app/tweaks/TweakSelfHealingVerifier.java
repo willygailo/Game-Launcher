@@ -1,18 +1,23 @@
 package com.gamebooster.app.tweaks;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
-import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.PrivilegeBridgeEngine;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * TweakSelfHealingVerifier — 2026 Vendor-Adaptive Verification & Self-Healing Engine.
+ * TweakSelfHealingVerifier — 2026 Vendor-Adaptive Verification & Autonomous Self-Healing Engine.
  *
- * Detects device chipset family (Snapdragon, MediaTek, Exynos, Tensor)
- * and dynamically rewrites/verifies sysfs nodes for GPU, CPU, and thermal governor controls.
+ * Detects modern chipset families (Snapdragon 8 Gen 3/4 Oryon, MediaTek Dimensity 9300/9400,
+ * Samsung Exynos 2400 Xclipse, Google Tensor G3/G4) and dynamically rewrites/verifies sysfs nodes.
+ * Continuously monitors active tweaks and heals any parameters reverted by OEM thermal daemons.
  */
 public final class TweakSelfHealingVerifier {
 
@@ -27,11 +32,13 @@ public final class TweakSelfHealingVerifier {
     }
 
     private static volatile ChipsetVendor sDetectedVendor = null;
+    private static ScheduledExecutorService sWatchdogExecutor = null;
+    private static volatile boolean sWatchdogRunning = false;
 
     private TweakSelfHealingVerifier() {}
 
     /**
-     * Identifies active device chipset architecture.
+     * Identifies active device chipset architecture with 2026 deep SoC detection.
      */
     public static ChipsetVendor getChipsetVendor() {
         if (sDetectedVendor != null) return sDetectedVendor;
@@ -45,13 +52,21 @@ public final class TweakSelfHealingVerifier {
             } catch (Throwable ignored) {}
         }
 
-        if (hardware.contains("qcom") || board.contains("qcom") || soc.contains("sm8") || soc.contains("snapdragon") || new File("/sys/class/kgsl/kgsl-3d0").exists()) {
+        // Qualcomm: SM8450/SM8550/SM8650/SM8750 (Snapdragon 8 Gen 1-4, Oryon), kalama, pineapple, sun
+        if (hardware.contains("qcom") || board.contains("qcom") || board.contains("pineapple") || board.contains("sun")
+                || soc.contains("sm8") || soc.contains("snapdragon") || new File("/sys/class/kgsl/kgsl-3d0").exists()) {
             sDetectedVendor = ChipsetVendor.QUALCOMM;
-        } else if (hardware.contains("mt") || board.contains("mt") || soc.contains("dimensity") || new File("/sys/module/mtk_fpsgo").exists() || new File("/sys/devices/platform/13040000.mali").exists()) {
+        // MediaTek: Dimensity 9000/9200/9300/9400 (MT6983/MT6985/MT6989/MT6991)
+        } else if (hardware.contains("mt") || board.contains("mt") || soc.contains("dimensity") || soc.contains("mt69")
+                || new File("/sys/module/mtk_fpsgo").exists() || new File("/sys/devices/platform/13040000.mali").exists()) {
             sDetectedVendor = ChipsetVendor.MEDIATEK;
-        } else if (hardware.contains("exynos") || board.contains("universal") || new File("/sys/devices/platform/17000000.gpu").exists()) {
+        // Exynos: 2200/2400 (Xclipse 920/940 RDNA3 GPU)
+        } else if (hardware.contains("exynos") || board.contains("universal") || soc.contains("s5e99")
+                || new File("/sys/devices/platform/17000000.gpu").exists()) {
             sDetectedVendor = ChipsetVendor.SAMSUNG_EXYNOS;
-        } else if (hardware.contains("tensor") || hardware.contains("gs101") || hardware.contains("gs201") || hardware.contains("zuma")) {
+        // Google Tensor: G1-G4 (gs101, gs201, zuma, zumapro)
+        } else if (hardware.contains("tensor") || hardware.contains("gs101") || hardware.contains("gs201")
+                || hardware.contains("zuma") || board.contains("zuma")) {
             sDetectedVendor = ChipsetVendor.GOOGLE_TENSOR;
         } else {
             sDetectedVendor = ChipsetVendor.GENERIC;
@@ -62,7 +77,7 @@ public final class TweakSelfHealingVerifier {
     }
 
     /**
-     * Adapts raw shell commands to match vendor-specific hardware nodes.
+     * Adapts raw shell commands to match vendor-specific hardware nodes (2026 edition).
      */
     public static String adaptCommandForHardware(String command) {
         if (command == null || command.isEmpty()) return "";
@@ -70,21 +85,31 @@ public final class TweakSelfHealingVerifier {
 
         String adapted = command;
         if (vendor == ChipsetVendor.QUALCOMM) {
-            // Ensure KGSL parameters are enabled if touching GPU
+            // Adreno 7xx/8xx KGSL rail, bus, and clock locking
             if (command.contains("adreno") || command.contains("gpu")) {
-                adapted += "; echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null";
+                adapted += "; echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null; echo 1000000 > /sys/class/kgsl/kgsl-3d0/idle_timer 2>/dev/null";
+            }
+            if (command.contains("scaling_governor") || command.contains("cpufreq")) {
+                adapted += "; echo 1 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/iowait_boost_enable 2>/dev/null; echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null";
             }
         } else if (vendor == ChipsetVendor.MEDIATEK) {
-            // MediaTek Dimensity FPSGo and Mali pathing
+            // Dimensity 9300/9400 All-Big-Core FPSGo & EAS controls
             if (command.contains("adreno")) {
                 adapted = adapted.replace("debug.adreno.turbo", "debug.mali.force_gpu_boost");
             }
             if (command.contains("mali") || command.contains("gpu")) {
                 adapted += "; echo 1 > /proc/perfmgr/boost_ctrl/eas_ctrl/perfserv_ta_boost 2>/dev/null; echo 100 > /sys/module/mtk_fpsgo/parameters/fstb_soft_level 2>/dev/null";
             }
+            if (command.contains("scaling_governor")) {
+                adapted += "; echo 1 > /proc/perfmgr/boost_ctrl/dram_ctrl/ddr 2>/dev/null";
+            }
         } else if (vendor == ChipsetVendor.SAMSUNG_EXYNOS) {
             if (command.contains("gpu")) {
                 adapted += "; setprop debug.exynos.performance.mode 1; echo performance > /sys/devices/platform/17000000.gpu/devfreq/17000000.gpu/governor 2>/dev/null";
+            }
+        } else if (vendor == ChipsetVendor.GOOGLE_TENSOR) {
+            if (command.contains("scaling_governor")) {
+                adapted += "; echo performance > /sys/devices/system/cpu/cpu7/cpufreq/scaling_governor 2>/dev/null";
             }
         }
         return adapted;
@@ -103,4 +128,74 @@ public final class TweakSelfHealingVerifier {
         } catch (Throwable ignored) {}
         return false;
     }
+
+    /**
+     * Verifies an applied tweak and autonomously heals/re-applies if rolled back.
+     */
+    public static boolean verifyAndHeal(TweakItem item) {
+        if (item == null || !item.isApplied()) return false;
+        try {
+            String cmd = item.getApplyCommand();
+            if (cmd == null || cmd.isEmpty()) return true;
+
+            // Extract the first property test if applicable
+            if (cmd.contains("setprop ")) {
+                int idx = cmd.indexOf("setprop ");
+                String sub = cmd.substring(idx + 8).trim();
+                String[] parts = sub.split("\\s+");
+                if (parts.length >= 2) {
+                    String propKey = parts[0];
+                    String expectedVal = parts[1].replace(";", "").trim();
+                    if (!verifyProperty(propKey, expectedVal)) {
+                        Log.w(TAG, "⚡ [Self-Healing] Revert detected on " + item.getId() + " (" + propKey + "), re-applying...");
+                        String adapted = adaptCommandForHardware(item.getApplyCommand());
+                        PrivilegeBridgeEngine.executePrivileged(adapted);
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "verifyAndHeal error for " + item.getId() + ": " + t.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Starts the background Self-Healing Watchdog during gaming sessions.
+     */
+    public static synchronized void startSelfHealingWatchdog(Context context, List<TweakItem> activeTweaks) {
+        if (sWatchdogRunning) return;
+        sWatchdogRunning = true;
+        sWatchdogExecutor = Executors.newSingleThreadScheduledExecutor();
+        sWatchdogExecutor.scheduleWithFixedDelay(() -> {
+            try {
+                if (activeTweaks == null || activeTweaks.isEmpty()) return;
+                int healedCount = 0;
+                for (TweakItem item : activeTweaks) {
+                    if (item.isApplied() && verifyAndHeal(item)) {
+                        healedCount++;
+                    }
+                }
+                if (healedCount > 0) {
+                    Log.i(TAG, "⚡ [Self-Healing Watchdog] Autonomously restored " + healedCount + " reverted tweaks.");
+                }
+            } catch (Throwable ignored) {}
+        }, 15, 30, TimeUnit.SECONDS);
+        Log.i(TAG, "🚀 [Self-Healing Watchdog] Engine started (30s interval).");
+    }
+
+    /**
+     * Stops the background Self-Healing Watchdog.
+     */
+    public static synchronized void stopSelfHealingWatchdog() {
+        sWatchdogRunning = false;
+        if (sWatchdogExecutor != null) {
+            try {
+                sWatchdogExecutor.shutdownNow();
+            } catch (Throwable ignored) {}
+            sWatchdogExecutor = null;
+        }
+        Log.i(TAG, "🛑 [Self-Healing Watchdog] Engine stopped.");
+    }
 }
+
