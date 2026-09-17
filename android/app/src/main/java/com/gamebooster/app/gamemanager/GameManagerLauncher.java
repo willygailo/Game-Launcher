@@ -288,8 +288,10 @@ public final class GameManagerLauncher {
                     ));
                 }
 
-                // Full Game Session: Native C++ config injection, hardware masking, locks
+                // Full Game Session: Native C++ config injection, hardware masking, locks, and Game Guardian Foreground Service
                 try {
+                    com.gamebooster.app.services.GameBoostForegroundService.start(appContext, pkg, safeFps);
+                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunity(appContext);
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.engine.VulkanRayTracingEngine.applyVulkanOptimizations(pkg);
                     com.gamebooster.app.booster.BypassChargingController.onGameStarted(appContext);

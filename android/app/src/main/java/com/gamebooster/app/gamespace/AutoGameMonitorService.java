@@ -159,11 +159,12 @@ public class AutoGameMonitorService extends Service {
                     lastActiveGamePackage = currentPackage;
                     Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
-                    // Execute full GameManager Session Engine
-                    com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
-
+                    // Execute full GameManager Session Engine & Game Guardian Foreground Service
                     int targetFps = com.gamebooster.app.config.GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
                     if (targetFps <= 0) targetFps = 185;
+                    com.gamebooster.app.services.GameBoostForegroundService.start(getApplicationContext(), currentPackage, targetFps);
+                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunity(getApplicationContext());
+                    com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
                     com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(getApplicationContext(), currentPackage, targetFps, 16);
 
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
@@ -199,14 +200,16 @@ public class AutoGameMonitorService extends Service {
 
                 // End GameManager Session and revert to baseline
                 com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
+                com.gamebooster.app.services.GameBoostForegroundService.stop(getApplicationContext());
                 com.gamebooster.app.overlay.GameTurboEdgeService.stop(getApplicationContext());
                 com.gamebooster.app.overlay.VisualFilterOverlayService.stopFilter(getApplicationContext());
                 if (com.gamebooster.app.engine.ResolutionScalerEngine.isResolutionScaled()) {
                     com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
                 }
 
-                // Proactively resurrect Shizuku binder and sync status immediately after game exit
+                // Proactively resurrect Shizuku binder, renew immunity, and sync status immediately after game exit
                 try {
+                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunity(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
                     com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
                 } catch (Throwable ignored) {}

@@ -10,6 +10,7 @@ add_library(
     SHARED
     config_common.cpp
     native_config_injector.cpp
+    native_lua_engine.cpp
     mlbb_injector.cpp
     pubgm_injector.cpp
     codm_injector.cpp

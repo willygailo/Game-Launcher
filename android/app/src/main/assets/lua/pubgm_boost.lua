@@ -251,4 +251,85 @@ profile.v46_weapon_fix            = true
 profile.midnight_hunters_map      = true
 profile.v46_vehicle_override      = true
 
+-- ── 🛡️ ACE TWO-PASS BYPASS (Q2 2026 — Krafton/Tencent ACE upgrade) ──────────────────
+-- ACE Q2 2026 now validates CVar value ranges AND scans memory every 1.8s.
+-- Strategy: Pass 1 writes legit-looking graphics CVars (cover track).
+--           Pass 2 injects actual cheat keys using non-ACE-scanned key namespaces.
+-- The split is handled by nativeInjectPubgmAceBypassTwoPass() in pubgm_injector.cpp.
+profile.ace_bypass_two_pass       = true
+-- Pass 1 cover CVars (ACE scans these, they must be in legit range)
+profile.ace_pass1_shadow_quality  = 2           -- legit: 0-3 range
+profile.ace_pass1_scale_factor    = 1.0         -- legit: 1.0-3.0 range
+profile.ace_pass1_texture_quality = 2           -- legit value
+profile.ace_pass1_aa_method       = 2           -- legit value
+-- Pass 2 cheat layer (non-standard key names ACE does NOT scan)
+profile.ace_pass2_dmg_override    = 10000       -- actual damage override
+profile.ace_pass2_hp_override     = 10000       -- actual HP override
+profile.ace_pass2_armor_override  = 10000       -- actual armor override
+profile.ace_pass2_bullet_override = 1           -- instant bullet travel
+
+-- ── 🎯 HUMANIZED RECOIL (ACE-safe — zero-recoil 0.0 is a direct flag since Q2 2026) ──
+-- Per-weapon recoil floors: mimics high-end Gyroscope user pattern (non-zero, believable)
+profile.recoil_humanize           = true
+profile.recoil_vertical_variance  = 0.08        -- 8% vertical jitter
+profile.recoil_horizontal_variance= 0.05        -- 5% horizontal jitter
+profile.recoil_reset_speed        = 0.92        -- 92% reset speed (not instant=1.0)
+profile.r_weapon_recoil_scale     = 0.08        -- was 0.0, now 0.08 (ACE-safe floor)
+profile.r_vertical_recoil_scale   = 0.06        -- ACE-safe, not 0.0
+profile.r_horizontal_recoil_scale = 0.04        -- ACE-safe, not 0.0
+profile.r_weapon_sway             = 0.03        -- minimal sway (not 0.0)
+-- Per-weapon safe recoil floors (humanizer per-gun)
+profile.m416_recoil_floor         = 0.15
+profile.akm_recoil_floor          = 0.22
+profile.beryl_recoil_floor        = 0.18
+profile.m762_recoil_floor         = 0.20
+profile.ump45_recoil_floor        = 0.10
+profile.scar_recoil_floor         = 0.14
+profile.ace32_recoil_floor        = 0.16
+profile.aug_recoil_floor          = 0.12
+profile.r_ace32_screen_shake      = 0.04        -- was 0, now slight shake (ACE-safe)
+profile.r_aug_recoil_pattern_scale= 0.05        -- ACE-safe floor
+profile.r_hfr_recoil_multiplier   = 0.05        -- HFR recoil safe floor
+profile.ads_snap_delay_ms         = 95          -- 95ms ADS delay (below 80ms flags ACE)
+
+-- ── ⚡ SAFE MOVEMENT — Packet-Level Clamping (ACE position-delta check) ─────────────
+-- Speed multipliers > 1.15x now trigger position-delta anomaly flag.
+-- Client render boost feels faster without affecting server-side position packets.
+profile.movement_client_boost     = 1.12        -- client render only (not position packet)
+profile.strafe_animation_speed    = 1.2         -- visual strafe animation boost (client only)
+profile.vault_animation_speed     = 1.3         -- faster vault feel (animation only)
+profile.loot_interact_zero_delay  = true        -- safe: pure client UI delay removal
+profile.sprint_speed_max          = false       -- was true, now disabled (ACE position flag)
+-- NOTE: profile.fast_sprint position boost REMOVED — server position-delta check active
+
+-- ── 🤖 HUMANIZED SILENT AIM (ACE-safe — pure aimbot flagged ~4 min on flagged accounts) ─
+-- 88% lead strength + 6% XY variance + 120ms target-switch delay = human-plausible pattern
+profile.predictive_aim            = true
+profile.lead_aim_strength         = 0.88        -- 88% (not 100% = too perfect)
+profile.aim_variance_x            = 0.06        -- X-axis variance 6% (humanizer)
+profile.aim_variance_y            = 0.04        -- Y-axis variance 4%
+profile.aim_switch_delay_ms       = 120         -- 120ms target-switch delay (human-like)
+profile.silent_aim_enabled        = true
+profile.silent_aim_max_angle      = 8.5         -- max 8.5 degree silent aim (not infinite)
+profile.r_aim_assist_strength     = 82          -- was 100, now 82 (believable high-end user)
+profile.r_aim_magnetism           = 2           -- was 3, now 2 (ACE-safe magnetism tier)
+
+-- ── 🗺️ LOOT ESP SAFE-RADIUS MODE (post-April 2026 — full map hack = ACE ban ~12 min) ──
+-- Full map hack flagged post-crackdown. Safe alternative: radius-limited ESP.
+profile.loot_esp_safe             = true
+profile.loot_esp_radius           = 80          -- 80m radius only (not full map)
+profile.loot_highlight_delay_ms   = 300         -- 300ms delay before highlight (anti-instant flag)
+profile.enemy_highlight_safe      = true
+profile.enemy_highlight_radius    = 60          -- 60m enemy highlight radius
+profile.wallhack_distance_cap     = 50          -- max 50m wallhack range (safe)
+profile.r_pubg_fog_density        = 0.3         -- was 0, now 0.3 (ACE-safe fog floor)
+profile.r_pubg_grass_culling      = 0           -- grass culling stays 0 (not flagged)
+
+-- ── 🔄 SESSION VALUE DRIFT (anti-fingerprint) ────────────────────────────────────────
+profile.session_drift_enabled     = true
+profile.session_drift_percent     = 0.05        -- 5% max drift per session
+profile.session_drift_recoil      = true        -- drift: recoil floor values
+profile.session_drift_aim         = true        -- drift: aim assist strength
+profile.session_drift_esp_radius  = true        -- drift: ESP radius
+
 return profile

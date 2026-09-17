@@ -694,17 +694,22 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchPhantomFreezerKill != null) {
             switchPhantomFreezerKill.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
-                if (isChecked && !checkShizukuOrRevert(buttonView, "Phantom Process Killer Bypass")) return;
+                if (isChecked && !checkShizukuOrRevert(buttonView, "Phantom Process Killer & Background Immunity Bypass")) return;
                 ManualSettingsPreferences.setPhantomFreezerKillEnabled(getContext(), isChecked);
+                final Context appContext = getContext().getApplicationContext();
                 AppExecutors.getInstance().executeCommand(() -> {
                     if (isChecked) {
                         CommandExecutor.executeSystemCommand("device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null; settings put global settings_enable_monitor_phantom_procs false 2>/dev/null; settings put global cached_apps_freezer disabled 2>/dev/null; cmd device_config put activity_manager freeze_debounce_timeout 86400000 2>/dev/null");
+                        com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunitySync(appContext);
                     } else {
                         CommandExecutor.executeSystemCommand("settings put global settings_enable_monitor_phantom_procs true 2>/dev/null; settings put global cached_apps_freezer enabled 2>/dev/null");
                     }
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
-                            Toast.makeText(getContext(), isChecked ? "🛡️ Android 13–16 Phantom Killer & App Freezer Disabled!" : "Process Freezer Restored", Toast.LENGTH_SHORT).show();
+                            if (isChecked && !com.gamebooster.app.booster.BackgroundLimitImmunityEngine.isIgnoringBatteryOptimizations(getContext())) {
+                                com.gamebooster.app.booster.BackgroundLimitImmunityEngine.requestIgnoreBatteryOptimizations(getContext());
+                            }
+                            Toast.makeText(getContext(), isChecked ? "🛡️ Walang Limit: Shizuku Shield & Zero Background Limits Active!" : "Process Freezer Restored", Toast.LENGTH_SHORT).show();
                         }
                     });
                 });

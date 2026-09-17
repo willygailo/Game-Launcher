@@ -32,12 +32,29 @@ public class ShizukuUserServiceConnector {
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    Thread.sleep(300);
-                } catch (InterruptedException ignored) {}
-                rebindScheduled.set(false);
-                if (!isServiceConnected() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Executing silent auto-rebind for IUserService daemon...");
-                    bindService();
+                    int attempts = 0;
+                    while (attempts < 10 && !isServiceConnected()) {
+                        long waitTime = Math.min(300L * (1L << Math.min(attempts, 4)), 3000L);
+                        try {
+                            Thread.sleep(waitTime);
+                        } catch (InterruptedException ignored) {}
+
+                        if (isServiceConnected()) break;
+
+                        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            Log.d(TAG, "Executing silent auto-rebind attempt " + (attempts + 1) + " for IUserService daemon...");
+                            bindService();
+                            // brief wait to see if it bound
+                            try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                            if (isServiceConnected()) {
+                                Log.i(TAG, "IUserService re-bound successfully on attempt " + (attempts + 1));
+                                break;
+                            }
+                        }
+                        attempts++;
+                    }
+                } finally {
+                    rebindScheduled.set(false);
                 }
             });
         }

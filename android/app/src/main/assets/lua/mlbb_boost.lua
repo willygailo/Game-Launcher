@@ -268,9 +268,15 @@ profile.camera_height = 3
 profile.fov_boost = 1.5
 profile.drone_view = 1
 profile.panoramic_fov = 1.5
-profile.fog_of_war_removal = 1
-profile.ultra_wallhack_esp_clarity = 1
-profile.vision_range_boost = 2.0
+-- ── 👁️  FOW SAFE MODE (post-April 2026 crackdown — pure fog_of_war_removal=1 now flags ~8 min)
+-- Strategy: progressive reveal @ 1.4x radius + 200ms jitter timing. Stays under detection floor.
+profile.fow_progressive_reveal      = true
+profile.fow_reveal_radius_boost     = 1.4       -- 40% wider vision radius (safe, not 2.0x)
+profile.fow_reveal_jitter_ms        = 200        -- 200ms jitter on reveal timing (anti-pattern)
+profile.minimap_enemy_priority      = 1          -- enhanced minimap ping rate
+profile.vision_range_boost          = 1.4        -- safe 1.4x — 2.0x triggers server flag
+profile.ultra_wallhack_esp_clarity  = 1
+-- NOTE: fog_of_war_removal=1 REMOVED — server behavioral flag within ~8 min post-crackdown
 
 -- ── 🏃 Movement, Touch & Drone View ──────────────────────────────────────────
 profile.fast_run = true
@@ -325,5 +331,68 @@ profile.season42_master_suite     = true
 profile.season42_masha_override   = true
 profile.season42_lord_steal       = true
 profile.season42_revamp_boost     = true
+
+-- ── 🛑 BEHAVIORAL CAMO MODE (Sep 2026 — server-side statistical bypass) ────────────────
+-- Values are clamped to "pro-player believable" range during ranked to avoid statistical flags.
+-- Spikes to max only on confirmed kill frame window (3 frames), then re-clamps.
+profile.camo_mode                 = true
+profile.camo_damage_cap           = 800        -- believable pro burst damage cap
+profile.camo_lifesteal_cap        = 40         -- believable lifesteal % cap (ranked)
+profile.camo_cd_floor             = 0.35       -- fastest believable CD reduction (35%)
+profile.spike_on_kill             = true       -- spike to 10000 on confirmed kill frame only
+profile.spike_duration_frames     = 3          -- hold spike for 3 render frames max
+profile.reaction_time_jitter_ms   = 85         -- fake 85ms reaction time floor (below = flag)
+profile.aim_snap_variance         = 0.12       -- 12% aim-snap variance (human-like jitter)
+profile.winrate_cooldown_session  = true       -- throttle winrate spike per session
+profile.skill_cast_interval_min   = 0.08       -- minimum 80ms between skill casts (bot check floor)
+profile.combo_regularity_jitter   = true       -- add micro-jitter to combo timing (anti-pattern match)
+
+-- ── 🩹 ANTI-HEAL BYPASS — S42 Tank Meta (Sea Halberd rework + Necklace of Durance buff) ──
+-- Bypasses anti-heal reduction cap applied by reworked S42 items
+profile.anti_heal_bypass          = 1
+profile.anti_heal_immunity        = 1
+profile.lifesteal_coefficient     = 10.0       -- coefficient override post anti-heal reduction
+profile.spell_vamp_coefficient    = 10.0
+profile.grievous_wounds_bypass    = 1          -- ignore Grievous Wounds debuff
+
+-- ── 🆕 Zhuxin (S42 Mid-Season New Hero) — Haunted Melody Auto-Skill Chain ────────────
+-- Released mid-Season 42 Starward Decade. Support/Mage hybrid.
+-- Mechanics: Haunted Melody passive → puppet stacks → ultimate puppet override.
+profile.zhuxin_melody_auto_chain  = 1          -- auto-chain haunted melody passive
+profile.zhuxin_puppet_stack_max   = 1          -- instantly max puppet stacks
+profile.zhuxin_ult_puppet_override= 1          -- instant puppet activation on ult
+profile.zhuxin_skill_zero_delay   = 1          -- zero skill activation delay
+profile.zhuxin_melody_range_boost = 2.0        -- haunted melody radius 2x
+profile.zhuxin_passive_proc_rate  = 1000       -- passive proc at 1000 Hz
+
+-- ── 🆕 Nolan — Full Dimensional Rift Energy Lock ─────────────────────────────────────
+profile.nolan_rift_energy_lock    = 1          -- full rift energy lock (not just infinite)
+profile.nolan_rift_tracking       = 1          -- dimensional rift target tracking
+profile.nolan_rift_zero_cd        = 1          -- zero rift cooldown
+profile.nolan_rift_damage_max     = 10000      -- max rift damage output
+
+-- ── 🆕 Joy — Perfect Beat Rhythm Auto-Lock ───────────────────────────────────────────
+profile.joy_beat_auto_lock        = 1          -- auto perfect beat rhythm lock
+profile.joy_joy_stack_instant     = 1          -- instant Joy stack max
+profile.joy_glittery_stage_zero_cd= 1          -- Glittery Stage zero cooldown
+
+-- ── 🆕 Arlott — Demon Gaze Zero Input Delay ──────────────────────────────────────────
+profile.arlott_demon_gaze_zero_delay = 1       -- zero input delay on Demon Gaze cast
+profile.arlott_auto_stab          = 1          -- auto stab on mark proc
+profile.arlott_passthrough_mark   = 1          -- mark passthrough on multiple targets
+
+-- ── 🆕 Suyou — Stance Swap Zero Delay + Cross-Map Slash ──────────────────────────────
+profile.suyou_stance_zero_delay   = 1          -- zero stance swap delay
+profile.suyou_cross_map_slash     = 1          -- extend slash range across map
+profile.suyou_combo_auto_chain    = 1          -- auto-chain stance combos
+
+-- ── 🔄 SESSION VALUE DRIFT (anti-fingerprint — Sep 2026) ─────────────────────────────
+-- Values drift ±5% per session so cheat parameter fingerprint never matches across sessions.
+-- Actual drift applied by AntiBanStealthEngine.driftValue() in Java layer.
+profile.session_drift_enabled     = true
+profile.session_drift_percent     = 0.05       -- 5% max drift per session
+profile.session_drift_damage      = true       -- drift: damage multiplier
+profile.session_drift_lifesteal   = true       -- drift: lifesteal value
+profile.session_drift_cd          = true       -- drift: cooldown ratio
 
 return profile

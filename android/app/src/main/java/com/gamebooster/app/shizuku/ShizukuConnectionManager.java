@@ -285,6 +285,9 @@ public class ShizukuConnectionManager {
                 whitelistServicesFromDoze();
                 ShizukuManager.triggerThrottledPostConnectionSync();
                 return;
+            } else if (!alive) {
+                // If binder is dead, try auto-resurrection if root is available
+                com.gamebooster.app.booster.BackgroundLimitImmunityEngine.tryAutoResurrectShizukuDaemon();
             }
         } catch (Throwable ignored) {}
         scheduleReconnect();
@@ -298,16 +301,10 @@ public class ShizukuConnectionManager {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 if (isReady()) {
-                    // Doze whitelist
-                    ShizukuExecutor.executeShizukuCommand("dumpsys deviceidle whitelist +moe.shizuku.privileged.api");
-                    ShizukuExecutor.executeShizukuCommand("dumpsys deviceidle whitelist +com.gamebooster.app");
-                    // AppOps background execution permission
-                    ShizukuExecutor.executeShizukuCommand("cmd appops set moe.shizuku.privileged.api RUN_IN_BACKGROUND allow");
-                    ShizukuExecutor.executeShizukuCommand("cmd appops set com.gamebooster.app RUN_IN_BACKGROUND allow");
-                    // Disable Phantom Process Killer on Android 12-16 so Shizuku and elevated child daemons are never killed
-                    ShizukuExecutor.executeShizukuCommand("/system/bin/device_config put activity_manager max_phantom_processes 2147483647");
-                    ShizukuExecutor.executeShizukuCommand("/system/bin/setprop persist.sys.fflag.override.settings_enable_monitor_phantom_procs false");
-                    Log.i(TAG, "Shizuku & GameLauncher whitelisted against Doze/LMKD sleep & Phantom Process Killer disabled");
+                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunitySync(
+                            com.gamebooster.app.GameBoosterApp.getInstance()
+                    );
+                    Log.i(TAG, "Shizuku & GameLauncher background immunity fully enforced.");
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "Failed to apply Doze whitelist", t);

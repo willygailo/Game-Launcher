@@ -226,4 +226,75 @@ profile.s8_isolated_poi_bypass    = true
 -- stealth_write is CRITICAL for CODM anti-cheat (Warzone Mobile dead, AC focus 100% CODM)
 profile.stealth_write             = true
 
+-- ── 🎯 TIMI HEADSHOT RATIO GOVERNOR (TiMi behavioral engine — Sep 2026) ─────────────────
+-- TiMi session-level behavioral engine flags >85% HS ratio per session for manual review.
+-- Governor caps HS ratio at 72% by force-routing 28% of kills as bodyshots in config layer.
+profile.headshot_ratio_cap        = 0.72        -- max 72% HS ratio (believable skilled player)
+profile.bodyshot_injection_rate   = 0.28        -- force 28% bodyshots for ratio cover
+profile.hs_session_cooldown_ms    = 3500        -- 3.5s forced interval between HS kill streaks
+profile.hs_streak_cap_per_game    = 8           -- max 8-HS streak before bodyshot forced
+profile.timi_ratio_bypass         = true        -- enable ratio governor layer
+-- Reduce headshot_bone_index from pure 0 to alternating (0=head, 1=neck fallback for ratio)
+profile.head_bone_index_alt       = 1           -- alt bone for 28% bodyshot injection
+profile.headshot_multiplier       = 720         -- was 999, now 720 (believable ranked player)
+profile.head_damage_max           = 1200        -- was 99999, now 1200 (TiMi-safe floor)
+
+-- ── 🔫 STOCHASTIC RCS — TiMi Pattern Bypass (Sep 2026) ──────────────────────────────────
+-- TiMi now detects perfectly linear recoil compensation. Stochastic noise makes it human-like.
+profile.rcs_enabled               = true
+profile.rcs_strength              = 0.88        -- 88% RCS (not 100% = linear pattern flag)
+profile.rcs_stochastic_noise      = 0.07        -- 7% stochastic noise floor
+profile.rcs_burst_delay_frames    = 2           -- 2-frame delay on burst fire start
+profile.ar_recoil_scale           = 0.07        -- was 0.0, now 0.07 (TiMi-safe)
+profile.smg_recoil_scale          = 0.05        -- TiMi-safe floor
+profile.sniper_recoil_scale       = 0.04        -- TiMi-safe floor
+profile.lmg_recoil_scale          = 0.09        -- TiMi-safe floor
+profile.dmr_recoil_scale          = 0.06        -- TiMi-safe floor
+profile.shotgun_recoil_scale      = 0.08        -- TiMi-safe floor
+profile.pistol_recoil_scale       = 0.04        -- TiMi-safe floor
+-- Per-weapon stochastic RCS tuning
+profile.ak47_rcs                  = 0.86
+profile.man_o_war_rcs             = 0.84
+profile.kilo_141_rcs              = 0.90
+profile.holger_rcs                = 0.88
+profile.hvk_rcs                   = 0.92
+profile.static_hv_rcs             = 0.89       -- S8 new weapon
+profile.iso_hemlock_rcs           = 0.91       -- S8 new weapon
+profile.spread_decay_rate         = 12         -- was 15, now 12 (TiMi-safe)
+
+-- ── 🏃 BR SAFE MOVEMENT (position-delta checks tighter in BR than MP) ─────────────────
+-- BR mode has stricter server position validation than MP mode.
+profile.br_movement_boost         = 1.10        -- safe: 1.10x (1.15x = position-delta flag)
+profile.br_loot_speed_boost       = 1.25        -- loot interaction (client-side UI only)
+profile.br_healing_speed          = 1.0         -- keep at 1.0x (server-validated heal time)
+profile.br_parachute_speed        = 1.05        -- minor parachute boost (safe)
+profile.br_slide_cancel           = true        -- slide cancel still safe (animation-layer)
+profile.br_vault_speed            = 1.08        -- vault animation speed (client only)
+profile.sprint_speed_max          = false       -- disable position-affecting speed hack in BR
+
+-- ── 🎖️ MP PERK OVERDRIVE (Multiplayer — TiMi perk behavior check less strict than BR) ──
+profile.mp_perk_overdrive         = true
+profile.ghost_perk_max            = true        -- movement audio suppressed (UAV immunity)
+profile.tracker_perk_bypass       = true        -- enemy footprint override
+profile.hardline_bonus_rate       = 2           -- 2x killstreak progression
+profile.overkill_carry_instant    = true        -- instant secondary weapon access
+profile.dead_silence_zero_cd      = true        -- Dead Silence field upgrade zero cooldown
+profile.engineer_vision_range     = 80          -- Engineer perk ESP extended to 80m
+
+-- ── 🔧 GUNSMITH ATTACHMENT SIMULATION (no asset hash touch) ──────────────────────────
+-- Simulates max-attachment stat bonuses via CVar injection without modifying game APK assets.
+-- Safe: config-only, no file hash touch.
+profile.max_attachment_damage     = 1           -- MaxAttachmentDamage=1
+profile.attachment_range_bonus    = 1           -- AttachmentRangeBonus=1
+profile.attachment_recoil_ctrl    = 0.08        -- AttachmentRecoilControl (TiMi-safe floor)
+profile.attachment_ads_speed_bonus= 1           -- AttachmentADSSpeedBonus=1
+profile.attachment_mobility_bonus = 1           -- AttachmentMobilityBonus=1
+
+-- ── 🔄 SESSION VALUE DRIFT (anti-fingerprint — TiMi session tracker bypass) ─────────────
+profile.session_drift_enabled     = true
+profile.session_drift_percent     = 0.05        -- 5% drift per session
+profile.session_drift_rcs         = true        -- drift: RCS strength
+profile.session_drift_hs_cap      = true        -- drift: HS ratio cap (±3%)
+profile.session_drift_aim         = true        -- drift: aim magnetism level
+
 return profile
