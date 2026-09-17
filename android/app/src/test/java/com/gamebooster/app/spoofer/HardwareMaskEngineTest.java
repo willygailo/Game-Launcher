@@ -284,4 +284,43 @@ public class HardwareMaskEngineTest {
         DeviceSpooferEngine.resetSpoof(null);
         assertFalse(DeviceSpooferEngine.isSpoofed(null, "com.tencent.ig"));
     }
+
+    @Test
+    public void test2026AntiCheatBypassPropertiesAndVulkanAlignment() {
+        SpoofProfile s25 = SpoofProfileRegistry.getById("samsung_s25_ultra");
+        assertNotNull(s25);
+        Map<String, String> s25Props = s25.generateSystemProperties();
+
+        // 2026 Verified boot & play integrity flags
+        assertEquals("green", s25Props.get("ro.boot.verifiedbootstate"));
+        assertEquals("1", s25Props.get("ro.boot.flash.locked"));
+        assertEquals("locked", s25Props.get("ro.boot.vbmeta.device_state"));
+        assertEquals("green", s25Props.get("debug.game.spoofed_verifiedbootstate"));
+        assertEquals("1", s25Props.get("debug.game.spoofed_flash_locked"));
+        assertEquals("locked", s25Props.get("debug.game.spoofed_bootloader"));
+        assertEquals("2026-03-01", s25Props.get("debug.game.spoofed_security_patch"));
+        assertEquals("1", s25Props.get("debug.vulkan.pipeline_cache"));
+
+        // Vulkan physical device properties
+        Map<String, String> vkProps = s25.generateVulkanDeviceProperties();
+        assertNotNull(vkProps);
+        assertEquals("0x5143", vkProps.get("vendorID"));
+        assertEquals("0x08300000", vkProps.get("deviceID"));
+        assertEquals("Adreno (TM) 830", vkProps.get("deviceName"));
+
+        // Dimensity 9400 Vulkan properties
+        SpoofProfile x200 = SpoofProfileRegistry.getById("vivo_x200_pro");
+        assertNotNull(x200);
+        Map<String, String> x200Vk = x200.generateVulkanDeviceProperties();
+        assertNotNull(x200Vk);
+        assertEquals("0x13B5", x200Vk.get("vendorID"));
+        assertEquals("0x09250000", x200Vk.get("deviceID"));
+        assertEquals("Immortalis-G925 MC12", x200Vk.get("deviceName"));
+
+        // Xiaomi 15 Pro profile registration
+        SpoofProfile mi15Pro = SpoofProfileRegistry.getById("xiaomi_15_pro");
+        assertNotNull(mi15Pro);
+        assertEquals("Xiaomi 15 Pro (Snapdragon 8 Elite)", mi15Pro.displayName);
+        assertEquals("24101PNB7C", mi15Pro.model);
+    }
 }

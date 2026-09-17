@@ -48,7 +48,43 @@ public class XiaomiProfiles {
                 120
         ));
 
-        // 2. Redmi K80 Pro (Snapdragon 8 Elite / 16GB RAM / 120Hz OLED)
+        // 2. Xiaomi 15 Pro (Snapdragon 8 Elite / 16GB LPDDR5X / 120Hz 2K AMOLED)
+        list.add(new SpoofProfile(
+                "xiaomi_15_pro",
+                "Xiaomi 15 Pro (Snapdragon 8 Elite)",
+                "Xiaomi",
+                "24101PNB7C",
+                "Xiaomi",
+                "Xiaomi",
+                "haotian",
+                "haotian",
+                "haotian",
+                "qcom",
+                "sun",
+                "SM8750-AB",
+                "sun",
+                "Snapdragon 8 Elite",
+                "Qualcomm",
+                8,
+                4320000,
+                "ARM64-v9.2-A",
+                "fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop sha3 asimddp sha512 sve asimdfhm",
+                "Xiaomi/haotian/haotian:15/UKQ1.231003.002/HyperOS2.0:user/release-keys",
+                "HyperOS2.0",
+                "15",
+                35,
+                "2024-10-31",
+                "Adreno (TM) 830",
+                "Qualcomm",
+                "OpenGL ES 3.2 V@0615.0",
+                "1.3.280",
+                "512.615.0",
+                16384,
+                13107,
+                120
+        ));
+
+        // 3. Redmi K80 Pro (Snapdragon 8 Elite / 16GB RAM / 120Hz OLED)
         list.add(new SpoofProfile(
                 "redmi_k80_pro",
                 "Redmi K80 Pro (Snapdragon 8 Elite)",

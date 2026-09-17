@@ -34,9 +34,9 @@ public final class GameSpoofSafetyRegistry {
             // Honor of Kings
             "tmgp.sgame", "sgameglobal",
             // Valorant Mobile / Project C
-            "tmgp.projectc", "tmgp.valorant",
-            // Arena Breakout / Delta Force
-            "proximabeta.mf.uamo", "levelinfinite.deltaforce"
+            "tmgp.projectc", "tmgp.valorant", "riotgames.valorant",
+            // Arena Breakout / Delta Force / Modern Tactical 2026
+            "proximabeta.mf.uamo", "levelinfinite.deltaforce", "arenabreakout", "deltaforce", "marvelrivals"
     ));
 
     // Soft / server-side anti-cheat titles: warn on mismatch, still apply.

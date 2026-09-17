@@ -397,6 +397,18 @@ public class SpoofProfile {
         props.put("debug.egl.hw", "1");
         props.put("debug.hwui.renderer", "vulkan");
         props.put("debug.renderengine.backend", "vulkan");
+        props.put("debug.vulkan.pipeline_cache", "1");
+
+        // 2026 Anti-Cheat Detection Bypass: Verified Boot & Play Integrity
+        props.put("ro.boot.verifiedbootstate", "green");
+        props.put("ro.boot.flash.locked", "1");
+        props.put("ro.boot.vbmeta.device_state", "locked");
+        props.put("ro.boot.warranty_bit", "0");
+        props.put("ro.warranty_bit", "0");
+        props.put("debug.game.spoofed_verifiedbootstate", "green");
+        props.put("debug.game.spoofed_flash_locked", "1");
+        props.put("debug.game.spoofed_bootloader", "locked");
+        props.put("debug.game.spoofed_security_patch", "2026-03-01");
 
         // RAM & Memory Masking
         props.put("ro.config.low_ram", "false");
@@ -773,6 +785,38 @@ public class SpoofProfile {
 
     public String getImei2() {
         return DeviceIdentityGenerator.generateImei(this, 2);
+    }
+
+    /**
+     * Generates simulated Vulkan physical device properties (VkPhysicalDeviceProperties)
+     * matching the profile's authentic GPU to defeat native Vulkan querying in 2026 anti-cheats.
+     */
+    public Map<String, String> generateVulkanDeviceProperties() {
+        Map<String, String> vk = new LinkedHashMap<>();
+        String r = glRenderer != null ? glRenderer.toLowerCase(Locale.US) : "";
+        if (r.contains("adreno")) {
+            vk.put("apiVersion", vulkanVersion != null ? vulkanVersion : "1.3.280");
+            vk.put("driverVersion", vulkanDriverVersion != null ? vulkanDriverVersion : "512.700.0");
+            vk.put("vendorID", "0x5143"); // Qualcomm
+            vk.put("deviceID", r.contains("830") ? "0x08300000" : (r.contains("750") ? "0x07500000" : "0x07400000"));
+            vk.put("deviceType", "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU");
+            vk.put("deviceName", glRenderer);
+        } else if (r.contains("immortalis") || r.contains("mali")) {
+            vk.put("apiVersion", vulkanVersion != null ? vulkanVersion : "1.3.275");
+            vk.put("driverVersion", vulkanDriverVersion != null ? vulkanDriverVersion : "20.0.0");
+            vk.put("vendorID", "0x13B5"); // ARM
+            vk.put("deviceID", r.contains("g925") ? "0x09250000" : "0x07200000");
+            vk.put("deviceType", "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU");
+            vk.put("deviceName", glRenderer);
+        } else {
+            vk.put("apiVersion", "1.3.280");
+            vk.put("driverVersion", "1.0.0");
+            vk.put("vendorID", "0x10DE");
+            vk.put("deviceID", "0x00010000");
+            vk.put("deviceType", "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU");
+            vk.put("deviceName", glRenderer);
+        }
+        return Collections.unmodifiableMap(vk);
     }
 
     @Override

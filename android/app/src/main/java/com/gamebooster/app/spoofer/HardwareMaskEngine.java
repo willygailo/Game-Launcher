@@ -102,6 +102,16 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_vulkan_driver \"" + profile.vulkanDriverVersion + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
+            batchCommands.add("setprop debug.vulkan.pipeline_cache 1");
+
+            // 2026 Anti-Cheat Detection Bypass: Verified Boot & Integrity state
+            batchCommands.add("setprop debug.game.spoofed_verifiedbootstate \"green\"");
+            batchCommands.add("setprop debug.game.spoofed_flash_locked \"1\"");
+            batchCommands.add("setprop debug.game.spoofed_bootloader \"locked\"");
+            batchCommands.add("setprop debug.game.spoofed_security_patch \"2026-03-01\"");
+            batchCommands.add("setprop debug.game.spoofed_android_id \"" + profile.getAndroidId() + "\"");
+            batchCommands.add("setprop debug.game.spoofed_oaid \"" + profile.getOaid() + "\"");
+            batchCommands.add("setprop debug.game.spoofed_widevine \"" + profile.getWidevineDeviceId() + "\"");
 
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 2: DISPLAY REFRESH RATE & SCHEDULER TUNING
@@ -298,14 +308,32 @@ public class HardwareMaskEngine {
                 "/data/data/com.gamebooster.app/files/fake_proc/"
             };
 
+            // Staging Vulkan Physical Device Profile for anti-cheat inspection
+            StringBuilder vkJson = new StringBuilder("{\n");
+            Map<String, String> vkProps = profile.generateVulkanDeviceProperties();
+            int vi = 0;
+            for (Map.Entry<String, String> e : vkProps.entrySet()) {
+                vkJson.append("  \"").append(e.getKey()).append("\": \"").append(e.getValue()).append("\"");
+                if (++vi < vkProps.size()) vkJson.append(",");
+                vkJson.append("\n");
+            }
+            vkJson.append("}\n");
+
             for (String dir : baseDirs) {
                 ShizukuFileManager.ensureParentDirectory(dir + "fake_cpuinfo");
                 ShizukuFileManager.writeFile(dir + "fake_cpuinfo", cpuInfo, "666");
                 ShizukuFileManager.writeFile(dir + "fake_meminfo", memInfo, "666");
                 ShizukuFileManager.writeFile(dir + "fake_version", procVer, "666");
+                ShizukuFileManager.writeFile(dir + "fake_vulkan.json", vkJson.toString(), "666");
                 ShizukuFileManager.writeFile(dir + "system_spoof.prop", props.toString(), "666");
                 ShizukuFileManager.writeFile(dir + "build.prop", props.toString(), "666");
             }
+
+            // Optional: If running under elevated shell with mount permission, attempt mount bind
+            try {
+                String stagedCpu = "/data/data/com.gamebooster.app/files/fake_proc/fake_cpuinfo";
+                ShizukuExecutor.executeShizukuCommand("mount --bind " + stagedCpu + " /proc/cpuinfo 2>/dev/null || true");
+            } catch (Throwable ignored) {}
         } catch (Throwable t) {
             Log.w(TAG, "exportMockProcfsPayloads error: " + t.getMessage());
         }
@@ -616,6 +644,14 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_vulkan_driver \"" + profile.vulkanDriverVersion + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
+            batchCommands.add("setprop debug.vulkan.pipeline_cache 1");
+            batchCommands.add("setprop debug.game.spoofed_verifiedbootstate \"green\"");
+            batchCommands.add("setprop debug.game.spoofed_flash_locked \"1\"");
+            batchCommands.add("setprop debug.game.spoofed_bootloader \"locked\"");
+            batchCommands.add("setprop debug.game.spoofed_security_patch \"2026-03-01\"");
+            batchCommands.add("setprop debug.game.spoofed_android_id \"" + profile.getAndroidId() + "\"");
+            batchCommands.add("setprop debug.game.spoofed_oaid \"" + profile.getOaid() + "\"");
+            batchCommands.add("setprop debug.game.spoofed_widevine \"" + profile.getWidevineDeviceId() + "\"");
 
             // 2. Display & SF FPS Limit
             batchCommands.add("settings put system peak_refresh_rate " + targetHz + ".0");
