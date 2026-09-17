@@ -6,6 +6,9 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.util.Log;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.NativeFrameworkBridge;
@@ -29,6 +32,8 @@ public class NetworkOptimizer {
     public enum DnsMode {
         CLOUDFLARE_1_1_1_1("1.1.1.1", "1.0.0.1", "one.one.one.one"),
         GOOGLE_8_8_8_8("8.8.8.8", "8.8.4.4", "dns.google"),
+        ADGUARD_GAMING("94.140.14.14", "94.140.15.15", "dns.adguard-dns.com"),
+        QUAD9_GAMING("9.9.9.9", "149.112.112.112", "dns.quad9.net"),
         SYSTEM_DEFAULT("default", "default", "off");
 
         public final String primary;
@@ -195,6 +200,10 @@ public class NetworkOptimizer {
                 activeDns = "⚡ 1.1.1.1 Cloudflare DoT (Verified)";
             } else if (spec != null && spec.contains("dns.google")) {
                 activeDns = "🌐 8.8.8.8 Google DoT (Verified)";
+            } else if (spec != null && spec.contains("adguard")) {
+                activeDns = "🛡️ AdGuard Gaming DoT (Ad/Ping Guard)";
+            } else if (spec != null && spec.contains("quad9")) {
+                activeDns = "⚡ Quad9 Ultra-Fast DoT (Verified)";
             } else if (mode != null && mode.contains("off")) {
                 activeDns = "🔄 System Default ISP";
             } else if (spec != null && !spec.trim().isEmpty() && !spec.contains("null") && !spec.toLowerCase().contains("error")) {
@@ -340,9 +349,11 @@ public class NetworkOptimizer {
     }
 
     /**
-     * Forces Wi-Fi 5 / Wi-Fi 6 / Wi-Fi 6E / Wi-Fi 7 chipsets into Zero-Lag Gaming Mode.
-     * - Suppresses periodic background AP scanning (which causes 200ms+ lag spikes).
-     * - Disables Wi-Fi power-save throttling.
+     * Forces Wi-Fi 5 (5GHz), Wi-Fi 6/6E (6GHz), and Wi-Fi 7 (7GHz / 802.11be MLO) into Zero-Lag Gaming Mode.
+     * - Suppresses periodic background AP scanning (which causes 200ms+ lag spikes in MLBB, CODM, PUBGM).
+     * - Enables Wi-Fi 7 Multi-Link Operation (MLO) aggregation (simultaneous 5GHz + 6/7GHz dual-band).
+     * - Enables Wi-Fi 7 Puncturing and 320MHz ultra-wide channel low-latency buffers.
+     * - Disables Wi-Fi power-save throttling and chip sleep.
      * - Forces driver into low-latency lock.
      */
     public static boolean optimizeWifi6and7LowLatency(boolean enabled) {
@@ -360,10 +371,19 @@ public class NetworkOptimizer {
             CommandExecutor.executeSystemCommand("settings put global wifi_power_save 0"); // Disable chip sleep
             CommandExecutor.executeSystemCommand("settings put global wifi_watchdog_on 0");
 
-            // 3. Low-latency chipset driver props
+            // 3. Low-latency chipset driver props (Wi-Fi 5GHz, 6GHz, and Wi-Fi 7 802.11be MLO)
             CommandExecutor.executeSystemCommand("setprop debug.wifi.low_latency 1");
             CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.low_latency 1");
             CommandExecutor.executeSystemCommand("setprop persist.sys.wifi.energy.saving 0");
+
+            // 4. 2026 Wi-Fi 7 (802.11be) Multi-Link Operation (MLO) & 320MHz Acceleration
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.mlo 1");
+            CommandExecutor.executeSystemCommand("setprop debug.wifi7.low_latency 1");
+            CommandExecutor.executeSystemCommand("setprop debug.wifi7.mlo_aggregation 1");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.puncturing 1");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.twt_disable 1"); // Bypass TWT sleep delays
+            CommandExecutor.executeSystemCommand("setprop set.tcp.buffersize.wifi7 524288,1048576,8388608,262144,524288,4194304");
+
             optimizeTcpBuffers();
         } else {
             CommandExecutor.executeSystemCommand("cmd wifi force-low-latency-mode disabled");
@@ -373,6 +393,8 @@ public class NetworkOptimizer {
             CommandExecutor.executeSystemCommand("settings put global wifi_sleep_policy 0");
             CommandExecutor.executeSystemCommand("setprop debug.wifi.low_latency 0");
             CommandExecutor.executeSystemCommand("setprop persist.vendor.wifi.low_latency 0");
+            CommandExecutor.executeSystemCommand("setprop debug.wifi7.low_latency 0");
+            CommandExecutor.executeSystemCommand("setprop debug.wifi7.mlo_aggregation 0");
         }
         return ok;
     }
@@ -504,9 +526,11 @@ public class NetworkOptimizer {
             CommandExecutor.executeSystemCommand("setprop net.dns1 " + carrier.dnsPrimary);
             CommandExecutor.executeSystemCommand("setprop net.dns2 8.8.4.4");
 
-            // 4. Background network throttle clamp
+            // 4. Background network throttle clamp & 2026 5G slicing
             CommandExecutor.executeSystemCommand("cmd netpolicy set restrict-background true");
             CommandExecutor.executeSystemCommand("cmd connectivity set-background-data false");
+            CommandExecutor.executeSystemCommand("setprop persist.radio.slicing_enabled 1");
+            CommandExecutor.executeSystemCommand("setprop persist.vendor.radio.5g_sa 1");
 
             // 5. Immediate DNS & route cache purge
             flushDnsCache();
@@ -516,6 +540,57 @@ public class NetworkOptimizer {
             Log.e(TAG, "Failed to apply PH Telco optimization", t);
             return false;
         }
+    }
+
+    /**
+     * Dedicated TNT / Smart 5G Ultra Gaming Data Optimizer.
+     * Enforces APN smartdata/internet, MTU 1460, Cloudflare 1.1.1.1 Gaming DoT,
+     * low-latency routing to Singapore/PH clusters, and NR n78/n41 bands.
+     */
+    public static boolean applyTntSmartOptimization(Context context) {
+        return applyPhCarrierOptimization(context, PhCarrier.TNT_SMART);
+    }
+
+    /**
+     * Dedicated TM / Globe 5G Turbo Fast Data Optimizer.
+     * Enforces APN real.globe.com.ph, MTU 1440 (anti-fragmentation), Google 8.8.8.8 DoT,
+     * fast ping routes, and NR n78/B3/B7/B28 bands.
+     */
+    public static boolean applyTmGlobeOptimization(Context context) {
+        return applyPhCarrierOptimization(context, PhCarrier.TM_GLOBE);
+    }
+
+    /**
+     * Detects active SIM cards on the device (TNT, Smart, TM, Globe, DITO).
+     * Returns a human-friendly string describing the detected carrier(s).
+     */
+    public static String detectActiveSimCarriers(Context context) {
+        if (context == null) return "Unknown / No SIM";
+        try {
+            android.telephony.TelephonyManager tm =
+                    (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (tm != null) {
+                String simOpName = tm.getSimOperatorName();
+                String netOpName = tm.getNetworkOperatorName();
+                String raw = (simOpName != null && !simOpName.trim().isEmpty()) ? simOpName : netOpName;
+                if (raw != null && !raw.trim().isEmpty()) {
+                    String lower = raw.toLowerCase(Locale.US);
+                    if (lower.contains("tnt") || lower.contains("talk")) {
+                        return "🇵🇭 TNT (Talk 'N Text 5G Ultra)";
+                    } else if (lower.contains("smart")) {
+                        return "🇵🇭 Smart Communications (5G Ultra)";
+                    } else if (lower.contains("tm") || lower.contains("touch")) {
+                        return "🇵🇭 TM (Touch Mobile 5G Turbo)";
+                    } else if (lower.contains("globe")) {
+                        return "🇵🇭 Globe Telecom (5G Turbo)";
+                    } else if (lower.contains("dito")) {
+                        return "🇵🇭 DITO Telecommunity (5G Route)";
+                    }
+                    return raw.trim();
+                }
+            }
+        } catch (Throwable ignored) {}
+        return "PH Telco Auto-Detect";
     }
 
     /**

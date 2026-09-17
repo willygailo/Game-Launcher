@@ -1490,7 +1490,7 @@ public class TweakManagerRepository {
             if (ManualSettingsPreferences.is5g6gDataEnabled(context)) {
                 com.gamebooster.app.booster.NetworkOptimizer.optimize5gAnd6gDataNetwork(true);
             }
-            if (ManualSettingsPreferences.isWifiLowLatencyEnabled(context)) {
+            if (ManualSettingsPreferences.isWifiLowLatencyEnabled(context) || ManualSettingsPreferences.isWifi5g6g7gTurboEnabled(context)) {
                 com.gamebooster.app.booster.NetworkOptimizer.optimizeWifi6and7LowLatency(true);
             }
             if (ManualSettingsPreferences.isDualDataWifiEnabled(context)) {
@@ -1502,7 +1502,11 @@ public class TweakManagerRepository {
                     com.gamebooster.app.booster.NetworkOptimizer.applyGamingDns(context, com.gamebooster.app.booster.NetworkOptimizer.DnsMode.valueOf(savedDns));
                 } catch (Throwable ignored) {}
             }
-            if (ManualSettingsPreferences.isPhTelcoSuperchargerEnabled(context)) {
+            if (ManualSettingsPreferences.isTntSmartSuperchargerEnabled(context)) {
+                com.gamebooster.app.booster.NetworkOptimizer.applyTntSmartOptimization(context);
+            } else if (ManualSettingsPreferences.isTmGlobeSuperchargerEnabled(context)) {
+                com.gamebooster.app.booster.NetworkOptimizer.applyTmGlobeOptimization(context);
+            } else if (ManualSettingsPreferences.isPhTelcoSuperchargerEnabled(context)) {
                 com.gamebooster.app.booster.NetworkOptimizer.applyPhCarrierOptimization(context, com.gamebooster.app.booster.NetworkOptimizer.PhCarrier.TNT_SMART);
             }
             if (ManualSettingsPreferences.isAutoDnsFlushEnabled(context)) {

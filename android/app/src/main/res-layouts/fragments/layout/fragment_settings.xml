@@ -481,7 +481,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="🚀 Kernel TCP BBR &amp; 8MB Socket Windows"
+                    android:text="🚀 Kernel TCP BBR v3 &amp; 8MB Socket Windows"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -495,12 +495,39 @@
                     android:textSize="13sp" />
 
                 <Switch
+                    android:id="@+id/switch_tnt_smart_supercharger"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🇵🇭 TNT / Smart 5G Ultra Gaming Data (MTU 1460 &amp; SG/PH Fast Route)"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_tm_globe_supercharger"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🇵🇭 TM / Globe 5G Turbo Fast Data (MTU 1440 Anti-Fragmentation)"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="13sp" />
+
+                <Switch
                     android:id="@+id/switch_wifi_low_latency"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="📶 Wi-Fi 6/6E/7 Ultra-Low Latency Lock (No AP Throttling)"
+                    android:text="📶 Wi-Fi 5G / 6G / 7G Low-Latency Lock (No AP Throttling)"
                     android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_wifi_5g_6g_7g"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="⚡ Wi-Fi 7 MLO (802.11be 320MHz Multi-Link Operation)"
+                    android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
                 <Switch
@@ -527,6 +554,24 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="🌐 Google 8.8.8.8 Gaming DNS-over-TLS (DoT)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_dns_adguard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="🛡️ AdGuard Gaming DNS (Blocks Telemetry &amp; Ping Spikes)"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <Switch
+                    android:id="@+id/switch_dns_quad9"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="⚡ Quad9 Ultra-Fast Gaming DNS (Malicious Intercept DoT)"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 

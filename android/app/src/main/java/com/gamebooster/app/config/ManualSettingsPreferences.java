@@ -45,6 +45,9 @@ public class ManualSettingsPreferences {
     private static final String KEY_GAMING_DNS = "pref_gaming_dns";
     private static final String KEY_TCP_BBR_BUFFERS = "pref_tcp_bbr_buffers";
     private static final String KEY_PH_TELCO_SUPERCHARGER = "pref_ph_telco_supercharger";
+    private static final String KEY_TNT_SMART_SUPERCHARGER = "pref_tnt_smart_supercharger";
+    private static final String KEY_TM_GLOBE_SUPERCHARGER = "pref_tm_globe_supercharger";
+    private static final String KEY_WIFI_5G_6G_7G_TURBO = "pref_wifi_5g_6g_7g_turbo";
     private static final String KEY_AUTO_DNS_FLUSH = "pref_auto_dns_flush";
 
     public static void setTcpBbrBuffersEnabled(Context context, boolean enabled) {
@@ -65,6 +68,36 @@ public class ManualSettingsPreferences {
     public static boolean isPhTelcoSuperchargerEnabled(Context context) {
         if (context == null) return false;
         return getPrefs(context).getBoolean(KEY_PH_TELCO_SUPERCHARGER, false);
+    }
+
+    public static void setTntSmartSuperchargerEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_TNT_SMART_SUPERCHARGER, enabled).apply();
+    }
+
+    public static boolean isTntSmartSuperchargerEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_TNT_SMART_SUPERCHARGER, false);
+    }
+
+    public static void setTmGlobeSuperchargerEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_TM_GLOBE_SUPERCHARGER, enabled).apply();
+    }
+
+    public static boolean isTmGlobeSuperchargerEnabled(Context context) {
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_TM_GLOBE_SUPERCHARGER, false);
+    }
+
+    public static void setWifi5g6g7gTurboEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_WIFI_5G_6G_7G_TURBO, enabled).apply();
+    }
+
+    public static boolean isWifi5g6g7gTurboEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_WIFI_5G_6G_7G_TURBO, true);
     }
 
     public static void setAutoDnsFlushEnabled(Context context, boolean enabled) {
