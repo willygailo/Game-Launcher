@@ -2182,9 +2182,11 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         // Auto Retribution & Smite
         {"AutoRetriLordTurtle", "1"}, {"RetriHpThresholdCalc", "1"}, {"InstantSmite", "1"},
         {"ObjectiveTargetLock", "1"},
-        // Drone View & Map Hack
-        {"CameraHeight", "2"}, {"FovBoost", "1.35"}, {"MapScale", "1.2"},
-        {"MinimapEnemyPriority", "1"},
+        // Drone View & Map Hack (Season 42 4X Panoramic)
+        {"CameraHeight", "4"}, {"FovBoost", "1.75"}, {"MapScale", "1.35"},
+        {"MinimapEnemyPriority", "1"}, {"DroneView", "1"}, {"PanoramicFOV", "1.75"},
+        {"DroneFOV", "180"}, {"MaxFOV", "180"}, {"FieldOfView", "180"},
+        {"CameraDistance", "180"}, {"WideCameraAngle", "1"}, {"MapVisibilityRange", "2.0"},
         // Damage Lock & Pen
         {"DamageLockMax", "1"}, {"EffectiveDPSMode", "3"}, {"HitRegSyncRate", "1000"},
         {"FrameSyncDamage", "1"}, {"CritRateBoost", "100"}, {"CritDamageMultiplier", "3.0"},
@@ -2774,13 +2776,19 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAutoMapGlit
         {"TargetLockProximitySweep",     "3000"},
         {"EntityVisibilityTether",       "3000"},
 
-        // ── Drone Perspective & Map Scaling ──
-        {"CameraHeight",                 "2.2"},
-        {"FOVBoost",                     "1.45"},
-        {"MapScale",                     "1.25"},
+        // ── Drone Perspective & Map Scaling (Season 42 4X Panoramic) ──
+        {"CameraHeight",                 "4"},
+        {"FOVBoost",                     "1.75"},
+        {"MapScale",                     "1.35"},
         {"UltraWallhackEspClarity",      "1"},
         {"DroneView",                    "1"},
-        {"PanoramicFOV",                 "1.45"}
+        {"PanoramicFOV",                 "1.75"},
+        {"DroneFOV",                     "180"},
+        {"MaxFOV",                       "180"},
+        {"FieldOfView",                  "180"},
+        {"CameraDistance",               "180"},
+        {"WideCameraAngle",              "1"},
+        {"MapVisibilityRange",           "2.0"}
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbAutoMapGlitch3s");
 }

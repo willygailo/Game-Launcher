@@ -293,12 +293,37 @@ profile.nolan_unlimited_energy_lock = 1
 profile.skill_zero_cd = 1
 profile.ult_instant_reset = 1
 
--- ── 👁️ ULTRA DRONE VIEW MAX PANORAMIC FOV ─────────────────────────────────────
-profile.ultra_drone_view = true
-profile.camera_height = 3
-profile.fov_boost = 1.5
-profile.drone_view = 1
-profile.panoramic_fov = 1.5
+-- ── 👁️ ULTRA DRONE VIEW MAX PANORAMIC FOV (2026 Season 42 Enhanced) ───────────
+profile.ultra_drone_view            = true
+profile.drone_view                  = 1
+profile.drone_view_mode             = "ULTRA_PANORAMIC"
+profile.drone_view_zoom_tier        = 4            -- 4X High Drone Elevation (2X, 3X, 4X, 5X, 6X Max Panoramic)
+profile.camera_height               = 4            -- 4X camera elevation without black borders
+profile.camera_distance             = 180          -- max perspective depth
+profile.fov_boost                   = 1.75         -- 75% wide angle tactical FOV
+profile.panoramic_fov               = 1.75
+profile.drone_fov                   = 180
+profile.max_fov                     = 180
+profile.field_of_view               = 180
+profile.wide_camera_angle           = 1
+profile.map_scale                   = 1.35
+profile.map_visibility_range        = 2.0
+profile.map_clarity                 = 1
+profile.drone_perspective_mode      = 1
+profile.drone_camera_smooth         = 1
+profile.drone_anti_shake            = 1
+profile.drone_pitch_angle           = 60
+profile.drone_lock_elevation        = 1
+profile.drone_dynamic_zoom          = 1
+profile.drone_fog_penetration       = 1
+profile.fog_of_war_removal          = 1
+profile.fog_of_war_bypass           = 1
+profile.allow_occlusion_queries     = 1
+profile.drone_view_anti_blackscreen = 1
+profile.drone_anti_ban_stealth      = true
+profile.hero_lock_range             = 9999
+profile.vision_range_boost          = 2.0
+profile.ultra_wallhack_esp_clarity  = 1
 -- ── 👁️  2026 3-SECOND AUTO MAP GLITCH & ENEMY GHOST RADAR SUITE ───────────────────
 -- Periodic 3-second pulse desync + 3-second minimap enemy icon latch (Anti-Ban Stealth)
 profile.auto_map_glitch_3s            = true
@@ -317,15 +342,13 @@ profile.minimap_enemy_priority         = 1            -- enhanced minimap ping r
 profile.vision_range_boost             = 1.4
 profile.ultra_wallhack_esp_clarity     = 1
 
--- ── 🏃 Movement, Touch & Drone View ──────────────────────────────────────────
+-- ── 🏃 Movement, Touch & Input Controls ───────────────────────────────────────
 profile.fast_run = true
 profile.movement_speed_boost = true
 profile.joystick_zero_deadzone = true
 profile.zero_input_lag = true
 profile.touch_zero_delay = true
 profile.touch_polling_rate = 1000
-profile.camera_height = 2
-profile.fov_boost = 1.35
 profile.minimap_enemy_priority = 1
 
 -- ── 🗺️ Ranked & Classic Map Re-injection ──────────────────────────────────────

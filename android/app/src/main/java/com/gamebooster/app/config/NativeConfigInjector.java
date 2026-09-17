@@ -2607,9 +2607,13 @@ public class NativeConfigInjector {
         if (path == null) return false;
         ensureParentDirectory(path);
         String[] keys = {
-            "CameraHeight=3", "FOVBoost=1.5", "DroneView=1", "PanoramicFOV=1.5",
-            "MapClarity=1", "MinimapEnemyPriority=1", "FogOfWarRemoval=1",
-            "UltraWallhackEspClarity=1", "HeroLockRange=9999", "VisionRangeBoost=2.0"
+            "CameraHeight=4", "FOVBoost=1.75", "DroneView=1", "PanoramicFOV=1.75",
+            "DroneFOV=180", "MaxFOV=180", "FieldOfView=180", "CameraDistance=180",
+            "WideCameraAngle=1", "MapScale=1.35", "MapVisibilityRange=2.0",
+            "MapClarity=1", "MinimapEnemyPriority=1", "FogOfWarRemoval=1", "FogOfWarBypass=1",
+            "AllowOcclusionQueries=1", "UltraWallhackEspClarity=1", "HeroLockRange=9999",
+            "VisionRangeBoost=2.0", "DronePerspectiveMode=1", "DroneCameraSmooth=1",
+            "DroneAntiShake=1", "DroneAntiBlackscreen=1", "DroneLockElevation=1"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbUltraDroneView]");
     }
