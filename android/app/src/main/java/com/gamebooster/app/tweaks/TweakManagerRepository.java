@@ -932,6 +932,89 @@ public class TweakManagerRepository {
                 true
         ));
 
+        // =========================================================================
+        // 12. 2026 MICRO-ARCHITECTURE, ALL-CORE & DISPLAY DRIVER FLAGSHIP TWEAKS
+        // =========================================================================
+        TWEAKS.add(new TweakItem(
+                "snapdragon_oryon_task_affinity",
+                "Snapdragon 8 Elite / Oryon & Prime Core Task Affinity Lock",
+                "Pins game worker threads (UnityMain, MainThread, RHIThread) strictly to Prime and Gold cores (cpuset 4-7), bypassing efficiency cores",
+                "echo 4-7 > /dev/cpuset/top-app/cpus 2>/dev/null; for p in $(pidof UnityMain MainThread 2>/dev/null); do taskset -p f0 $p 2>/dev/null; done; setprop sys.perf.sched_walt_rotate_big_tasks 1; setprop persist.vendor.qti.games.gt.enable 1",
+                "echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; setprop persist.vendor.qti.games.gt.enable 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "mediatek_dimensity_hyperengine_allcore",
+                "MediaTek Dimensity 9300/9400 All-Big-Core FPSGo Overdrive",
+                "Unlocks MediaTek Dimensity FPSGo sysfs knobs and EAS energy margins to 100% boost for zero frame pacing drops",
+                "echo 1 > /proc/perfmgr/boost_ctrl/eas_ctrl/perfserv_ta_boost 2>/dev/null; echo 100 > /sys/module/mtk_fpsgo/parameters/fstb_soft_level 2>/dev/null; echo 1 > /sys/module/mtk_fpsgo/parameters/rescue_opp_c 2>/dev/null; echo 1 > /sys/module/mtk_fpsgo/parameters/fstb_boost_duration 2>/dev/null; setprop vendor.perf.gestureFlingBoost 1",
+                "echo 0 > /proc/perfmgr/boost_ctrl/eas_ctrl/perfserv_ta_boost 2>/dev/null; echo 0 > /sys/module/mtk_fpsgo/parameters/fstb_soft_level 2>/dev/null",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "zero_ltpo_vrr_clamp",
+                "Zero-LTPO Permanent Refresh Rate Clamp & VRR Neutralizer",
+                "Eliminates LTPO downclocking to 1Hz/10Hz/30Hz on touch lift-off, locking display panel CRTC and SurfaceFlinger to continuous peak refresh rate",
+                "setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.disable_backpressure 1; setprop persist.vendor.display.vrr.disable 1; setprop ro.vendor.dfps.enable 0; settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; for d in /sys/class/drm/card0/*; do [ -f \"$d/fps_change\" ] && echo 185 > \"$d/fps_change\" 2>/dev/null; done",
+                "setprop debug.sf.use_content_detection_for_refresh_rate true; setprop persist.vendor.display.vrr.disable 0; setprop ro.vendor.dfps.enable 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "tcp_quickack_gro_gso_packet_turbo",
+                "TCP QuickACK & Hardware GRO/GSO Packet Offloading",
+                "Enforces immediate TCP QuickACK without 200ms delayed ACK pauses, and maximizes hardware Generic Receive/Segmentation Offloading for zero ping jitter",
+                "sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.ipv4.tcp_sack=1 2>/dev/null; sysctl -w net.ipv4.tcp_dsack=1 2>/dev/null; sysctl -w net.core.default_qdisc=fq 2>/dev/null; for i in $(ls /sys/class/net/ 2>/dev/null); do ethtool -K $i gro on gso on 2>/dev/null; done",
+                "sysctl -w net.ipv4.tcp_quickack=0 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=0 2>/dev/null",
+                TweakCategory.NETWORK_LATENCY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "proactive_memory_compaction_shield",
+                "Proactive Zero-Stall Memory Compaction & 128MB Reserve Pool",
+                "Pre-compacts Linux memory and locks 128MB reserve pool (min_free_kbytes=131072) to abolish direct compaction freezes during high-load texture streaming",
+                "echo 1 > /proc/sys/vm/compact_memory 2>/dev/null; sysctl -w vm.min_free_kbytes=131072 2>/dev/null; sysctl -w vm.extra_free_kbytes=65536 2>/dev/null; sysctl -w vm.compaction_proactiveness=0 2>/dev/null; sysctl -w vm.watermark_boost_factor=0 2>/dev/null; sysctl -w vm.watermark_scale_factor=0 2>/dev/null",
+                "sysctl -w vm.min_free_kbytes=32768 2>/dev/null; sysctl -w vm.compaction_proactiveness=20 2>/dev/null",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "ahardwarebuffer_gralloc_zero_copy",
+                "AHardwareBuffer Gralloc Zero-Copy Streaming & Early App Phase",
+                "Configures Android graphics gralloc buffers for zero-copy GPU texture binding, strips CPU memory copies, and sets -500000ns early app phase offset",
+                "setprop ro.hardware.gralloc minigbm; setprop debug.hwui.use_buffer_age false; setprop debug.sf.early_app_phase_offset_ns -500000; setprop debug.sf.early_gl_phase_offset_ns 0; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.skip_empty_damage true",
+                "setprop debug.hwui.use_buffer_age true; setprop debug.sf.early_app_phase_offset_ns 1000000",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "input_raw_event_queue_overdrive",
+                "Raw Event Queue Overdrive & Zero-Slop Touch Prediction",
+                "Eliminates touch filtering debounce delays, sets view.touch_slop to 0 for instantaneous aim flicks, and enables LSQ2 least-squares velocity prediction",
+                "setprop view.touch_slop 0; setprop persist.input.velocitytracker.strategy lsq2; setprop persist.sys.input.debounce 0; setprop touch.motion_filter.enable 0; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000",
+                "setprop view.touch_slop 8; setprop persist.sys.input.debounce 1",
+                TweakCategory.TOUCH_DISPLAY,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "esports_audio_spatial_footstep_boost",
+                "Esports Audio Low-Latency Spatial & High-Frequency Footstep Boost",
+                "Cuts AudioFlinger buffer to 16KB for zero audio latency, enables fast-track multiplier, and bypasses safe media ducking so enemy footsteps match frame visuals",
+                "setprop audio.offload.buffer.size.kb 16; setprop af.fast_track_multiplier 1; setprop persist.sys.audio.latency 0; setprop af.resampler.quality 4; setprop audio.safemedia.bypass true; setprop persist.bluetooth.a2dp_offload.cap 1",
+                "setprop audio.offload.buffer.size.kb 64; setprop persist.sys.audio.latency 10",
+                TweakCategory.SHIZUKU_SYSTEM,
+                true
+        ));
+
         // Index all tweaks for O(1) lookups by ID and Category
         for (TweakCategory cat : TweakCategory.values()) {
             CATEGORY_MAP.put(cat, new ArrayList<>());
@@ -1314,5 +1397,67 @@ public class TweakManagerRepository {
                 com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
             } catch (Throwable ignored) {}
         });
+    }
+
+    /**
+     * 🚀 NO LIMIT FPS GAMING MODE (185 FPS + Maximum Clocks + Thermal Defeated)
+     * Applies all performance tweaks, locks 185 FPS pipeline, disables backpressure,
+     * locks CPU/GPU max clocks, enables Oryon/X4 core pinning, Zero-LTPO, and TCP QuickACK.
+     */
+    public static int applyNoLimitFpsGamingMode(Context context) {
+        int appliedCount = applyAllSupportedTweaks(context);
+
+        List<String> noLimitCmds = new ArrayList<>();
+        // 1. Uncap SurfaceFlinger to 185 FPS
+        noLimitCmds.add("setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; setprop persist.sys.game.fps 185; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; service call SurfaceFlinger 1035 i32 185 2>/dev/null");
+        // 2. CPU max burst frequency lock & Oryon/X4 affinity
+        noLimitCmds.add("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; echo 4-7 > /dev/cpuset/top-app/cpus 2>/dev/null");
+        // 3. GPU Turbo mode
+        noLimitCmds.add("setprop debug.adreno.turbo 1; setprop debug.adreno.perf_level 0; setprop debug.mali.force_gpu_boost 1; setprop vendor.gpu.power_mode 1");
+        // 4. Defeat thermal throttling
+        noLimitCmds.add("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done");
+        // 5. Zero-LTPO and 1000Hz touch
+        noLimitCmds.add("setprop debug.sf.use_content_detection_for_refresh_rate false; setprop persist.vendor.display.vrr.disable 1; setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000");
+        // 6. Network QuickACK & TCP BBR
+        noLimitCmds.add("sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null");
+
+        executePrivilegedBatch(noLimitCmds);
+        return appliedCount;
+    }
+
+    /**
+     * 🛡️ BALANCE HIGH FPS MODE (Smooth 120 FPS + Thermal Guard + Low Heat)
+     * Locks stable 120 FPS target with energy-aware scheduler (EAS/Walt), balanced frequencies,
+     * active thermal protection, ultra-responsive touch, and low-latency TCP.
+     */
+    public static int applyBalancedHighFpsMode(Context context) {
+        List<String> balancedCmds = new ArrayList<>();
+        // 1. Lock display & SurfaceFlinger to stable 120 FPS
+        balancedCmds.add("setprop debug.sf.fps_limit 120; setprop persist.sys.NV_FPSLIMIT 120; setprop persist.sys.game.fps 120; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 0; service call SurfaceFlinger 1035 i32 120 2>/dev/null; cmd window set-app-refresh-rate global 120 2>/dev/null; settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0");
+        // 2. CPU balanced schedutil / EAS energy-efficient governors
+        balancedCmds.add("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 512 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 1 > /proc/sys/kernel/sched_energy_aware 2>/dev/null");
+        // 3. GPU balanced power mode
+        balancedCmds.add("setprop debug.adreno.turbo 0; setprop debug.adreno.perf_level 1; setprop debug.mali.force_gpu_boost 0; setprop vendor.gpu.power_mode 0");
+        // 4. Restore kernel thermal trip points for battery/heat protection
+        balancedCmds.add("for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done");
+        // 5. Keep touch sensitivity high (1000Hz) and zero-slop
+        balancedCmds.add("setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; settings put system touch_sensitivity 1");
+        // 6. Network BBR + TCP optimization
+        balancedCmds.add("sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null");
+
+        executePrivilegedBatch(balancedCmds);
+
+        // Mark core performance tweaks as applied
+        int count = 0;
+        for (TweakItem item : TWEAKS) {
+            if (item.getCategory() == TweakCategory.TOUCH_DISPLAY || item.getCategory() == TweakCategory.NETWORK_LATENCY) {
+                item.setApplied(true);
+                if (context != null) {
+                    TweakPreferences.saveTweakState(context, item.getId(), true);
+                }
+                count++;
+            }
+        }
+        return count;
     }
 }

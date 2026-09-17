@@ -154,7 +154,8 @@ public class PreLaunchGameDialog {
             // Dismiss dialog immediately
             dismissCurrent();
 
-            Toast.makeText(context.getApplicationContext(), "⚡ Pre-Launch Tuning for " + (label != null ? label : pkg) + " (" + finalFps + " FPS)...", Toast.LENGTH_SHORT).show();
+            String modeName = finalFps >= 144 ? "🚀 NO LIMIT FPS GAMING MODE (" + finalFps + " FPS)" : "🛡️ BALANCE HIGH FPS MODE (120 FPS)";
+            Toast.makeText(context.getApplicationContext(), modeName + " — " + (label != null ? label : pkg), Toast.LENGTH_SHORT).show();
 
             // Build & save competitive profile
             String gameKey = CfgProfileManager.resolveGameKey(pkg);

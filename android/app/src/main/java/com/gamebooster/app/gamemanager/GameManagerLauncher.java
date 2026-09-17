@@ -296,7 +296,16 @@ public final class GameManagerLauncher {
                     com.gamebooster.app.engine.VulkanRayTracingEngine.applyVulkanOptimizations(pkg);
                     com.gamebooster.app.booster.BypassChargingController.onGameStarted(appContext);
                     com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
-                    com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(appContext, pkg, safeFps);
+
+                    // Dynamic Mode Execution: No Limit FPS vs Balanced High FPS
+                    if (safeFps >= 144) {
+                        com.gamebooster.app.tweaks.TweakManagerRepository.applyNoLimitFpsGamingMode(appContext);
+                        com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(appContext, pkg, safeFps);
+                    } else {
+                        com.gamebooster.app.tweaks.TweakManagerRepository.applyBalancedHighFpsMode(appContext);
+                    }
+                    com.gamebooster.app.tweaks.TweakManagerRepository.restoreAppliedTweaksAsync(appContext);
+
                     com.gamebooster.app.overlay.GameSessionRecorder.getInstance().startSession(appContext, pkg, gameTitle);
                     com.gamebooster.app.overlay.GameTurboEdgeService.start(appContext);
                     com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);

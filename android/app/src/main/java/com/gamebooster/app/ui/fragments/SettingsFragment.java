@@ -1060,6 +1060,49 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     });
                 });
             });
+
+            btnSettingsTweaksApplyAll.setOnLongClickListener(v -> {
+                if (getContext() == null) return true;
+                String[] modes = {
+                        "🚀 NO LIMIT FPS GAMING MODE (185 FPS Uncapped, Max Clocks, Thermals Defeated)",
+                        "🛡️ BALANCE HIGH FPS MODE (120 FPS Locked, Low Heat, Battery Guard)",
+                        "⚡ STANDARD 1-TAP APPLY ALL"
+                };
+                new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                        .setTitle("⚡ SELECT PERFORMANCE MODE")
+                        .setItems(modes, (dialog, which) -> {
+                            if (which == 0) {
+                                Toast.makeText(getContext(), "🚀 Activating NO LIMIT FPS GAMING MODE (185 FPS)...", Toast.LENGTH_SHORT).show();
+                                AppExecutors.getInstance().executeCommand(() -> {
+                                    int count = com.gamebooster.app.tweaks.TweakManagerRepository.applyNoLimitFpsGamingMode(getContext());
+                                    AppExecutors.getInstance().postToMainThread(() -> {
+                                        if (isAdded() && settingsTweaksAdapter != null) {
+                                            settingsTweaksAdapter.notifyAllStatesChanged();
+                                            updateTweaksBadgeCount();
+                                            Toast.makeText(getContext(), "🚀 NO LIMIT 185 FPS MODE ACTIVE (" + count + " tweaks)", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                });
+                            } else if (which == 1) {
+                                Toast.makeText(getContext(), "🛡️ Activating BALANCE HIGH FPS MODE (120 FPS)...", Toast.LENGTH_SHORT).show();
+                                AppExecutors.getInstance().executeCommand(() -> {
+                                    int count = com.gamebooster.app.tweaks.TweakManagerRepository.applyBalancedHighFpsMode(getContext());
+                                    AppExecutors.getInstance().postToMainThread(() -> {
+                                        if (isAdded() && settingsTweaksAdapter != null) {
+                                            settingsTweaksAdapter.notifyAllStatesChanged();
+                                            updateTweaksBadgeCount();
+                                            Toast.makeText(getContext(), "🛡️ BALANCE 120 FPS MODE ACTIVE (" + count + " tweaks)", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                });
+                            } else {
+                                btnSettingsTweaksApplyAll.performClick();
+                            }
+                        })
+                        .setNegativeButton("CANCEL", null)
+                        .show();
+                return true;
+            });
         }
 
         if (btnSettingsTweaksResetAll != null) {
