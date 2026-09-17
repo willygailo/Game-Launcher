@@ -299,15 +299,23 @@ profile.camera_height = 3
 profile.fov_boost = 1.5
 profile.drone_view = 1
 profile.panoramic_fov = 1.5
--- ── 👁️  FOW SAFE MODE (post-April 2026 crackdown — pure fog_of_war_removal=1 now flags ~8 min)
--- Strategy: progressive reveal @ 1.4x radius + 200ms jitter timing. Stays under detection floor.
-profile.fow_progressive_reveal      = true
-profile.fow_reveal_radius_boost     = 1.4       -- 40% wider vision radius (safe, not 2.0x)
-profile.fow_reveal_jitter_ms        = 200        -- 200ms jitter on reveal timing (anti-pattern)
-profile.minimap_enemy_priority      = 1          -- enhanced minimap ping rate
-profile.vision_range_boost          = 1.4        -- safe 1.4x — 2.0x triggers server flag
-profile.ultra_wallhack_esp_clarity  = 1
--- NOTE: fog_of_war_removal=1 REMOVED — server behavioral flag within ~8 min post-crackdown
+-- ── 👁️  2026 3-SECOND AUTO MAP GLITCH & ENEMY GHOST RADAR SUITE ───────────────────
+-- Periodic 3-second pulse desync + 3-second minimap enemy icon latch (Anti-Ban Stealth)
+profile.auto_map_glitch_3s            = true
+profile.map_pulse_interval_sec         = 3            -- 3-second periodic radar pulse
+profile.enemy_ghost_retention_ms       = 3000         -- 3-second minimap enemy icon latch
+profile.fow_micro_pulse_duration_ms    = 250          -- 250ms pulse to stay undetectable by MTP
+profile.bush_occlusion_culling         = 0            -- reveal enemies hiding in bushes
+profile.minimap_ghost_tracker          = 1            -- full minimap enemy icon tracking
+profile.target_lock_proximity_sweep    = 3000         -- 3-second auto target locking sweep
+profile.vision_pulse_radius_boost      = 1.5          -- 50% wider vision radius during pulse
+profile.stealth_anti_ban_pulse         = true         -- anti-telemetry timing jitter
+profile.fow_progressive_reveal         = true
+profile.fow_reveal_radius_boost        = 1.4          -- 40% wider base vision radius
+profile.fow_reveal_jitter_ms           = 200          -- 200ms jitter on reveal timing
+profile.minimap_enemy_priority         = 1            -- enhanced minimap ping rate
+profile.vision_range_boost             = 1.4
+profile.ultra_wallhack_esp_clarity     = 1
 
 -- ── 🏃 Movement, Touch & Drone View ──────────────────────────────────────────
 profile.fast_run = true

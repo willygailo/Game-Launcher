@@ -83,6 +83,18 @@ public class MlbbConfigPatcher {
     }
 
     /**
+     * MLBB 2026 3-Second Auto Map Glitch & Enemy Ghost Radar Suite.
+     * Periodic 3-second desync pulses, 3-second minimap enemy icon latch, and bush occlusion culling bypass.
+     */
+    public static void applyMlbbAutoMapGlitch3s(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbAutoMapGlitch3s(path);
+        }
+        Log.i(TAG, "⚡ MLBB 2026 3-Second Auto Map Glitch & Enemy Ghost Radar applied for " + packageName);
+    }
+
+    /**
      * MLBB God Mode Full Overdrive (All-In-One Cheat Suite).
      */
     public static void applyMlbbGodModeFullOverdrive(String packageName) {
@@ -91,6 +103,7 @@ public class MlbbConfigPatcher {
         applyMlbbGodArmorTrueDefense(packageName);
         applyMlbbUnlimitedManaEnergy(packageName);
         applyMlbbUltraDroneViewMaxFov(packageName);
+        applyMlbbAutoMapGlitch3s(packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyFastFarmingAllHero(packageName);
         applyFastRetributionObjectiveSteal(packageName);

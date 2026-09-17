@@ -1779,6 +1779,14 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSecurityBypassEnforcePermissions
   (JNIEnv *, jclass, jstring, jint, jint, jint);
 
+/*
+ * nativeInjectMlbbAutoMapGlitch3s
+ * Injects 2026 3-second auto map glitch, periodic FOW desync pulses, and minimap ghost icon retention.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAutoMapGlitch3s
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

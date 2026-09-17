@@ -313,6 +313,8 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Specialized: Basic Attack Overclock + True Damage Floor + Infinite Regen + Life-Still + Armor ────
         try { MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 3-Second Auto Map Glitch & Enemy Ghost Radar (3s Periodic Desync + Bush Occlusion Bypass) ────
+        try { MlbbConfigPatcher.applyMlbbAutoMapGlitch3s(pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {

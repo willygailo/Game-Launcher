@@ -118,6 +118,7 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbBasicAttackRegenOverdrive(String path);
     public static native boolean nativeInjectPubgmFullScopeBulletTrackingOverdrive(String path);
     public static native boolean nativeInjectCodmFullScopeBulletTrackingFastReload(String path);
+    public static native boolean nativeInjectMlbbAutoMapGlitch3s(String path);
 
     // 2026 Advanced Security & Anti-Tamper Native Bypass Suite
     public static native boolean nativeSecurityBypassStripXattrs(String path);
@@ -2611,6 +2612,31 @@ public class NativeConfigInjector {
     }
 
     /**
+     * MLBB 2026 3-Second Auto Map Glitch & Enemy Ghost Radar Suite.
+     * Periodic 3-second micro-pulse desync, 3-second minimap enemy icon retention, bush occlusion culling override.
+     */
+    public static boolean injectMlbbAutoMapGlitch3s(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbAutoMapGlitch3s(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "AutoMapGlitch3s=1", "MapPulseInterval=3", "EnemyPositionSyncPulse=3000",
+            "FowMicroPulseDuration=250", "FowProgressiveReveal=1", "VisionPulseRadiusBoost=1.5",
+            "VisionRangeBoost=1.4", "StealthAntiBanPulse=1", "MinimapEnemyIconRetention=3000",
+            "MinimapGhostTracking=1", "MinimapEnemyPriority=1", "IconFadeDuration=3000",
+            "AudioEventMinimapMark=1", "BushOcclusionCulling=0", "RiverBushVision=1",
+            "JungleCampVisionRadius=1.5", "HeroTargetLockRange=9999", "TargetLockProximitySweep=3000",
+            "EntityVisibilityTether=3000", "CameraHeight=2.2", "FOVBoost=1.45", "MapScale=1.25",
+            "UltraWallhackEspClarity=1", "DroneView=1", "PanoramicFOV=1.45"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbAutoMapGlitch3s]");
+    }
+
+    /**
      * MLBB God Mode Full Overdrive (All-in-One Master Cheat).
      */
     public static boolean injectMlbbGodModeFullOverdrive(String path) {
@@ -2621,7 +2647,8 @@ public class NativeConfigInjector {
         boolean ok5 = injectMlbbDamage10000AttackSpeedMax(path);
         boolean ok6 = injectMlbbFastFarmingAllHero(path);
         boolean ok7 = injectMlbbFastRetributionObjectiveSteal(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7;
+        boolean ok8 = injectMlbbAutoMapGlitch3s(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
     }
 
     public static boolean injectPubgmBallisticsVelocityPenetration(String path) {

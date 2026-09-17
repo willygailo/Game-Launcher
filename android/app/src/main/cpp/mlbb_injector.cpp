@@ -2741,3 +2741,47 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbBasicAttackRegenOverdrive2026");
 }
+
+// =============================================================================
+// ─── MLBB: 2026 3-Second Auto Map Glitch & Enemy Ghost Radar Suite ────────────
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAutoMapGlitch3s(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 3-Second Micro-Pulse Radar Desync ──
+        {"AutoMapGlitch3s",              "1"},
+        {"MapPulseInterval",             "3"},
+        {"EnemyPositionSyncPulse",       "3000"},
+        {"FowMicroPulseDuration",        "250"},
+        {"FowProgressiveReveal",         "1"},
+        {"VisionPulseRadiusBoost",       "1.5"},
+        {"VisionRangeBoost",             "1.4"},
+        {"StealthAntiBanPulse",          "1"},
+
+        // ── Minimap Ghost Icon Retention ──
+        {"MinimapEnemyIconRetention",    "3000"},
+        {"MinimapGhostTracking",         "1"},
+        {"MinimapEnemyPriority",         "1"},
+        {"IconFadeDuration",             "3000"},
+        {"AudioEventMinimapMark",        "1"},
+
+        // ── Bush Occlusion & Entity Visibility Culling Override ──
+        {"BushOcclusionCulling",         "0"},
+        {"RiverBushVision",              "1"},
+        {"JungleCampVisionRadius",       "1.5"},
+        {"HeroTargetLockRange",          "9999"},
+        {"TargetLockProximitySweep",     "3000"},
+        {"EntityVisibilityTether",       "3000"},
+
+        // ── Drone Perspective & Map Scaling ──
+        {"CameraHeight",                 "2.2"},
+        {"FOVBoost",                     "1.45"},
+        {"MapScale",                     "1.25"},
+        {"UltraWallhackEspClarity",      "1"},
+        {"DroneView",                    "1"},
+        {"PanoramicFOV",                 "1.45"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbAutoMapGlitch3s");
+}
+
