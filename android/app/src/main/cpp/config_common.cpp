@@ -362,3 +362,197 @@ bool patch_gvas_multiple_int_properties_cpp(std::vector<uint8_t> &data, const st
     }
     return anyModified;
 }
+
+// ─── Zero-Allocation Memory Mapping & Live Process Memory Hex Patching ───────
+
+bool native_fast_hex_patch_mmap(const char* filepath,
+                                const uint8_t* pattern, size_t patternLen,
+                                const uint8_t* replacement, size_t replaceLen) {
+    if (!filepath || !pattern || patternLen == 0 || !replacement || replaceLen == 0) {
+        return false;
+    }
+
+    int fd = open(filepath, O_RDWR);
+    if (fd < 0) {
+        LOGW("native_fast_hex_patch_mmap: Failed to open %s (errno=%d)", filepath, errno);
+        return false;
+    }
+
+    struct stat st;
+    if (fstat(fd, &st) < 0 || st.st_size < static_cast<off_t>(patternLen)) {
+        close(fd);
+        return false;
+    }
+
+    size_t fileSize = static_cast<size_t>(st.st_size);
+    void* mapAddr = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (mapAddr == MAP_FAILED) {
+        close(fd);
+        LOGW("native_fast_hex_patch_mmap: mmap failed for %s (errno=%d)", filepath, errno);
+        return false;
+    }
+
+    // Advise kernel for sequential streaming scan
+    madvise(mapAddr, fileSize, MADV_SEQUENTIAL | MADV_WILLNEED);
+
+    uint8_t* bytes = static_cast<uint8_t*>(mapAddr);
+    bool modified = false;
+    size_t copyBytes = (replaceLen <= patternLen) ? replaceLen : patternLen;
+
+    for (size_t i = 0; i + patternLen <= fileSize; ++i) {
+        if (bytes[i] == pattern[0] && memcmp(bytes + i, pattern, patternLen) == 0) {
+            memcpy(bytes + i, replacement, copyBytes);
+            modified = true;
+            i += patternLen - 1; // Advance past patched sequence
+        }
+    }
+
+    if (modified) {
+        msync(mapAddr, fileSize, MS_SYNC);
+        LOGI("native_fast_hex_patch_mmap: Successfully patched in-memory file: %s", filepath);
+    }
+
+    munmap(mapAddr, fileSize);
+    close(fd);
+    return modified;
+}
+
+int64_t native_direct_memory_search(const char* filepath,
+                                    const uint8_t* pattern, size_t patternLen) {
+    if (!filepath || !pattern || patternLen == 0) {
+        return -1;
+    }
+
+    int fd = open(filepath, O_RDONLY);
+    if (fd < 0) {
+        return -1;
+    }
+
+    struct stat st;
+    if (fstat(fd, &st) < 0 || st.st_size < static_cast<off_t>(patternLen)) {
+        close(fd);
+        return -1;
+    }
+
+    size_t fileSize = static_cast<size_t>(st.st_size);
+    void* mapAddr = mmap(nullptr, fileSize, PROT_READ, MAP_SHARED, fd, 0);
+    if (mapAddr == MAP_FAILED) {
+        close(fd);
+        return -1;
+    }
+
+    madvise(mapAddr, fileSize, MADV_SEQUENTIAL | MADV_WILLNEED);
+
+    const uint8_t* bytes = static_cast<const uint8_t*>(mapAddr);
+    int64_t foundOffset = -1;
+
+    for (size_t i = 0; i + patternLen <= fileSize; ++i) {
+        if (bytes[i] == pattern[0] && memcmp(bytes + i, pattern, patternLen) == 0) {
+            foundOffset = static_cast<int64_t>(i);
+            break;
+        }
+    }
+
+    munmap(mapAddr, fileSize);
+    close(fd);
+    return foundOffset;
+}
+
+int native_scan_and_patch_process_memory(pid_t pid,
+                                        const char* moduleFilter,
+                                        const uint8_t* pattern, size_t patternLen,
+                                        const uint8_t* replacement, size_t replaceLen) {
+    if (pid <= 0 || !pattern || patternLen == 0 || !replacement || replaceLen == 0) {
+        return 0;
+    }
+
+    std::string mapsPath = "/proc/" + std::to_string(pid) + "/maps";
+    std::ifstream mapsFile(mapsPath);
+    if (!mapsFile.is_open()) {
+        LOGW("native_scan_and_patch_process_memory: Cannot open %s", mapsPath.c_str());
+        return 0;
+    }
+
+    std::string memPath = "/proc/" + std::to_string(pid) + "/mem";
+    int memFd = open(memPath.c_str(), O_RDWR);
+
+    int patchCount = 0;
+    std::string line;
+    const size_t CHUNK_SIZE = 65536; // 64KB scan window
+    std::vector<uint8_t> buffer(CHUNK_SIZE + patternLen);
+
+    while (std::getline(mapsFile, line)) {
+        if (line.empty()) continue;
+
+        // Apply module filter if specified
+        if (moduleFilter && moduleFilter[0] != '\0') {
+            if (line.find(moduleFilter) == std::string::npos) {
+                continue;
+            }
+        }
+
+        uintptr_t start = 0, end = 0;
+        char perms[5] = {0};
+        unsigned long long sTmp = 0, eTmp = 0;
+        if (sscanf(line.c_str(), "%llx-%llx %4s", &sTmp, &eTmp, perms) < 3) {
+            continue;
+        }
+        start = static_cast<uintptr_t>(sTmp);
+        end = static_cast<uintptr_t>(eTmp);
+
+        // Only scan readable segments
+        if (perms[0] != 'r') continue;
+
+        size_t regionSize = end - start;
+        size_t offset = 0;
+
+        while (offset < regionSize) {
+            size_t toRead = std::min(CHUNK_SIZE, regionSize - offset);
+            struct iovec localIov, remoteIov;
+            localIov.iov_base = buffer.data();
+            localIov.iov_len = toRead;
+            remoteIov.iov_base = reinterpret_cast<void*>(start + offset);
+            remoteIov.iov_len = toRead;
+
+            ssize_t bytesRead = process_vm_readv(pid, &localIov, 1, &remoteIov, 1, 0);
+            if (bytesRead <= 0 && memFd >= 0) {
+                // Fallback to pread64 on /proc/<pid>/mem
+                bytesRead = pread64(memFd, buffer.data(), toRead, static_cast<off64_t>(start + offset));
+            }
+
+            if (bytesRead > static_cast<ssize_t>(patternLen)) {
+                size_t validBytes = static_cast<size_t>(bytesRead);
+                for (size_t i = 0; i + patternLen <= validBytes; ++i) {
+                    if (buffer[i] == pattern[0] && memcmp(buffer.data() + i, pattern, patternLen) == 0) {
+                        uintptr_t targetAddr = start + offset + i;
+                        size_t writeSize = (replaceLen <= patternLen) ? replaceLen : patternLen;
+
+                        struct iovec localWrite, remoteWrite;
+                        localWrite.iov_base = const_cast<uint8_t*>(replacement);
+                        localWrite.iov_len = writeSize;
+                        remoteWrite.iov_base = reinterpret_cast<void*>(targetAddr);
+                        remoteWrite.iov_len = writeSize;
+
+                        ssize_t written = process_vm_writev(pid, &localWrite, 1, &remoteWrite, 1, 0);
+                        if (written <= 0 && memFd >= 0) {
+                            written = pwrite64(memFd, replacement, writeSize, static_cast<off64_t>(targetAddr));
+                        }
+
+                        if (written > 0) {
+                            patchCount++;
+                            LOGI("native_scan_and_patch_process_memory: Patched pid=%d at addr=0x%llx", pid, (unsigned long long)targetAddr);
+                        }
+                        i += patternLen - 1;
+                    }
+                }
+            }
+
+            offset += toRead;
+        }
+    }
+
+    if (memFd >= 0) {
+        close(memFd);
+    }
+    return patchCount;
+}

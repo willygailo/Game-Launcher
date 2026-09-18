@@ -213,4 +213,37 @@ public class NativeConfigInjectorTest {
         String mlbbAimResult = new String(Files.readAllBytes(mlbbAimFile.toPath()), StandardCharsets.UTF_8);
         assertTrue(mlbbAimResult.contains("HeroLock=1") || mlbbAimResult.contains("SkillSmartAim=1"));
     }
+
+    @Test
+    public void testHexToBytesConversion() {
+        byte[] empty = NativeConfigInjector.hexToBytes(null);
+        assertEquals(0, empty.length);
+
+        byte[] emptyStr = NativeConfigInjector.hexToBytes("");
+        assertEquals(0, emptyStr.length);
+
+        byte[] parsed = NativeConfigInjector.hexToBytes("00 20 70 47");
+        assertEquals(4, parsed.length);
+        assertEquals((byte) 0x00, parsed[0]);
+        assertEquals((byte) 0x20, parsed[1]);
+        assertEquals((byte) 0x70, parsed[2]);
+        assertEquals((byte) 0x47, parsed[3]);
+
+        byte[] noSpace = NativeConfigInjector.hexToBytes("deadbeef");
+        assertEquals(4, noSpace.length);
+        assertEquals((byte) 0xde, noSpace[0]);
+        assertEquals((byte) 0xad, noSpace[1]);
+        assertEquals((byte) 0xbe, noSpace[2]);
+        assertEquals((byte) 0xef, noSpace[3]);
+    }
+
+    @Test
+    public void testSafeNullHandlingForNativeMemoryMethods() {
+        assertFalse(NativeConfigInjector.fastHexPatchFile(null, null, null));
+        assertFalse(NativeConfigInjector.fastHexPatchFile("non_existent.bin", "00", "01"));
+        assertEquals(0, NativeConfigInjector.scanAndPatchProcessMemory(-1, null, "00", "01"));
+        assertEquals(0, NativeConfigInjector.scanAndPatchProcessMemory(1234, null, null, null));
+        assertEquals(-1L, NativeConfigInjector.findByteOffsetInFile(null, "00"));
+        assertEquals(-1L, NativeConfigInjector.findByteOffsetInFile("non_existent.bin", null));
+    }
 }

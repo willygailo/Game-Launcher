@@ -54,6 +54,9 @@ public class NativeConfigInjector {
     public static native boolean nativeSetThreadSchedulingPolicy(int pid, int policy, int priority);
     public static native boolean nativeSetIoPriority(int pid, int ioClass, int ioPriority);
     public static native boolean nativeOptimizeMemoryMapping(String path);
+    public static native boolean nativeFastHexPatchMmap(String path, byte[] pattern, byte[] replacement);
+    public static native int nativeScanAndPatchProcessMemory(int pid, String moduleFilter, byte[] pattern, byte[] replacement);
+    public static native long nativeDirectMemorySearch(String path, byte[] pattern);
     public static native boolean nativeForceVulkanPipelineCache(String path, String pkg);
     public static native boolean nativeFastMemorySync(String path);
     public static native boolean nativePreserveFileTimestamps(String path, long atimeSec, long mtimeSec);
@@ -571,7 +574,81 @@ public class NativeConfigInjector {
         return false;
     }
 
+    /**
+     * Native High-Performance Memory-Mapped Hex File Patching.
+     * Replaces binary patterns in-place without JVM byte array allocation.
+     */
+    public static boolean fastHexPatchFile(String path, String hexPattern, String hexReplacement) {
+        if (path == null || hexPattern == null || hexReplacement == null) return false;
+        byte[] pattern = hexToBytes(hexPattern);
+        byte[] replacement = hexToBytes(hexReplacement);
+        if (pattern.length == 0 || replacement.length == 0) return false;
 
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeFastHexPatchMmap(path, pattern, replacement);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native fastHexPatchFile failed, falling back: " + t.getMessage());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Native Live Process Memory Hex Patching.
+     * Scans process memory maps and patches live instruction/data blocks via process_vm_writev without GC pauses.
+     */
+    public static int scanAndPatchProcessMemory(int pid, String moduleFilter, String hexPattern, String hexReplacement) {
+        if (pid <= 0 || hexPattern == null || hexReplacement == null) return 0;
+        byte[] pattern = hexToBytes(hexPattern);
+        byte[] replacement = hexToBytes(hexReplacement);
+        if (pattern.length == 0 || replacement.length == 0) return 0;
+
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeScanAndPatchProcessMemory(pid, moduleFilter, pattern, replacement);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native scanAndPatchProcessMemory failed: " + t.getMessage());
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Native Direct Memory Search: returns byte offset of target pattern in file, or -1 if not found.
+     */
+    public static long findByteOffsetInFile(String path, String hexPattern) {
+        if (path == null || hexPattern == null) return -1L;
+        byte[] pattern = hexToBytes(hexPattern);
+        if (pattern.length == 0) return -1L;
+
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeDirectMemorySearch(path, pattern);
+            } catch (Throwable t) {
+                Log.w(TAG, "Native findByteOffsetInFile failed: " + t.getMessage());
+            }
+        }
+        return -1L;
+    }
+
+    /**
+     * Utility method: Parses a hex string (e.g. "00 20 70 47" or "00207047") into raw byte array.
+     */
+    public static byte[] hexToBytes(String hex) {
+        if (hex == null) return new byte[0];
+        String clean = hex.replaceAll("[\\s:,]", "");
+        if (clean.length() % 2 != 0) {
+            clean = "0" + clean;
+        }
+        int len = clean.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(clean.charAt(i), 16) << 4)
+                    + Character.digit(clean.charAt(i + 1), 16));
+        }
+        return data;
+    }
 
     /**
      * Executes single-pass atomic batch injection for a map of key-value overrides.

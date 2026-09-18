@@ -13,6 +13,7 @@ import com.gamebooster.app.core.AppExecutors;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import rikka.shizuku.Shizuku;
 
@@ -26,32 +27,91 @@ public class ShizukuUserServiceConnector {
     private volatile long bindingStartedAt = 0L;
 
     private static final long BIND_STUCK_TIMEOUT_MS = 4000L;
+    private static final long INITIAL_REBIND_DELAY_MS = 250L;
+    private static final long MAX_REBIND_DELAY_MS = 8000L;
+    private static final double BACKOFF_MULTIPLIER = 2.0;
+    private static final double JITTER_RATIO = 0.15; // 15% random jitter
+
     private final AtomicBoolean rebindScheduled = new AtomicBoolean(false);
+    private final AtomicInteger consecutiveRebindFailures = new AtomicInteger(0);
+    private final AtomicBoolean listenersHooked = new AtomicBoolean(false);
+
+    private final Shizuku.OnBinderReceivedListener binderReceivedListener = () -> {
+        Log.i(TAG, "Shizuku main server binder received/re-attached. Initiating instant daemon resurrection.");
+        consecutiveRebindFailures.set(0);
+        bindService();
+    };
+
+    private final Shizuku.OnBinderDeadListener binderDeadListener = () -> {
+        Log.w(TAG, "Shizuku main server binder died! Resetting UserService and priming resurrection watchdog.");
+        handleServiceDeath("Shizuku main binder died");
+    };
+
+    private void ensureShizukuLifecycleHooks() {
+        if (listenersHooked.compareAndSet(false, true)) {
+            try {
+                Shizuku.addBinderReceivedListenerSticky(binderReceivedListener);
+                Shizuku.addBinderDeadListener(binderDeadListener);
+            } catch (Throwable t) {
+                Log.w(TAG, "Failed to register sticky Shizuku lifecycle listeners: " + t.getMessage());
+                listenersHooked.set(false);
+            }
+        }
+    }
+
+    private void handleServiceDeath(String reason) {
+        Log.w(TAG, "Handling UserService death (" + reason + "). Forcing clean unbind & triggering resurrection.");
+        if (userServiceInstance != null) {
+            try {
+                userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
+            } catch (Throwable ignored) {}
+        }
+        try {
+            Shizuku.unbindUserService(serviceArgs, serviceConnection, true);
+        } catch (Throwable ignored) {}
+        userServiceInstance = null;
+        isBinding = false;
+        scheduleSilentRebind();
+    }
+
+    private long calculateBackoffDelay(int attempt) {
+        double delay = INITIAL_REBIND_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, Math.min(attempt, 5));
+        delay = Math.min(delay, MAX_REBIND_DELAY_MS);
+        double jitter = (Math.random() * 2.0 - 1.0) * JITTER_RATIO * delay;
+        return Math.max(50L, (long) (delay + jitter));
+    }
 
     private void scheduleSilentRebind() {
+        ensureShizukuLifecycleHooks();
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    int attempts = 0;
-                    while (attempts < 10 && !isServiceConnected()) {
-                        long waitTime = Math.min(300L * (1L << Math.min(attempts, 4)), 3000L);
+                    int maxAttempts = 15;
+                    while (consecutiveRebindFailures.get() < maxAttempts && !isServiceConnected()) {
+                        int attempt = consecutiveRebindFailures.getAndIncrement();
+                        long waitTime = calculateBackoffDelay(attempt);
                         try {
                             Thread.sleep(waitTime);
                         } catch (InterruptedException ignored) {}
 
-                        if (isServiceConnected()) break;
+                        if (isServiceConnected()) {
+                            consecutiveRebindFailures.set(0);
+                            break;
+                        }
 
                         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                            Log.d(TAG, "Executing silent auto-rebind attempt " + (attempts + 1) + " for IUserService daemon...");
+                            Log.d(TAG, "Executing hardened auto-rebind attempt " + (attempt + 1) + " for IUserService daemon (delay=" + waitTime + "ms)...");
                             bindService();
-                            // brief wait to see if it bound
-                            try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                            long checkDeadline = System.currentTimeMillis() + 350L;
+                            while (System.currentTimeMillis() < checkDeadline && !isServiceConnected()) {
+                                try { Thread.sleep(30); } catch (InterruptedException ignored) {}
+                            }
                             if (isServiceConnected()) {
-                                Log.i(TAG, "IUserService re-bound successfully on attempt " + (attempts + 1));
+                                Log.i(TAG, "IUserService re-bound successfully on attempt " + (attempt + 1));
+                                consecutiveRebindFailures.set(0);
                                 break;
                             }
                         }
-                        attempts++;
                     }
                 } finally {
                     rebindScheduled.set(false);
@@ -62,23 +122,14 @@ public class ShizukuUserServiceConnector {
 
     private void handleRemoteException(String op, Exception e) {
         Log.w(TAG, "RemoteException in " + op + " (switching to elevated shell fallback): " + e.getMessage());
-        userServiceInstance = null;
-        isBinding = false;
-        scheduleSilentRebind();
+        handleServiceDeath("RemoteException in " + op);
     }
 
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
-            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS. Scheduling silent auto-rebind.");
-            if (userServiceInstance != null) {
-                try {
-                    userServiceInstance.asBinder().unlinkToDeath(deathRecipient, 0);
-                } catch (Throwable ignored) {}
-            }
-            userServiceInstance = null;
-            isBinding = false;
-            scheduleSilentRebind();
+            Log.w(TAG, "IUserService binder died. Secondary daemon process was recycled by OS (LMK). Scheduling dead-service resurrection.");
+            handleServiceDeath("binderDied - recycled by OS");
         }
     };
 
@@ -87,6 +138,7 @@ public class ShizukuUserServiceConnector {
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "IUserService connected successfully under privileged shell UID.");
             userServiceInstance = IUserService.Stub.asInterface(service);
+            consecutiveRebindFailures.set(0);
             try {
                 service.linkToDeath(deathRecipient, 0);
             } catch (RemoteException e) {
@@ -98,10 +150,8 @@ public class ShizukuUserServiceConnector {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.w(TAG, "IUserService disconnected / unbound. Scheduling silent auto-rebind.");
-            userServiceInstance = null;
-            isBinding = false;
-            scheduleSilentRebind();
+            Log.w(TAG, "IUserService disconnected / unbound. Scheduling dead-service resurrection.");
+            handleServiceDeath("onServiceDisconnected");
         }
     };
 

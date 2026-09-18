@@ -23,6 +23,9 @@
 #include <memory>
 #include <algorithm>
 #include <cctype>
+#include <sys/uio.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
 
 #if __has_include(<android/log.h>)
 #include <android/log.h>
@@ -112,5 +115,18 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
 // ─── GVAS Binary Property Helper for PUBGM Active.sav ─────────────────────────
 bool patch_gvas_int_property_cpp(std::vector<uint8_t> &data, const std::string &propName, int value);
 bool patch_gvas_multiple_int_properties_cpp(std::vector<uint8_t> &data, const std::vector<std::pair<std::string, int>> &props);
+
+// ─── Zero-Allocation Memory Mapping & Live Process Memory Hex Patching ───────
+bool native_fast_hex_patch_mmap(const char* filepath,
+                                const uint8_t* pattern, size_t patternLen,
+                                const uint8_t* replacement, size_t replaceLen);
+
+int64_t native_direct_memory_search(const char* filepath,
+                                    const uint8_t* pattern, size_t patternLen);
+
+int native_scan_and_patch_process_memory(pid_t pid,
+                                        const char* moduleFilter,
+                                        const uint8_t* pattern, size_t patternLen,
+                                        const uint8_t* replacement, size_t replaceLen);
 
 #endif // GAMEBOOSTER_CONFIG_COMMON_H

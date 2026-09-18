@@ -1044,3 +1044,88 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// ─── Zero-Allocation Memory Mapping & Live Process Memory Hex Patching ───────
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastHexPatchMmap
+  (JNIEnv *env, jclass, jstring jPath, jbyteArray jPattern, jbyteArray jReplacement) {
+    if (!jPath || !jPattern || !jReplacement) return JNI_FALSE;
+
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+
+    jsize patLen = env->GetArrayLength(jPattern);
+    jsize repLen = env->GetArrayLength(jReplacement);
+
+    if (patLen <= 0 || repLen <= 0) {
+        env->ReleaseStringUTFChars(jPath, path);
+        return JNI_FALSE;
+    }
+
+    jbyte *patBytes = env->GetByteArrayElements(jPattern, nullptr);
+    jbyte *repBytes = env->GetByteArrayElements(jReplacement, nullptr);
+
+    bool ok = native_fast_hex_patch_mmap(path,
+                                         reinterpret_cast<const uint8_t*>(patBytes),
+                                         static_cast<size_t>(patLen),
+                                         reinterpret_cast<const uint8_t*>(repBytes),
+                                         static_cast<size_t>(repLen));
+
+    env->ReleaseByteArrayElements(jPattern, patBytes, JNI_ABORT);
+    env->ReleaseByteArrayElements(jReplacement, repBytes, JNI_ABORT);
+    env->ReleaseStringUTFChars(jPath, path);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeScanAndPatchProcessMemory
+  (JNIEnv *env, jclass, jint pid, jstring jModuleFilter, jbyteArray jPattern, jbyteArray jReplacement) {
+    if (pid <= 0 || !jPattern || !jReplacement) return 0;
+
+    const char *moduleFilter = jModuleFilter ? env->GetStringUTFChars(jModuleFilter, nullptr) : nullptr;
+    jsize patLen = env->GetArrayLength(jPattern);
+    jsize repLen = env->GetArrayLength(jReplacement);
+
+    if (patLen <= 0 || repLen <= 0) {
+        if (moduleFilter) env->ReleaseStringUTFChars(jModuleFilter, moduleFilter);
+        return 0;
+    }
+
+    jbyte *patBytes = env->GetByteArrayElements(jPattern, nullptr);
+    jbyte *repBytes = env->GetByteArrayElements(jReplacement, nullptr);
+
+    int count = native_scan_and_patch_process_memory(pid,
+                                                     moduleFilter,
+                                                     reinterpret_cast<const uint8_t*>(patBytes),
+                                                     static_cast<size_t>(patLen),
+                                                     reinterpret_cast<const uint8_t*>(repBytes),
+                                                     static_cast<size_t>(repLen));
+
+    env->ReleaseByteArrayElements(jPattern, patBytes, JNI_ABORT);
+    env->ReleaseByteArrayElements(jReplacement, repBytes, JNI_ABORT);
+    if (moduleFilter) env->ReleaseStringUTFChars(jModuleFilter, moduleFilter);
+
+    return count;
+}
+
+JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeDirectMemorySearch
+  (JNIEnv *env, jclass, jstring jPath, jbyteArray jPattern) {
+    if (!jPath || !jPattern) return -1;
+
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return -1;
+
+    jsize patLen = env->GetArrayLength(jPattern);
+    if (patLen <= 0) {
+        env->ReleaseStringUTFChars(jPath, path);
+        return -1;
+    }
+
+    jbyte *patBytes = env->GetByteArrayElements(jPattern, nullptr);
+    int64_t offset = native_direct_memory_search(path,
+                                                reinterpret_cast<const uint8_t*>(patBytes),
+                                                static_cast<size_t>(patLen));
+
+    env->ReleaseByteArrayElements(jPattern, patBytes, JNI_ABORT);
+    env->ReleaseStringUTFChars(jPath, path);
+    return static_cast<jlong>(offset);
+}
+

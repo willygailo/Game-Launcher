@@ -1816,6 +1816,30 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSovereignOverdriveBypass
   (JNIEnv *, jclass, jstring);
 
+/*
+  * nativeFastHexPatchMmap
+  * Memory-mapped zero-allocation binary/hex file patcher.
+  * Signature: (Ljava/lang/String;[B[B)Z
+  */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeFastHexPatchMmap
+  (JNIEnv *, jclass, jstring, jbyteArray, jbyteArray);
+
+/*
+  * nativeScanAndPatchProcessMemory
+  * Direct process memory scanner and patcher via process_vm_readv/writev and /proc/<pid>/mem.
+  * Signature: (ILjava/lang/String;[B[B)I
+  */
+JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeScanAndPatchProcessMemory
+  (JNIEnv *, jclass, jint, jstring, jbyteArray, jbyteArray);
+
+/*
+  * nativeDirectMemorySearch
+  * Memory-mapped fast byte-offset search.
+  * Signature: (Ljava/lang/String;[B)J
+  */
+JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeDirectMemorySearch
+  (JNIEnv *, jclass, jstring, jbyteArray);
+
 #ifdef __cplusplus
 }
 #endif
