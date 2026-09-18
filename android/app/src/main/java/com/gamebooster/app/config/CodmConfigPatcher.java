@@ -72,7 +72,7 @@ public class CodmConfigPatcher {
         if (packageName == null) return;
         // CODM-specific: COD Engine FPS — per-weapon scope tiers, INI/JSON format
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectCodmEnemyLockAllScope(path);
+            NativeConfigInjector.injectCodmEnemyLockAllScope(path);
         }
         Log.i(TAG, "CODM EnemyLock applied (COD Engine FPS scope-tiers 50/150/250/350/450m) for " + packageName);
     }
@@ -87,7 +87,7 @@ public class CodmConfigPatcher {
         if (packageName == null) return;
         // CODM-specific: COD Engine bullet-count kill mechanics
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectCodmEnemyLockAllScope(path);
+            NativeConfigInjector.injectCodmEnemyLockAllScope(path);
         }
         Log.i(TAG, "CODM AutoHeadshotKill applied (3-bullet head, 5-bullet kill, COD Engine) for " + packageName);
     }
@@ -1360,7 +1360,7 @@ public class CodmConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (NativeConfigInjector.nativeInjectCodmCombatOverdrive2026(path)) {
+            if (NativeConfigInjector.injectCodmCombatOverdrive2026(path)) {
                 written++;
             }
         }

@@ -138,7 +138,58 @@ bool patch_key_value(std::string& content, const std::string& key, const std::st
     return true;
 }
 
+static inline bool is_all_digits(const std::string& s) {
+    if (s.empty()) return false;
+    size_t i = 0;
+    if (s[0] == '-' || s[0] == '+') {
+        if (s.size() == 1) return false;
+        i = 1;
+    }
+    for (; i < s.size(); ++i) {
+        if (!isdigit(static_cast<unsigned char>(s[i]))) return false;
+    }
+    return true;
+}
+
+static inline bool is_valid_float(const std::string& s) {
+    if (s.empty()) return false;
+    size_t i = 0;
+    if (s[0] == '-' || s[0] == '+') {
+        if (s.size() == 1) return false;
+        i = 1;
+    }
+    bool seenDot = false;
+    for (; i < s.size(); ++i) {
+        if (s[i] == '.') {
+            if (seenDot) return false;
+            seenDot = true;
+        } else if (!isdigit(static_cast<unsigned char>(s[i]))) {
+            return false;
+        }
+    }
+    return seenDot && s.size() > (s[0] == '-' || s[0] == '+' ? 2 : 1);
+}
+
+static inline bool is_boolean_str(const std::string& s) {
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    return (lower == "true" || lower == "false");
+}
+
+static inline std::string detect_xml_tag(const std::string& val) {
+    if (is_boolean_str(val)) return "boolean";
+    if (is_all_digits(val)) return "int";
+    if (is_valid_float(val)) return "float";
+    return "string";
+}
+
 bool patch_cvar(std::string& content, const std::string& cvar, const std::string& value) {
+    if (content.empty()) {
+        content = "[UserCustom]\n";
+    } else if (content.find("[") == std::string::npos) {
+        content = "[UserCustom]\n" + content;
+    }
+
     std::string prefix = "+CVars=" + cvar + "=";
     std::string bare = cvar + "=";
     
@@ -177,15 +228,35 @@ bool patch_xml_node(std::string& content, const std::string& tag, const std::str
         size_t lineStart = content.rfind('<', pos);
         size_t lineEnd = content.find('>', pos);
         if (lineStart != std::string::npos && lineEnd != std::string::npos) {
+            std::string actualTag = tag;
+            size_t tagSpace = content.find_first_of(" \t\r\n>", lineStart + 1);
+            if (tagSpace != std::string::npos && tagSpace < pos) {
+                std::string existingTag = content.substr(lineStart + 1, tagSpace - lineStart - 1);
+                if (existingTag == "int" || existingTag == "boolean" || existingTag == "float" || existingTag == "long") {
+                    actualTag = existingTag;
+                } else if (existingTag == "string") {
+                    actualTag = "string";
+                }
+            }
+            if (actualTag == "string" && tag == "string") {
+                actualTag = detect_xml_tag(value);
+            }
+
             std::string replacement;
-            if (tag == "string") {
+            if (actualTag == "string") {
                 size_t closeTag = content.find("</string>", pos);
                 if (closeTag != std::string::npos && closeTag < lineEnd + 300) {
                     lineEnd = closeTag + 8;
                 }
                 replacement = "<string name=\"" + key + "\">" + value + "</string>";
+            } else if (actualTag == "boolean") {
+                std::string bVal = value;
+                std::transform(bVal.begin(), bVal.end(), bVal.begin(), ::tolower);
+                if (bVal == "1") bVal = "true";
+                else if (bVal == "0") bVal = "false";
+                replacement = "<boolean name=\"" + key + "\" value=\"" + bVal + "\" />";
             } else {
-                replacement = "<" + tag + " name=\"" + key + "\" value=\"" + value + "\" />";
+                replacement = "<" + actualTag + " name=\"" + key + "\" value=\"" + value + "\" />";
             }
             content.replace(lineStart, (lineEnd - lineStart + 1), replacement);
             return true;
@@ -193,14 +264,24 @@ bool patch_xml_node(std::string& content, const std::string& tag, const std::str
     }
 
     // Insert inside <map>
-    size_t mapEnd = content.find("</map>");
+    std::string actualTag = tag;
+    if (actualTag == "string" || actualTag.empty()) {
+        actualTag = detect_xml_tag(value);
+    }
     std::string entry;
-    if (tag == "string") {
+    if (actualTag == "string") {
         entry = "    <string name=\"" + key + "\">" + value + "</string>\n";
+    } else if (actualTag == "boolean") {
+        std::string bVal = value;
+        std::transform(bVal.begin(), bVal.end(), bVal.begin(), ::tolower);
+        if (bVal == "1") bVal = "true";
+        else if (bVal == "0") bVal = "false";
+        entry = "    <boolean name=\"" + key + "\" value=\"" + bVal + "\" />\n";
     } else {
-        entry = "    <" + tag + " name=\"" + key + "\" value=\"" + value + "\" />\n";
+        entry = "    <" + actualTag + " name=\"" + key + "\" value=\"" + value + "\" />\n";
     }
 
+    size_t mapEnd = content.find("</map>");
     if (mapEnd != std::string::npos) {
         content.insert(mapEnd, entry);
     } else {
@@ -214,6 +295,21 @@ bool patch_xml_node(std::string& content, const std::string& tag, const std::str
 }
 
 bool patch_json_node(std::string& content, const std::string& key, const std::string& value, bool isNumeric) {
+    std::string formattedVal;
+    if (is_boolean_str(value)) {
+        std::string bVal = value;
+        std::transform(bVal.begin(), bVal.end(), bVal.begin(), ::tolower);
+        formattedVal = bVal;
+    } else if (is_all_digits(value) || is_valid_float(value) || isNumeric) {
+        if (is_all_digits(value) || is_valid_float(value)) {
+            formattedVal = value;
+        } else {
+            formattedVal = "\"" + value + "\"";
+        }
+    } else {
+        formattedVal = "\"" + value + "\"";
+    }
+
     std::string keyPattern = "\"" + key + "\"";
     size_t pos = content.find(keyPattern);
     if (pos != std::string::npos) {
@@ -228,8 +324,7 @@ bool patch_json_node(std::string& content, const std::string& key, const std::st
                 valueEnd = content.find_first_of(",}\n\r", valueStart);
             }
             if (valueStart != std::string::npos && valueEnd != std::string::npos) {
-                std::string rep = isNumeric ? value : ("\"" + value + "\"");
-                content.replace(valueStart, valueEnd - valueStart, rep);
+                content.replace(valueStart, valueEnd - valueStart, formattedVal);
                 return true;
             }
         }
@@ -243,11 +338,11 @@ bool patch_json_node(std::string& content, const std::string& key, const std::st
         if (prevNonWs != std::string::npos && content[prevNonWs] != '{' && content[prevNonWs] != ',') {
             insertion += ",\n";
         }
-        insertion += "  \"" + key + "\": " + (isNumeric ? value : ("\"" + value + "\"")) + "\n";
+        insertion += "  \"" + key + "\": " + formattedVal + "\n";
         content.insert(lastBrace, insertion);
         return true;
     } else {
-        content = "{\n  \"" + key + "\": " + (isNumeric ? value : ("\"" + value + "\"")) + "\n}\n";
+        content = "{\n  \"" + key + "\": " + formattedVal + "\n}\n";
         return true;
     }
 }
@@ -262,7 +357,6 @@ int detect_cpu_cluster_mask(bool bigCoresOnly) {
     }
 
     if (bigCoresOnly) {
-        // Typically cores 4-7 on octa-core (Big / Prime cores like Cortex-A78/A715/X4)
         int mask = 0;
         int bigStart = maxCpus >= 8 ? 4 : (maxCpus / 2);
         for (int i = bigStart; i < maxCpus; i++) {
@@ -294,20 +388,10 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
             patch_cvar(content, kv.first, kv.second);
             patch_key_value(content, kv.first, kv.second);
         } else if (isXml) {
-            std::string valLower = kv.second;
-            std::transform(valLower.begin(), valLower.end(), valLower.begin(), ::tolower);
-            std::string tag = "int";
-            std::string valFinal = kv.second;
-            if (valLower == "true" || valLower == "false") {
-                tag = "boolean";
-                valFinal = valLower;
-            } else if (kv.second.find('.') != std::string::npos) {
-                tag = "float";
-            }
-            patch_xml_node(content, tag, kv.first, valFinal);
+            std::string tag = detect_xml_tag(kv.second);
+            patch_xml_node(content, tag, kv.first, kv.second);
         } else if (isJson) {
-            bool isNum = (!kv.second.empty() && (isdigit((unsigned char)kv.second[0]) || kv.second[0] == '-'));
-            patch_json_node(content, kv.first, kv.second, isNum);
+            patch_json_node(content, kv.first, kv.second, false);
         } else {
             patch_key_value(content, kv.first, kv.second);
         }

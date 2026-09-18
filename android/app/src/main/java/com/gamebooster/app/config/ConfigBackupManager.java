@@ -51,6 +51,10 @@ public class ConfigBackupManager {
         }
     }
 
+    public static Context getAppContext() {
+        return appContext;
+    }
+
     // ─── Backup ──────────────────────────────────────────────────────────────
 
     /**

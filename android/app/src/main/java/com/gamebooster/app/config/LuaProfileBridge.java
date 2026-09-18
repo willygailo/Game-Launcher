@@ -49,7 +49,22 @@ public class LuaProfileBridge {
      * to the resolved configuration file path using NativeConfigInjector.
      */
     public static boolean applyProfileForPackage(Context context, String pkg) {
-        if (context == null || pkg == null) return false;
+        if (pkg == null) return false;
+        if (context == null) {
+            context = ConfigBackupManager.getAppContext();
+            if (context == null) {
+                try {
+                    Class<?> atClass = Class.forName("android.app.ActivityThread");
+                    java.lang.reflect.Method m = atClass.getMethod("currentApplication");
+                    context = (Context) m.invoke(null);
+                } catch (Throwable ignored) {}
+            }
+        }
+        if (context == null) {
+            Log.w(TAG, "Cannot apply Lua profile: context is null and could not be resolved for " + pkg);
+            return false;
+        }
+
         String scriptName = resolveLuaScriptName(pkg);
         if (scriptName == null) {
             Log.d(TAG, "No dedicated Lua profile mapped for " + pkg);
@@ -78,22 +93,28 @@ public class LuaProfileBridge {
 
             List<String> keyList = new ArrayList<>();
             List<String> valList = new ArrayList<>();
+            List<String> kvList = new ArrayList<>();
             for (Map.Entry<String, String> entry : rawProps.entrySet()) {
                 String k = entry.getKey();
                 String v = entry.getValue();
                 if (k != null && !k.isEmpty() && v != null) {
                     keyList.add(k);
                     valList.add(v);
+                    kvList.add(k + "=" + v);
                 }
             }
 
             String[] keys = keyList.toArray(new String[0]);
             String[] values = valList.toArray(new String[0]);
+            String[] kvs = kvList.toArray(new String[0]);
 
             boolean injectedAny = false;
             for (String targetPath : paths) {
                 if (targetPath != null && !targetPath.isEmpty()) {
                     boolean ok = NativeConfigInjector.injectLuaProperties(targetPath, keys, values);
+                    if (!ok) {
+                        ok = ConfigFileHelper.patchKeys(targetPath, kvs, "[LuaProfile]");
+                    }
                     if (ok) injectedAny = true;
                 }
             }

@@ -181,7 +181,7 @@ public class MlbbConfigPatcher {
         if (packageName == null) return;
         // MLBB-specific: Unity/MOBA engine — hero lock + skill smart aim, NO scope tiers
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectMlbbEnemyLockHeadshotSuite(path);
+            NativeConfigInjector.injectMlbbEnemyLockHeadshotSuite(path);
         }
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
         Log.i(TAG, "MLBB EnemyLock applied (Unity/MOBA hero-lock, no scope tiers) for " + packageName);
@@ -197,7 +197,7 @@ public class MlbbConfigPatcher {
         if (packageName == null) return;
         // MLBB-specific: skill-burst kill (not bullet count — it's a MOBA)
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectMlbbEnemyLockHeadshotSuite(path);
+            NativeConfigInjector.injectMlbbEnemyLockHeadshotSuite(path);
         }
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
         Log.i(TAG, "MLBB SkillBurstKill applied (3-hit combo, not bullet-count) for " + packageName);
@@ -1369,7 +1369,7 @@ public class MlbbConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (NativeConfigInjector.nativeInjectMlbbCombatOverdrive2026(path)) {
+            if (NativeConfigInjector.injectMlbbCombatOverdrive2026(path)) {
                 written++;
             }
         }

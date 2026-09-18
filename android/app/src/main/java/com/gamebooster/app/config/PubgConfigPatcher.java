@@ -78,7 +78,7 @@ public class PubgConfigPatcher {
         if (packageName == null) return;
         // PUBGM-specific: Unreal Engine 4 — pure r. CVar format, full ballistic sim
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectPubgmEnemyLockAllScope(path);
+            NativeConfigInjector.injectPubgmEnemyLockAllScope(path);
         }
         Log.i(TAG, "PUBGM EnemyLock applied (UE4 CVars scope=50/150/250/350/450m ballistics) for " + packageName);
     }
@@ -94,7 +94,7 @@ public class PubgConfigPatcher {
         if (packageName == null) return;
         // PUBGM-specific: UE4 CVar kill thresholds (r. prefix, NOT generic INI keys)
         for (String path : getConfigPaths(packageName)) {
-            NativeConfigInjector.nativeInjectPubgmEnemyLockAllScope(path);
+            NativeConfigInjector.injectPubgmEnemyLockAllScope(path);
         }
         Log.i(TAG, "PUBGM HeadshotKill applied (UE4: r.HeadshotBulletThreshold=3, r.KillBulletThreshold=5) for " + packageName);
     }
@@ -1171,7 +1171,7 @@ public class PubgConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (NativeConfigInjector.nativeInjectPubgmCombatOverdrive2026(path)) {
+            if (NativeConfigInjector.injectPubgmCombatOverdrive2026(path)) {
                 written++;
             }
         }

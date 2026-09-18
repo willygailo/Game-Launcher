@@ -420,6 +420,115 @@ public class NativeConfigInjector {
      */
     public static native boolean nativeInjectPubgmEnemyLockAllScope(String path);
 
+    /**
+     * MLBB Enemy Lock + Headshot Suite — Unity/MOBA Engine (2026.3).
+     * Native-first with ConfigFileHelper fallback.
+     */
+    public static boolean injectMlbbEnemyLockHeadshotSuite(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbEnemyLockHeadshotSuite(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectMlbbEnemyLockHeadshotSuite native failed, falling back: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "HeroLock=1", "HeroLockEnabled=1", "HeroLockTargetPriority=0", "AutoTargetSwitchEnabled=1",
+            "TargetPriority=0", "SmartTargetLock=1", "SkillSmartAim=1", "SkillAutoChain=1",
+            "ZeroSkillDelay=1", "SkillCastZeroDelay=1", "SkillAimMagnetism=1000", "SkillAimSnapSpeed=10",
+            "SkillAimSnapThreshold=0", "SkillPredictiveAim=1", "HeroHitboxMultiplier=3.0", "HeroHitboxScale=3.0",
+            "HeroHitRegSyncRate=1000", "HeroInstantHitReg=1", "HeroFrameSyncDamage=1", "HeroSkillBurstKill=3",
+            "HeroKillComboCount=3", "HeroSkillBurstEnabled=1", "SkillBurstDamageMax=10000",
+            "AllHeroDamageMultiplier=10000", "AllHeroTrueDamage=1", "TrueStrikeMod=1", "CritRateBoost=100",
+            "CritDamageMultiplier=10.0", "PenetrationBoost=1", "DamageReductionBypass=1", "AimAssistEnabled=1",
+            "AimAssistStrength=1000", "AimMagnetism=1000", "AimSnapSpeed=10", "AimSnapThreshold=0",
+            "AimSmoothFactor=0", "AdsZeroDelay=1", "PredictiveAim=1", "SilentAimbot=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "bFramePacingEnabled=True"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbEnemyLockHeadshot]");
+    }
+
+    /**
+     * CODM Enemy Lock + All-Scope Aim Assist — COD Engine/FPS (2026.3).
+     * Native-first with ConfigFileHelper fallback.
+     */
+    public static boolean injectCodmEnemyLockAllScope(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmEnemyLockAllScope(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectCodmEnemyLockAllScope native failed, falling back: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "EnemyLockMax=1", "TargetLockEnabled=1", "TargetPriority=0", "TargetLockRange=450",
+            "AutoTargetSwitch=1", "SilentAimbot=1", "HeadBoneAimPriority=1", "BoneIndex=0",
+            "HeadMagnetism=1000", "HeadSnapEnabled=1", "HeadSnapSpeed=10", "AimAssistEnabled=1",
+            "AimAssistStrength=1000", "AimMagnetism=1000", "AimSnapSpeed=10", "AimSnapThreshold=0",
+            "AdsZeroDelay=1", "PredictiveAim=1", "HipfireAimLock=1", "HipfireHeadshotLock=1",
+            "HipfireMaxMagnetism=1", "HipfireHeadMagnetism=1000", "NoScopeHeadSnap=1", "Hipfire_Range=50",
+            "Hipfire_HeadBoneLock=1", "Scope1x_Range=150", "Scope1x_AimMagnetism=1000", "Scope1x_HeadMagnetism=1000",
+            "Scope1x_HeadBoneLock=1", "Scope1x_HeadshotForce=1", "Scope1x_ADSZeroDelay=1",
+            "Scope2x_Range=150", "Scope2x_HeadBoneLock=1", "Scope3x_Range=250", "Scope3x_AimMagnetism=1000",
+            "Scope3x_HeadMagnetism=1000", "Scope3x_HeadBoneLock=1", "Scope3x_HeadshotForce=1",
+            "Scope3x_BulletDropComp=1", "Scope4x_Range=250", "Scope4x_HeadBoneLock=1", "Scope6x_Range=350",
+            "Scope6x_AimMagnetism=1000", "Scope6x_HeadMagnetism=1000", "Scope6x_HeadBoneLock=1",
+            "Scope6x_HeadshotForce=1", "Scope6x_BulletDropComp=1", "Scope6x_BreathDamp=1",
+            "Scope10x_Range=450", "Scope10x_AimMagnetism=1000", "Scope10x_HeadMagnetism=1000",
+            "Scope10x_HeadBoneLock=1", "Scope10x_HeadshotForce=1", "Scope10x_ZeroBulletDrop=1",
+            "Scope10x_AntiBreath=1", "Scope10x_BallisticLeadMax=1", "AutoHeadshotEnabled=1",
+            "AutoHeadshotAllScope=1", "HeadshotBulletCount=3", "KillBulletThreshold=5",
+            "HeadshotMultiplier=999", "HeadDamageMax=99999", "OneTapHeadshot=1", "FirstBulletAccuracy=1.0",
+            "DamageBoost=10000", "DamageLockMax=1", "TrueDamageBoost=10000", "VestDamageBypass=1",
+            "ArmorPenetrationTier6=1", "HitboxMultiplier=3.0", "InstantHitReg=1", "HitRegSyncRate=1000",
+            "GyroSampleRate=1000", "GyroZeroDelay=1", "GyroStabilization=1", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmEnemyLockAllScope]");
+    }
+
+    /**
+     * PUBGM Enemy Lock + All-Scope Aim Assist — Unreal Engine 4 (2026.3).
+     * Native-first with ConfigFileHelper fallback.
+     */
+    public static boolean injectPubgmEnemyLockAllScope(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmEnemyLockAllScope(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectPubgmEnemyLockAllScope native failed, falling back: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "r.AimAssistEnabled=1", "r.AimAssistStrength=100", "r.AimMagnetism=3", "r.HeadBoneAimPriority=1",
+            "r.PredictiveAim=1", "r.AimSnapThreshold=0", "r.EnemyLockMax=1", "r.TargetLockRange=450",
+            "r.TargetPriority=0", "r.SilentAimbot=1", "r.GyroSampleRate=1000", "r.GyroZeroDelay=1",
+            "r.GyroStabilization=1", "r.GyroCorrectionEnabled=1", "r.HipfireAimAssist=1", "r.HipfireHeadMagnetism=1",
+            "r.HipfireHeadshotLock=1", "r.Scope50mLockRange=50", "r.Scope50mAimMagnetism=3",
+            "r.Scope50mHeadMagnetism=1", "r.Scope50mPredictiveAim=1", "r.Scope50mBulletDropComp=0",
+            "r.Scope1xAimAssist=1", "r.Scope1xHeadMagnetism=1", "r.Scope1xHeadshotLock=1",
+            "r.Scope150mLockRange=150", "r.Scope150mAimMagnetism=3", "r.Scope150mHeadMagnetism=1",
+            "r.Scope150mPredictiveAim=1", "r.Scope150mBulletDropComp=1", "r.Scope1xADSZeroDelay=1",
+            "r.Scope3xAimAssist=1", "r.Scope3xHeadMagnetism=1", "r.Scope3xHeadshotLock=1",
+            "r.Scope250mLockRange=250", "r.Scope250mAimMagnetism=3", "r.Scope250mHeadMagnetism=1",
+            "r.Scope250mPredictiveAim=1", "r.Scope250mBulletDropComp=1", "r.BulletDropComp=1",
+            "r.BulletVelocityComp=1", "r.WeaponSpread=0", "r.WeaponSway=0", "r.Scope6xAimAssist=1",
+            "r.Scope6xHeadMagnetism=1", "r.Scope6xHeadshotLock=1", "r.Scope350mLockRange=350",
+            "r.Scope350mAimMagnetism=3", "r.Scope350mHeadMagnetism=1", "r.Scope350mPredictiveAim=1",
+            "r.Scope350mBulletDropComp=1", "r.ScopeBallisticComp=1", "r.ScopeZeroSway=1",
+            "r.ScopeBreathingDamp=1", "r.WeaponRecoilScale=0", "r.VerticalRecoilScale=0",
+            "r.HorizontalRecoilScale=0", "r.Scope8xAimAssist=1", "r.Scope8xHeadMagnetism=1",
+            "r.Scope8xHeadshotLock=1", "r.Scope10xAimAssist=1", "r.Scope10xHeadMagnetism=1",
+            "r.Scope10xHeadshotLock=1", "r.Scope450mLockRange=450", "r.Scope450mAimMagnetism=3",
+            "r.Scope450mHeadMagnetism=1", "r.Scope450mPredictiveAim=1", "r.Scope450mBulletDropComp=1",
+            "r.ZeroBulletDrop=1", "r.AntiBreath=1", "r.SniperHeadshotLock=1", "r.SniperZeroSway=1",
+            "r.SniperBreathHoldZero=1", "r.HeadshotBulletThreshold=3", "r.KillBulletThreshold=5",
+            "r.PUBGHeadshotMultiplier=999", "r.PUBGDamageLockMax=10000", "r.PUBGDamageBoost=10000",
+            "r.PUBGTrueDamageMod=1", "r.PUBGVestDamageBypass=1", "TouchPollingRate=1000", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UserCustom]");
+    }
+
     /** Convenience wrapper: injectAdaptiveAimAssist with native-first fallback. */
     public static boolean injectAdaptiveAimAssist(String path) {
         if (path == null || path.trim().isEmpty()) return false;
@@ -429,7 +538,23 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectAdaptiveAimAssist fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "AimAssistEnabled=1", "AimAssistStrength=100", "AimMagnetism=3", "AimAssistLockMax=1",
+            "HeadMagnetism=1", "HeadBoneAimPriority=1", "AimBoneTarget=0", "HeroLock=1", "SkillSmartAim=1",
+            "PredictiveAim=1", "AimMethod=1", "AimSmoothFactor=0.0", "AimSnapSpeed=10", "AimSnapThreshold=0",
+            "AdsZeroDelay=1", "TargetPriority=0", "GyroSensitivityRatio=2.0", "GyroSampleRate=1000",
+            "GyroZeroDelay=1", "GyroStabilization=1", "GyroLatencyMode=0", "GyroSmoothFactor=0.5",
+            "HipfireSensitivityBoost=1.2", "IronSightSensitivity=1.0", "RedDotSensScale=1.0", "RedDotAimLock=1",
+            "HoloSensScale=1.0", "Scope2xSensitivity=1.0", "Scope2xGyroSample=1000", "Scope2xStabilizer=1",
+            "Scope2xRecoilDamp=1", "Scope3xSensitivity=0.90", "Scope3xGyroStabilization=1", "Scope3xRecoilDamp=1",
+            "Scope4xSensitivity=0.85", "Scope4xStabilizer=1", "Scope4xZeroSway=1", "Scope6xSensitivity=0.75",
+            "Scope6xMicroDamping=1", "Scope6xStabilizer=1", "Scope8xSensitivity=0.65", "Scope8xPrecisionFilter=1",
+            "Scope8xStabilizer=1", "Scope8xZeroBreathing=1", "r.AimAssistEnabled=1", "r.AimAssistStrength=100",
+            "r.AimMagnetism=3", "r.AimSnapThreshold=0", "r.HeadBoneAimPriority=1", "r.PredictiveAim=1",
+            "r.GyroSampleRate=1000", "r.GyroZeroDelay=1", "r.GyroStabilization=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[AdaptiveAimAssist]");
     }
 
     /** Convenience wrapper: injectAdaptiveNoRecoil with native-first fallback. */
@@ -441,7 +566,20 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectAdaptiveNoRecoil fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "ZeroRecoil=1", "RecoilScale=0", "VerticalRecoilScale=0", "HorizontalRecoilScale=0",
+            "RecoilPatternScale=0", "RecoilControlAssist=1", "WeaponSway=0", "WeaponSpread=0",
+            "BulletSpreadScale=0", "MuzzleSpread=0", "MovingSpreadFactor=0", "SpreadDecayRate=15",
+            "AR_RecoilZero=1", "AR_SpreadZero=1", "AR_SprayPatternRecovery=10", "AR_AccuracyMax=1",
+            "AR_ZeroDeadzone=1", "SMG_ZeroRecoil=1", "SMG_SprayControlMax=1", "SMG_ZeroSpread=1",
+            "SMG_HipfireBurst=1", "Sniper_ZeroSway=1", "Sniper_QuickScopeZeroDelay=1", "Sniper_BulletDropComp=1",
+            "Sniper_ScopeStabilizer=1", "Sniper_BreathHoldZero=1", "ScopeZeroRecoil=1", "ScopeBreathingDamp=1",
+            "Scope2xStabilizer=1", "Scope3xStabilizer=1", "Scope4xStabilizer=1", "Scope6xStabilizer=1",
+            "Scope8xStabilizer=1", "ScopeZeroSway=1", "GyroSampleRate=1000", "GyroZeroDelay=1",
+            "r.WeaponRecoilScale=0", "r.VerticalRecoilScale=0", "r.HorizontalRecoilScale=0",
+            "r.RecoilPatternScale=0", "r.WeaponSpread=0", "r.WeaponSway=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[AdaptiveNoRecoil]");
     }
 
     /** Convenience wrapper: injectRankedCombatFullSuite — master 24-layer payload. Ranked + Classic + All Maps. */
@@ -453,7 +591,11 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectRankedCombatFullSuite fallback: " + t.getMessage());
             }
         }
-        return false;
+        boolean ok1 = injectAdaptiveAimAssist(path);
+        boolean ok2 = injectAdaptiveNoRecoil(path);
+        boolean ok3 = injectEnemyLockMaxAllScope(path);
+        boolean ok4 = injectAutoHeadshotBulletKill(path);
+        return ok1 || ok2 || ok3 || ok4;
     }
 
     /**
@@ -469,7 +611,34 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectEnemyLockMaxAllScope fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "EnemyLockMax=1", "EnemyLockAllScope=1", "EnemyLockTier=5", "MaxEngagementRange=450",
+            "HeadBoneAimPriority=1", "HeadMagnetism=1000", "HeadLockTier=5", "SilentAimbot=1",
+            "AimAssistEnabled=1", "AimAssistStrength=1000", "AimMagnetism=1000", "AimSnapSpeed=10",
+            "AimSnapThreshold=0", "AimSmoothFactor=0", "AdsZeroDelay=1", "PredictiveAim=1",
+            "TargetPriority=0", "AutoTargetSwitch=1", "FOVScaleLock=1.0", "GyroSampleRate=1000",
+            "GyroZeroDelay=1", "GyroStabilization=1", "GyroCorrectionLock=1", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "AttackFrameSync=1", "bFramePacingEnabled=True",
+            "ScopeTier0_Range=50", "ScopeTier0_AimMagnetism=1000", "ScopeTier0_HeadMagnetism=1000",
+            "ScopeTier0_SnapSpeed=10", "ScopeTier0_HeadLock=1", "ScopeTier0_PredictiveAim=1",
+            "HipfireAimLock=1", "HipfireHeadLock=1", "HipfireAimMagnetism=1000",
+            "ScopeTier1_Range=150", "ScopeTier1_AimMagnetism=1000", "ScopeTier1_HeadMagnetism=1000",
+            "ScopeTier1_SnapSpeed=10", "ScopeTier1_HeadLock=1", "ScopeTier1_PredictiveAim=1",
+            "ScopeTier1_BulletDropComp=1", "RedDotAimLock=1", "HoloAimLock=1", "IronSightAimLock=1",
+            "ScopeTier2_Range=250", "ScopeTier2_AimMagnetism=1000", "ScopeTier2_HeadMagnetism=1000",
+            "ScopeTier2_SnapSpeed=10", "ScopeTier2_HeadLock=1", "ScopeTier2_PredictiveAim=1",
+            "ScopeTier2_BulletDropComp=1", "Scope2xAimLock=1", "Scope3xAimLock=1", "Scope4xAimLock=1",
+            "ScopeTier3_Range=350", "ScopeTier3_AimMagnetism=1000", "ScopeTier3_HeadMagnetism=1000",
+            "ScopeTier3_SnapSpeed=10", "ScopeTier3_HeadLock=1", "ScopeTier3_PredictiveAim=1",
+            "ScopeTier3_BulletDropComp=1", "ScopeTier3_BreathDamp=1", "Scope6xAimLock=1",
+            "ScopeTier4_Range=450", "ScopeTier4_AimMagnetism=1000", "ScopeTier4_HeadMagnetism=1000",
+            "ScopeTier4_SnapSpeed=10", "ScopeTier4_HeadLock=1", "ScopeTier4_PredictiveAim=1",
+            "ScopeTier4_BulletDropComp=1", "ScopeTier4_BreathDamp=1", "Scope8xAimLock=1", "Scope10xAimLock=1",
+            "SniperHeadshotLock=1", "SniperZeroSway=1", "ZeroBulletDrop=1",
+            "r.AimAssistEnabled=1", "r.AimAssistStrength=100", "r.AimMagnetism=3", "r.HeadBoneAimPriority=1",
+            "r.PredictiveAim=1", "r.AimSnapThreshold=0", "r.EnemyLockMax=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[EnemyLockMaxAllScope]");
     }
 
     /**
@@ -485,7 +654,146 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectAutoHeadshotBulletKill fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "AutoHeadshotEnabled=1", "AutoHeadshotAllScope=1", "HeadshotBulletCount=3", "HeadshotForceEnabled=1",
+            "HeadshotBoneIndex=0", "HeadBoneAimPriority=1", "HeadMagnetism=1000", "HeadSnapEnabled=1",
+            "HeadSnapSpeed=10", "OneTapHeadshot=1", "OneShotKillHitbox=1", "FirstBulletAccuracy=1.0",
+            "ScopeHeadshotLock=1", "HeadshotMultiplier=999", "HeadDamageMax=99999", "HeadshotDamageBoost=1",
+            "CriticalHeadshotDamage=1", "ScopeTier0_HeadshotForce=1", "ScopeTier1_HeadshotForce=1",
+            "ScopeTier2_HeadshotForce=1", "ScopeTier3_HeadshotForce=1", "ScopeTier4_HeadshotForce=1",
+            "HipfireHeadshotLock=1", "Scope1xHeadshotForce=1", "Scope3xHeadshotForce=1", "Scope6xHeadshotForce=1",
+            "Scope8xHeadshotForce=1", "Scope10xHeadshotForce=1", "SniperHeadshotLock=1", "KillBulletCount=5",
+            "KillBulletThreshold=5", "BulletKillSweepEnabled=1", "UniversalKillEnabled=1", "DamageLockMax=1",
+            "DamageBoost=10000", "DamageMultiplier=10000", "TrueDamageBoost=10000", "TrueDamageMultiplier=10000",
+            "KillDamageThreshold=1", "MinDamagePerBullet=99999", "BulletPenetrationMax=1", "ArmorPenetrationTier6=1",
+            "VestDamageBypass=1", "HelmetPenetrationLevel3=1.0", "FleshDamageMultiplier=999", "LimbDamageMultiplier=999",
+            "TrackingBullet=1", "BulletMagnetism=1", "HitboxMultiplier=3.0", "HitboxScale=3.0",
+            "InstantHitReg=1", "HitRegSyncRate=1000", "FrameSyncDamage=1",
+            "r.AutoHeadshotEnabled=1", "r.HeadshotBulletThreshold=3", "r.KillBulletThreshold=5",
+            "r.PUBGHeadshotMultiplier=999", "r.PUBGDamageLockMax=10000", "r.PUBGDamageBoost=10000",
+            "r.PUBGTrueDamageMod=1", "r.PUBGVestDamageBypass=1", "r.PUBGInstantHitReg=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[AutoHeadshotBulletKill]");
+    }
+
+    /**
+     * MLBB 2026.4 Combat Overdrive (Damage Assist, Aim Lock, Armor Overdrive).
+     */
+    public static boolean injectMlbbCombatOverdrive2026(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectMlbbCombatOverdrive2026(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectMlbbCombatOverdrive2026 fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "CombatOverdrive2026=1", "DamageLockMax=10000", "TrueDamageFloor=10000", "EffectiveDPSMode=4",
+            "PhysicalDamageBase=10000", "MagicDamageBase=10000", "PenetrationMultiplier=3.0", "PhysicalPenetration=100",
+            "MagicPenetration=100", "CritRateBoost=100", "CritDamageMultiplier=4.0", "HitRegSyncRate=1000",
+            "FrameSyncDamage=1", "HeroExecutionThreshold=30", "SmartAimMagnetDualPriority=1", "SkillSmartAim=1",
+            "HeroLockPriority=0", "SkillPredictionLead=1", "AimSnapSpeed=10", "AimMagnetismTier=3",
+            "ZeroDeadzoneTouchHz=1000", "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "ArmorBoostFloor=10000", "PhysicalDefense=10000", "MagicDefense=10000", "MagicShieldBoost=10000",
+            "PhysicalShield=10000", "DamageReductionRatio=0.99", "DamageReduction=0.99", "OmniLifestealMultiplier=10.0",
+            "LifestealBoost=1", "SpellVampBoost=1", "UnlimitedEnergy=1", "UnlimitedMana=1",
+            "InstantCooldownReset=1", "CooldownReduction=0", "FastSkillCycle=1", "ZeroSkillDelay=1",
+            "ZeroDelaySkillTap=1", "SkillCastDelayMs=0", "FastSkillReleaseSpeed=10", "SkillAutoChain=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbCombatOverdrive2026]");
+    }
+
+    /**
+     * PUBGM 2026.4 Combat Overdrive (Damage Assist, Aim Lock, Armor Overdrive).
+     */
+    public static boolean injectPubgmCombatOverdrive2026(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgmCombatOverdrive2026(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectPubgmCombatOverdrive2026 fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "r.CombatOverdrive2026=1", "r.MuzzleVelocityFactor=3.0", "r.PUBGBulletVelocityCompensation=1",
+            "r.HitRegPacketSync=1000", "HitRegSyncRate=1000", "r.ArmorShredder=1", "r.DamageMultiplierFloor=10000",
+            "r.DamageLockMax=10000", "DamageLockMax=10000", "r.HeadBonePriority=1", "r.HeadBoneAimPriority=1",
+            "r.BoneIndex=0", "r.AimAssistEnabled=1", "r.AimAssistStrength=100", "r.AimMagnetism=3",
+            "r.AimSnapThreshold=0", "r.AllScopeSnapSpeed=10", "r.LeadPredictionHz=1000", "r.PredictiveAim=1",
+            "r.SilentAimbot=1", "r.PlayerDamageReduction=0.95", "r.KineticShieldBoost=10000", "r.FallDamageImmunity=1",
+            "r.VehicleCollisionPenalty=0", "r.VehicleDamageToPlayer=0", "r.GyroSampleRate=1000", "r.GyroZeroDelay=1",
+            "r.GyroStabilization=1", "TouchPollingRate=1000", "r.OneFrameThreadLag=0", "r.FinishCurrentFrame=0",
+            "bFramePacingEnabled=True", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UserCustom]");
+    }
+
+    /**
+     * CODM 2026.4 Combat Overdrive (Damage Assist, Aim Lock, Armor Overdrive).
+     */
+    public static boolean injectCodmCombatOverdrive2026(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmCombatOverdrive2026(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectCodmCombatOverdrive2026 fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "CombatOverdrive2026=1", "DamageFloorMax=10000", "DamageLockMax=10000", "HitRegSyncRate=1000",
+            "HitRegPacketSync1000Hz=1", "WeaponSpread=0", "BulletSpreadScale=0", "MuzzleSpread=0",
+            "MovingSpreadFactor=0", "JumpSpreadFactor=0", "SpreadDecayRate=20", "LaserBeamZeroSpread=1",
+            "AimAssistLockMax=1", "AimMagnetism=1000", "AimMagnetismLevel=10", "AimSnapSpeed=10",
+            "AimSnapThreshold=0", "HeadBonePriority=1", "HeadMagnetism=1000", "HeadMagnetismMax=1000",
+            "AdsZeroDelay=1", "AdsZeroDelayInstant=1", "PredictiveAim=1", "SilentAimbot=1",
+            "KineticArmorOverdrive=10000", "DamageReductionRatio=0.95", "DamageReduction=0.95",
+            "FlakJacketExplosionLock=1", "StunFlashImmunity=1", "GyroSampleRate=1000", "GyroZeroDelay=1",
+            "GyroStabilization=1", "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "bFramePacingEnabled=True", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmCombatOverdrive2026]");
+    }
+
+    /**
+     * Universal 2026.4 Armor & Shield Fortification Lock.
+     */
+    public static boolean injectUniversalArmorShieldLock(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectUniversalArmorShieldLock(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectUniversalArmorShieldLock fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "ArmorBoostFloor=10000", "KineticShieldBoost=10000", "PhysicalDefense=10000", "MagicDefense=10000",
+            "DamageReductionRatio=0.95", "DamageReduction=0.95", "FallDamageImmunity=1", "VehicleCollisionPenalty=0",
+            "FlakJacketExplosionLock=1", "StunFlashImmunity=1", "r.PlayerDamageReduction=0.95", "r.KineticShieldBoost=10000",
+            "r.VehicleCollisionPenalty=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UniversalArmorShieldLock]");
+    }
+
+    /**
+     * Universal 2026.4 Aim Magnet & Zero-Deadzone Lock.
+     */
+    public static boolean injectUniversalAimMagnetLock(String path) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectUniversalAimMagnetLock(path)) return true; } catch (Throwable t) {
+                Log.w(TAG, "injectUniversalAimMagnetLock fallback: " + t.getMessage());
+            }
+        }
+        String[] keys = {
+            "AimAssistLockMax=1", "AimMagnetism=1000", "AimMagnetismTier=3", "AimSnapSpeed=10",
+            "AimSnapThreshold=0", "HeadBonePriority=1", "HeadMagnetism=1000", "AdsZeroDelay=1",
+            "ZeroDeadzoneTouchHz=1000", "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1",
+            "r.AimAssistStrength=100", "r.AimMagnetism=3", "r.HeadBonePriority=1", "r.BoneIndex=0",
+            "r.GyroSampleRate=1000", "r.GyroZeroDelay=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UniversalAimMagnetLock]");
     }
 
     /**
@@ -499,7 +807,23 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectMlbbBasicAttackRegenOverdrive fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "basic_attack_damage_overdrive=10000", "basic_attack_speed_ratio=10.0", "basic_attack_true_damage=1",
+            "DamageLockMax=10000", "TrueDamageFloor=10000", "CritRateBoost=100", "CritDamageMultiplier=4.0",
+            "PenetrationBoost=1", "PenetrationMultiplier=3.0", "HitRegSyncRate=1000", "FrameSyncDamage=1",
+            "hp_regen_rate=1000", "mana_regen_rate=1000", "energy_regen_rate=1000", "life_still_passive_tick=1000",
+            "HpRegenMultiplier=10.0", "ManaRegenMultiplier=10.0", "EnergyRegenMultiplier=10.0", "InstantHpFullRestore=1",
+            "PassiveLifeStill=1", "LifeStillRate=1000", "all_hero_true_lifesteal=10.0", "spellvamp_ratio=10.0",
+            "OmniLifestealMultiplier=10.0", "LifestealBoost=1", "SpellVampBoost=1", "OmniVampRate=10.0",
+            "LifestealOnHit=1", "SpellLifestealOnCast=1", "zero_skill_mana_cost=1", "zero_skill_energy_cost=1",
+            "UnlimitedMana=1", "UnlimitedEnergy=1", "ZeroSkillDelay=1", "SkillCastDelayMs=0",
+            "InstantCooldownReset=1", "CooldownReduction=0", "PhysicalDefense=10000", "MagicDefense=10000",
+            "ArmorBoostFloor=10000", "PhysicalShield=10000", "MagicShieldBoost=10000", "DamageReductionRatio=0.99",
+            "DamageReduction=0.99", "AimMagnetism=3", "HeadMagnetism=1", "AimSnapSpeed=10", "AimSmoothFactor=0",
+            "AimMethod=1", "SkillSmartAim=1", "HeroLock=1", "TouchPollingRate=1000", "TouchZeroDelay=1",
+            "ZeroInputLag=1", "bFramePacingEnabled=True", "AllowOcclusionQueries=1", "r.OneFrameThreadLag=0"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbBasicAttackRegenOverdrive2026]");
     }
 
     /**
@@ -513,7 +837,25 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectPubgmFullScopeBulletTrackingOverdrive fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "r.Scope100mIronSightLock=1", "r.Scope100mRdsDotLock=1", "scope_100m_iron_reddot_lock=1",
+            "r.IronSightAimLock=1", "r.RdsDotAimLock=1", "r.IronSightHeadshotMultiplier=999", "r.RdsHeadshotMultiplier=999",
+            "r.Scope200m2xMagnifierLock=1", "r.Scope200m3xMagnifierLock=1", "scope_200m_2x_3x_lock=1",
+            "r.2xScopeAimLock=1", "r.3xScopeAimLock=1", "r.2xHeadshotMultiplier=999", "r.3xHeadshotMultiplier=999",
+            "r.Scope300m4xAcogLock=1", "r.Scope300mPrismLock=1", "scope_300m_4x_acog_lock=1",
+            "r.4xScopeAimLock=1", "r.PrismScopeAimLock=1", "r.4xHeadshotMultiplier=999", "r.PrismHeadshotMultiplier=999",
+            "r.Scope400m6xAdjustedLock=1", "r.Scope400mVSSLock=1", "scope_400m_6x_adjusted_lock=1",
+            "r.6xScopeAimLock=1", "r.VSSScopeAimLock=1", "r.6xHeadshotMultiplier=999", "r.VSSHeadshotMultiplier=999",
+            "r.Scope450m8xSniperLock=1", "r.Scope450mCQBRLock=1", "scope_450m_8x_sniper_lock=1",
+            "r.8xScopeAimLock=1", "r.CQBRScopeAimLock=1", "r.8xHeadshotMultiplier=999", "r.CQBRHeadshotMultiplier=999",
+            "r.BulletTrackingLock=1", "r.BulletTrackingHitboxMultiplier=3.0", "r.BulletTrackingMagnetism=3.0",
+            "r.HitboxMultiplier=3.0", "r.BulletMagnetism=3", "r.ZeroRecoil=1", "r.WeaponRecoilScale=0",
+            "r.WeaponSpread=0", "r.WeaponSway=0", "r.FastADS=1", "r.FastADSSpeed=10.0", "r.FastSprint=1",
+            "r.FastSprintSpeed=10.0", "r.FastReload=1", "r.FastReloadSpeed=10.0", "r.FastChambering=1",
+            "r.FastWeaponSwap=1", "r.FastScopeSwap=1", "r.ZeroSprintTransitionLag=1", "r.ZeroADSCooldown=1",
+            "TouchPollingRate=1000", "TouchZeroDelay=1", "ZeroInputLag=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UserCustom]");
     }
 
     /**
@@ -527,7 +869,27 @@ public class NativeConfigInjector {
                 Log.w(TAG, "injectCodmFullScopeBulletTrackingFastReload fallback: " + t.getMessage());
             }
         }
-        return false;
+        String[] keys = {
+            "AimAssistEnabled=1", "AimAssistStrength=100", "AimAssistMaxStrength=1000", "AimMagnetism=3",
+            "AimMagnetismMax=1000", "HeadMagnetism=1000", "HeadMagnetismMax=1000", "AimSnapSpeed=10",
+            "AimSmoothFactor=0", "AdsZeroDelay=1", "AdsZeroDelayInstant=1", "PredictiveAim=1", "SilentAimbot=1",
+            "HeadBonePriority=1", "bullet_tracking_lock=1", "bullet_tracking_hitbox=3.0", "BulletTrackingMagnetism=3.0",
+            "BulletTrackingHitboxScale=3.0", "BulletMagnetism=3", "WeaponSpread=0", "WeaponSway=0",
+            "BulletSpreadScale=0", "MuzzleSpread=0", "SpreadDecayRate=20", "ZeroRecoil=1", "RecoilScale=0",
+            "VerticalRecoilScale=0", "HorizontalRecoilScale=0", "scope_100m_iron_reddot_lock=1", "IronSightAimLock=1",
+            "RedDotAimLock=1", "IronSightHeadshotMultiplier=999", "RedDotHeadshotMultiplier=999",
+            "scope_200m_tactical_holo_lock=1", "TacticalScopeAimLock=1", "HoloScopeAimLock=1",
+            "TacticalHeadshotMultiplier=999", "HoloHeadshotMultiplier=999", "scope_300m_3x_4x_acog_lock=1",
+            "3xScopeAimLock=1", "4xAcogAimLock=1", "3xHeadshotMultiplier=999", "4xHeadshotMultiplier=999",
+            "scope_400m_6x_rtg_lock=1", "6xScopeAimLock=1", "RtgScopeAimLock=1", "6xHeadshotMultiplier=999",
+            "RtgHeadshotMultiplier=999", "scope_450m_sniper_extreme_lock=1", "SniperScopeAimLock=1",
+            "SniperExtremeAimLock=1", "SniperHeadshotMultiplier=999", "SniperZeroBulletDrop=1",
+            "FastReloadOverdrive=1", "FastReloadSpeed=10.0", "InstantReloadChambering=1", "FastSprintTurbo=1",
+            "FastSprintSpeed=10.0", "FastScopeADS=1", "FastADSSpeed=10.0", "FastSlideCancelTurbo=1",
+            "FastWeaponSwap=1", "ZeroReloadDelay=1", "ZeroChamberingDelay=1", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmFullScopeFastReload2026]");
     }
 
     /**
@@ -3719,7 +4081,13 @@ public class NativeConfigInjector {
                 if (nativeInjectLuaProperties(path, keys, values)) return true;
             } catch (Throwable ignored) {}
         }
-        return false;
+        int count = Math.min(keys.length, values.length);
+        if (count == 0) return false;
+        String[] kvs = new String[count];
+        for (int i = 0; i < count; i++) {
+            kvs[i] = keys[i] + "=" + values[i];
+        }
+        return ConfigFileHelper.patchKeys(path, kvs, "[LuaProfile]");
     }
 
     public static boolean injectArenaBreakoutCombatOverdrive(String path) {
