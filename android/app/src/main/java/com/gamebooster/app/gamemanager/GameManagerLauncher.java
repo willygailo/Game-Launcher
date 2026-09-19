@@ -182,7 +182,9 @@ public final class GameManagerLauncher {
         }
 
         if (launchedDirectly) {
-            Toast.makeText(appContext, "🚀 " + fps + " FPS & Turbo Active: " + gameTitle, Toast.LENGTH_SHORT).show();
+            boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚠️ Standard Mode (Start Shizuku for full config injection)";
+            Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
 

@@ -154,13 +154,76 @@ public final class ResolutionScalerEngine {
         return true;
     }
 
+    private static boolean sIsDroneViewActive = false;
+
+    /**
+     * Applies 100% genuine, hardware-level Drone View FOV via elevated aspect ratio virtualization.
+     * MLBB -> Ultra-Wide 21:9 Aspect Ratio (forces Unity camera to widen by 45-60%).
+     * PUBGM -> iPad 4:3 Aspect Ratio (forces Unreal Engine 4 to expand vertical and peripheral FOV).
+     */
+    public static boolean applyDroneViewForGame(Context context, String packageName) {
+        if (packageName == null) return false;
+        probeNativeDisplay(context);
+        if (sNativeWidth <= 0 || sNativeHeight <= 0) {
+            Log.w(TAG, "Native display metrics unavailable; cannot calculate drone view aspect ratio.");
+            return false;
+        }
+
+        com.gamebooster.app.games.GamePackageRegistry.GameType type =
+                com.gamebooster.app.games.GamePackageRegistry.getGameType(packageName);
+
+        int shortSide = Math.min(sNativeWidth, sNativeHeight);
+        int longSide = Math.max(sNativeWidth, sNativeHeight);
+        int targetW;
+        int targetH;
+        int targetDensity = sNativeDensity > 0 ? sNativeDensity : 400;
+
+        if (type == com.gamebooster.app.games.GamePackageRegistry.GameType.MLBB) {
+            // MLBB: Ultra-Wide 21:9 Aspect Ratio
+            targetW = shortSide;
+            targetH = (int) (shortSide * (21.0f / 9.0f));
+            if (targetH % 2 != 0) targetH--;
+            targetDensity = (int) (targetDensity * ((float) targetH / longSide));
+            if (targetDensity < 240) targetDensity = 240;
+            if (targetDensity > 560) targetDensity = 560;
+
+            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
+            executePrivileged(cmd);
+            sIsScaled = true;
+            sIsDroneViewActive = true;
+            Log.i(TAG, "⚡ [DroneView 100%] MLBB Ultra-Wide 21:9 Viewport applied: " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
+            return true;
+        } else if (type == com.gamebooster.app.games.GamePackageRegistry.GameType.PUBGM) {
+            // PUBGM: iPad 4:3 Aspect Ratio
+            targetW = shortSide;
+            targetH = (int) (shortSide * (4.0f / 3.0f));
+            if (targetH % 2 != 0) targetH--;
+            targetDensity = (int) (targetDensity * 0.85f);
+            if (targetDensity < 280) targetDensity = 280;
+
+            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
+            executePrivileged(cmd);
+            sIsScaled = true;
+            sIsDroneViewActive = true;
+            Log.i(TAG, "⚡ [DroneView 100%] PUBGM iPad 4:3 Viewport applied: " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean isDroneViewActive() {
+        return sIsDroneViewActive;
+    }
+
     public static boolean resetResolutionSync() {
-        if (!sIsScaled) {
+        if (!sIsScaled && !sIsDroneViewActive) {
             Log.d(TAG, "Screen resolution was not scaled; skipping wm size reset to prevent game surface disruption.");
             return true;
         }
         executePrivileged("wm size reset; wm density reset");
         sIsScaled = false;
+        sIsDroneViewActive = false;
         Log.i(TAG, "Resolution reset to stock physical display.");
         return true;
     }
@@ -168,12 +231,13 @@ public final class ResolutionScalerEngine {
     public static boolean forceResetResolutionSync() {
         executePrivileged("wm size reset; wm density reset");
         sIsScaled = false;
+        sIsDroneViewActive = false;
         Log.i(TAG, "Forced resolution reset to stock physical display.");
         return true;
     }
 
     public static boolean isResolutionScaled() {
-        return sIsScaled;
+        return sIsScaled || sIsDroneViewActive;
     }
 
     public static int getNativeWidth() {

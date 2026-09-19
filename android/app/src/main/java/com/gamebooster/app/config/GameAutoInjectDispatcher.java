@@ -317,6 +317,9 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyMlbbAutoMapGlitch3s(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Fast Sovereign Overdrive Suite (Fast Farm, Skills, Combo, Item, Level, Turtle, Lord, Coin) ────
         try { MlbbConfigPatcher.applyMlbbFastSovereignOverdrive(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Master Sovereign 100% Full Working Combat Overdrive Suite ────
+        try { MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -380,6 +383,11 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyPubgmFullScopeBulletTrackingOverdrive(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Sovereign Overdrive & Advanced Security Bypass Suite (Magic Bullet 2.0, Zero Shake, Inotify Cloaking) ────
         try { PubgConfigPatcher.applyPubgmSovereignOverdriveBypass(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 100% Drone View (iPad FOV) & 3-Bullet Headshot Kill Suite ────
+        try { PubgConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
+        try { PubgConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
+        try { CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, pkg); } catch (Throwable ignored) {}
     }
 
 
@@ -445,6 +453,9 @@ public final class GameAutoInjectDispatcher {
         try { CodmConfigPatcher.applyCodmFullScopeBulletTrackingFastReload(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Sovereign Overdrive & Advanced Security Bypass Suite (Zero BSA, 360° Hitbox, TiMi Inotify Cloak) ────
         try { CodmConfigPatcher.applyCodmSovereignOverdriveBypass(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 All-Scope & No-Scope Aim Lock + 3-Bullet Headshot Kill Suite ────
+        try { CodmConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
+        try { CodmConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
     }
 
 

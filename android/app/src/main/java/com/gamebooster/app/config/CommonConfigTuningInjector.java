@@ -388,6 +388,12 @@ public final class CommonConfigTuningInjector {
         for (String path : getPaths(packageName)) {
             NativeConfigInjector.injectDroneView(path);
         }
+        if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
+            try { MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
+        }
+        try {
+            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, packageName);
+        } catch (Throwable ignored) {}
     }
 
     public static void applyArmorDefConfig(String packageName) {
@@ -823,6 +829,7 @@ public final class CommonConfigTuningInjector {
         if (profile.isAimAssistEnabled()) applyAllScopeAimPrecision(packageName);
         if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName);
         if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName);
+        if (profile.isDroneViewUltraEnabled()) applyDroneViewUltraConfig(packageName);
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
         // 2026: always apply Vulkan + HDR + telemetry suppression + DamageLockMax + AimAssistLockMax
         applyVulkanOptimization(packageName);

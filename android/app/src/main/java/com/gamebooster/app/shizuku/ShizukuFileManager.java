@@ -178,9 +178,15 @@ public final class ShizukuFileManager {
                     return FileOpResult.fail(path, "Write failed: " + res);
                 }
             } else {
-                CommandExecutor.executeSystemCommand(writeCmd);
-                Log.d(TAG, "writeFile via CommandExecutor: " + path);
-                return FileOpResult.ok(path, "Written via standard shell");
+                String res = CommandExecutor.executeSystemCommand(writeCmd);
+                File testF = new File(path);
+                if (testF.exists() && testF.length() > 0) {
+                    Log.d(TAG, "writeFile via CommandExecutor SUCCESS: " + path);
+                    return FileOpResult.ok(path, "Written via standard shell");
+                } else {
+                    Log.w(TAG, "writeFile via CommandExecutor FAILED (Requires Shizuku/Root): " + path + " -> " + res);
+                    return FileOpResult.fail(path, "Unprivileged write failed (Requires Shizuku): " + res);
+                }
             }
         } catch (Throwable t) {
             Log.e(TAG, "writeFile exception for " + path, t);

@@ -485,6 +485,15 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         mod |= patch_gvas_int_property_cpp(data, "ShadowQuality", shadowQuality);
         mod |= patch_gvas_int_property_cpp(data, "ShadowSwitch", shadowSwitch);
         mod |= patch_gvas_int_property_cpp(data, "AutoChangeQuality", 0);
+        mod |= patch_gvas_int_property_cpp(data, "CameraFOV", 130);
+        mod |= patch_gvas_int_property_cpp(data, "FPPCameraFOV", 130);
+        mod |= patch_gvas_int_property_cpp(data, "TPPCameraFOV", 130);
+        mod |= patch_gvas_int_property_cpp(data, "FieldOfView", 130);
+        mod |= patch_gvas_int_property_cpp(data, "FovRatio", 135);
+        mod |= patch_gvas_int_property_cpp(data, "DroneView", 1);
+        mod |= patch_gvas_int_property_cpp(data, "ScopeAimLock", 1);
+        mod |= patch_gvas_int_property_cpp(data, "HeadshotThreshold", 3);
+        mod |= patch_gvas_int_property_cpp(data, "AimAssistLock", 1);
 
         std::string tmpPath = pathStr + ".tmp";
         std::ofstream out(tmpPath, std::ios::binary | std::ios::trunc);

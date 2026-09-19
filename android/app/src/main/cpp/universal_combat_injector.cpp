@@ -2599,6 +2599,17 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
     inject("r.FrameSyncDamage",               "1");
     inject("r.InstantHitReg",                 "1");
 
+    // ── PUBGM Drone View & iPad FOV Panoramic CVars ───────────────────────────
+    inject("r.PUBGDroneView",                 "1");
+    inject("r.PUBGMaxFOV",                    "130");
+    inject("r.FieldOfView",                   "130");
+    inject("r.CameraDistance",                "180");
+    inject("r.FovRatio",                      "1.35");
+    inject("r.SceneFovRatio",                 "1.35");
+    inject("r.WideCameraAngle",               "1");
+    inject("r.PanoramicFOV",                  "1");
+    inject("r.MapVisibilityRange",            "2.5");
+
     bool ok = write_file_atomic(pathStr, content);
     if (ok && hasStat) {
         struct utimbuf times;

@@ -217,20 +217,20 @@ public class GameConfigPathResolver {
         }
     }
 
-    /**
-     * Resolves all configuration paths for a specific game family.
-     */
     public static List<String> getPathsForGame(String packageName) {
         if (packageName == null) return Collections.emptyList();
         String pkg = packageName.trim().toLowerCase();
 
         List<String> cached = CACHED_PATHS.get(pkg);
         if (cached != null && !cached.isEmpty()) {
+            ensureConfigFilesExist(cached);
             return cached;
         }
 
         List<String> knownRelativePaths = getKnownRelativePathsForPackage(pkg);
-        return resolveConfigPaths(packageName, knownRelativePaths);
+        List<String> resolved = resolveConfigPaths(packageName, knownRelativePaths);
+        ensureConfigFilesExist(resolved);
+        return resolved;
     }
 
     /**
@@ -279,7 +279,11 @@ public class GameConfigPathResolver {
                     if (lower.endsWith(".xml")) {
                         template = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
                     } else if (lower.endsWith(".json")) {
-                        template = "{\n}\n";
+                        if (lower.contains("droneview")) {
+                            template = "{\n  \"DroneView\": 1,\n  \"CameraHeight\": 4,\n  \"CameraDistance\": 180.0,\n  \"FieldOfView\": 130.0,\n  \"WideCameraAngle\": 1,\n  \"PanoramicFOV\": 1,\n  \"MapVisibilityRange\": 2.5\n}\n";
+                        } else {
+                            template = "{\n}\n";
+                        }
                     } else if (lower.endsWith(".ini") || lower.endsWith(".cfg") || lower.endsWith("boot.config")) {
                         if (lower.contains("usercustom")) {
                             template = "[UserCustom]\n";
