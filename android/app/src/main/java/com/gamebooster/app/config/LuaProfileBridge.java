@@ -119,6 +119,17 @@ public class LuaProfileBridge {
                 }
             }
 
+            // If Lua script specifies Drone View / iPad FOV, link and trigger hardware viewport virtualization
+            if ("true".equalsIgnoreCase(rawProps.get("ultra_drone_view"))
+                    || "true".equalsIgnoreCase(rawProps.get("ipad_view_fov"))
+                    || "1".equals(rawProps.get("drone_view"))
+                    || "1".equals(rawProps.get("r_ipad_view_fov"))
+                    || "1".equals(rawProps.get("r_drone_view"))) {
+                try {
+                    com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(context, pkg);
+                } catch (Throwable ignored) {}
+            }
+
             Log.i(TAG, "⚡ Applied Lua profile [" + scriptName + "] for " + pkg + " across " + paths.size() + " paths (ok=" + injectedAny + ")");
             return injectedAny;
         } catch (Throwable t) {

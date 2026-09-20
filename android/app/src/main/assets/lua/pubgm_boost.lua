@@ -394,5 +394,20 @@ profile.bypass_timestamp_restore     = true
 profile.bypass_selinux_preserve      = true
 profile.bypass_session_micro_drift   = true
 
+-- ── 👁️ 100% IPAD VIEW & DRONE PANORAMIC FOV (2026 UE4 Tablet Viewport) ──────
+profile.ipad_view_fov               = true
+profile.r_ipad_view_fov             = 1
+profile.r_aspect_ratio_override     = "4:3"
+profile.r_camera_fov_tpp            = 130
+profile.r_camera_fov_fpp            = 120
+profile.r_drone_view                = 1
+profile.r_panoramic_fov             = 1
+profile.r_camera_distance_tpp       = 450
+profile.r_camera_pullback_tpp       = 1
+profile.r_character_full_body_fov   = 1
+profile.r_peripheral_vision_boost   = 1.45
+profile.r_fov_anti_blackscreen      = 1
+profile.r_drone_anti_ban_stealth    = true
+
 return profile
 
