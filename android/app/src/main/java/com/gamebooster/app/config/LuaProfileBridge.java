@@ -41,7 +41,8 @@ public class LuaProfileBridge {
         if (lower.contains("roblox")) return "roblox_boost.lua";
         if (lower.contains("standoff") || lower.contains("axlebolt")) return "standoff2_boost.lua";
         if (lower.contains("valorant")) return "valorant_boost.lua";
-        return null;
+        // Universal fallback for any custom or unrecognized game
+        return "pubgm_boost.lua";
     }
 
     /**

@@ -192,4 +192,28 @@ public final class NoLimitExtremeOverdriveEngine {
         VulkanRayTracingEngine.applyVulkanOptimizations(packageName);
         Log.i(TAG, "Ultra Extreme Graphics (185 FPS) injected for " + packageName);
     }
+
+    /**
+     * Disengages No-Limit Extreme Overdrive and restores balanced CPU/GPU governors and thermal trip points.
+     */
+    public static void disengageNoLimitOverdrive(Context context) {
+        sIsNoLimitActive = false;
+        try {
+            ThermalChannel.setThermalOverride(false);
+            List<String> revertCmds = new ArrayList<>();
+            // Re-enable thermal zones
+            revertCmds.add("for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done");
+            // Restore balanced schedutil governor
+            revertCmds.add("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done");
+            // Restore GPU power mode
+            revertCmds.add("setprop debug.adreno.turbo 0; setprop debug.adreno.perf_level 1; setprop debug.mali.force_gpu_boost 0; setprop vendor.gpu.power_mode 0");
+            // Reset SurfaceFlinger latency overrides
+            revertCmds.add("setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_phase_offset_ns 1000000");
+
+            CommandExecutor.executeBatchCommands(revertCmds);
+            Log.i(TAG, "No-Limit Extreme Overdrive disengaged — system baseline restored.");
+        } catch (Throwable t) {
+            Log.w(TAG, "disengageNoLimitOverdrive note: " + t.getMessage());
+        }
+    }
 }

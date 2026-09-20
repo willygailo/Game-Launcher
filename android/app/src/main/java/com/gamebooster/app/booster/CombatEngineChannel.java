@@ -126,6 +126,13 @@ public class CombatEngineChannel {
     }
 
     /**
+     * Disables combat latency mode and restores stock operating system touch slop and network defaults.
+     */
+    public static boolean disableCombatMode(Context context) {
+        return restoreDefaultMode(context);
+    }
+
+    /**
      * Restores stock operating system touch slop, friction, and network defaults.
      */
     public static boolean restoreDefaultMode(Context context) {

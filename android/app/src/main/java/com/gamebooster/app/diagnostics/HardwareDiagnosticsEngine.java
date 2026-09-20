@@ -61,7 +61,26 @@ public final class HardwareDiagnosticsEngine {
                     coreFreqs.put("Core #" + i, curFreq.trim() + " kHz");
                 }
             } else {
-                coreFreqs.put("Core #" + i, "Online (Direct governor scaling)");
+                // Fallback: Check if frequency is readable via Shizuku
+                String shizukuFreq = null;
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    try {
+                        String out = ShizukuExecutor.executeShizukuCommand("cat " + curFreqPath + " 2>/dev/null");
+                        if (out != null && !out.trim().isEmpty() && !out.startsWith("ERROR")) {
+                            shizukuFreq = out.trim();
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (shizukuFreq != null && !shizukuFreq.isEmpty()) {
+                    try {
+                        long curMhz = Long.parseLong(shizukuFreq) / 1000;
+                        coreFreqs.put("Core #" + i, curMhz + " MHz (privileged)");
+                    } catch (NumberFormatException e) {
+                        coreFreqs.put("Core #" + i, shizukuFreq + " kHz");
+                    }
+                } else {
+                    coreFreqs.put("Core #" + i, "Online (Direct governor scaling)");
+                }
             }
         }
         return Collections.unmodifiableMap(coreFreqs);
@@ -156,8 +175,7 @@ public final class HardwareDiagnosticsEngine {
     private static boolean isPackageInstalled(Context context, String pkg) {
         if (context == null || pkg == null) return false;
         try {
-            context.getPackageManager().getPackageInfo(pkg, 0);
-            return true;
+            return com.gamebooster.app.games.GameManagerRepository.isGameInstalled(context, pkg);
         } catch (Throwable ignored) {
             return false;
         }

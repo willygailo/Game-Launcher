@@ -791,51 +791,33 @@ public final class DiagnosticsExporter {
     private static List<InstalledGameQuickInfo> scanInstalledGamesFast(Context context) {
         List<InstalledGameQuickInfo> list = new ArrayList<>();
         if (context == null) return list;
-        PackageManager pm = context.getPackageManager();
         Set<String> added = new HashSet<>();
 
-        // 1. Check known supported game package names directly (ultra fast, zero drawable overhead)
+        // 1. Leverage GameManagerRepository's cached installed games (O(1) fast path)
+        try {
+            List<com.gamebooster.app.games.GameAppInfo> installed = com.gamebooster.app.games.GameManagerRepository.getInstalledGames(context);
+            if (installed != null) {
+                for (com.gamebooster.app.games.GameAppInfo g : installed) {
+                    if (g != null && g.getPackageName() != null && !added.contains(g.getPackageName())) {
+                        list.add(new InstalledGameQuickInfo(g.getPackageName(), g.getLabel()));
+                        added.add(g.getPackageName());
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. Check known supported game package names via cached isGameInstalled
         for (Map.Entry<String, GamePackageRegistry.GameInfoSpec> entry : GamePackageRegistry.getAllKnownGames().entrySet()) {
             String pkg = entry.getKey();
             if (added.contains(pkg)) continue;
             try {
-                ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
-                if (appInfo != null) {
+                if (com.gamebooster.app.games.GameManagerRepository.isGameInstalled(context, pkg)) {
                     String label = entry.getValue() != null ? entry.getValue().title : pkg;
                     list.add(new InstalledGameQuickInfo(pkg, label));
                     added.add(pkg);
                 }
             } catch (Throwable ignored) {}
         }
-
-        // 2. Query Launcher category games
-        try {
-            Intent gameIntent = new Intent(Intent.ACTION_MAIN, null);
-            gameIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(gameIntent, 0);
-            if (resolveInfos != null) {
-                for (ResolveInfo ri : resolveInfos) {
-                    if (ri == null || ri.activityInfo == null) continue;
-                    String pkg = ri.activityInfo.packageName;
-                    if (pkg == null || added.contains(pkg) || pkg.equalsIgnoreCase(context.getPackageName())) {
-                        continue;
-                    }
-                    ApplicationInfo aInfo = ri.activityInfo.applicationInfo;
-                    boolean isGame = false;
-                    if (aInfo != null) {
-                        if (aInfo.category == ApplicationInfo.CATEGORY_GAME) {
-                            isGame = true;
-                        }
-                    }
-                    if (isGame) {
-                        CharSequence labelSeq = ri.loadLabel(pm);
-                        String label = labelSeq != null ? labelSeq.toString() : pkg;
-                        list.add(new InstalledGameQuickInfo(pkg, label));
-                        added.add(pkg);
-                    }
-                }
-            }
-        } catch (Throwable ignored) {}
 
         return list;
     }

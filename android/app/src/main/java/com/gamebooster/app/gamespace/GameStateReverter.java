@@ -110,6 +110,10 @@ public final class GameStateReverter {
         try { com.gamebooster.app.focus.FocusModeEngine.disableFocusMode(context); } catch (Throwable t) { Log.w(TAG, "FocusMode unsuspend failed", t); }
         try { com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync(); } catch (Throwable t) { Log.w(TAG, "Resolution reset failed", t); }
         try { com.gamebooster.app.booster.BypassChargingController.onGameStopped(context); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.tweaks.TweakSelfHealingVerifier.stopSelfHealingWatchdog(); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.booster.CombatEngineChannel.disableCombatMode(context); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.disengageNoLimitOverdrive(context); } catch (Throwable ignored) {}
+        try { com.gamebooster.app.spoofer.DeviceSpooferEngine.resetSpoofing(); } catch (Throwable ignored) {}
         try {
             String activePkg = GameSessionSettings.getStoredActivePackage(context);
             if (activePkg != null) {
