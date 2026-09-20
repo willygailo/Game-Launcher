@@ -131,6 +131,15 @@ public class PreLaunchGameDialog {
             rb120.setChecked(true);
         }
 
+        // 3.5 Drone View Switch State
+        androidx.appcompat.widget.SwitchCompat switchDrone = view.findViewById(R.id.switch_pre_launch_drone_view);
+        String gameKey = CfgProfileManager.resolveGameKey(pkg);
+        CompetitiveCfgProfile currentProfile = CfgProfileManager.loadProfile(context, gameKey);
+        if (switchDrone != null) {
+            boolean droneEnabled = (currentProfile != null) ? currentProfile.isDroneViewUltraEnabled() : true;
+            switchDrone.setChecked(droneEnabled);
+        }
+
         // 4. Action Buttons
         Button btnCancel = view.findViewById(R.id.btn_pre_launch_cancel);
         Button btnStart = view.findViewById(R.id.btn_pre_launch_start);
@@ -150,6 +159,7 @@ public class PreLaunchGameDialog {
             }
 
             final int finalFps = selectedFps;
+            final boolean droneEnabled = switchDrone != null && switchDrone.isChecked();
 
             // Dismiss dialog immediately
             dismissCurrent();
@@ -158,7 +168,6 @@ public class PreLaunchGameDialog {
             Toast.makeText(context.getApplicationContext(), modeName + " — " + (label != null ? label : pkg), Toast.LENGTH_SHORT).show();
 
             // Build & save competitive profile
-            String gameKey = CfgProfileManager.resolveGameKey(pkg);
             CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
             if (profile == null) {
                 profile = new CompetitiveCfgProfile(gameKey, finalFps, true, true);
@@ -166,6 +175,7 @@ public class PreLaunchGameDialog {
                 profile.setTargetFps(finalFps);
             }
             profile.setAntiLogEnabled(true);
+            profile.setDroneViewUltraEnabled(droneEnabled);
             CfgProfileManager.saveProfile(context, profile);
             GameProfilePreferences.setTargetHz(context, pkg, finalFps);
 

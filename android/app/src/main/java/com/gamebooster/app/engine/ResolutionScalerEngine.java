@@ -51,6 +51,20 @@ public final class ResolutionScalerEngine {
     private ResolutionScalerEngine() {}
 
     private static String executePrivileged(String command) {
+        if (command == null || command.trim().isEmpty()) return "";
+
+        try {
+            if (PrivilegeBridgeEngine.isPrivilegedActive()) {
+                String out = PrivilegeBridgeEngine.executePrivileged(command);
+                if (out != null && !out.startsWith("ERROR:")) return out;
+            }
+        } catch (Throwable ignored) {}
+
+        if (ShellExecutor.isRootSuAvailable()) {
+            ShellExecutor.CommandResult cr = ShellExecutor.executeSuCommand(command);
+            if (cr.isSuccess()) return cr.stdout;
+        }
+
         if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
             String out = ShizukuUserServiceConnector.getInstance().executeCommand(command);
             if (out != null) return out;
@@ -66,7 +80,7 @@ public final class ResolutionScalerEngine {
             if (out != null && !out.startsWith("ERROR")) return out;
         }
 
-        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command);
+        ShellExecutor.CommandResult cr = ShellExecutor.executeCommand(command, true);
         return cr != null ? cr.stdout : "";
     }
 
@@ -115,11 +129,11 @@ public final class ResolutionScalerEngine {
                     android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
                     if (sNativeWidth <= 0) sNativeWidth = Math.min(bounds.width(), bounds.height());
                     if (sNativeHeight <= 0) sNativeHeight = Math.max(bounds.width(), bounds.height());
-                    if (sNativeDensity <= 0) {
-                        sNativeDensity = context.getResources().getConfiguration().densityDpi;
-                    }
                 }
-            } catch (Exception ignored) {}
+            } catch (Throwable ignored) {}
+            if (sNativeDensity <= 0 && context.getResources() != null) {
+                sNativeDensity = context.getResources().getConfiguration().densityDpi;
+            }
         }
 
         Log.i(TAG, "Cached Native Display: " + sNativeWidth + "x" + sNativeHeight + " @ " + sNativeDensity + "dpi");
@@ -158,8 +172,8 @@ public final class ResolutionScalerEngine {
 
     /**
      * Applies 100% genuine, hardware-level Drone View FOV via elevated aspect ratio virtualization.
-     * MLBB -> Ultra-Wide 21:9 Aspect Ratio (forces Unity camera to widen by 45-60%).
-     * PUBGM -> iPad 4:3 Aspect Ratio (forces Unreal Engine 4 to expand vertical and peripheral FOV).
+     * MLBB & MOBAs  -> Ultra-Wide 21:9 Aspect Ratio (widens horizontal camera frustum by ~45%, revealing enemies down lanes).
+     * PUBGM & Shooters -> iPad 4:3 Aspect Ratio (triggers UE4 tablet viewport to zoom out TPP camera, head-to-knees view).
      */
     public static boolean applyDroneViewForGame(Context context, String packageName) {
         if (packageName == null) return false;
@@ -176,40 +190,58 @@ public final class ResolutionScalerEngine {
         int longSide = Math.max(sNativeWidth, sNativeHeight);
         int targetW;
         int targetH;
-        int targetDensity = sNativeDensity > 0 ? sNativeDensity : 400;
+        int targetDensity;
 
-        if (type == com.gamebooster.app.games.GamePackageRegistry.GameType.MLBB) {
-            // MLBB: Ultra-Wide 21:9 Aspect Ratio
-            targetW = shortSide;
-            targetH = (int) (shortSide * (21.0f / 9.0f));
-            if (targetH % 2 != 0) targetH--;
-            targetDensity = (int) (targetDensity * ((float) targetH / longSide));
-            if (targetDensity < 240) targetDensity = 240;
-            if (targetDensity > 560) targetDensity = 560;
+        boolean isShooter = (type == com.gamebooster.app.games.GamePackageRegistry.GameType.PUBGM
+                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.CODM
+                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.BLOODSTRIKE
+                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.STANDOFF2
+                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.FARLIGHT
+                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.FREEFIRE);
 
-            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
-            executePrivileged(cmd);
-            sIsScaled = true;
-            sIsDroneViewActive = true;
-            Log.i(TAG, "⚡ [DroneView 100%] MLBB Ultra-Wide 21:9 Viewport applied: " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
-            return true;
-        } else if (type == com.gamebooster.app.games.GamePackageRegistry.GameType.PUBGM) {
-            // PUBGM: iPad 4:3 Aspect Ratio
+        if (isShooter) {
+            // ─── SHOOTERS: iPad 4:3 Aspect Ratio (Expands TPP/FPP Vertical & Peripheral FOV) ───
+            // In landscape: Height = shortSide (1080), Width = shortSide * 4 / 3 (1440)
             targetW = shortSide;
             targetH = (int) (shortSide * (4.0f / 3.0f));
+            if (targetW % 2 != 0) targetW--;
             if (targetH % 2 != 0) targetH--;
-            targetDensity = (int) (targetDensity * 0.85f);
-            if (targetDensity < 280) targetDensity = 280;
+
+            // Scale density to tablet-tier (optimal ~280-320 dpi for 4:3 controls)
+            targetDensity = (int) ((sNativeDensity > 0 ? sNativeDensity : 420) * 0.75f);
+            if (targetDensity < 260) targetDensity = 260;
+            if (targetDensity > 340) targetDensity = 340;
 
             String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
             executePrivileged(cmd);
             sIsScaled = true;
             sIsDroneViewActive = true;
-            Log.i(TAG, "⚡ [DroneView 100%] PUBGM iPad 4:3 Viewport applied: " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
+            Log.i(TAG, "⚡ [DroneView 100%] iPad 4:3 Viewport applied for " + packageName + ": " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
+            return true;
+        } else {
+            // ─── MOBAs (MLBB, Wild Rift, HOK) & OTHER GAMES: Ultra-Wide 21:9 Aspect Ratio ───
+            // In landscape: Width = longSide (2400), Height = longSide * 9 / 21 (1028)
+            targetH = longSide;
+            targetW = (int) (longSide * (9.0f / 21.0f));
+            if (targetW > shortSide) {
+                targetW = shortSide;
+                targetH = (int) (shortSide * (21.0f / 9.0f));
+            }
+            if (targetW % 2 != 0) targetW--;
+            if (targetH % 2 != 0) targetH--;
+
+            // Lower density by ~18% so UI elements don't crowd the battlefield and camera pulls back
+            targetDensity = (int) ((sNativeDensity > 0 ? sNativeDensity : 420) * 0.82f);
+            if (targetDensity < 280) targetDensity = 280;
+            if (targetDensity > 440) targetDensity = 440;
+
+            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
+            executePrivileged(cmd);
+            sIsScaled = true;
+            sIsDroneViewActive = true;
+            Log.i(TAG, "⚡ [DroneView 100%] Ultra-Wide 21:9 Frustum applied for " + packageName + ": " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
             return true;
         }
-
-        return false;
     }
 
     public static boolean isDroneViewActive() {

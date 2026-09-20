@@ -91,6 +91,7 @@ public class GameCfgDialog {
         SwitchCompat switchSuperTouch = view.findViewById(R.id.switch_super_touch);
         SwitchCompat switchForceHz = view.findViewById(R.id.switch_force_hz);
         SwitchCompat switchAntiLog = view.findViewById(R.id.switch_anti_log);
+        SwitchCompat switchDroneView = view.findViewById(R.id.switch_drone_view);
 
         // Graphics Driver RadioGroup
         RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
@@ -199,6 +200,9 @@ public class GameCfgDialog {
             switchSuperTouch.setChecked(currentCfg.isSuperFastTouchEnabled());
             switchForceHz.setChecked(currentCfg.isForceWriteSystemHz());
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
+            if (switchDroneView != null) {
+                switchDroneView.setChecked(currentCfg.isDroneViewUltraEnabled());
+            }
 
             int currentFps = currentCfg.getTargetFps();
             if (currentFps >= 185 && rb185 != null) {
@@ -254,6 +258,7 @@ public class GameCfgDialog {
             final boolean superTouch = switchSuperTouch.isChecked();
             final boolean forceHz = switchForceHz.isChecked();
             final boolean antiLog = switchAntiLog.isChecked();
+            final boolean droneView = switchDroneView != null && switchDroneView.isChecked();
 
             final com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType driverType;
             if (rbDriverGame != null && rbDriverGame.isChecked() && com.gamebooster.app.booster.GpuTweaksChannel.isGameDriverEligible(pkg)) {
@@ -284,8 +289,10 @@ public class GameCfgDialog {
                 targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF;
             }
 
-            // Apply resolution scaling and visual filter immediately
-            if (targetScale < 0.99f) {
+            // Apply resolution scaling, drone view FOV, and visual filter immediately
+            if (droneView) {
+                com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(context, pkg);
+            } else if (targetScale < 0.99f) {
                 com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
             } else {
                 com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
@@ -304,6 +311,7 @@ public class GameCfgDialog {
                     // 1. Build and Save Profile
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
+                    profile.setDroneViewUltraEnabled(droneView);
                     CfgProfileManager.saveProfile(context, profile);
 
                     // 2. Fast direct config patching for target package only

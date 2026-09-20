@@ -319,7 +319,10 @@ public final class GameAutoInjectDispatcher {
         try { MlbbConfigPatcher.applyMlbbFastSovereignOverdrive(pkg); } catch (Throwable ignored) {}
         // ─── 2026 Master Sovereign 100% Full Working Combat Overdrive Suite ────
         try { MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg); } catch (Throwable ignored) {}
-        try { com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, pkg); } catch (Throwable ignored) {}
+        try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, pkg);
+        } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {
@@ -386,8 +389,10 @@ public final class GameAutoInjectDispatcher {
         // ─── 2026 100% Drone View (iPad FOV) & 3-Bullet Headshot Kill Suite ────
         try { PubgConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
-        try { CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg); } catch (Throwable ignored) {}
-        try { com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, pkg); } catch (Throwable ignored) {}
+        try {
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, pkg);
+        } catch (Throwable ignored) {}
     }
 
 

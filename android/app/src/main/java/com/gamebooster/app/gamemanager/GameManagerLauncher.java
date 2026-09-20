@@ -160,6 +160,25 @@ public final class GameManagerLauncher {
         LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
 
         // ═══════════════════════════════════════════════════════════
+        // STEP 2.5: SYNCHRONOUS DRONE VIEW & VIEWPORT SCALING
+        // Must be applied to SurfaceFlinger BEFORE targetIntent is started so
+        // game's initial Window/EGL/Vulkan surface initializes directly into wide aspect ratio
+        // ═══════════════════════════════════════════════════════════
+        try {
+            String gameKey = CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(appContext, gameKey);
+            if (profile != null && profile.isDroneViewUltraEnabled()) {
+                boolean applied = com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(appContext, pkg);
+                if (applied) {
+                    Log.i(TAG, "⚡ [PreLaunch Sync] Drone View FOV applied before Surface creation for " + pkg);
+                    try { Thread.sleep(60); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Pre-launch drone view setup warning for " + pkg + ": " + t.getMessage());
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
         // ═══════════════════════════════════════════════════════════
         boolean launchedDirectly = false;

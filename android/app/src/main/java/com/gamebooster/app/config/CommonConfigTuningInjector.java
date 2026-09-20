@@ -392,7 +392,8 @@ public final class CommonConfigTuningInjector {
             try { MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
         }
         try {
-            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(null, packageName);
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, packageName);
         } catch (Throwable ignored) {}
     }
 

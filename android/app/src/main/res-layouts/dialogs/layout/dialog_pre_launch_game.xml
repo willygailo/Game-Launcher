@@ -225,9 +225,49 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:lineSpacingExtra="3dp"
-            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted Vulkan Game Driver isolation (MLBB, CODM, PUBGM)\n✔ Anti-Log &amp; crash telemetry shield"
+            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ 100% Drone View (MLBB 21:9 Ultra-Wide / PUBGM iPad FOV)\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted Vulkan Game Driver isolation (MLBB, CODM, PUBGM)\n✔ Anti-Log &amp; crash telemetry shield"
             android:textColor="@color/text_secondary"
             android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- 100% Drone View Panoramic FOV Toggle -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/card_glass_shape"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔭 100% Drone View (Panoramic FOV)"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Hardware aspect ratio scaling (MLBB 21:9 Wide / PUBGM iPad 4:3)"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_pre_launch_drone_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true" />
     </LinearLayout>
 
     <!-- Remove Game Button -->
