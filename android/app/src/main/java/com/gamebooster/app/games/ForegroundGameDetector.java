@@ -119,12 +119,7 @@ public final class ForegroundGameDetector {
 
         if (context != null) {
             try {
-                List<GameAppInfo> installed = GameManagerRepository.getInstalledGames(context);
-                for (GameAppInfo info : installed) {
-                    if (clean.equalsIgnoreCase(info.getPackageName())) {
-                        return true;
-                    }
-                }
+                return GameManagerRepository.isGameInstalled(context, clean);
             } catch (Throwable ignored) {}
         }
 

@@ -24,9 +24,59 @@ import java.util.Set;
 public class GameManagerRepository {
 
     private static final String TAG = "GameManagerRepository";
+    private static final long CACHE_TTL_MS = 45_000; // 45 seconds cache TTL
+    private static volatile List<GameAppInfo> sCachedGames = null;
+    private static volatile Set<String> sCachedGamePackages = null;
+    private static volatile long sLastScanTime = 0;
+    private static final Object sCacheLock = new Object();
+
+    public static void invalidateCache() {
+        synchronized (sCacheLock) {
+            sCachedGames = null;
+            sCachedGamePackages = null;
+            sLastScanTime = 0;
+        }
+    }
 
     public static List<GameAppInfo> getInstalledGames(Context context) {
-        return HomeGameScanner.scanTargetGames(context);
+        return getInstalledGames(context, false);
+    }
+
+    public static List<GameAppInfo> getInstalledGames(Context context, boolean forceRefresh) {
+        long now = System.currentTimeMillis();
+        if (!forceRefresh && sCachedGames != null && (now - sLastScanTime < CACHE_TTL_MS)) {
+            return new ArrayList<>(sCachedGames);
+        }
+
+        synchronized (sCacheLock) {
+            if (!forceRefresh && sCachedGames != null && (now - sLastScanTime < CACHE_TTL_MS)) {
+                return new ArrayList<>(sCachedGames);
+            }
+            List<GameAppInfo> scanned = HomeGameScanner.scanTargetGames(context);
+            sCachedGames = Collections.unmodifiableList(new ArrayList<>(scanned));
+            Set<String> pkgs = new HashSet<>();
+            for (GameAppInfo info : scanned) {
+                if (info != null && info.getPackageName() != null) {
+                    pkgs.add(info.getPackageName());
+                }
+            }
+            sCachedGamePackages = Collections.unmodifiableSet(pkgs);
+            sLastScanTime = System.currentTimeMillis();
+            return new ArrayList<>(sCachedGames);
+        }
+    }
+
+    public static boolean isGameInstalled(Context context, String packageName) {
+        if (packageName == null || packageName.isEmpty()) return false;
+        long now = System.currentTimeMillis();
+        Set<String> cachedPkgs = sCachedGamePackages;
+        if (cachedPkgs != null && (now - sLastScanTime < CACHE_TTL_MS)) {
+            return cachedPkgs.contains(packageName);
+        }
+        // Warm cache if needed
+        getInstalledGames(context, false);
+        Set<String> refreshed = sCachedGamePackages;
+        return refreshed != null && refreshed.contains(packageName);
     }
 
     public static List<GameAppInfo> getAllInstalledApps(Context context) {

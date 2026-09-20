@@ -23,14 +23,21 @@ target_compile_options(
     gamebooster_native
     PRIVATE
     -O3
+    -flto
     -ffunction-sections
     -fdata-sections
+    -fvisibility=hidden
+    -fvisibility-inlines-hidden
+    -fno-exceptions
+    -fno-rtti
+    -fomit-frame-pointer
 )
 
-# Android 15 & 16 16KB page-size kernel compatibility alignment + gc-sections
+# Android 15 & 16 16KB page-size kernel compatibility alignment + gc-sections + LTO
 target_link_options(
     gamebooster_native
     PRIVATE
+    "-flto"
     "-Wl,-z,max-page-size=16384"
     "-Wl,--gc-sections"
 )

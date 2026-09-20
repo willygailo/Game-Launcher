@@ -142,41 +142,34 @@ public class ShellExecutor {
 
     private static CommandResult executeInternal(String shellBinary, String command) {
         Process process = null;
-        BufferedReader isReader = null;
-        BufferedReader esReader = null;
+        BufferedReader reader = null;
 
         try {
-            process = Runtime.getRuntime().exec(new String[]{shellBinary, "-c", command});
+            ProcessBuilder pb = new ProcessBuilder(shellBinary, "-c", command);
+            pb.redirectErrorStream(true);
+            process = pb.start();
 
-            StringBuilder stdout = new StringBuilder();
-            StringBuilder stderr = new StringBuilder();
-
-            isReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            esReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder output = new StringBuilder(512);
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream()), 8192);
 
             String line;
-            while ((line = isReader.readLine()) != null) {
-                stdout.append(line).append("\n");
-            }
-            while ((line = esReader.readLine()) != null) {
-                stderr.append(line).append("\n");
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append('\n');
             }
 
-            int exitCode;
             boolean finished = process.waitFor(5, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
                 return new CommandResult(-1, "", "Command timed out after 5s");
             }
-            exitCode = process.exitValue();
-            return new CommandResult(exitCode, stdout.toString().trim(), stderr.toString().trim());
+            int exitCode = process.exitValue();
+            return new CommandResult(exitCode, output.toString().trim(), "");
 
         } catch (Exception e) {
             return new CommandResult(-1, "", e.getMessage() != null ? e.getMessage() : "Execution exception");
         } finally {
             try {
-                if (isReader != null) isReader.close();
-                if (esReader != null) esReader.close();
+                if (reader != null) reader.close();
                 if (process != null) process.destroy();
             } catch (Exception ignored) {}
         }

@@ -27,11 +27,21 @@ public class GameManagerScanBroadcast extends BroadcastReceiver {
         if (context == null || intent == null || intent.getAction() == null) return;
 
         String action = intent.getAction();
-        if (Intent.ACTION_PACKAGE_ADDED.equals(action) || Intent.ACTION_PACKAGE_REPLACED.equals(action)) {
+        if (Intent.ACTION_PACKAGE_ADDED.equals(action)
+                || Intent.ACTION_PACKAGE_REPLACED.equals(action)
+                || Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
             Uri data = intent.getData();
             if (data == null) return;
             String packageName = data.getSchemeSpecificPart();
             if (packageName == null || packageName.isEmpty()) return;
+
+            // Invalidate in-memory game repository cache immediately
+            com.gamebooster.app.games.GameManagerRepository.invalidateCache();
+
+            if (Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
+                Log.i(TAG, "Package uninstalled: " + packageName);
+                return;
+            }
 
             Log.i(TAG, "New or updated package detected: " + packageName);
 

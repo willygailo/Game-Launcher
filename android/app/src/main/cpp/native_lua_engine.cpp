@@ -67,13 +67,13 @@ LuaProfile parseLuaScript(const std::string& scriptContent) {
                 } else if (key == "package_name") {
                     profile.package_name = val;
                 } else if (key == "target_fps") {
-                    try { profile.target_fps = std::stoi(val); } catch (...) {}
+                    profile.target_fps = (int) std::strtol(val.c_str(), nullptr, 10);
                 } else if (key == "graphics_tier") {
                     profile.graphics_tier = val;
                 } else if (key == "force_vulkan") {
                     profile.force_vulkan = (val == "true" || val == "1");
                 } else if (key == "touch_boost_hz") {
-                    try { profile.touch_boost_hz = std::stoi(val); } catch (...) {}
+                    profile.touch_boost_hz = (int) std::strtol(val.c_str(), nullptr, 10);
                 } else if (key == "cpu_governor") {
                     profile.cpu_governor = val;
                 }

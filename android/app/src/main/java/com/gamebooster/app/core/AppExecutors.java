@@ -21,14 +21,18 @@ public class AppExecutors {
     private final Handler mainThread;
 
     private AppExecutors() {
-        this.commandIO = Executors.newSingleThreadExecutor(r -> {
-            Thread t = new Thread(() -> {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
-                r.run();
-            }, "GameBooster-CommandIO");
-            t.setDaemon(true);
-            return t;
-        });
+        this.commandIO = new java.util.concurrent.ThreadPoolExecutor(
+                2, 6, 30L, TimeUnit.SECONDS,
+                new java.util.concurrent.LinkedBlockingQueue<>(),
+                r -> {
+                    Thread t = new Thread(() -> {
+                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                        r.run();
+                    }, "GameBooster-CommandIO");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
         this.settingsIO = Executors.newFixedThreadPool(4, r -> {
             Thread t = new Thread(() -> {
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
