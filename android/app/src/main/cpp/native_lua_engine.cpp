@@ -1,7 +1,6 @@
 #include "native_lua_engine.h"
 #include "config_common.h"
 
-#include <android/log.h>
 #include <sstream>
 #include <algorithm>
 
