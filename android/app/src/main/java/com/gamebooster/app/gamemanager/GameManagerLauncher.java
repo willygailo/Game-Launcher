@@ -182,7 +182,8 @@ public final class GameManagerLauncher {
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 
             try {
                 context.startActivity(targetIntent);
@@ -194,6 +195,24 @@ public final class GameManagerLauncher {
                 } catch (Throwable t2) {
                     Log.w(TAG, "Direct startActivity failed for " + pkg + ": " + t2.getMessage());
                 }
+            }
+        }
+
+        // Final raw-package fallback: bare ACTION_MAIN setPackage() — works on MIUI, ColorOS, OneUI
+        // when all explicit ComponentName attempts fail but the package is installed.
+        if (!launchedDirectly) {
+            try {
+                Intent rawFallback = new Intent(Intent.ACTION_MAIN);
+                rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
+                rawFallback.setPackage(pkg);
+                rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                context.startActivity(rawFallback);
+                launchedDirectly = true;
+                Log.i(TAG, "⚡ [RawPkg Fallback] Launched " + pkg + " via setPackage() raw intent");
+            } catch (Throwable t3) {
+                Log.w(TAG, "Raw package fallback failed for " + pkg + ": " + t3.getMessage());
             }
         }
 

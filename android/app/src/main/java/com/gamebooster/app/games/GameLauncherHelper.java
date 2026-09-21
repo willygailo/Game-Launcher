@@ -31,6 +31,19 @@ public class GameLauncherHelper {
 
     public static void autoLaunchGame(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
+        // Fast pre-check: verify game is installed before running the full pipeline.
+        // Prevents a silent no-op when the game card exists but the APK was uninstalled.
+        String pkg = game.getPackageName();
+        if (pkg != null) {
+            try {
+                context.getPackageManager().getPackageInfo(pkg, 0);
+            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+                android.widget.Toast.makeText(context,
+                        "❌ " + (game.getLabel() != null ? game.getLabel() : pkg) + " is not installed on this device.",
+                        android.widget.Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
         com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
     }
 

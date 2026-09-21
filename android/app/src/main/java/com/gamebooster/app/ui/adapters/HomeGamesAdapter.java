@@ -105,20 +105,31 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             holder.layoutCardBg.setBackgroundResource(game.getCardBgRes());
         }
 
+        // Tap anywhere on card = instant game launch
         View.OnClickListener launchListener = v -> com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(context, game);
+        // Long press anywhere on card = Pre-Launch tuning dialog (FPS picker, config)
         View.OnLongClickListener tuneListener = v -> {
             PreLaunchGameDialog.show(context, game);
             return true;
         };
 
+        // Launch button: tap = launch, long press = tune dialog
         holder.btnLaunch.setOnClickListener(launchListener);
         holder.btnLaunch.setOnLongClickListener(tuneListener);
+
+        // Card background: tap = launch, long press = tune dialog
+        // NOTE: We do NOT set onClickListener on holder.itemView separately — that would
+        // cause double-fire since itemView wraps layoutCardBg. One listener per visual area.
         if (holder.layoutCardBg != null) {
             holder.layoutCardBg.setOnClickListener(launchListener);
             holder.layoutCardBg.setOnLongClickListener(tuneListener);
+            // Prevent itemView from intercepting when layoutCardBg handles it
+            holder.itemView.setOnClickListener(null);
+            holder.itemView.setOnLongClickListener(null);
+        } else {
+            holder.itemView.setOnClickListener(launchListener);
+            holder.itemView.setOnLongClickListener(tuneListener);
         }
-        holder.itemView.setOnClickListener(launchListener);
-        holder.itemView.setOnLongClickListener(tuneListener);
     }
 
     @Override

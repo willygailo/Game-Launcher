@@ -205,7 +205,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         } catch (Throwable ignored) {}
 
         applyVideoBackgroundState();
-        loadAndScanGames(true);
+        loadAndScanGames(false); // Non-forced: show cached list instantly; only re-scan on package events
     }
 
     private void applyVideoBackgroundState() {
