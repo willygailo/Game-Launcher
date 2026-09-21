@@ -179,6 +179,7 @@ public class PubgConfigPatcher {
         applyMidnightHuntersMapBoost(packageName);
         applyS32RankedSweep(packageName);
         applyPubgmSovereignOverdriveBypass(packageName);
+        applyPubgUltraDroneViewMaxFov(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectPubgmGodModeFullOverdrive(path);
         }
@@ -575,12 +576,29 @@ public class PubgConfigPatcher {
         CommonConfigTuningInjector.applyShield1500Config(packageName);
     }
 
+    /**
+     * Dedicated PUBGM Ultra Drone View & iPad FOV Panoramic Engine.
+     * Injects UE4 camera CVars into UserCustom.ini, EnjoyCJZC.ini, and Active.sav binary
+     * without altering screen density or resolution.
+     */
+    public static void applyPubgUltraDroneViewMaxFov(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectPubgUltraDroneViewMaxFov(path);
+        }
+        try {
+            patchActiveSavBinary(packageName, 120);
+        } catch (Throwable ignored) {}
+        Log.i(TAG, "⚡ PUBGM Ultra Drone View (iPad FOV 130 + Distance 220) applied across " + paths.size() + " configs for " + packageName);
+    }
+
     public static void applyDroneViewUltraConfig(String packageName) {
-        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+        applyPubgUltraDroneViewMaxFov(packageName);
     }
 
     public static void applyDroneViewConfig(String packageName) {
-        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
+        applyPubgUltraDroneViewMaxFov(packageName);
     }
 
     public static void applyArmorDefConfig(String packageName) {

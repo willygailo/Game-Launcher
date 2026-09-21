@@ -123,6 +123,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmFullScopeBulletTrackingFastReload(String path);
     public static native boolean nativeInjectMlbbAutoMapGlitch3s(String path);
     public static native boolean nativeInjectMlbbFastSovereignOverdrive(String path);
+    public static native boolean nativeInjectMlbbUltraDroneViewMaxFov(String path);
+    public static native boolean nativeInjectMlbbGodModeFullOverdrive(String path);
+    public static native boolean nativeInjectPubgUltraDroneViewMaxFov(String path);
+    public static native boolean nativeInjectPubgmGodModeFullOverdrive(String path);
+    public static native boolean nativeInjectCodmUltraDroneViewMaxFov(String path);
+    public static native boolean nativeInjectCodmGodModeFullOverdrive(String path);
     public static native boolean nativeInjectPubgmSovereignOverdriveBypass(String path);
     public static native boolean nativeInjectCodmSovereignOverdriveBypass(String path);
 
@@ -1920,7 +1926,97 @@ public class NativeConfigInjector {
         if (sNativeLibraryLoaded) {
             try { if (nativeInjectDroneView(path, 180, 180)) return true; } catch (Throwable ignored) {}
         }
-        return injectUltraExtremeGraphics(path, 120);
+        String[] keys = {
+            "DroneView=1", "DroneFOV=180", "MaxFOV=180", "FieldOfView=180",
+            "CameraHeight=4", "CameraDistance=180", "WideCameraAngle=1",
+            "MapVisibilityRange=2.0", "FogOfWarBypass=1", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[DroneView]");
+    }
+
+    /**
+     * PUBGM Dedicated Drone View & iPad FOV Panoramic Injector.
+     * Injects UE4 Camera FOV CVars and INI keys to unlock wider perspective without touching screen density.
+     */
+    public static boolean injectPubgUltraDroneViewMaxFov(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectPubgUltraDroneViewMaxFov(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "+CVars=r.PUBGCameraFOV=130",
+            "+CVars=r.PUBGCameraDistance=220",
+            "+CVars=r.PUBGIpadView=1",
+            "+CVars=r.IpadView=1",
+            "+CVars=r.Fov=130",
+            "+CVars=r.CameraFov=130",
+            "+CVars=r.DefaultFOV=130",
+            "+CVars=r.ThirdPersonFOV=130",
+            "+CVars=r.ThirdPersonCameraDistance=220",
+            "+CVars=r.CameraDistance=220",
+            "+CVars=r.WideView=1",
+            "+CVars=r.IpadFov=130",
+            "+CVars=r.PUBGDroneView=1",
+            "+CVars=r.PUBGMaxFOV=130",
+            "+CVars=r.FieldOfView=130",
+            "+CVars=r.FovRatio=1.35",
+            "+CVars=r.SceneFovRatio=1.35",
+            "+CVars=r.WideCameraAngle=1",
+            "+CVars=r.PanoramicFOV=1.75",
+            "+CVars=r.AspectRatioAxisConstraint=AspectRatio_MaintainYFOV",
+            "DroneView=1",
+            "DroneFOV=130",
+            "FieldOfView=130",
+            "CameraFOV=130",
+            "FPPCameraFOV=130",
+            "TPPCameraFOV=130",
+            "CameraDistance=220",
+            "ThirdPersonFOV=130",
+            "ThirdPersonCameraDistance=220",
+            "IpadView=1",
+            "WideView=1",
+            "PanoramicFOV=1.75",
+            "TPPFieldOfView=130",
+            "FPPFieldOfView=150"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[UserCustom DeviceProfile]");
+    }
+
+    /**
+     * CODM Dedicated Drone View & Panoramic FOV Injector.
+     * Injects Unity3D PlayerPrefs XML and JSON camera keys for Call of Duty Mobile.
+     */
+    public static boolean injectCodmUltraDroneViewMaxFov(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try { if (nativeInjectCodmUltraDroneViewMaxFov(path)) return true; } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "CameraFOV=120",
+            "ThirdPersonFOV=120",
+            "FirstPersonFOV=120",
+            "FPP_FOV=120",
+            "TPP_FOV=120",
+            "DroneView=1",
+            "DroneFOV=120",
+            "FieldOfView=120",
+            "CameraDistance=220",
+            "CameraHeight=4",
+            "WideCameraAngle=1",
+            "iPadView=1",
+            "PerspectiveMode=1",
+            "PanoramicFOV=1",
+            "FOV_Scale=150",
+            "Camera_Elevation=4.0",
+            "FOV_Scale_Float=1.5",
+            "Panoramic_Scale=1.75",
+            "MaxFOV=120",
+            "MapVisibilityRange=2.0",
+            "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[CodmDroneView]");
     }
 
     /**
@@ -3045,6 +3141,11 @@ public class NativeConfigInjector {
     public static boolean injectMlbbUltraDroneViewMaxFov(String path) {
         if (path == null) return false;
         ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbUltraDroneViewMaxFov(path)) return true;
+            } catch (Throwable ignored) {}
+        }
         String[] keys = {
             "CameraHeight=4", "FOVBoost=1.75", "DroneView=1", "PanoramicFOV=1.75",
             "DroneFOV=180", "MaxFOV=180", "FieldOfView=180", "CameraDistance=180",
@@ -3121,6 +3222,13 @@ public class NativeConfigInjector {
      * MLBB God Mode Full Overdrive (All-in-One Master Cheat).
      */
     public static boolean injectMlbbGodModeFullOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbGodModeFullOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
         boolean ok1 = injectMlbbInfiniteLifestealOmniVamp(path);
         boolean ok2 = injectMlbbGodArmorTrueDefense(path);
         boolean ok3 = injectMlbbUnlimitedManaEnergy(path);
@@ -3276,6 +3384,13 @@ public class NativeConfigInjector {
      * CODM God Mode Full Overdrive (All-in-One Master Cheat Suite).
      */
     public static boolean injectCodmGodModeFullOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectCodmGodModeFullOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
         boolean ok1 = injectNoRecoilNoSpread(path);
         boolean ok2 = false;
         if (sNativeLibraryLoaded) {
@@ -3294,7 +3409,8 @@ public class NativeConfigInjector {
         boolean ok7 = injectHitboxMultiplier(path, 3.0f);
         boolean ok8 = injectUltraWallhackEspClarity(path);
         boolean ok9 = injectCodmSovereignOverdriveBypass(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
+        boolean ok10 = injectCodmUltraDroneViewMaxFov(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10;
     }
 
 
@@ -3402,6 +3518,13 @@ public class NativeConfigInjector {
      * PUBGM God Mode Full Overdrive (Master Cheat Suite).
      */
     public static boolean injectPubgmGodModeFullOverdrive(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectPubgmGodModeFullOverdrive(path)) return true;
+            } catch (Throwable ignored) {}
+        }
         boolean ok1 = injectPubgmZeroRecoilNoSway(path);
         boolean ok2 = false;
         if (sNativeLibraryLoaded) {
@@ -3421,7 +3544,8 @@ public class NativeConfigInjector {
         boolean ok8 = injectUltraWallhackEspClarity(path);
         boolean ok9 = injectPubgmFastLoadAsyncStreaming(path);
         boolean ok10 = injectPubgmSovereignOverdriveBypass(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10;
+        boolean ok11 = injectPubgUltraDroneViewMaxFov(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10 || ok11;
     }
 
 

@@ -1,6 +1,5 @@
 #include "native_lua_engine.h"
 #include "config_common.h"
-#include "native_config_injector.h"
 
 #include <android/log.h>
 #include <sstream>
@@ -59,6 +58,14 @@ LuaProfile parseLuaScript(const std::string& scriptContent) {
             }
             key = trim(key);
 
+            // Fix L1: Skip table-init lines (e.g. "profile = {}" or "profile = { }").
+            // After prefix stripping, if the key is empty or the value is a Lua table
+            // constructor (starts with '{'), discard — writing "{...}" into a game INI/XML
+            // would corrupt the config file.
+            if (key.empty() || (!val.empty() && val.front() == '{')) {
+                continue;
+            }
+
             if (!key.empty()) {
                 profile.properties[key] = val;
 
@@ -88,19 +95,153 @@ LuaProfile parseLuaScript(const std::string& scriptContent) {
     return profile;
 }
 
+static inline std::string toPascalCase(const std::string& snake) {
+    std::string result;
+    bool capitalize = true;
+    for (char c : snake) {
+        if (c == '_') {
+            capitalize = true;
+        } else if (capitalize) {
+            result += (char)::toupper(c);
+            capitalize = false;
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
 bool injectLuaProfileToPath(const std::string& targetPath, const LuaProfile& profile) {
     if (targetPath.empty() || profile.properties.empty()) return false;
 
     std::vector<std::pair<std::string, std::string>> keys;
-    keys.reserve(profile.properties.size());
+    keys.reserve(profile.properties.size() * 2);
+
+    bool isMlbb = (targetPath.find("mobile.legends") != std::string::npos
+                   || profile.game_id == "mlbb"
+                   || profile.package_name == "com.mobile.legends");
+
+    bool isPubgm = (targetPath.find("tencent.ig") != std::string::npos
+                    || targetPath.find("pubg") != std::string::npos
+                    || profile.game_id == "pubgm"
+                    || profile.package_name == "com.tencent.ig");
+
+    bool isCodm = (targetPath.find("callofduty") != std::string::npos
+                   || targetPath.find("codm") != std::string::npos
+                   || profile.game_id == "codm"
+                   || profile.package_name == "com.activision.callofduty.shooter");
 
     for (const auto& kv : profile.properties) {
         keys.emplace_back(kv.first, kv.second);
+
+        // For MLBB and Unity XML PlayerPrefs: auto-emit PascalCase equivalents
+        if (isMlbb && kv.first.find('_') != std::string::npos) {
+            std::string pascal = toPascalCase(kv.first);
+            if (!pascal.empty()) {
+                keys.emplace_back(pascal, kv.second);
+            }
+        }
+
+        // For PUBGM UE4 CVars: auto-emit +CVars=r.* format if key starts with r_ or r.
+        if (isPubgm) {
+            if (kv.first.rfind("r_", 0) == 0) {
+                std::string cvarName = "r." + toPascalCase(kv.first.substr(2));
+                keys.emplace_back(cvarName, kv.second);
+                keys.emplace_back("+CVars=" + cvarName, kv.second);
+            } else if (kv.first.rfind("r.", 0) == 0) {
+                keys.emplace_back("+CVars=" + kv.first, kv.second);
+            }
+        }
     }
 
-    // Use apply_keys_to_file from config_common
+    // Special MLBB Ultra Drone View & Combat mappings
+    if (isMlbb) {
+        auto itDrone = profile.properties.find("ultra_drone_view");
+        if (itDrone == profile.properties.end()) itDrone = profile.properties.find("drone_view");
+        if (itDrone != profile.properties.end() && (itDrone->second == "true" || itDrone->second == "1")) {
+            keys.emplace_back("CameraHeight", "4");
+            keys.emplace_back("FOVBoost", "1.75");
+            keys.emplace_back("DroneView", "1");
+            keys.emplace_back("PanoramicFOV", "1.75");
+            keys.emplace_back("DroneFOV", "180");
+            keys.emplace_back("MaxFOV", "180");
+            keys.emplace_back("FieldOfView", "180");
+            keys.emplace_back("CameraDistance", "180");
+            keys.emplace_back("WideCameraAngle", "1");
+            keys.emplace_back("MapScale", "1.35");
+            keys.emplace_back("MapVisibilityRange", "2.0");
+        }
+        auto itDmg = profile.properties.find("damage_multiplier");
+        if (itDmg != profile.properties.end()) {
+            keys.emplace_back("DamageLockMax", itDmg->second);
+            keys.emplace_back("DamageBoost", itDmg->second);
+            keys.emplace_back("TrueDamageBoost", itDmg->second);
+        }
+        auto itAtk = profile.properties.find("attack_speed_boost");
+        if (itAtk != profile.properties.end()) {
+            keys.emplace_back("AttackSpeedBoost", itAtk->second);
+            keys.emplace_back("AttackSpeedMax", "1");
+            keys.emplace_back("BasicAttackRate", "10");
+        }
+    }
+
+    // Special PUBGM Ultra Drone View (iPad FOV) & Combat mappings
+    if (isPubgm) {
+        auto itDrone = profile.properties.find("ultra_drone_view");
+        if (itDrone == profile.properties.end()) itDrone = profile.properties.find("drone_view");
+        if (itDrone == profile.properties.end()) itDrone = profile.properties.find("r_ipad_view");
+        if (itDrone != profile.properties.end() && (itDrone->second == "true" || itDrone->second == "1")) {
+            keys.emplace_back("r.PUBGCameraFOV", "130");
+            keys.emplace_back("r.PUBGCameraDistance", "220");
+            keys.emplace_back("r.PUBGIpadView", "1");
+            keys.emplace_back("r.IpadView", "1");
+            keys.emplace_back("r.ThirdPersonFOV", "130");
+            keys.emplace_back("r.ThirdPersonCameraDistance", "220");
+            keys.emplace_back("r.WideView", "1");
+            keys.emplace_back("r.AspectRatioAxisConstraint", "AspectRatio_MaintainYFOV");
+            keys.emplace_back("DroneView", "1");
+            keys.emplace_back("DroneFOV", "130");
+            keys.emplace_back("IpadView", "1");
+        }
+        auto itDmg = profile.properties.find("damage_multiplier");
+        if (itDmg != profile.properties.end()) {
+            keys.emplace_back("r.PUBGDamageLockMax", itDmg->second);
+            keys.emplace_back("r.PUBGDamageBoost", itDmg->second);
+            keys.emplace_back("DamageLockMax", itDmg->second);
+        }
+    }
+
+    // Special CODM Ultra Drone View & Combat mappings
+    if (isCodm) {
+        auto itDrone = profile.properties.find("ultra_drone_view");
+        if (itDrone == profile.properties.end()) itDrone = profile.properties.find("drone_view");
+        if (itDrone != profile.properties.end() && (itDrone->second == "true" || itDrone->second == "1")) {
+            keys.emplace_back("CameraFOV", "120");
+            keys.emplace_back("ThirdPersonFOV", "120");
+            keys.emplace_back("FirstPersonFOV", "120");
+            keys.emplace_back("FPP_FOV", "120");
+            keys.emplace_back("TPP_FOV", "120");
+            keys.emplace_back("DroneView", "1");
+            keys.emplace_back("DroneFOV", "120");
+            keys.emplace_back("CameraDistance", "220");
+            keys.emplace_back("CameraHeight", "4");
+            keys.emplace_back("Camera_Elevation", "4.0");
+            keys.emplace_back("FOV_Scale_Float", "1.5");
+            keys.emplace_back("iPadView", "1");
+        }
+        auto itDmg = profile.properties.find("damage_floor_max");
+        if (itDmg == profile.properties.end()) itDmg = profile.properties.find("damage_multiplier");
+        if (itDmg != profile.properties.end()) {
+            keys.emplace_back("DamageLockMax", itDmg->second);
+            keys.emplace_back("DamageFloorMax", itDmg->second);
+            keys.emplace_back("HeadshotMultiplier", "999");
+        }
+    }
+
+    // Use apply_keys_to_file from config_common.
     bool ok = apply_keys_to_file(targetPath, targetPath.c_str(), keys, "NativeLuaProfile");
-    LOGI("Native Lua injection to [%s] -> %s (keys: %zu)", targetPath.c_str(), ok ? "SUCCESS" : "FAILED", keys.size());
+    LOGI("Native Lua injection to [%s] -> %s (keys: %zu)",
+         targetPath.c_str(), ok ? "SUCCESS" : "FAILED", keys.size());
     return ok;
 }
 

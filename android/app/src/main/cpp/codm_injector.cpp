@@ -1403,6 +1403,194 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmSovereignOv
     return ok ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── CODM: 2026 Ultra Drone View Panoramic FOV Suite ──────────────────────────
+// CameraFOV=120, ThirdPersonFOV=120, FPP_FOV=120, TPP_FOV=120, Camera_Elevation=4.0
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmUltraDroneViewMaxFov(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
 
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
 
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
 
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"CameraFOV",                     "120"},
+        {"ThirdPersonFOV",                "120"},
+        {"FirstPersonFOV",                "120"},
+        {"FPP_FOV",                       "120"},
+        {"TPP_FOV",                       "120"},
+        {"DroneView",                     "1"},
+        {"DroneFOV",                      "120"},
+        {"FieldOfView",                   "120"},
+        {"CameraDistance",                "220"},
+        {"CameraHeight",                  "4"},
+        {"WideCameraAngle",               "1"},
+        {"iPadView",                      "1"},
+        {"PerspectiveMode",               "1"},
+        {"PanoramicFOV",                  "1.75"},
+        {"FOV_Scale",                     "150"},
+        {"Camera_Elevation",              "4.0"},
+        {"FOV_Scale_Float",               "1.5"},
+        {"Panoramic_Scale",               "1.75"},
+        {"MaxFOV",                        "120"},
+        {"MapVisibilityRange",            "2.0"},
+        {"AllowOcclusionQueries",         "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "string", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime  = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmUltraDroneViewMaxFov injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}
+
+// =============================================================================
+// ─── CODM: 2026 God Mode Full Overdrive Master Cheat Suite ────────────────────
+// Single-pass atomic injection: No Recoil / No Spread, Enemy Lock All-Scope (50-450m),
+// 3-Bullet Head / 5-Bullet Body Kill, Damage 10000+, 0ms Reload, Kinetic Armor & FOV 120
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmGodModeFullOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    if (!path) return JNI_FALSE;
+
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (pathStr.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🔫 Zero Recoil, No Spread & BSA Removal ──
+        {"RecoilScale",                   "0"},
+        {"VerticalRecoilScale",           "0"},
+        {"HorizontalRecoilScale",         "0"},
+        {"RecoilPatternScale",            "0"},
+        {"WeaponSpread",                  "0"},
+        {"WeaponSway",                    "0"},
+        {"BulletSpreadScale",             "0"},
+        {"SpreadDecayRate",               "25"},
+        {"BulletSpreadAccuracy",          "1.0"},
+        {"AimSpreadMax",                  "0.0"},
+        {"AimSpreadMin",                  "0.0"},
+        {"BsaDecayRate",                  "10.0"},
+
+        // ── 🎯 Enemy Lock All-Scope (50m, 150m, 250m, 350m, 450m) ──
+        {"AimAssistEnabled",              "1"},
+        {"AimAssistStrength",             "100"},
+        {"AimMagnetism",                  "3"},
+        {"HeadMagnetism",                 "1"},
+        {"AimSnapSpeed",                  "10"},
+        {"AimSmoothFactor",               "0"},
+        {"AdsZeroDelay",                  "1"},
+        {"ScopeHipfire50mLock",           "1"},
+        {"Scope1x150mLock",               "1"},
+        {"Scope3x250mLock",               "1"},
+        {"Scope6x350mLock",               "1"},
+        {"Scope10x450mLock",              "1"},
+        {"AimLeadCompensation",           "1"},
+
+        // ── 💀 3-Bullet Headshot & 5-Bullet Universal Kill ──
+        {"HeadshotBulletCount",           "3"},
+        {"KillBulletThreshold",           "5"},
+        {"BoneIndex",                     "0"},
+        {"HeadshotMultiplier",            "999"},
+        {"DamageFloorMax",                "10000"},
+        {"DamageLockMax",                 "10000"},
+        {"WallPenetrateRange",            "500"},
+        {"WallPenetrationRange",          "500"},
+
+        // ── ⚡ 0ms Fast Handling & Instant Chambering ──
+        {"ChamberingSpeedMultiplier",     "10.0"},
+        {"ReloadSpeedMultiplier",         "10.0"},
+        {"ReloadDelayMs",                 "0"},
+        {"FastWeaponSwapDelay",           "0"},
+        {"WeaponSwapDelayMs",             "0"},
+        {"FastScopeAdsDelay",             "0"},
+        {"AdsAnimSpeedScale",             "10"},
+        {"AttackSpeedBoost",              "10000"},
+
+        // ── 🛡️ Kinetic Armor & Defensive Perks ──
+        {"KineticArmorOverdrive",         "10000"},
+        {"DamageReductionRatio",          "0.99"},
+        {"DamageReduction",               "0.99"},
+        {"DeadSilenceAlwaysActive",       "1"},
+        {"GhostPerkAlwaysActive",         "1"},
+        {"QuickFixHealthInstant",         "1"},
+        {"FlakJacketExplosionLock",       "1"},
+
+        // ── 🏃 Extreme Mobility & 12x Slide Cancel Turbo ──
+        {"SlideCancelSpeedMultiplier",    "12.0"},
+        {"SlideSpeedMultiplier",          "12.0"},
+        {"SlideDelayMs",                  "0"},
+        {"SprintSpeedMultiplier",         "12.0"},
+        {"BunnyHopVelocityBoost",         "1.5"},
+
+        // ── 👁️ Ultra Drone View Panoramic FOV (120 FOV + Elevation 4) ──
+        {"CameraFOV",                     "120"},
+        {"ThirdPersonFOV",                "120"},
+        {"FirstPersonFOV",                "120"},
+        {"FPP_FOV",                       "120"},
+        {"TPP_FOV",                       "120"},
+        {"DroneView",                     "1"},
+        {"DroneFOV",                      "120"},
+        {"FieldOfView",                   "120"},
+        {"CameraDistance",                "220"},
+        {"CameraHeight",                  "4"},
+        {"Camera_Elevation",              "4.0"},
+        {"FOV_Scale_Float",               "1.5"},
+        {"iPadView",                      "1"},
+
+        // ── 🎮 1000Hz Gyro & Low Latency Input ──
+        {"GyroSampleRate",                "1000"},
+        {"GyroZeroDelay",                 "1"},
+        {"GyroStabilization",             "1"},
+        {"TouchPollingRate",              "1000"},
+        {"TouchZeroDelay",                "1"},
+        {"ZeroInputLag",                  "1"},
+        {"HitRegSyncRate",                "1000"},
+        {"bFramePacingEnabled",           "True"},
+        {"AllowOcclusionQueries",         "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "string", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime  = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmGodModeFullOverdrive master injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}

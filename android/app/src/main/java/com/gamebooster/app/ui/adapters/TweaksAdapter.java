@@ -83,10 +83,23 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         applyFilter();
     }
 
+    private static final java.util.Set<String> EXCLUDED_TOP_SWITCH_TWEAK_IDS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "game_driver_mlbb_codm_pubgm_preference",
+            "disable_data_saver",
+            "disable_battery_saver",
+            "wifi_power_save_disable",
+            "dns_over_tls_latency_bypass"
+    ));
+
     private void applyFilter() {
         List<TweakItem> result = new ArrayList<>();
         for (TweakItem item : allMasterTweaks) {
             if (item == null) continue;
+
+            // Deduplication: Exclude items already exposed as primary top switches
+            if (EXCLUDED_TOP_SWITCH_TWEAK_IDS.contains(item.getId())) {
+                continue;
+            }
 
             // Category match
             if (currentCategory != TweakCategory.ALL && item.getCategory() != currentCategory) {
@@ -221,6 +234,7 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
                 // 1. Immediately persist state in memory & storage
                 targetItem.setApplied(isChecked);
                 TweakPreferences.saveTweakState(context, targetItem.getId(), isChecked);
+                TweakPreferences.syncTweakToManualSetting(context, targetItem.getId(), isChecked);
 
                 if (stateChangeListener != null) {
                     int appliedCount = TweakManagerRepository.getAppliedCount(context);

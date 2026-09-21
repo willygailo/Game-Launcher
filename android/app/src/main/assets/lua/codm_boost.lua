@@ -355,5 +355,44 @@ profile.bypass_timestamp_restore      = true
 profile.bypass_selinux_preserve       = true
 profile.bypass_session_micro_drift    = true
 
+-- ── Unity3D Drone View / iPad FOV Config Keys ──────────────────────────────────
+-- Injected into PlayerPrefs XML + PlayerSetting.json by CodmConfigPatcher.
+profile.CameraFOV                     = 120   -- Unity PlayerPrefs: wide drone FOV
+profile.ThirdPersonFOV                = 120   -- TPP camera
+profile.FirstPersonFOV                = 120   -- FPP camera
+profile.DroneView                     = 1     -- enable drone camera mode
+profile.DroneFOV                      = 120   -- drone-specific FOV
+profile.CameraDistance                = 220   -- max pull-back distance
+profile.iPadView                      = 1     -- iPad aspect ratio mode unlock
+profile.WideCameraAngle               = 1     -- wide-angle panoramic view
+
+-- ── Direct CODM Engine Raw Mirror (Native C++ Lua Engine Synthesizer) ─────────
+profile.codm_raw_engine_keys = {
+    ["CameraFOV"] = "120",
+    ["ThirdPersonFOV"] = "120",
+    ["FirstPersonFOV"] = "120",
+    ["DroneView"] = "1",
+    ["DroneFOV"] = "120",
+    ["CameraDistance"] = "220",
+    ["Camera_Elevation"] = "4.0",
+    ["Camera_Distance"] = "7.5",
+    ["FPP_FOV"] = "120",
+    ["TPP_FOV"] = "120",
+    ["DroneViewUltra"] = "1",
+    ["iPadView"] = "1",
+    ["DamageLockMax"] = "10000",
+    ["AttackSpeedMax"] = "10000",
+    ["KineticShieldMax"] = "10000",
+    ["ArmorDefenseMax"] = "10000",
+    ["ZeroRecoilLock"] = "1",
+    ["WeaponSpreadZero"] = "1",
+    ["EnemyLockMaxAllScope"] = "1",
+    ["AutoHeadshotBulletKill"] = "1",
+    ["FastReloadQuickSwap"] = "1",
+    ["InstantChamberingQuickDraw"] = "1",
+    ["SlideCancelMobility"] = "1",
+    ["SovereignOverdriveBypass"] = "1"
+}
+
 return profile
 

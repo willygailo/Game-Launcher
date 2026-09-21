@@ -29,8 +29,10 @@ public final class GameSpoofSafetyRegistry {
     private static final Set<String> HIGH_RISK_PATTERNS = new HashSet<>(Arrays.asList(
             // PUBG Mobile family (4.6 / Global / Regional variants)
             "tencent.ig", "tencent.iglite", "tmgp.pubgm", "vng.pubgmobile", "pubgm", "pubg.imobile", "pubg.krmobile", "rekoo.pubgm", "pubg.newstate", "pubgmobile",
-            // Call of Duty Mobile / Warzone
+            // Call of Duty Mobile / Warzone — Global (Activision) + Garena regional variants
+            // Fix S2: Garena CODM packages added (previously missing from HIGH_RISK)
             "callofduty", "activision", "tmgp.cod", "warzone",
+            "garena.game.codm", "garena.codm", "tm.codm", "codmobile", "codm.garena",
             // Honor of Kings
             "tmgp.sgame", "sgameglobal",
             // Valorant Mobile / Project C

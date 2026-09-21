@@ -389,7 +389,7 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
         try {
-            PubgConfigPatcher.applyDroneViewConfig(pkg);
+            PubgConfigPatcher.applyPubgUltraDroneViewMaxFov(pkg);
         } catch (Throwable ignored) {}
     }
 
@@ -459,6 +459,8 @@ public final class GameAutoInjectDispatcher {
         // ─── 2026 All-Scope & No-Scope Aim Lock + 3-Bullet Headshot Kill Suite ────
         try { CodmConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
         try { CodmConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
+        // ─── 2026 Ultra Drone View (Panoramic FOV 120 + Distance 220) ────
+        try { CodmConfigPatcher.applyCodmUltraDroneViewMaxFov(pkg); } catch (Throwable ignored) {}
     }
 
 

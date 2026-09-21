@@ -409,5 +409,36 @@ profile.r_peripheral_vision_boost   = 1.45
 profile.r_fov_anti_blackscreen      = 1
 profile.r_drone_anti_ban_stealth    = true
 
+-- ── Direct UE4 +CVars Raw Mirror (Native C++ Lua Engine Synthesizer) ─────────
+profile.ue4_raw_cvars = {
+    ["+CVars=r.PUBGCameraFOV"] = "130",
+    ["+CVars=r.PUBGCameraDistance"] = "220",
+    ["+CVars=r.PUBGIpadView"] = "1",
+    ["+CVars=r.PUBGDroneView"] = "1",
+    ["+CVars=r.PUBGThirdPersonFOV"] = "130",
+    ["+CVars=r.PUBGFirstPersonFOV"] = "120",
+    ["+CVars=r.PUBGVerticalFOV"] = "110",
+    ["+CVars=r.PUBGPanoramicView"] = "1",
+    ["+CVars=r.PUBGDamageLockMax"] = "10000",
+    ["+CVars=r.PUBGAttackSpeedMax"] = "10000",
+    ["+CVars=r.PUBGKineticShieldMax"] = "10000",
+    ["+CVars=r.PUBGArmorDefenseMax"] = "10000",
+    ["+CVars=r.PUBGZeroRecoilLock"] = "1",
+    ["+CVars=r.PUBGWeaponSpreadZero"] = "1",
+    ["+CVars=r.PUBGEnemyLockMaxAllScope"] = "1",
+    ["+CVars=r.PUBGAutoHeadshotBulletKill"] = "1",
+    ["+CVars=r.PUBGScope50mIronRedDotLock"] = "1",
+    ["+CVars=r.PUBGScope150m2x3xLock"] = "1",
+    ["+CVars=r.PUBGScope250m4xAcogLock"] = "1",
+    ["+CVars=r.PUBGScope350m6xAdjustedLock"] = "1",
+    ["+CVars=r.PUBGScope450m8xSniperLock"] = "1",
+    ["+CVars=r.PUBG3BulletHeadshotKill"] = "1",
+    ["+CVars=r.PUBG5BulletBodyKill"] = "1",
+    ["+CVars=r.PUBGFastReloadQuickSwap"] = "1",
+    ["+CVars=r.PUBGInstantChamberingQuickDraw"] = "1",
+    ["+CVars=r.PUBGSlideCancelMobility"] = "1",
+    ["+CVars=r.PUBGSovereignOverdriveBypass"] = "1"
+}
+
 return profile
 

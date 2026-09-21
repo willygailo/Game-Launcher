@@ -70,27 +70,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "skia_vulkan_pipeline",
-                "Skia Vulkan Graphics Pipeline & Render Thread Boost",
-                "Enables Skia Vulkan pipeline with real-time render thread priority (-20) and GPU pixel buffers",
-                "setprop debug.renderengine.skia_pipeline true; setprop debug.renderengine.backend vulkan; setprop debug.hwui.render_thread_priority -20; setprop debug.hwui.use_gpu_pixel_buffers true; setprop debug.hwui.skip_empty_damage true",
-                "setprop debug.renderengine.skia_pipeline false; setprop debug.hwui.render_thread_priority 0; setprop debug.hwui.use_gpu_pixel_buffers false",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-
-        TWEAKS.add(new TweakItem(
-                "sf_zero_vsync_phase",
-                "Zero VSync Phase Frame Offsets",
-                "Eliminates SurfaceFlinger VSync phase offset delays for instantaneous display pipeline dispatch",
-                "setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0",
-                "setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_phase_offset_ns 1000000",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "disable_hw_vsync",
                 "SurfaceFlinger Virtual Display HW VSync Bypass",
                 "Disables Virtual Display SurfaceFlinger VSync waiting to prevent frame pacing drops",
@@ -238,26 +217,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "android_13_16_adpf_fixed_perf",
-                "Android 13/14/15/16 ADPF & Fixed Performance Lock",
-                "Enables Android Dynamic Performance Framework (ADPF) CPU/GPU hints and locks CPU/GPU clocks with Fixed Performance Mode",
-                "cmd power set-fixed-performance-mode-enabled true; setprop debug.sf.enable_adpf_cpu_hint true; setprop debug.hwui.use_hint_manager true; setprop persist.sys.adpf.enable 1; setprop persist.sys.adpf.mode 1; setprop debug.adpf.hint.enabled 1; setprop debug.adpf.cpu.boost 1; setprop debug.adpf.gpu.boost 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.predict_hwc_composition_strategy 1",
-                "cmd power set-fixed-performance-mode-enabled false; setprop debug.sf.enable_adpf_cpu_hint false; setprop debug.hwui.use_hint_manager false; setprop persist.sys.adpf.enable 0",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "android_13_16_deviceconfig_interventions",
-                "Android 13-16 DeviceConfig Game Interventions & Phantom Killer Bypass",
-                "Locks DeviceConfig sync to persistent, enables runtime startup caches, and disables Android 13-16 phantom process killer",
-                "cmd device_config set_sync_disabled_for_tests persistent; device_config put runtime_native_boot use_app_image_startup_cache true; device_config put runtime_native_boot pin_app_image_startup_cache true; device_config put runtime_native_boot boost_sched_priority true; device_config put activity_manager max_phantom_processes 2147483647; settings put global settings_enable_monitor_phantom_procs false; settings put global cached_apps_freezer disabled",
-                "cmd device_config set_sync_disabled_for_tests none; settings put global settings_enable_monitor_phantom_procs true",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "force_gpu_rendering",
                 "Force GPU Hardware Acceleration",
                 "Forces 2D window rendering to always use GPU hardware pipeline",
@@ -374,15 +333,6 @@ public class TweakManagerRepository {
         // =========================================================================
         // 5. FLAGSHIP ZERO-LATENCY, KERNEL GOVERNOR & TCP BBR TWEAKS
         // =========================================================================
-        TWEAKS.add(new TweakItem(
-                "sf_zero_latency_latching",
-                "SurfaceFlinger Composition Strategy & Scheduling Turbo",
-                "Optimizes SurfaceFlinger composition strategy predictions, enables unsignaled buffer latching, disables backpressure drops, and aligns 500µs early phase offsets",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.enable_hwc_vds 1; setprop debug.sf.early.app.duration 500; setprop debug.sf.early.sf.duration 500; setprop debug.sf.early_phase_offset_ns 500000; setprop debug.sf.early_app_phase_offset_ns 500000; setprop debug.sf.high_fps_early_phase_offset_ns 500000; setprop debug.sf.high_fps_early_app_phase_offset_ns 500000; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3; setprop debug.sf.showupdates 0; setprop debug.sf.showcpu 0; setprop debug.sf.showbackground 0; setprop debug.sf.showfps 0",
-                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.sf.predict_hwc_composition_strategy 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
-                TweakCategory.CPU_GPU,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "game_driver_mlbb_codm_pubgm_preference",
@@ -465,16 +415,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "tcp_bbr_gaming_low_latency",
-                "Google BBR TCP Congestion Control, Anti-Bufferbloat & Nagle Bypass",
-                "Applies Google BBR TCP congestion algorithm, unthrottles packet low-watermark, and bypasses socket buffering delays",
-                "setprop net.ipv4.tcp_congestion_control bbr; setprop net.ipv4.tcp_notsent_lowat 16384; sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null",
-                "setprop net.ipv4.tcp_congestion_control cubic; sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.ipv4.tcp_nodelay=0 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "raw_touch_zero_slop",
                 "Raw Touch Calibration & Gesture Delay Elimination",
                 "Reduces long-press & multi-press timeouts to eliminate OS gesture navigation touch delays",
@@ -497,15 +437,6 @@ public class TweakManagerRepository {
         // =========================================================================
         // 6. ADVANCED TOUCH SAMPLING, INPUTFLINGER & DIGITIZER TWEAKS
         // =========================================================================
-        TWEAKS.add(new TweakItem(
-                "touch_sampling_rate_1000hz_lock",
-                "1000Hz Hardware Touch Digitizer Sampling Lock",
-                "Unlocks 1000Hz touch digitizer polling across Snapdragon, MediaTek, Samsung, Xiaomi, ROG, and OnePlus touch controllers",
-                "setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; setprop debug.touch.sampling_rate 1000; setprop persist.sys.gamemode.touch 1; setprop vendor.touch.game_mode 1; setprop persist.asus.touch_sampling_rate 1000; setprop persist.vendor.asus.touch_opt 1; settings put system touch_sensitivity 1; settings put system master_touch_sensitivity 1; settings put system game_mode_touch 1",
-                "setprop persist.sys.touch.report_rate 120; setprop persist.vendor.touch.sampling_rate 120; setprop debug.touch.sampling_rate 120; setprop persist.sys.gamemode.touch 0; setprop vendor.touch.game_mode 0; settings put system touch_sensitivity 0; settings put system game_mode_touch 0",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "inputflinger_motion_boost",
@@ -677,16 +608,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "ufs_storage_io_throughput_accelerator",
-                "UFS 3.1/4.0 Storage Read-Ahead & I/O Queue Accelerator",
-                "Expands storage block read-ahead to 2048KB and request queue depth to 256 across internal UFS/eMMC blocks to eliminate asset and texture streaming hitches",
-                "for q in /sys/block/sd*/queue /sys/block/mmcblk*/queue /sys/block/dm-*/queue; do [ -d \"$q\" ] && { echo 2048 > \"$q/read_ahead_kb\" 2>/dev/null; echo 256 > \"$q/nr_requests\" 2>/dev/null; echo 0 > \"$q/rotational\" 2>/dev/null; echo 0 > \"$q/add_random\" 2>/dev/null; echo 1 > \"$q/nomerges\" 2>/dev/null; }; done",
-                "for q in /sys/block/sd*/queue /sys/block/mmcblk*/queue; do [ -d \"$q\" ] && { echo 128 > \"$q/read_ahead_kb\" 2>/dev/null; echo 128 > \"$q/nr_requests\" 2>/dev/null; }; done",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "binder_ipc_latency_acceleration",
                 "Binder IPC Transaction Queue & SurfaceFlinger Sync Accelerator",
                 "Accelerates Android Binder IPC round-trip transaction latency between game clients, SurfaceFlinger graphics compositor, and Audio HAL with real-time UI thread priority",
@@ -745,16 +666,6 @@ public class TweakManagerRepository {
                 "Configures ultra-low latency Cloudflare DNS (1.1.1.1 / 1.0.0.1) and Google DNS fallback for instantaneous game matchmaking lookups",
                 "setprop net.dns1 1.1.1.1; setprop net.dns2 8.8.8.8; settings put global private_dns_specifier one.one.one.one",
                 "settings put global private_dns_mode opportunistic",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "tcp_bbr_congestion_control",
-                "TCP BBR Congestion Control & Cubic Scheduler Override",
-                "Switches kernel TCP from CUBIC to Google BBR (Bottleneck Bandwidth and RTT) — actively probes bandwidth without inducing congestion, cutting game packet RTT by 30–60ms on congested networks",
-                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.core.default_qdisc=fq 2>/dev/null; sysctl -w net.ipv4.tcp_fastopen=3 2>/dev/null; sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null; sysctl -w net.ipv4.tcp_mtu_probing=1 2>/dev/null; sysctl -w net.ipv4.tcp_sack=1 2>/dev/null; sysctl -w net.ipv4.tcp_dsack=1 2>/dev/null",
-                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.core.default_qdisc=pfifo_fast 2>/dev/null",
                 TweakCategory.NETWORK_LATENCY,
                 true
         ));
@@ -873,16 +784,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "art_dex2oat_16core_speed",
-                "ART 16-Core Parallel AOT Speed Compiler & JIT Expansion",
-                "Directs Android Runtime (ART) to compile all game DEX bytecode using up to 16 threads, enables speed filter, expands JIT cache to 128MB, and enables fast-verify",
-                "setprop pm.dexopt.bg-dexopt speed; setprop pm.dexopt.install speed; setprop dalvik.vm.dex2oat-filter speed; setprop dalvik.vm.dex2oat-threads 16; setprop dalvik.vm.image-dex2oat-threads 16; setprop dalvik.vm.boot-dex2oat-threads 16; setprop dalvik.vm.dex2oat-flags \"enable-fast-verify,no-relocate\"; setprop dalvik.vm.usejit true; setprop dalvik.vm.usejitprofiles true; setprop dalvik.vm.jitcodecachesize 128m; setprop dalvik.vm.jitthreshold 50; setprop dalvik.vm.jittransitionweight 10",
-                "setprop pm.dexopt.bg-dexopt speed-profile; setprop pm.dexopt.install speed-profile; setprop dalvik.vm.dex2oat-filter speed-profile; setprop dalvik.vm.dex2oat-threads 4",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "memory_16kb_vm_shield",
                 "Android 15/16 16KB Page Buffer Shield & Linux VM Memory Guard",
                 "Prepares Linux VM memory mappings for Android 15/16 16KB page size architectures, expands max_map_count to 1M, locks swappiness to 10, and disables memory compaction lag",
@@ -962,16 +863,6 @@ public class TweakManagerRepository {
                 "echo 1 > /proc/perfmgr/boost_ctrl/eas_ctrl/perfserv_ta_boost 2>/dev/null; echo 100 > /sys/module/mtk_fpsgo/parameters/fstb_soft_level 2>/dev/null; echo 1 > /sys/module/mtk_fpsgo/parameters/rescue_opp_c 2>/dev/null; echo 1 > /sys/module/mtk_fpsgo/parameters/fstb_boost_duration 2>/dev/null; setprop vendor.perf.gestureFlingBoost 1",
                 "echo 0 > /proc/perfmgr/boost_ctrl/eas_ctrl/perfserv_ta_boost 2>/dev/null; echo 0 > /sys/module/mtk_fpsgo/parameters/fstb_soft_level 2>/dev/null",
                 TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "zero_ltpo_vrr_clamp",
-                "Zero-LTPO Permanent Refresh Rate Clamp & VRR Neutralizer",
-                "Eliminates LTPO downclocking to 1Hz/10Hz/30Hz on touch lift-off, locking display panel CRTC and SurfaceFlinger to continuous peak refresh rate",
-                "setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.disable_backpressure 1; setprop persist.vendor.display.vrr.disable 1; setprop ro.vendor.dfps.enable 0; settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; for d in /sys/class/drm/card0/*; do [ -f \"$d/fps_change\" ] && echo 185 > \"$d/fps_change\" 2>/dev/null; done",
-                "setprop debug.sf.use_content_detection_for_refresh_rate true; setprop persist.vendor.display.vrr.disable 0; setprop ro.vendor.dfps.enable 1",
-                TweakCategory.TOUCH_DISPLAY,
                 true
         ));
 
@@ -1060,36 +951,6 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
-                "vulkan_direct_swapchain_2026",
-                "Vulkan Direct Swapchain & Unsignaled Latch",
-                "Bypasses bufferqueue presentation waiting by latching unsignaled Vulkan frames directly to SurfaceFlinger",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.renderengine.backend vulkan; setprop debug.hwui.skip_empty_damage true",
-                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0",
-                TweakCategory.CPU_GPU,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "touch_zero_slop_1000hz",
-                "Zero-Slop Touch Filter & 1000Hz Polling",
-                "Completely strips touch slop movement resistance and motion debounce delays for zero-threshold joystick and swipe response",
-                "setprop view.touch_slop 0; setprop view.scroll_friction 0; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; settings put system touch_sensitivity 1",
-                "setprop view.touch_slop 8; setprop persist.sys.touch.report_rate 120",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "sf_zero_early_phase_2026",
-                "SurfaceFlinger Early Phase Offset Nullification",
-                "Zeros out early app, early GL, and render phase offsets in SurfaceFlinger, eliminating frame dispatch delays before display refresh",
-                "setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0; setprop debug.sf.high_fps_early_phase_offset_ns 0",
-                "setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000",
-                TweakCategory.TOUCH_DISPLAY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
                 "true_185hz_vrr_defeat",
                 "True 185Hz Refresh Rate & LTPO Downclock Defeat",
                 "Disables variable refresh rate (VRR) downclocking and locks system and window manager refresh rates to 185Hz",
@@ -1105,16 +966,6 @@ public class TweakManagerRepository {
                 "Expands flash storage block read-ahead queue to 2048KB across all UFS storage channels for zero-stutter map streaming",
                 "for q in /sys/block/sd*/queue/read_ahead_kb; do echo 2048 > \"$q\" 2>/dev/null; done; for q in /sys/block/mmcblk*/queue/read_ahead_kb; do echo 2048 > \"$q\" 2>/dev/null; done",
                 "for q in /sys/block/sd*/queue/read_ahead_kb; do echo 128 > \"$q\" 2>/dev/null; done",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "android15_app_freeze_bypass",
-                "Android 14-16 Cached App Freezer Bypass",
-                "Prevents system power manager and device config from freezing background game worker threads and telemetry daemons",
-                "device_config put game_overlay com.gamebooster.app mode=2 2>/dev/null; settings put global cached_apps_freezer enabled 2>/dev/null; cmd device_config put activity_manager max_phantom_processes 2147483647 2>/dev/null",
-                "settings put global cached_apps_freezer default 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));

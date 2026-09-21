@@ -1,4 +1,5 @@
 #include "config_common.h"
+#include <sys/uio.h>
 #include <cctype>
 #include <sstream>
 #include <iostream>

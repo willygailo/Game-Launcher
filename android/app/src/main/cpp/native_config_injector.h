@@ -1840,6 +1840,60 @@ JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nati
 JNIEXPORT jlong JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeDirectMemorySearch
   (JNIEnv *, jclass, jstring, jbyteArray);
 
+/*
+ * nativeInjectMlbbUltraDroneViewMaxFov
+ * Injects 2026 MLBB Ultra Drone View Panoramic FOV Suite:
+ * CameraHeight=4, PanoramicFOV=1.75, DroneFOV=180, MapScale=1.35, WideCameraAngle=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDroneViewMaxFov
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbGodModeFullOverdrive
+ * Master atomic injector for MLBB: Damage 10000+, Max Attack Speed, God Armor,
+ * Infinite Lifesteal, Unlimited Energy, 3s Map Glitch Radar & Ultra Drone View.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbGodModeFullOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgUltraDroneViewMaxFov
+ * Injects 2026 PUBGM Ultra Drone View / iPad FOV Suite:
+ * +CVars=r.PUBGCameraFOV=130, +CVars=r.PUBGCameraDistance=220, +CVars=r.PUBGIpadView=1.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgUltraDroneViewMaxFov
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectPubgmGodModeFullOverdrive
+ * Master atomic injector for PUBGM: Magic Bullet 2.0, Zero Recoil, All-Scope Headshot,
+ * Damage 10000+, 1000Hz Gyro Sync, Kinetic Shield 10000+, 12x Sprint Turbo & iPad FOV 130.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectPubgmGodModeFullOverdrive
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmUltraDroneViewMaxFov
+ * Injects 2026 CODM Ultra Drone View Panoramic FOV Suite:
+ * CameraFOV=120, ThirdPersonFOV=120, FPP_FOV=120, TPP_FOV=120, Camera_Elevation=4.0.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmUltraDroneViewMaxFov
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectCodmGodModeFullOverdrive
+ * Master atomic injector for CODM: No Recoil / No Spread, Enemy Lock All-Scope (50-450m),
+ * 3-Bullet Head / 5-Bullet Body Kill, Damage 10000+, Kinetic Armor 10000+, 12x Slide Turbo & FOV 120.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmGodModeFullOverdrive
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

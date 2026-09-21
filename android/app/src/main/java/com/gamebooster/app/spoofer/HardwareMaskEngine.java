@@ -108,7 +108,9 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_verifiedbootstate \"green\"");
             batchCommands.add("setprop debug.game.spoofed_flash_locked \"1\"");
             batchCommands.add("setprop debug.game.spoofed_bootloader \"locked\"");
-            batchCommands.add("setprop debug.game.spoofed_security_patch \"2026-03-01\"");
+            // Fix S5: Use profile.securityPatch instead of hardcoded date so HardwareMaskEngine
+            // and SpoofProfile always report the same patch level to ACE / integrity validators.
+            batchCommands.add("setprop debug.game.spoofed_security_patch \"" + profile.securityPatch + "\"");
             batchCommands.add("setprop debug.game.spoofed_android_id \"" + profile.getAndroidId() + "\"");
             batchCommands.add("setprop debug.game.spoofed_oaid \"" + profile.getOaid() + "\"");
             batchCommands.add("setprop debug.game.spoofed_widevine \"" + profile.getWidevineDeviceId() + "\"");

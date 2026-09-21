@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.gamebooster.app.engine.lua.GameOptimizationProfile;
 import com.gamebooster.app.engine.lua.LuaConfigEngine;
+import com.gamebooster.app.spoofer.DeviceSpooferEngine;
+import com.gamebooster.app.spoofer.SpoofProfile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +43,10 @@ public class LuaProfileBridge {
         if (lower.contains("roblox")) return "roblox_boost.lua";
         if (lower.contains("standoff") || lower.contains("axlebolt")) return "standoff2_boost.lua";
         if (lower.contains("valorant")) return "valorant_boost.lua";
-        // Universal fallback for any custom or unrecognized game
-        return "pubgm_boost.lua";
+        // Fix L4: Return null for unknown games instead of pubgm_boost.lua fallback.
+        // Writing UE4 +CVars=r.* keys into Unity/other engines would corrupt their configs.
+        // Callers should check for null and skip profile injection gracefully.
+        return null;
     }
 
     /**
@@ -129,6 +133,30 @@ public class LuaProfileBridge {
                 try {
                     CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
                 } catch (Throwable ignored) {}
+            }
+
+            // Fix C4: suppress game telemetry after Lua injection so injected keys don't leak.
+            try {
+                AntiLogPatcher.applyAntiLog(pkg);
+            } catch (Throwable ignored) {}
+
+            // Fix L5: wire DeviceSpooferEngine after successful Lua config inject.
+            // Picks the best-fit hardware mask (flagship GPU/SoC spoof) for the game.
+            // Respects sanity checks and risk tiers internally.
+            if (injectedAny && context != null) {
+                try {
+                    SpoofProfile recommendedProfile = DeviceSpooferEngine.getRecommendedProfile(pkg);
+                    if (recommendedProfile != null) {
+                        boolean applied = DeviceSpooferEngine.applyProfile(context, recommendedProfile, pkg);
+                        if (applied) {
+                            Log.i(TAG, "⚡ HardwareMask [" + recommendedProfile.displayName + "] applied via LuaProfileBridge for " + pkg);
+                        } else {
+                            Log.d(TAG, "HardwareMask skipped or advisory-blocked for " + pkg);
+                        }
+                    }
+                } catch (Throwable t) {
+                    Log.d(TAG, "HardwareMask note for " + pkg + ": " + t.getMessage());
+                }
             }
 
             Log.i(TAG, "⚡ Applied Lua profile [" + scriptName + "] for " + pkg + " across " + paths.size() + " paths (ok=" + injectedAny + ")");

@@ -1946,7 +1946,7 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
         {"AimMethod", "1"},
         {"TargetPriority", "0"},
         {"SkillSmartAim", "1"},
-        {"CameraHeight", "1"},
+        {"CameraHeight", "4"},
         {"ScreenShake", "0"},
         {"Vibrate", "0"},
         {"HFR", "1"},
@@ -2398,9 +2398,10 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbAllHeroGodS
         {"JoyPerfectBeatRhythmLock", "1"},
         {"ArlottDemonGazeAutoStab", "1"},
         {"SuyouStanceSwapZeroDelay", "1"},
-        // Controls & Camera
-        {"CameraHeight", "2"},
-        {"FovBoost", "1.35"},
+        // Controls & Camera (Ultra Drone Panoramic FOV 4X)
+        {"CameraHeight", "4"},
+        {"FovBoost", "1.75"},
+        {"DroneView", "1"},
         {"MinimapEnemyPriority", "1"},
         {"JoystickZeroDeadzone", "1"},
         {"TouchPollingRate", "1000"},
@@ -2883,4 +2884,182 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastSoverei
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbFastSovereignOverdrive2026");
 }
 
+// =============================================================================
+// ─── MLBB: 2026 Ultra Drone View Panoramic FOV Suite ──────────────────────────
+// Full 4X panoramic elevation, 180 field-of-view, zero occlusion & fog bypass
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDroneViewMaxFov(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        {"CameraHeight",                 "4"},
+        {"FOVBoost",                     "1.75"},
+        {"DroneView",                    "1"},
+        {"PanoramicFOV",                 "1.75"},
+        {"DroneFOV",                     "180"},
+        {"MaxFOV",                       "180"},
+        {"FieldOfView",                  "180"},
+        {"CameraDistance",               "180"},
+        {"WideCameraAngle",              "1"},
+        {"MapScale",                     "1.35"},
+        {"MapVisibilityRange",           "2.0"},
+        {"MapClarity",                   "1"},
+        {"MinimapEnemyPriority",         "1"},
+        {"FogOfWarRemoval",              "1"},
+        {"FogOfWarBypass",               "1"},
+        {"AllowOcclusionQueries",        "1"},
+        {"UltraWallhackEspClarity",      "1"},
+        {"HeroLockRange",                "9999"},
+        {"VisionRangeBoost",             "2.0"},
+        {"DronePerspectiveMode",         "1"},
+        {"DroneCameraSmooth",            "1"},
+        {"DroneAntiShake",               "1"},
+        {"DroneAntiBlackscreen",         "1"},
+        {"DroneLockElevation",           "1"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbUltraDroneViewMaxFov");
+}
 
+// =============================================================================
+// ─── MLBB: 2026 God Mode Full Overdrive Master Cheat Suite ────────────────────
+// Atomic single-pass injection: Damage 10000+, Max Attack Speed, God Armor,
+// Infinite Lifesteal, Unlimited Energy, 3s Map Radar & Ultra Drone View
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbGodModeFullOverdrive(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 💥 Damage 10,000+ & Armor Piercing ──
+        {"DamageLockMax",                "10000"},
+        {"DamageBoost",                  "10000"},
+        {"PhysicalDamageBase",           "10000"},
+        {"MagicDamageBase",              "10000"},
+        {"TrueDamageBase",               "10000"},
+        {"TrueDamageBoost",              "10000"},
+        {"EffectiveDPSMode",             "3"},
+        {"PenetrationBoost",             "10000"},
+        {"ArmorPenMax",                  "10000"},
+        {"MagicPenMax",                  "10000"},
+        {"ArmorIgnorePercent",           "100.0"},
+        {"ArmorPiercingMultiplier",      "10000.0"},
+        {"CritRateBoost",                "100"},
+        {"CritDamageMultiplier",         "10.0"},
+
+        // ── ⚡ Maximum Attack Speed & Zero Windup ──
+        {"AttackSpeedBoost",             "10000"},
+        {"AttackSpeedCap",               "10.0"},
+        {"AttackSpeedUnlock",            "1"},
+        {"AttackSpeedMax",               "1"},
+        {"BasicAttackRate",              "10"},
+        {"AutoAttackInterval",           "0"},
+        {"BasicAttackInterval",          "0"},
+        {"AttackIntervalMin",            "0"},
+        {"AttackAnimSpeed",              "10.0"},
+        {"AttackWindup",                 "0"},
+        {"AttackBackswing",              "0"},
+        {"AttackAnimBlend",              "0"},
+        {"InstantBasicAttack",           "1"},
+        {"HeroAnimationCancel",          "1"},
+
+        // ── 🛡️ God Armor & True Defense 10,000+ ──
+        {"GodArmorMode",                 "1"},
+        {"PhysicalDefense",              "10000"},
+        {"MagicDefense",                 "10000"},
+        {"ArmorMax",                     "10000"},
+        {"DamageReduction",              "1.0"},
+        {"DamageReductionPercent",       "100"},
+        {"PhysicalShield",               "10000"},
+        {"MagicShield",                  "10000"},
+        {"ShieldMultiplier",             "10.0"},
+        {"ShieldBoost",                  "10000"},
+        {"ShieldAbsorption",             "1.0"},
+        {"PassiveShieldRegen",           "10000"},
+        {"MaxHpBoost",                   "10000"},
+        {"TrueDamageImmunity",           "1"},
+        {"AntiCritReduction",            "1.0"},
+        {"CrowdControlReduction",        "1.0"},
+        {"TenacityMax",                  "1.0"},
+
+        // ── 🩸 Infinite Lifesteal & Omni-Vamp 10,000+ ──
+        {"InfiniteLifesteal",            "1"},
+        {"LifestealBoost",               "10000"},
+        {"LifestealPercent",             "100"},
+        {"LifestealMultiplier",          "100.0"},
+        {"PhysicalLifesteal",            "10000"},
+        {"MagicLifesteal",               "10000"},
+        {"SpellVampBoost",               "10000"},
+        {"OmniVamp",                     "10000"},
+        {"OmniVampBoost",                "10000"},
+        {"HpRegenRate",                  "10000"},
+        {"HpRegenBoost",                 "10000"},
+        {"InstantHealOnHit",             "10000"},
+        {"AntiHealBypass",               "1"},
+        {"AntiHealImmunity",             "1"},
+
+        // ── 🌀 Unlimited Mana & Energy & 0s CD ──
+        {"UnlimitedManaEnergy",          "1"},
+        {"ZeroManaCost",                 "1"},
+        {"InfiniteMana",                 "1"},
+        {"ManaRegenRate",                "10000"},
+        {"ZeroEnergyCost",               "1"},
+        {"InfiniteEnergy",               "1"},
+        {"EnergyRegenRate",              "10000"},
+        {"FannyUnlimitedEnergyLock",     "1"},
+        {"LingUnlimitedEnergyLock",      "1"},
+        {"NolanUnlimitedEnergyLock",     "1"},
+        {"SkillZeroCd",                  "1"},
+        {"UltInstantReset",              "1"},
+
+        // ── 👁️ Ultra Drone View 4X Panoramic FOV ──
+        {"CameraHeight",                 "4"},
+        {"FOVBoost",                     "1.75"},
+        {"DroneView",                    "1"},
+        {"PanoramicFOV",                 "1.75"},
+        {"DroneFOV",                     "180"},
+        {"MaxFOV",                       "180"},
+        {"FieldOfView",                  "180"},
+        {"CameraDistance",               "180"},
+        {"WideCameraAngle",              "1"},
+        {"MapScale",                     "1.35"},
+        {"MapVisibilityRange",           "2.0"},
+        {"MapClarity",                   "1"},
+        {"FogOfWarRemoval",              "1"},
+        {"FogOfWarBypass",               "1"},
+        {"AllowOcclusionQueries",        "1"},
+        {"UltraWallhackEspClarity",      "1"},
+
+        // ── 🎯 3-Second Auto Map Glitch & Enemy Ghost Radar ──
+        {"AutoMapGlitch3s",              "1"},
+        {"MapPulseInterval",             "3"},
+        {"EnemyPositionSyncPulse",       "3000"},
+        {"FowMicroPulseDuration",        "250"},
+        {"FowProgressiveReveal",         "1"},
+        {"MinimapEnemyIconRetention",    "3000"},
+        {"MinimapGhostTracking",         "1"},
+        {"MinimapEnemyPriority",         "1"},
+        {"BushOcclusionCulling",         "0"},
+        {"RiverBushVision",              "1"},
+        {"HeroTargetLockRange",          "9999"},
+        {"TargetLockProximitySweep",     "3000"},
+
+        // ── 🌾 Fast Farming & Objective Slaying ──
+        {"FastFarmingOverdrive",         "1"},
+        {"JungleClearSpeed",             "10"},
+        {"CreepDamageMax",               "10000"},
+        {"MinionWaveInstantClear",       "1"},
+        {"AutoRetriLordTurtle",          "1"},
+        {"RetriHpThresholdCalc",         "1"},
+        {"InstantSmite",                 "1"},
+        {"ObjectiveInstantBurst",        "10000"},
+        {"RetributionTrueDamageFloor",   "10000"},
+
+        // ── 🎮 Touch 1000Hz, Frame Sync & Zero Lag ──
+        {"TouchPollingRate",             "1000"},
+        {"TouchZeroDelay",               "1"},
+        {"ZeroInputLag",                 "1"},
+        {"InputBufferRate",              "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbGodModeFullOverdriveMaster");
+}

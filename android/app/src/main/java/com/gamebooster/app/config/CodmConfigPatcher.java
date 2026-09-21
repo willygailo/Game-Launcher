@@ -173,6 +173,7 @@ public class CodmConfigPatcher {
         applyRoguelikeModeAimAssist(packageName);
         applyS8FullRankedSweep(packageName);
         applyCodmSovereignOverdriveBypass(packageName);
+        applyCodmUltraDroneViewMaxFov(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectCodmGodModeFullOverdrive(path);
         }
@@ -1008,12 +1009,26 @@ public class CodmConfigPatcher {
         CommonConfigTuningInjector.applyShield1500Config(packageName);
     }
 
+    /**
+     * Dedicated CODM Ultra Drone View & Panoramic FOV Engine.
+     * Injects Unity3D PlayerPrefs XML and Setting/PlayerSetting.json with expanded camera FOV,
+     * elevation, and distance without altering host screen density.
+     */
+    public static void applyCodmUltraDroneViewMaxFov(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        List<String> paths = getConfigPaths(packageName);
+        for (String path : paths) {
+            NativeConfigInjector.injectCodmUltraDroneViewMaxFov(path);
+        }
+        Log.i(TAG, "⚡ CODM Ultra Drone View (FOV 120 + Distance 220 + Elevation 4) applied across " + paths.size() + " configs for " + packageName);
+    }
+
     public static void applyDroneViewUltraConfig(String packageName) {
-        CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
+        applyCodmUltraDroneViewMaxFov(packageName);
     }
 
     public static void applyDroneViewConfig(String packageName) {
-        CommonConfigTuningInjector.applyDroneViewConfig(packageName);
+        applyCodmUltraDroneViewMaxFov(packageName);
     }
 
     public static void applyArmorDefConfig(String packageName) {

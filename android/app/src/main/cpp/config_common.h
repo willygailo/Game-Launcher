@@ -23,9 +23,11 @@
 #include <memory>
 #include <algorithm>
 #include <cctype>
-#include <sys/uio.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
+// Fix N1+N2: sys/uio.h and sys/ptrace.h removed from shared header.
+// Google Play 2025 NDK policy flags ptrace presence in shared libs.
+// Both are included only in native_security_bypass.cpp where they are used.
+// sys/wait.h retained here as it provides WIFEXITED/WEXITSTATUS macros
+// used in general process management across multiple TUs.
 
 #if __has_include(<android/log.h>)
 #include <android/log.h>

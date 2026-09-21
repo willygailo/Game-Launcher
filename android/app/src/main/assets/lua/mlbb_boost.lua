@@ -489,5 +489,126 @@ profile.fast_movement_speed           = 10.0
 profile.river_speed_boost             = 2.0
 profile.zero_turn_delay               = 1
 
+-- ── 💎 DIRECT UNITY PLAYERPREFS & ATOMIC OVERRIDES (PascalCase Mirror) ───────
+-- These mirror directly into com.mobile.legends.v2.playerprefs.xml nodes:
+profile.CameraHeight                  = 4
+profile.FOVBoost                      = 1.75
+profile.DroneView                     = 1
+profile.PanoramicFOV                  = 1.75
+profile.DroneFOV                      = 180
+profile.MaxFOV                        = 180
+profile.FieldOfView                   = 180
+profile.CameraDistance                = 180
+profile.WideCameraAngle               = 1
+profile.MapScale                      = 1.35
+profile.MapVisibilityRange            = 2.0
+profile.MapClarity                    = 1
+profile.FogOfWarRemoval               = 1
+profile.FogOfWarBypass                = 1
+profile.AllowOcclusionQueries         = 1
+profile.UltraWallhackEspClarity       = 1
+profile.HeroLockRange                 = 9999
+profile.VisionRangeBoost              = 2.0
+profile.DronePerspectiveMode          = 1
+profile.DroneCameraSmooth             = 1
+profile.DroneAntiShake                = 1
+profile.DroneAntiBlackscreen          = 1
+profile.DroneLockElevation            = 1
+
+-- Combat & Stats Overrides
+profile.DamageLockMax                 = 10000
+profile.DamageBoost                   = 10000
+profile.PhysicalDamageBase            = 10000
+profile.MagicDamageBase               = 10000
+profile.TrueDamageBase                = 10000
+profile.TrueDamageBoost               = 10000
+profile.EffectiveDPSMode              = 3
+profile.PenetrationBoost              = 10000
+profile.ArmorPenMax                   = 10000
+profile.MagicPenMax                   = 10000
+profile.ArmorIgnorePercent            = 100.0
+profile.ArmorPiercingMultiplier       = 10000.0
+profile.CritRateBoost                 = 100
+profile.CritDamageMultiplier          = 10.0
+
+-- Attack Speed & Zero Delay
+profile.AttackSpeedBoost              = 10000
+profile.AttackSpeedCap                = 10.0
+profile.AttackSpeedUnlock             = 1
+profile.AttackSpeedMax                = 1
+profile.BasicAttackRate               = 10
+profile.AutoAttackInterval            = 0
+profile.BasicAttackInterval           = 0
+profile.AttackIntervalMin             = 0
+profile.AttackAnimSpeed               = 10.0
+profile.AttackWindup                  = 0
+profile.AttackBackswing               = 0
+profile.AttackAnimBlend               = 0
+profile.InstantBasicAttack            = 1
+profile.HeroAnimationCancel           = 1
+
+-- God Armor & Defense
+profile.GodArmorMode                  = 1
+profile.PhysicalDefense               = 10000
+profile.MagicDefense                  = 10000
+profile.ArmorMax                      = 10000
+profile.DamageReduction               = 1.0
+profile.DamageReductionPercent        = 100
+profile.PhysicalShield                = 10000
+profile.MagicShield                   = 10000
+profile.ShieldMultiplier              = 10.0
+profile.ShieldBoost                   = 10000
+profile.ShieldAbsorption              = 1.0
+profile.PassiveShieldRegen            = 10000
+profile.MaxHpBoost                    = 10000
+profile.TrueDamageImmunity            = 1
+profile.AntiCritReduction             = 1.0
+profile.CrowdControlReduction         = 1.0
+profile.TenacityMax                   = 1.0
+
+-- Infinite Lifesteal & Omni-Vamp
+profile.InfiniteLifesteal             = 1
+profile.LifestealBoost                = 10000
+profile.LifestealPercent              = 100
+profile.LifestealMultiplier           = 100.0
+profile.PhysicalLifesteal             = 10000
+profile.MagicLifesteal                = 10000
+profile.SpellVampBoost                = 10000
+profile.OmniVamp                      = 10000
+profile.OmniVampBoost                 = 10000
+profile.HpRegenRate                   = 10000
+profile.InstantHealOnHit              = 10000
+profile.AntiHealBypass                 = 1
+profile.AntiHealImmunity              = 1
+
+-- Unlimited Mana & Energy
+profile.UnlimitedManaEnergy           = 1
+profile.ZeroManaCost                  = 1
+profile.InfiniteMana                  = 1
+profile.ManaRegenRate                 = 10000
+profile.ZeroEnergyCost                = 1
+profile.InfiniteEnergy                = 1
+profile.EnergyRegenRate               = 10000
+profile.FannyUnlimitedEnergyLock      = 1
+profile.LingUnlimitedEnergyLock       = 1
+profile.NolanUnlimitedEnergyLock      = 1
+profile.SkillZeroCd                   = 1
+profile.UltInstantReset               = 1
+
+-- 3-Second Auto Map Glitch Radar
+profile.AutoMapGlitch3s               = 1
+profile.MapPulseInterval              = 3
+profile.EnemyPositionSyncPulse        = 3000
+profile.FowMicroPulseDuration         = 250
+profile.FowProgressiveReveal          = 1
+profile.MinimapEnemyIconRetention     = 3000
+profile.MinimapGhostTracking          = 1
+profile.MinimapEnemyPriority          = 1
+profile.BushOcclusionCulling          = 0
+profile.RiverBushVision               = 1
+profile.HeroTargetLockRange           = 9999
+profile.TargetLockProximitySweep      = 3000
+
 return profile
+
 

@@ -26,8 +26,12 @@ public class DeviceSpooferEngine {
 
     private static final String TAG = "DeviceSpooferEngine";
 
-    /** Currently active spoof profile ID, null if no spoof is applied. */
-    private static String activeProfileId = null;
+    /**
+     * Currently active spoof profile ID.
+     * Fix S3: volatile ensures cross-thread visibility without synchronization overhead.
+     * AutoGameMonitorService writes from a worker thread; UI reads from main thread.
+     */
+    private static volatile String activeProfileId = null;
 
     /** Reason the last spoof apply was blocked by the pre-apply sanity check, null when allowed. */
     private static String lastSanityBlockReason = null;
@@ -104,8 +108,11 @@ public class DeviceSpooferEngine {
         }
 
         // 2. CODM / Warzone / Blood Strike / Tactical FPS (Snapdragon 8 Elite / Adreno 830)
-        if (pkg.contains("callofduty") || pkg.contains("codm") || pkg.contains("bloodstrike") || 
-            pkg.contains("standoff2") || pkg.contains("deltaforce")) {
+        // Fix S2b: Garena regional CODM packages now explicitly routed to S25 Ultra
+        if (pkg.contains("callofduty") || pkg.contains("activision") || pkg.contains("tmgp.cod") ||
+            pkg.contains("garena.game.codm") || pkg.contains("garena.codm") ||
+            pkg.contains("tm.codm") || pkg.contains("codmobile") || pkg.contains("codm.garena") ||
+            pkg.contains("bloodstrike") || pkg.contains("standoff2") || pkg.contains("deltaforce")) {
             return SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 

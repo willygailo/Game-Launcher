@@ -109,7 +109,7 @@ public class SpoofProfile {
         this.displayId = displayId;
         this.androidVersion = androidVersion != null ? androidVersion : "15";
         this.sdkInt = sdkInt > 0 ? sdkInt : 35;
-        this.securityPatch = securityPatch != null ? securityPatch : "2025-01-01";
+        this.securityPatch = securityPatch != null ? securityPatch : "2026-06-01";
         this.glRenderer = glRenderer;
         this.glVendor = glVendor != null ? glVendor : inferVendor(glRenderer);
         this.glVersion = glVersion != null ? glVersion : "OpenGL ES 3.2 V@0615.0 (GIT@56860db, Idd24e5256e) (Date:11/24/24)";

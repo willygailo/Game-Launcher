@@ -31,6 +31,13 @@ target_compile_options(
     -fno-exceptions
     -fno-rtti
     -fomit-frame-pointer
+    # Fix N4: NDEBUG suppresses assert() in release; Wall+Wextra surface silent bugs
+    -DNDEBUG
+    -Wall
+    -Wextra
+    -Wno-unused-parameter
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
 )
 
 # Android 15 & 16 16KB page-size kernel compatibility alignment + gc-sections + LTO
