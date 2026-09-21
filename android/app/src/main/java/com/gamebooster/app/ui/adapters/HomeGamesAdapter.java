@@ -106,10 +106,14 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         }
 
         // Tap anywhere on card = instant game launch
-        View.OnClickListener launchListener = v -> com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(context, game);
+        View.OnClickListener launchListener = v -> {
+            Context ctx = (v != null && v.getContext() != null) ? v.getContext() : context;
+            com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(ctx, game);
+        };
         // Long press anywhere on card = Pre-Launch tuning dialog (FPS picker, config)
         View.OnLongClickListener tuneListener = v -> {
-            PreLaunchGameDialog.show(context, game);
+            Context ctx = (v != null && v.getContext() != null) ? v.getContext() : context;
+            PreLaunchGameDialog.show(ctx, game);
             return true;
         };
 

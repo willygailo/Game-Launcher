@@ -41,13 +41,18 @@ public class HomeGameScanner {
         }
     }
 
-    // 1. Mobile Legends: Bang Bang (ALL Regional Packages)
+    // 1. Mobile Legends: Bang Bang (ALL Regional & Store Packages)
     private static final TargetGameSpec MLBB_SPEC = new TargetGameSpec(
             new String[]{
                     "com.mobile.legends",
+                    "com.mobilelegends.mi",
+                    "com.vng.mlbbvn",
                     "com.mobile.legends.vng",
+                    "com.mobilelegends.hw",
+                    "com.mobilelegends.na",
                     "com.mobile.legends.kr",
-                    "com.mobile.legends.jp"
+                    "com.mobile.legends.jp",
+                    "com.mobile.legends.moonton"
             },
             "Mobile Legends: Bang Bang",
             "MOBA",
@@ -180,19 +185,71 @@ public class HomeGameScanner {
     );
 
     /**
+     * Comprehensive, multi-tier installation check compatible with Android 13 to 16.
+     * Overcomes OEM package visibility sandboxing (MIUI/HyperOS, ColorOS, OneUI).
+     */
+    public static boolean isPackageInstalled(PackageManager pm, String pkg) {
+        if (pm == null || pkg == null || pkg.trim().isEmpty()) return false;
+
+        // 1. Direct framework launch intent check (fastest, most authoritative)
+        try {
+            if (pm.getLaunchIntentForPackage(pkg) != null) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. PackageInfo with MATCH_ALL
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(PackageManager.MATCH_ALL));
+            } else {
+                pm.getPackageInfo(pkg, PackageManager.MATCH_ALL);
+            }
+            return true;
+        } catch (Throwable ignored) {}
+
+        // 3. ApplicationInfo with MATCH_ALL
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(PackageManager.MATCH_ALL));
+            } else {
+                pm.getApplicationInfo(pkg, PackageManager.MATCH_ALL);
+            }
+            return true;
+        } catch (Throwable ignored) {}
+
+        // 4. Standard 0 flags check
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0));
+            } else {
+                pm.getPackageInfo(pkg, 0);
+            }
+            return true;
+        } catch (Throwable ignored) {}
+
+        return false;
+    }
+
+    /**
      * Resolves a guaranteed working, explicit launch Intent with appropriate flags for the target package.
+     * Returns null if the package is not installed or no valid launcher activity is found.
      */
     public static Intent resolveLaunchIntent(PackageManager pm, String pkg) {
         if (pm == null || pkg == null || pkg.trim().isEmpty()) return null;
 
-        // 1. Try standard PackageManager launch intent
+        // Verify package is installed before attempting resolution
+        if (!isPackageInstalled(pm, pkg)) {
+            return null;
+        }
+
+        // 1. Try standard PackageManager launch intent (Gold standard explicit component)
         try {
             Intent pmIntent = pm.getLaunchIntentForPackage(pkg);
             if (pmIntent != null) {
                 pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return pmIntent;
             }
         } catch (Throwable ignored) {}
@@ -203,8 +260,7 @@ public class HomeGameScanner {
             if (leanback != null) {
                 leanback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return leanback;
             }
         } catch (Throwable ignored) {}
@@ -226,8 +282,7 @@ public class HomeGameScanner {
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return intent;
             }
         } catch (Throwable ignored) {}
@@ -245,8 +300,7 @@ public class HomeGameScanner {
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 return intent;
             }
         } catch (Throwable ignored) {}
@@ -261,35 +315,21 @@ public class HomeGameScanner {
                         intent.setComponent(new ComponentName(pkg, ai.name));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                 | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                                | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         return intent;
                     }
-                }
-                // If none explicitly exported, use the first activity
-                ActivityInfo firstAi = pi.activities[0];
-                if (firstAi != null && firstAi.name != null) {
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.setComponent(new ComponentName(pkg, firstAi.name));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                            | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                    return intent;
                 }
             }
         } catch (Throwable ignored) {}
 
-        // 6. Final raw fallback: setPackage() on bare ACTION_MAIN — works on locked-down OEMs
-        //    even when all QueryIntentActivities calls return empty (Xiaomi MIUI, OPPO ColorOS, etc.)
+        // 6. Safe explicit component fallback for installed package
         try {
             Intent fallback = new Intent(Intent.ACTION_MAIN);
             fallback.addCategory(Intent.CATEGORY_LAUNCHER);
             fallback.setPackage(pkg);
             fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             return fallback;
         } catch (Throwable ignored) {}
 
@@ -449,6 +489,10 @@ public class HomeGameScanner {
             if (customPkg == null || customPkg.trim().isEmpty() || addedPackages.contains(customPkg)) continue;
             if (excludedPkgs.contains(customPkg)) continue;
             if (customPkg.equalsIgnoreCase(context.getPackageName())) continue;
+            if (!isPackageInstalled(pm, customPkg)) continue;
+
+            Intent launchIntent = resolveLaunchIntent(pm, customPkg);
+            if (launchIntent == null) continue;
 
             ApplicationInfo appInfo = null;
             try {
@@ -459,15 +503,61 @@ public class HomeGameScanner {
                 }
             } catch (Throwable ignored) {}
 
-            Intent launchIntent = resolveLaunchIntent(pm, customPkg);
-            if (appInfo != null || launchIntent != null) {
-                String label = customPkg;
+            String label = customPkg;
+            Drawable icon = null;
+            try {
+                if (appInfo != null) {
+                    label = pm.getApplicationLabel(appInfo).toString();
+                    icon = pm.getApplicationIcon(appInfo);
+                } else {
+                    icon = pm.getActivityIcon(launchIntent);
+                }
+            } catch (Throwable ignored) {}
+
+            if (icon == null) {
+                try {
+                    icon = context.getApplicationInfo().loadIcon(pm);
+                } catch (Throwable ignored) {}
+            }
+
+            String category = resolveCategory(customPkg, label, appInfo);
+            detectedGames.add(new GameAppInfo(
+                    label,
+                    customPkg,
+                    icon,
+                    launchIntent,
+                    category,
+                    resolveCardBg(category),
+                    resolveBadgeColor(category)
+            ));
+            addedPackages.add(customPkg);
+        }
+
+        // TIER 2: Primary Targeted Specs (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
+        for (TargetGameSpec spec : ALL_TARGET_SPECS) {
+            for (String pkg : spec.packageNames) {
+                if (addedPackages.contains(pkg) || excludedPkgs.contains(pkg)) continue;
+                if (!isPackageInstalled(pm, pkg)) continue;
+
+                Intent launchIntent = resolveLaunchIntent(pm, pkg);
+                if (launchIntent == null) continue;
+
+                ApplicationInfo appInfo = null;
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        appInfo = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
+                    } else {
+                        appInfo = pm.getApplicationInfo(pkg, 0);
+                    }
+                } catch (Throwable ignored) {}
+
+                String label = spec.defaultTitle;
                 Drawable icon = null;
                 try {
                     if (appInfo != null) {
                         label = pm.getApplicationLabel(appInfo).toString();
                         icon = pm.getApplicationIcon(appInfo);
-                    } else if (launchIntent != null) {
+                    } else {
                         icon = pm.getActivityIcon(launchIntent);
                     }
                 } catch (Throwable ignored) {}
@@ -478,65 +568,16 @@ public class HomeGameScanner {
                     } catch (Throwable ignored) {}
                 }
 
-                String category = resolveCategory(customPkg, label, appInfo);
                 detectedGames.add(new GameAppInfo(
                         label,
-                        customPkg,
+                        pkg,
                         icon,
                         launchIntent,
-                        category,
-                        resolveCardBg(category),
-                        resolveBadgeColor(category)
+                        spec.gameType,
+                        spec.cardBgRes,
+                        spec.badgeColor
                 ));
-                addedPackages.add(customPkg);
-            }
-        }
-
-        // TIER 2: Primary Targeted Specs (MLBB, PUBG, CODM, Free Fire, Genshin, HOK, Roblox, Valorant, Farlight)
-        for (TargetGameSpec spec : ALL_TARGET_SPECS) {
-            for (String pkg : spec.packageNames) {
-                if (addedPackages.contains(pkg) || excludedPkgs.contains(pkg)) continue;
-
-                ApplicationInfo appInfo = null;
-                try {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                        appInfo = pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
-                    } else {
-                        appInfo = pm.getApplicationInfo(pkg, 0);
-                    }
-                } catch (Throwable ignored) {}
-
-                Intent launchIntent = resolveLaunchIntent(pm, pkg);
-
-                if (appInfo != null || launchIntent != null) {
-                    String label = spec.defaultTitle;
-                    Drawable icon = null;
-                    try {
-                        if (appInfo != null) {
-                            label = pm.getApplicationLabel(appInfo).toString();
-                            icon = pm.getApplicationIcon(appInfo);
-                        } else if (launchIntent != null) {
-                            icon = pm.getActivityIcon(launchIntent);
-                        }
-                    } catch (Throwable ignored) {}
-
-                    if (icon == null) {
-                        try {
-                            icon = context.getApplicationInfo().loadIcon(pm);
-                        } catch (Throwable ignored) {}
-                    }
-
-                    detectedGames.add(new GameAppInfo(
-                            label,
-                            pkg,
-                            icon,
-                            launchIntent,
-                            spec.gameType,
-                            spec.cardBgRes,
-                            spec.badgeColor
-                    ));
-                    addedPackages.add(pkg);
-                }
+                addedPackages.add(pkg);
             }
         }
 
@@ -544,6 +585,10 @@ public class HomeGameScanner {
         try {
             for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {
                 if (addedPackages.contains(pkg) || excludedPkgs.contains(pkg)) continue;
+                if (!isPackageInstalled(pm, pkg)) continue;
+
+                Intent launchIntent = resolveLaunchIntent(pm, pkg);
+                if (launchIntent == null) continue;
 
                 ApplicationInfo appInfo = null;
                 try {
@@ -554,36 +599,33 @@ public class HomeGameScanner {
                     }
                 } catch (Throwable ignored) {}
 
-                Intent launchIntent = resolveLaunchIntent(pm, pkg);
-                if (appInfo != null || launchIntent != null) {
-                    GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkg);
-                    String label = (spec != null) ? spec.title : pkg;
-                    String category = (spec != null) ? spec.category : resolveCategory(pkg, label, appInfo);
-                    Drawable icon = null;
-                    try {
-                        if (appInfo != null) {
-                            label = pm.getApplicationLabel(appInfo).toString();
-                            icon = pm.getApplicationIcon(appInfo);
-                        }
-                    } catch (Throwable ignored) {}
-
-                    if (icon == null) {
-                        try {
-                            icon = context.getApplicationInfo().loadIcon(pm);
-                        } catch (Throwable ignored) {}
+                GamePackageRegistry.GameInfoSpec spec = GamePackageRegistry.getSpec(pkg);
+                String label = (spec != null) ? spec.title : pkg;
+                String category = (spec != null) ? spec.category : resolveCategory(pkg, label, appInfo);
+                Drawable icon = null;
+                try {
+                    if (appInfo != null) {
+                        label = pm.getApplicationLabel(appInfo).toString();
+                        icon = pm.getApplicationIcon(appInfo);
                     }
+                } catch (Throwable ignored) {}
 
-                    detectedGames.add(new GameAppInfo(
-                            label,
-                            pkg,
-                            icon,
-                            launchIntent,
-                            category,
-                            resolveCardBg(category),
-                            resolveBadgeColor(category)
-                    ));
-                    addedPackages.add(pkg);
+                if (icon == null) {
+                    try {
+                        icon = context.getApplicationInfo().loadIcon(pm);
+                    } catch (Throwable ignored) {}
                 }
+
+                detectedGames.add(new GameAppInfo(
+                        label,
+                        pkg,
+                        icon,
+                        launchIntent,
+                        category,
+                        resolveCardBg(category),
+                        resolveBadgeColor(category)
+                ));
+                addedPackages.add(pkg);
             }
         } catch (Throwable ignored) {}
 

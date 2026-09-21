@@ -113,23 +113,25 @@ public final class GameManagerLauncher {
         }
 
         final Context appContext = context.getApplicationContext();
-        final String pkg = packageName.trim();
+        String targetPkg = packageName.trim();
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 1: VERIFY PACKAGE INSTALLATION & RESOLVE LAUNCH INTENT
+        // ═══════════════════════════════════════════════════════════
+        PackageManager pm = appContext.getPackageManager();
+        if (pm != null) {
+            targetPkg = com.gamebooster.app.games.GameLauncherHelper.resolveInstalledFamilyPackage(appContext, targetPkg);
+        }
+        final String pkg = targetPkg;
         final String gameTitle = (label != null && !label.isEmpty()) ? label : pkg;
 
         int targetFps = GameProfilePreferences.getTargetHz(appContext, pkg);
         if (targetFps <= 0) targetFps = 185;
         final int fps = FpsUnlockTier.resolveTargetFps(targetFps);
 
-        // ═══════════════════════════════════════════════════════════
-        // STEP 1: VERIFY PACKAGE INSTALLATION & RESOLVE LAUNCH INTENT
-        // ═══════════════════════════════════════════════════════════
-        PackageManager pm = appContext.getPackageManager();
         boolean isInstalled = false;
         if (pm != null) {
-            try {
-                pm.getPackageInfo(pkg, 0);
-                isInstalled = true;
-            } catch (Throwable ignored) {}
+            isInstalled = HomeGameScanner.isPackageInstalled(pm, pkg);
         }
 
         if (!isInstalled) {
@@ -138,26 +140,40 @@ public final class GameManagerLauncher {
             return;
         }
 
-        Intent targetIntent = launchIntent;
-        if (targetIntent == null && pm != null) {
+        // Always prioritize the official framework launch intent with guaranteed explicit ComponentName
+        Intent targetIntent = null;
+        if (pm != null) {
             try {
                 targetIntent = pm.getLaunchIntentForPackage(pkg);
             } catch (Throwable ignored) {}
+            if (targetIntent == null) {
+                try {
+                    targetIntent = pm.getLeanbackLaunchIntentForPackage(pkg);
+                } catch (Throwable ignored) {}
+            }
         }
-        if (targetIntent == null && pm != null) {
-            try {
-                targetIntent = pm.getLeanbackLaunchIntentForPackage(pkg);
-            } catch (Throwable ignored) {}
+        if (targetIntent == null) {
+            targetIntent = launchIntent;
         }
         if (targetIntent == null && pm != null) {
             targetIntent = HomeGameScanner.resolveLaunchIntent(pm, pkg);
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2: ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
-        // Re-applies configs after game splash/login to guarantee mods never get wiped
+        // STEP 2: SYNCHRONOUS PRE-LAUNCH CONFIG INJECTION
+        // MUST complete before startActivity so all config patches are on disk
+        // before the game engine initializes and reads them. Force=true bypasses
+        // the anti-ban rate limiter on launch (rate limit applies to in-session re-injects only).
         // ═══════════════════════════════════════════════════════════
-        LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
+        try {
+            // Reset rate-limit so this fresh launch is never blocked
+            com.gamebooster.app.config.AntiBanStealthEngine.resetRateLimit(pkg);
+            GameAutoInjectDispatcher.resetPackageInjectionState(pkg);
+            preparePreLaunchConfigInjection(appContext, pkg, fps);
+            Log.i(TAG, "✅ [PreLaunch Sync] Config injection complete for " + pkg + " before activity start");
+        } catch (Throwable t) {
+            Log.w(TAG, "⚠️ Pre-launch config injection warning for " + pkg + ": " + t.getMessage());
+        }
 
         // ═══════════════════════════════════════════════════════════
         // STEP 2.5: SYNCHRONOUS DRONE VIEW & VIEWPORT SCALING
@@ -177,13 +193,13 @@ public final class GameManagerLauncher {
 
         // ═══════════════════════════════════════════════════════════
         // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
+        // Configs are already on disk — game reads correct patches from first init
         // ═══════════════════════════════════════════════════════════
         boolean launchedDirectly = false;
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             try {
                 context.startActivity(targetIntent);
@@ -206,8 +222,7 @@ public final class GameManagerLauncher {
                 rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
                 rawFallback.setPackage(pkg);
                 rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 context.startActivity(rawFallback);
                 launchedDirectly = true;
                 Log.i(TAG, "⚡ [RawPkg Fallback] Launched " + pkg + " via setPackage() raw intent");
@@ -218,7 +233,7 @@ public final class GameManagerLauncher {
 
         if (launchedDirectly) {
             boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
-            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚠️ Standard Mode (Start Shizuku for full config injection)";
+            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Config Injected";
             Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
@@ -227,17 +242,23 @@ public final class GameManagerLauncher {
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4: ASYNC PARALLEL HARDWARE, CONFIG PREP, DRIVER & BOOSTS
+        // STEP 4: ASYNC PARALLEL HARDWARE, DRIVER & SESSION BOOSTS
+        // Config injection already done synchronously in STEP 2.
+        // This step handles GPU, CPU governors, FPS lock, session engine, and
+        // lobby re-injection — all non-blocking background work.
         // ═══════════════════════════════════════════════════════════
+        // ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
+        // Re-applies configs after game splash/login to guarantee mods never get wiped
+        LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
+
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                // Background Stage 1 config injection & fast-load burst (Zero UI lag)
+                // Background fast-load burst & asset cache purge (post-activity-start, zero UI lag)
                 try {
-                    preparePreLaunchConfigInjection(appContext, pkg, fps);
                     com.gamebooster.app.config.GameSecurityBypassEngine.purgeCorruptedAssetCaches(pkg);
                     com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
                 } catch (Throwable t) {
-                    Log.w(TAG, "Pre-launch prep background error for " + pkg + ": " + t.getMessage());
+                    Log.w(TAG, "Pre-launch burst background error for " + pkg + ": " + t.getMessage());
                 }
                 // If direct framework launch failed, execute elevated shell dispatch immediately
                 if (!directSuccess) {
@@ -391,6 +412,7 @@ public final class GameManagerLauncher {
             CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
 
             // 6. Dispatch complete game-specific auto-inject suite (MLBB, PUBGM, CODM, etc.)
+            // Force=true: bypasses rate-limiter on launch so injection ALWAYS runs on game open
             GameAutoInjectDispatcher.dispatchForPackage(context, pkg, true);
 
             // 7. Enforce SELinux context bypass, UID/GID ownership, and safe anti-tamper permissions

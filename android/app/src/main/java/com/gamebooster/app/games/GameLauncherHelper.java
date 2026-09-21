@@ -29,18 +29,95 @@ public class GameLauncherHelper {
     private static final String KEY_CUSTOM_PACKAGES = "custom_game_packages";
     private static final String KEY_EXCLUDED_PACKAGES = "excluded_game_packages";
 
+    private static final String[][] GAME_FAMILY_PACKAGES = {
+        // Mobile Legends: Bang Bang (Global, Xiaomi Mi Store, VNG, Huawei, NA, KR, JP, Moonton)
+        {
+            "com.mobile.legends", "com.mobilelegends.mi", "com.vng.mlbbvn",
+            "com.mobile.legends.vng", "com.mobilelegends.hw", "com.mobilelegends.na",
+            "com.mobile.legends.kr", "com.mobile.legends.jp", "com.mobile.legends.moonton"
+        },
+        // PUBG Mobile (Global, India BGMI, KR, VN, Lite, New State, CN)
+        {
+            "com.tencent.ig", "com.pubg.imobile", "com.pubg.krmobile",
+            "com.vng.pubgmobile", "com.tencent.iglite", "com.pubg.newstate",
+            "com.krafton.bgmi", "com.tencent.tmgp.pubgm"
+        },
+        // Call of Duty: Mobile (Global, Garena, VN, KR, CN)
+        {
+            "com.activision.callofduty.shooter", "com.garena.game.codm",
+            "com.vng.codmvn", "com.tencent.tmgp.kr.codm", "com.tencent.tmgp.cod"
+        },
+        // Free Fire & Free Fire MAX
+        {
+            "com.dts.freefireth", "com.dts.freefiremax"
+        },
+        // Honor of Kings & Arena of Valor
+        {
+            "com.levelinfinite.sgameGlobal", "com.levelinfinite.sgameGlobal.gpkg",
+            "com.tencent.tmgp.sgame", "com.garena.game.kgtw", "com.garena.game.kgvn", "com.garena.game.kgid"
+        },
+        // Wild Rift
+        {
+            "com.riotgames.league.wildrift", "com.riotgames.league.wildrifttw", "com.riotgames.league.wildriftvn"
+        }
+    };
+
+    /**
+     * Finds if an alternate regional or OEM store package is installed for the requested game.
+     */
+    public static String resolveInstalledFamilyPackage(Context context, String pkg) {
+        if (context == null || pkg == null) return pkg;
+        android.content.pm.PackageManager pm = context.getPackageManager();
+        if (pm == null) return pkg;
+        if (HomeGameScanner.isPackageInstalled(pm, pkg)) return pkg;
+
+        for (String[] family : GAME_FAMILY_PACKAGES) {
+            boolean isPart = false;
+            for (String p : family) {
+                if (p.equalsIgnoreCase(pkg)) {
+                    isPart = true;
+                    break;
+                }
+            }
+            if (isPart) {
+                for (String p : family) {
+                    if (HomeGameScanner.isPackageInstalled(pm, p)) {
+                        return p;
+                    }
+                }
+            }
+        }
+        return pkg;
+    }
+
     public static void autoLaunchGame(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
-        // Fast pre-check: verify game is installed before running the full pipeline.
-        // Prevents a silent no-op when the game card exists but the APK was uninstalled.
+        android.content.pm.PackageManager pm = context.getPackageManager();
         String pkg = game.getPackageName();
-        if (pkg != null) {
-            try {
-                context.getPackageManager().getPackageInfo(pkg, 0);
-            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
-                android.widget.Toast.makeText(context,
-                        "❌ " + (game.getLabel() != null ? game.getLabel() : pkg) + " is not installed on this device.",
-                        android.widget.Toast.LENGTH_SHORT).show();
+        if (pkg != null && pm != null) {
+            String resolvedPkg = resolveInstalledFamilyPackage(context, pkg);
+            if (!resolvedPkg.equals(pkg)) {
+                Intent resolvedIntent = HomeGameScanner.resolveLaunchIntent(pm, resolvedPkg);
+                game = new GameAppInfo(
+                        game.getLabel(),
+                        resolvedPkg,
+                        game.getIcon(),
+                        resolvedIntent,
+                        game.getGameType(),
+                        game.getCardBgRes(),
+                        game.getBadgeColor()
+                );
+                pkg = resolvedPkg;
+            }
+
+            if (!HomeGameScanner.isPackageInstalled(pm, pkg)) {
+                String title = game.getLabel() != null ? game.getLabel() : pkg;
+                Toast.makeText(context, "❌ " + title + " is not installed on this device.", Toast.LENGTH_SHORT).show();
+                try {
+                    Intent storeIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=" + pkg));
+                    storeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(storeIntent);
+                } catch (Throwable ignored) {}
                 return;
             }
         }
