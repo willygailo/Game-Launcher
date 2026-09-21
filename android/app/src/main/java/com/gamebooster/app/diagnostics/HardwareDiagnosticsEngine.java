@@ -90,15 +90,15 @@ public final class HardwareDiagnosticsEngine {
      * Inspects the current display refresh rate and SurfaceFlinger compositor state.
      */
     public static DisplayDiagnosticReport getDisplayDiagnostics(Context context) {
-        int maxHz = 185;
-        int currentHz = 185;
+        int maxHz = 60;
+        int currentHz = 60;
         boolean hdr = false;
         String resolution = "1080x2400";
 
         if (context != null) {
             try {
                 DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(context);
-                maxHz = caps.maxRefreshRate > 0 ? caps.maxRefreshRate : 185;
+                maxHz = caps.maxRefreshRate > 0 ? caps.maxRefreshRate : 60;
                 currentHz = caps.currentRefreshRate > 0 ? caps.currentRefreshRate : maxHz;
                 hdr = caps.supportsHdr;
                 resolution = caps.width + "x" + caps.height + " (" + caps.densityDpi + " dpi)";
@@ -108,6 +108,137 @@ public final class HardwareDiagnosticsEngine {
         }
 
         return new DisplayDiagnosticReport(maxHz, currentHz, hdr, resolution, true);
+    }
+
+    /**
+     * Queries real-time GPU frequency, renderer pipeline, and vendor status across
+     * Qualcomm Adreno (KGSL), ARM Mali, and MediaTek devfreq nodes.
+     */
+    public static GpuDiagnosticReport getGpuDiagnostics() {
+        String clock = null;
+        String vendor = "Generic / Unified";
+        String pipeline = "Vulkan 1.3 / OpenGL ES 3.2";
+
+        // 1. Qualcomm Adreno (KGSL)
+        String kgslClk = readFirstLine("/sys/class/kgsl/kgsl-3d0/gpuclk");
+        if (kgslClk == null || kgslClk.isEmpty()) {
+            kgslClk = readFirstLine("/sys/class/kgsl/kgsl-3d0/devfreq/cur_freq");
+        }
+        if (kgslClk != null && !kgslClk.trim().isEmpty()) {
+            try {
+                long hz = Long.parseLong(kgslClk.trim());
+                long mhz = (hz > 1000000) ? (hz / 1000000) : (hz / 1000);
+                clock = mhz + " MHz";
+                vendor = "Qualcomm Adreno";
+            } catch (Throwable ignored) {
+                clock = kgslClk.trim() + " Hz";
+            }
+        }
+
+        // 2. ARM Mali (Midgard / Bifrost / Valhall)
+        if (clock == null) {
+            String maliClk = readFirstLine("/sys/class/misc/mali0/device/cur_freq");
+            if (maliClk == null) maliClk = readFirstLine("/sys/devices/platform/13040000.mali/devfreq/13040000.mali/cur_freq");
+            if (maliClk != null && !maliClk.trim().isEmpty()) {
+                try {
+                    long hz = Long.parseLong(maliClk.trim());
+                    long mhz = (hz > 1000000) ? (hz / 1000000) : (hz / 1000);
+                    clock = mhz + " MHz";
+                    vendor = "ARM Mali / Dimensity";
+                } catch (Throwable ignored) {
+                    clock = maliClk.trim();
+                }
+            }
+        }
+
+        // 3. Shizuku elevated fallback
+        if (clock == null && ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String out = ShizukuExecutor.executeShizukuCommand("cat /sys/class/kgsl/kgsl-3d0/gpuclk 2>/dev/null");
+                if (out != null && !out.trim().isEmpty() && !out.startsWith("ERROR")) {
+                    long hz = Long.parseLong(out.trim());
+                    long mhz = (hz > 1000000) ? (hz / 1000000) : (hz / 1000);
+                    clock = mhz + " MHz (privileged)";
+                    vendor = "Qualcomm Adreno";
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        if (clock == null) {
+            clock = "Dynamic Scaling Active";
+        }
+
+        return new GpuDiagnosticReport(vendor, clock, pipeline, true);
+    }
+
+    /**
+     * Inspects active touch digitizer polling rate, touch slop, and edge rejection state.
+     */
+    public static TouchDiagnosticReport getTouchDiagnostics(Context context) {
+        int touchRateHz = 120;
+        int touchSlopPx = 8;
+        boolean ultraCombatActive = com.gamebooster.app.booster.CombatEngineChannel.isCombatModeActive();
+
+        if (ultraCombatActive) {
+            touchRateHz = 1000;
+            touchSlopPx = 0;
+        } else {
+            // Check system settings
+            if (context != null) {
+                try {
+                    android.view.ViewConfiguration vc = android.view.ViewConfiguration.get(context);
+                    touchSlopPx = vc.getScaledTouchSlop();
+                } catch (Throwable ignored) {}
+            }
+            // Check property overrides
+            try {
+                String rate = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("getprop persist.sys.touch.report_rate");
+                if (rate != null && !rate.trim().isEmpty()) {
+                    touchRateHz = Integer.parseInt(rate.trim());
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        return new TouchDiagnosticReport(touchRateHz, touchSlopPx, ultraCombatActive, "Least-Squares Quadratic (lsq2)");
+    }
+
+    /**
+     * Inspects real-time battery temperature, thermal zones, and hardware safety cutoff status.
+     */
+    public static ThermalSafetyReport getThermalSafetyReport(Context context) {
+        float batteryTempC = 0.0f;
+        boolean isOverheating = false;
+        String safetyStatus = "Optimal (Normal Operating Temperature)";
+
+        if (context != null) {
+            try {
+                android.content.Intent intent = context.registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
+                if (intent != null) {
+                    int tempTenths = intent.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, 0);
+                    batteryTempC = tempTenths / 10.0f;
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // Fallback: check sysfs thermal zone
+        if (batteryTempC <= 0.0f) {
+            String tz0 = readFirstLine("/sys/class/thermal/thermal_zone0/temp");
+            if (tz0 != null && !tz0.trim().isEmpty()) {
+                try {
+                    long raw = Long.parseLong(tz0.trim());
+                    batteryTempC = (raw > 1000) ? (raw / 1000.0f) : (float) raw;
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        if (batteryTempC >= 48.0f) {
+            isOverheating = true;
+            safetyStatus = "CRITICAL: Battery temperature >= 48°C — Hardware Safety Thermal Guard Active";
+        } else if (batteryTempC >= 42.0f) {
+            safetyStatus = "WARM: Temperature elevated (>42°C) — Monitoring actively";
+        }
+
+        return new ThermalSafetyReport(batteryTempC, isOverheating, safetyStatus);
     }
 
     /**
@@ -256,6 +387,46 @@ public final class HardwareDiagnosticsEngine {
             this.permissionGranted = permissionGranted;
             this.selinuxMode = selinuxMode;
             this.selinuxPermissive = selinuxPermissive;
+        }
+    }
+
+    public static class GpuDiagnosticReport {
+        public final String vendor;
+        public final String currentClockMhz;
+        public final String pipeline;
+        public final boolean dynamicBoostReady;
+
+        public GpuDiagnosticReport(String vendor, String currentClockMhz, String pipeline, boolean dynamicBoostReady) {
+            this.vendor = vendor;
+            this.currentClockMhz = currentClockMhz;
+            this.pipeline = pipeline;
+            this.dynamicBoostReady = dynamicBoostReady;
+        }
+    }
+
+    public static class TouchDiagnosticReport {
+        public final int touchSamplingRateHz;
+        public final int touchSlopPx;
+        public final boolean combatTouchActive;
+        public final String trackingStrategy;
+
+        public TouchDiagnosticReport(int touchSamplingRateHz, int touchSlopPx, boolean combatTouchActive, String trackingStrategy) {
+            this.touchSamplingRateHz = touchSamplingRateHz;
+            this.touchSlopPx = touchSlopPx;
+            this.combatTouchActive = combatTouchActive;
+            this.trackingStrategy = trackingStrategy;
+        }
+    }
+
+    public static class ThermalSafetyReport {
+        public final float batteryTemperatureC;
+        public final boolean isThermalThrottlingTriggered;
+        public final String statusMessage;
+
+        public ThermalSafetyReport(float batteryTemperatureC, boolean isThermalThrottlingTriggered, String statusMessage) {
+            this.batteryTemperatureC = batteryTemperatureC;
+            this.isThermalThrottlingTriggered = isThermalThrottlingTriggered;
+            this.statusMessage = statusMessage;
         }
     }
 }

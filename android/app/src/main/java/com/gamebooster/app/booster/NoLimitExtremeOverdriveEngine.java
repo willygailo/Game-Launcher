@@ -55,8 +55,16 @@ public final class NoLimitExtremeOverdriveEngine {
                 // 3. Lock GPU Clocks & Turbo Burst
                 lockGpuFrequenciesMax();
 
-                // 4. Defeat All Thermal Throttling
-                defeatAllThermalLimits();
+                // 4. Autonomous Hardware Thermal Safety Guardrail
+                // Check if battery/SoC is already dangerously hot (>48°C)
+                com.gamebooster.app.diagnostics.HardwareDiagnosticsEngine.ThermalSafetyReport thermal =
+                        com.gamebooster.app.diagnostics.HardwareDiagnosticsEngine.getThermalSafetyReport(context);
+                if (thermal.isThermalThrottlingTriggered) {
+                    Log.w(TAG, "⚠️ Thermal Safety Cutoff: Battery temp is " + thermal.batteryTemperatureC
+                            + "°C! Bypassing extreme thermal unlock to safeguard lithium battery health.");
+                } else {
+                    defeatAllThermalLimits();
+                }
 
                 // 5. Inject Ultra Extreme Graphics & 185 FPS into Game Configs
                 if (packageName != null && !packageName.trim().isEmpty()) {

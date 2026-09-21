@@ -106,24 +106,36 @@ public final class ForegroundGameDetector {
         return null;
     }
 
+    private static final java.util.Map<String, Boolean> sRecognizedGameCache = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
      * Checks if a package is a recognized game (via GamePackageRegistry or installed games list).
+     * High-speed thread-safe caching eliminates redundant PackageManager queries.
      */
     public static boolean isRecognizedGame(Context context, String pkg) {
         if (pkg == null || pkg.trim().isEmpty()) return false;
         String clean = pkg.trim();
 
-        if (GamePackageRegistry.isKnownGame(clean)) {
-            return true;
+        Boolean cached = sRecognizedGameCache.get(clean);
+        if (cached != null) {
+            return cached;
         }
 
-        if (context != null) {
+        boolean recognized = false;
+        if (GamePackageRegistry.isKnownGame(clean)) {
+            recognized = true;
+        } else if (context != null) {
             try {
-                return GameManagerRepository.isGameInstalled(context, clean);
+                recognized = GameManagerRepository.isGameInstalled(context, clean);
             } catch (Throwable ignored) {}
         }
 
-        return false;
+        sRecognizedGameCache.put(clean, recognized);
+        return recognized;
+    }
+
+    public static void clearGameCache() {
+        sRecognizedGameCache.clear();
     }
 
     private static boolean isValidForegroundPackage(Context context, String pkg) {

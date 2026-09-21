@@ -123,7 +123,7 @@ public class AutoGameMonitorService extends Service {
                 if (!isScreenOn) return;
                 checkForegroundApp();
                 if (handler != null && isRunning && isScreenOn) {
-                    long delay = (lastActiveGamePackage != null) ? 2000L : 3000L;
+                    long delay = (lastActiveGamePackage != null) ? 2000L : 4000L;
                     handler.postDelayed(this, delay);
                 }
             }
@@ -136,8 +136,7 @@ public class AutoGameMonitorService extends Service {
             String currentPackage = getForegroundPackage();
             if (currentPackage == null) return;
 
-            boolean isGameActive = com.gamebooster.app.games.GamePackageRegistry.isKnownGame(currentPackage)
-                    || GameManagerRepository.isGameInstalled(getApplicationContext(), currentPackage);
+            boolean isGameActive = com.gamebooster.app.games.ForegroundGameDetector.isRecognizedGame(getApplicationContext(), currentPackage);
 
             if (isGameActive) {
                 consecutiveUnfocusedCount = 0;

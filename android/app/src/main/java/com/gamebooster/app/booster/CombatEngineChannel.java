@@ -25,14 +25,35 @@ public class CombatEngineChannel {
     private static final String TAG = "CombatEngineChannel";
     private static volatile boolean isCombatModeActive = false;
 
+    // Baseline storage to dynamically restore exact pre-combat user settings
+    private static volatile String sOriginalPointerSpeed = null;
+    private static volatile String sOriginalLongPressTimeout = null;
+    private static volatile String sOriginalTouchReportRate = null;
+
     public static boolean isCombatModeActive() {
         return isCombatModeActive;
     }
 
     /**
      * Activates full combat latency optimizations across touch, motion dispatch, and network buffers.
+     * Legal & Anti-Cheat Safe: Operates exclusively through standard Android settings, properties,
+     * and system Wi-Fi commands outside the game's executable memory space (Zero-Memory Hooking).
      */
     public static boolean enableCombatMode(Context context) {
+        // Capture baseline before applying overrides
+        if (!isCombatModeActive && ShellExecutor.isAndroidEnvironment()) {
+            try {
+                if (context != null) {
+                    sOriginalPointerSpeed = android.provider.Settings.System.getString(context.getContentResolver(), "pointer_speed");
+                    sOriginalLongPressTimeout = android.provider.Settings.Secure.getString(context.getContentResolver(), "long_press_timeout");
+                }
+                String rate = CommandExecutor.executeSystemCommand("getprop persist.sys.touch.report_rate");
+                if (rate != null && !rate.trim().isEmpty()) {
+                    sOriginalTouchReportRate = rate.trim();
+                }
+            } catch (Throwable ignored) {}
+        }
+
         isCombatModeActive = true;
         if (!ShellExecutor.isAndroidEnvironment()) {
             return true;
@@ -143,17 +164,21 @@ public class CombatEngineChannel {
 
         List<String> restoreCmds = new ArrayList<>();
         restoreCmds.add("settings put system touch_slop_reduction 0");
-        restoreCmds.add("settings put system pointer_speed 0");
+        String speed = (sOriginalPointerSpeed != null && !sOriginalPointerSpeed.isEmpty()) ? sOriginalPointerSpeed : "0";
+        restoreCmds.add("settings put system pointer_speed " + speed);
         restoreCmds.add("settings put system touch_sensitivity 0");
         restoreCmds.add("settings put system game_mode_touch 0");
-        restoreCmds.add("settings put secure long_press_timeout 400");
+        String timeout = (sOriginalLongPressTimeout != null && !sOriginalLongPressTimeout.isEmpty()) ? sOriginalLongPressTimeout : "400";
+        restoreCmds.add("settings put secure long_press_timeout " + timeout);
         restoreCmds.add("settings put secure multi_press_timeout 300");
         restoreCmds.add("settings put secure edge_rejection_mode 1");
         restoreCmds.add("setprop view.touch_slop 8");
         restoreCmds.add("setprop view.scroll_friction 0.015");
-        restoreCmds.add("setprop persist.sys.touch.report_rate 120");
-        restoreCmds.add("setprop persist.vendor.touch.sampling_rate 120");
-        restoreCmds.add("setprop debug.touch.sampling_rate 120");
+
+        String restoredRate = (sOriginalTouchReportRate != null && !sOriginalTouchReportRate.isEmpty()) ? sOriginalTouchReportRate : "120";
+        restoreCmds.add("setprop persist.sys.touch.report_rate " + restoredRate);
+        restoreCmds.add("setprop persist.vendor.touch.sampling_rate " + restoredRate);
+        restoreCmds.add("setprop debug.touch.sampling_rate " + restoredRate);
         restoreCmds.add("setprop debug.inputflinger.touch_boost 0");
         restoreCmds.add("setprop debug.inputflinger.fling_boost 0");
         restoreCmds.add("setprop debug.input.max_events_per_sec 120");
