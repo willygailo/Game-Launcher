@@ -171,76 +171,29 @@ public final class ResolutionScalerEngine {
     private static boolean sIsDroneViewActive = false;
 
     /**
-     * Applies 100% genuine, hardware-level Drone View FOV via elevated aspect ratio virtualization.
-     * MLBB & MOBAs  -> Ultra-Wide 21:9 Aspect Ratio (widens horizontal camera frustum by ~45%, revealing enemies down lanes).
-     * PUBGM & Shooters -> iPad 4:3 Aspect Ratio (triggers UE4 tablet viewport to zoom out TPP camera, head-to-knees view).
+     * Applies Drone View & Panoramic FOV strictly via game configuration files (Unity3D PlayerPrefs XML,
+     * Document JSON, UE4 UserCustom.ini, and native file patchers).
+     *
+     * Zero Display Distortion Guarantee:
+     * NEVER alters physical screen density (wm density) or display resolution (wm size).
      */
     public static boolean applyDroneViewForGame(Context context, String packageName) {
-        if (packageName == null) return false;
-        probeNativeDisplay(context);
-        if (sNativeWidth <= 0 || sNativeHeight <= 0) {
-            Log.w(TAG, "Native display metrics unavailable; cannot calculate drone view aspect ratio.");
-            return false;
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+
+        // If screen was previously scaled by legacy drone view, immediately restore stock display metrics
+        if (sIsDroneViewActive) {
+            executePrivileged("wm size reset; wm density reset");
+            sIsDroneViewActive = false;
         }
 
-        com.gamebooster.app.games.GamePackageRegistry.GameType type =
-                com.gamebooster.app.games.GamePackageRegistry.getGameType(packageName);
-
-        int shortSide = Math.min(sNativeWidth, sNativeHeight);
-        int longSide = Math.max(sNativeWidth, sNativeHeight);
-        int targetW;
-        int targetH;
-        int targetDensity;
-
-        boolean isShooter = (type == com.gamebooster.app.games.GamePackageRegistry.GameType.PUBGM
-                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.CODM
-                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.BLOODSTRIKE
-                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.STANDOFF2
-                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.FARLIGHT
-                || type == com.gamebooster.app.games.GamePackageRegistry.GameType.FREEFIRE);
-
-        if (isShooter) {
-            // ─── SHOOTERS: iPad 4:3 Aspect Ratio (Expands TPP/FPP Vertical & Peripheral FOV) ───
-            // In landscape: Height = shortSide (1080), Width = shortSide * 4 / 3 (1440)
-            targetW = shortSide;
-            targetH = (int) (shortSide * (4.0f / 3.0f));
-            if (targetW % 2 != 0) targetW--;
-            if (targetH % 2 != 0) targetH--;
-
-            // Scale density to tablet-tier (optimal ~280-320 dpi for 4:3 controls)
-            targetDensity = (int) ((sNativeDensity > 0 ? sNativeDensity : 420) * 0.75f);
-            if (targetDensity < 260) targetDensity = 260;
-            if (targetDensity > 340) targetDensity = 340;
-
-            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
-            executePrivileged(cmd);
-            sIsScaled = true;
+        Log.i(TAG, "⚡ [Unity3D/Game Config DroneView] Applying Drone View strictly in game config files for " + packageName + " (Zero Screen Density Changes)");
+        try {
+            com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(packageName);
             sIsDroneViewActive = true;
-            Log.i(TAG, "⚡ [DroneView 100%] iPad 4:3 Viewport applied for " + packageName + ": " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
             return true;
-        } else {
-            // ─── MOBAs (MLBB, Wild Rift, HOK) & OTHER GAMES: Ultra-Wide 21:9 Aspect Ratio ───
-            // In landscape: Width = longSide (2400), Height = longSide * 9 / 21 (1028)
-            targetH = longSide;
-            targetW = (int) (longSide * (9.0f / 21.0f));
-            if (targetW > shortSide) {
-                targetW = shortSide;
-                targetH = (int) (shortSide * (21.0f / 9.0f));
-            }
-            if (targetW % 2 != 0) targetW--;
-            if (targetH % 2 != 0) targetH--;
-
-            // Lower density by ~18% so UI elements don't crowd the battlefield and camera pulls back
-            targetDensity = (int) ((sNativeDensity > 0 ? sNativeDensity : 420) * 0.82f);
-            if (targetDensity < 280) targetDensity = 280;
-            if (targetDensity > 440) targetDensity = 440;
-
-            String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
-            executePrivileged(cmd);
-            sIsScaled = true;
-            sIsDroneViewActive = true;
-            Log.i(TAG, "⚡ [DroneView 100%] Ultra-Wide 21:9 Frustum applied for " + packageName + ": " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
-            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed applying game config drone view: " + t.getMessage());
+            return false;
         }
     }
 

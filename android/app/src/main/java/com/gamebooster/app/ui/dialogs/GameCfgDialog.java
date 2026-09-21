@@ -291,7 +291,7 @@ public class GameCfgDialog {
 
             // Apply resolution scaling, drone view FOV, and visual filter immediately
             if (droneView) {
-                com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(context, pkg);
+                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
             } else if (targetScale < 0.99f) {
                 com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
             } else {

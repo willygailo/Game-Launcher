@@ -390,11 +390,9 @@ public final class CommonConfigTuningInjector {
         }
         if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
             try { MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
+        } else if (packageName.toLowerCase().contains("pubg") || packageName.toLowerCase().contains("tencent.ig")) {
+            try { PubgConfigPatcher.applyDroneViewConfig(packageName); } catch (Throwable ignored) {}
         }
-        try {
-            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, packageName);
-        } catch (Throwable ignored) {}
     }
 
     public static void applyArmorDefConfig(String packageName) {

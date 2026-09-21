@@ -168,11 +168,8 @@ public final class GameManagerLauncher {
             String gameKey = CfgProfileManager.resolveGameKey(pkg);
             CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(appContext, gameKey);
             if (profile != null && profile.isDroneViewUltraEnabled()) {
-                boolean applied = com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(appContext, pkg);
-                if (applied) {
-                    Log.i(TAG, "⚡ [PreLaunch Sync] Drone View FOV applied before Surface creation for " + pkg);
-                    try { Thread.sleep(60); } catch (Throwable ignored) {}
-                }
+                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
+                Log.i(TAG, "⚡ [PreLaunch Sync] Drone View internal Unity3D/engine camera configs applied before game process launch for " + pkg);
             }
         } catch (Throwable t) {
             Log.w(TAG, "Pre-launch drone view setup warning for " + pkg + ": " + t.getMessage());

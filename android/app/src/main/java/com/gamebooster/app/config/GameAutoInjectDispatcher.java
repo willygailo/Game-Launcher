@@ -320,8 +320,7 @@ public final class GameAutoInjectDispatcher {
         // ─── 2026 Master Sovereign 100% Full Working Combat Overdrive Suite ────
         try { MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg); } catch (Throwable ignored) {}
         try {
-            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, pkg);
+            MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg);
         } catch (Throwable ignored) {}
     }
 
@@ -390,8 +389,7 @@ public final class GameAutoInjectDispatcher {
         try { PubgConfigPatcher.applyEnemyLockMaxAllScope(pkg); } catch (Throwable ignored) {}
         try { PubgConfigPatcher.applyAutoHeadshotBulletKill(pkg); } catch (Throwable ignored) {}
         try {
-            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
-            com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(ctx, pkg);
+            PubgConfigPatcher.applyDroneViewConfig(pkg);
         } catch (Throwable ignored) {}
     }
 

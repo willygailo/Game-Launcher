@@ -120,14 +120,14 @@ public class LuaProfileBridge {
                 }
             }
 
-            // If Lua script specifies Drone View / iPad FOV, link and trigger hardware viewport virtualization
+            // If Lua script specifies Drone View / iPad FOV, link and trigger internal Unity3D/engine camera config tuning
             if ("true".equalsIgnoreCase(rawProps.get("ultra_drone_view"))
                     || "true".equalsIgnoreCase(rawProps.get("ipad_view_fov"))
                     || "1".equals(rawProps.get("drone_view"))
                     || "1".equals(rawProps.get("r_ipad_view_fov"))
                     || "1".equals(rawProps.get("r_drone_view"))) {
                 try {
-                    com.gamebooster.app.engine.ResolutionScalerEngine.applyDroneViewForGame(context, pkg);
+                    CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
                 } catch (Throwable ignored) {}
             }
 
