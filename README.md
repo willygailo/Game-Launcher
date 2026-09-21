@@ -12,7 +12,7 @@
 
 <br/>
 
-[![Latest Release](https://img.shields.io/badge/Release-v17.9.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
+[![Latest Release](https://img.shields.io/badge/Release-v18.0.0--PRO-00F0FF?style=for-the-badge&logo=github&logoColor=black&labelColor=0D1117)](https://github.com/willygailo/Game-Launcher/releases/latest)
 [![Android Support](https://img.shields.io/badge/Android-13--16%20(API%2033--36)-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=0D1117)](#-quick-start)
 [![Display Lock](https://img.shields.io/badge/Display-90Hz%20to%20185Hz-FF0055?style=for-the-badge&logo=speedtest&logoColor=white&labelColor=0D1117)](#-features)
 [![Wi-Fi 7 MLO](https://img.shields.io/badge/Wi--Fi%207-802.11be%20MLO%20320MHz-7928CA?style=for-the-badge&logo=wi-fi&logoColor=white&labelColor=0D1117)](#-wi-fi-5g6g7g-turbo--gaming-dns)
@@ -22,7 +22,7 @@
 
 <br/>
 
-[📥 **Download Latest APK (v17.9.0)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features) • [🇵🇭 **PH Telco Boost**](#-philippine-cellular-data-supercharger-tnt--tm) • [📶 **Wi-Fi 7 & DNS**](#-wi-fi-5g6g7g-turbo--gaming-dns) • [🎮 **Supported Games**](#-supported-games) • [🚀 **Quick Start**](#-quick-start) • [🤝 **Contributing**](CONTRIBUTING.md) • [🛡️ **Security**](SECURITY.md)
+[📥 **Download Latest APK (v18.0.0)**](https://github.com/willygailo/Game-Launcher/releases/latest) • [✨ **Features**](#-features) • [🇵🇭 **PH Telco Boost**](#-philippine-cellular-data-supercharger-tnt--tm) • [📶 **Wi-Fi 7 & DNS**](#-wi-fi-5g6g7g-turbo--gaming-dns) • [🎮 **Supported Games**](#-supported-games) • [🚀 **Quick Start**](#-quick-start) • [🤝 **Contributing**](CONTRIBUTING.md) • [🛡️ **Security**](SECURITY.md)
 
 <br/>
 
