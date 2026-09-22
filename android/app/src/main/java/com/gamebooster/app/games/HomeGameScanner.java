@@ -343,6 +343,25 @@ public class HomeGameScanner {
         if (pkg == null || pkg.trim().isEmpty()) return false;
         if (context != null && pkg.equalsIgnoreCase(context.getPackageName())) return false;
 
+        // Hard exclusion: RRO runtime overlays are never launchable games.
+        // e.g. com.transsion.gamespace.app.overlay passes keyword match but has no Activity.
+        if (pkg.endsWith(".overlay")) return false;
+
+        // Hard exclusion: packages with no MAIN+LAUNCHER activity (stubs, bg-services, overlays).
+        if (context != null) {
+            try {
+                android.content.pm.PackageManager pm = context.getPackageManager();
+                if (pm != null && pm.getLaunchIntentForPackage(pkg) == null) {
+                    android.content.Intent launcherQuery = new android.content.Intent(android.content.Intent.ACTION_MAIN);
+                    launcherQuery.addCategory(android.content.Intent.CATEGORY_LAUNCHER);
+                    launcherQuery.setPackage(pkg);
+                    java.util.List<android.content.pm.ResolveInfo> resolved =
+                            pm.queryIntentActivities(launcherQuery, 0);
+                    if (resolved == null || resolved.isEmpty()) return false;
+                }
+            } catch (Throwable ignored) {}
+        }
+
         if (customPkgs != null && customPkgs.contains(pkg)) {
             return true;
         }

@@ -23,10 +23,15 @@ public class RishManager {
     private static final String RISH_DEX_NAME = "rish_shizuku.dex";
 
     private static volatile boolean isInitialized = false;
+    private static volatile boolean isRishBrokenOnThisDevice = false; // set true if boot.art ART crash detected
     private static File rishBinFile = null;
     private static File rishDexFile = null;
 
+    /** Android 16 (API 36) ships a new ART format. Old rish binaries crash on startup. */
+    private static final boolean RISH_MIGHT_BE_BROKEN = Build.VERSION.SDK_INT >= 36;
+
     public static boolean isRishAvailable() {
+        if (isRishBrokenOnThisDevice) return false;
         return (isInitialized && rishBinFile != null && rishBinFile.exists()) ||
                 (rishBinFile != null && rishBinFile.exists());
     }
@@ -100,6 +105,11 @@ public class RishManager {
             return "SUCCESS";
         }
 
+        // Fast-fail if rish was confirmed broken at runtime (Android 16 ART header crash)
+        if (isRishBrokenOnThisDevice) {
+            return "ERROR: rish binary not available";
+        }
+
         if (!isInitialized) {
             initialize(context);
         }
@@ -134,9 +144,26 @@ public class RishManager {
                 stderr.append(line).append("\n");
             }
 
-            int exitCode = process.waitFor();
+            // Timeout 1500ms to prevent infinite hang on stalled process (Android 16 fix)
+            boolean finished = process.waitFor(1500, java.util.concurrent.TimeUnit.MILLISECONDS);
+            if (!finished) {
+                process.destroy();
+                Log.w(TAG, "rish command timed out after 1500ms, killing process");
+                return "ERROR: Command timed out after 1500ms";
+            }
+
+            int exitCode = process.exitValue();
             String stdoutStr = stdout.toString().trim();
             String stderrStr = stderr.toString().trim();
+
+            // Detect Android 16 ART boot image crash — mark rish permanently broken
+            // so subsequent calls fail-fast instead of spawning more crashing processes.
+            if (RISH_MIGHT_BE_BROKEN && exitCode != 0
+                    && (stderrStr.contains("boot.art") || stderrStr.contains("invalid") || stderrStr.contains("Image header"))) {
+                Log.w(TAG, "rish ART boot image incompatibility detected on Android " + Build.VERSION.SDK_INT + " — disabling rish for this session");
+                isRishBrokenOnThisDevice = true;
+                return "ERROR: rish not compatible with this Android version";
+            }
 
             if (exitCode == 0) {
                 return stdoutStr.isEmpty() ? "SUCCESS" : stdoutStr;

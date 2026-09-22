@@ -43,6 +43,7 @@ public class CfgProfileManager {
     private static final String KEY_FAST_CD_SUFFIX = "_fast_cd";
     private static final String KEY_SHIELD_SUFFIX = "_shield1500";
     private static final String KEY_DRONE_SUFFIX = "_drone_view";
+    private static final String KEY_DRONE_TIER_SUFFIX = "_drone_view_tier";
 
     // ─── Supported game packages per game key ────────────────────────────────
 
@@ -192,6 +193,7 @@ public class CfgProfileManager {
         ed.putBoolean(key + KEY_FAST_CD_SUFFIX, profile.isFastCooldownEnabled());
         ed.putBoolean(key + KEY_SHIELD_SUFFIX, profile.isShield1500Enabled());
         ed.putBoolean(key + KEY_DRONE_SUFFIX,  profile.isDroneViewUltraEnabled());
+        ed.putInt    (key + KEY_DRONE_TIER_SUFFIX, profile.getDroneViewTier());
         ed.putBoolean(key + KEY_ARMOR_SUFFIX,  profile.isArmorDefEnabled());
         ed.putBoolean(key + KEY_MASK_SUFFIX,   profile.isHardwareMaskEnabled());
         ed.putBoolean(key + KEY_ANTILOG_SUFFIX, profile.isAntiLogEnabled());
@@ -217,10 +219,13 @@ public class CfgProfileManager {
         boolean fastCd   = prefs.getBoolean(key + KEY_FAST_CD_SUFFIX, true);
         boolean shield   = prefs.getBoolean(key + KEY_SHIELD_SUFFIX, true);
         boolean drone    = prefs.getBoolean(key + KEY_DRONE_SUFFIX, true);
+        int droneTier    = prefs.getInt(key + KEY_DRONE_TIER_SUFFIX, MlbbDroneViewPatcher.DEFAULT_TIER);
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
-        return new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
+        CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
+        p.setDroneViewTier(droneTier);
+        return p;
     }
 
     // ─── Apply ───────────────────────────────────────────────────────────────

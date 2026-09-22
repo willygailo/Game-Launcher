@@ -344,6 +344,84 @@
                         android:layout_height="wrap_content"
                         android:checked="true" />
                 </LinearLayout>
+
+                <!-- MLBB Drone Zoom Tier Selection -->
+                <LinearLayout
+                    android:id="@+id/layout_cfg_drone_tier"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/card_glass_shape"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DRONE ELEVATION / ZOOM TIER:"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_cfg_drone_tier"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_cfg_drone_1_5x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/accent_cyan"
+                            android:text="1.5X"
+                            android:textColor="@color/text_primary"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_cfg_drone_2x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/accent_cyan"
+                            android:text="2.0X"
+                            android:textColor="@color/text_primary"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_cfg_drone_3x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/accent_cyan"
+                            android:checked="true"
+                            android:text="3.0X"
+                            android:textColor="@color/text_primary"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_cfg_drone_4x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/accent_cyan"
+                            android:text="4.0X"
+                            android:textColor="@color/text_primary"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_cfg_drone_5x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/accent_cyan"
+                            android:text="5.0X"
+                            android:textColor="@color/text_primary"
+                            android:textSize="11sp" />
+                    </RadioGroup>
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Targeted Graphics Driver Section -->

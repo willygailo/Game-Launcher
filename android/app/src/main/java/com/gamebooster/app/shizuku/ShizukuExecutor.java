@@ -58,6 +58,20 @@ public class ShizukuExecutor {
             return "SUCCESS";
         }
 
+        // Circuit breaker: if Shizuku binder is dead AND rish is broken (Android 16 ART crash),
+        // skip all process spawning. Avoids the 30x sequential timeout loop that causes ANR.
+        boolean binderAlive = isShizukuAvailable();
+        boolean rishBroken = !RishManager.isRishAvailable();
+        if (!binderAlive && rishBroken) {
+            // Silently try unprivileged shell only — at least something runs
+            com.gamebooster.app.engine.ShellExecutor.CommandResult shellRes =
+                    com.gamebooster.app.engine.ShellExecutor.executeCommand(command, false);
+            if (shellRes.isSuccess()) {
+                return shellRes.stdout.isEmpty() ? "SUCCESS" : shellRes.stdout;
+            }
+            return "ERROR: No elevated channel available (Shizuku binder dead, rish unavailable)";
+        }
+
         // Phase 1.1: Trigger non-blocking UserService bind if needed
         if (hasShizukuPermission() && !ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
             ShizukuUserServiceConnector.getInstance().bindService();

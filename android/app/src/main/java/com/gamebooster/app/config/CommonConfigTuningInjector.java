@@ -384,12 +384,17 @@ public final class CommonConfigTuningInjector {
     }
 
     public static void applyDroneViewUltraConfig(String packageName) {
+        applyDroneViewUltraConfig(packageName, MlbbDroneViewPatcher.DEFAULT_TIER);
+    }
+
+    public static void applyDroneViewUltraConfig(String packageName, int droneTier) {
         if (packageName == null || packageName.trim().isEmpty()) return;
         for (String path : getPaths(packageName)) {
             NativeConfigInjector.injectDroneView(path);
         }
         if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
             try { MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
+            try { MlbbDroneViewPatcher.applyDroneView(ConfigBackupManager.getAppContext(), packageName, droneTier); } catch (Throwable ignored) {}
         } else if (packageName.toLowerCase().contains("pubg") || packageName.toLowerCase().contains("tencent.ig")) {
             try { PubgConfigPatcher.applyPubgUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
         } else if (packageName.toLowerCase().contains("callofduty") || packageName.toLowerCase().contains("codm") || packageName.toLowerCase().contains("tmgp.cod")) {
@@ -830,7 +835,13 @@ public final class CommonConfigTuningInjector {
         if (profile.isAimAssistEnabled()) applyAllScopeAimPrecision(packageName);
         if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName);
         if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName);
-        if (profile.isDroneViewUltraEnabled()) applyDroneViewUltraConfig(packageName);
+        if (profile.isDroneViewUltraEnabled()) {
+            applyDroneViewUltraConfig(packageName, profile.getDroneViewTier());
+        } else {
+            if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
+                try { MlbbDroneViewPatcher.restoreStockCamera(ConfigBackupManager.getAppContext(), packageName); } catch (Throwable ignored) {}
+            }
+        }
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
         // 2026: always apply Vulkan + HDR + telemetry suppression + DamageLockMax + AimAssistLockMax
         applyVulkanOptimization(packageName);

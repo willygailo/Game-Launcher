@@ -160,40 +160,22 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2: SYNCHRONOUS PRE-LAUNCH CONFIG INJECTION
-        // MUST complete before startActivity so all config patches are on disk
-        // before the game engine initializes and reads them. Force=true bypasses
-        // the anti-ban rate limiter on launch (rate limit applies to in-session re-injects only).
+        // STEP 2: RATE-LIMIT RESET (main-thread safe, no I/O)
+        // Only lightweight in-memory resets here. Heavy shell/config work
+        // is dispatched AFTER startActivity to guarantee zero ANR on tap.
         // ═══════════════════════════════════════════════════════════
         try {
-            // Reset rate-limit so this fresh launch is never blocked
             com.gamebooster.app.config.AntiBanStealthEngine.resetRateLimit(pkg);
             GameAutoInjectDispatcher.resetPackageInjectionState(pkg);
-            preparePreLaunchConfigInjection(appContext, pkg, fps);
-            Log.i(TAG, "✅ [PreLaunch Sync] Config injection complete for " + pkg + " before activity start");
         } catch (Throwable t) {
-            Log.w(TAG, "⚠️ Pre-launch config injection warning for " + pkg + ": " + t.getMessage());
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // STEP 2.5: SYNCHRONOUS DRONE VIEW & VIEWPORT SCALING
-        // Must be applied to SurfaceFlinger BEFORE targetIntent is started so
-        // game's initial Window/EGL/Vulkan surface initializes directly into wide aspect ratio
-        // ═══════════════════════════════════════════════════════════
-        try {
-            String gameKey = CfgProfileManager.resolveGameKey(pkg);
-            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(appContext, gameKey);
-            if (profile != null && profile.isDroneViewUltraEnabled()) {
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
-                Log.i(TAG, "⚡ [PreLaunch Sync] Drone View internal Unity3D/engine camera configs applied before game process launch for " + pkg);
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "Pre-launch drone view setup warning for " + pkg + ": " + t.getMessage());
+            Log.w(TAG, "⚠️ Rate-limit reset warning for " + pkg + ": " + t.getMessage());
         }
 
         // ═══════════════════════════════════════════════════════════
         // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
-        // Configs are already on disk — game reads correct patches from first init
+        // startActivity fires FIRST before any heavy shell injection.
+        // The game window opens immediately on tap — config injection
+        // runs async on a background thread after the activity starts.
         // ═══════════════════════════════════════════════════════════
         boolean launchedDirectly = false;
         if (targetIntent != null) {
@@ -233,7 +215,7 @@ public final class GameManagerLauncher {
 
         if (launchedDirectly) {
             boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
-            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Config Injected";
+            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Boosting...";
             Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onLaunchSuccess(pkg);
         }
@@ -242,12 +224,37 @@ public final class GameManagerLauncher {
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4: ASYNC PARALLEL HARDWARE, DRIVER & SESSION BOOSTS
-        // Config injection already done synchronously in STEP 2.
-        // This step handles GPU, CPU governors, FPS lock, session engine, and
-        // lobby re-injection — all non-blocking background work.
+        // STEP 4: ASYNC PARALLEL CONFIG INJECTION + HARDWARE BOOSTS
+        // ALL heavy shell work (chmod, restorecon, config injection,
+        // drone view, FPS lock, session engine) runs on background threads.
+        // This is the FIX for the Android 16 ANR — nothing here touches
+        // the main thread. The game is already starting while we boost.
         // ═══════════════════════════════════════════════════════════
-        // ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
+
+        // 4a. Pre-launch config injection dispatched async with 4s ceiling
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                // Async drone view — runs after game process starts
+                try {
+                    String gameKey = CfgProfileManager.resolveGameKey(pkg);
+                    CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(appContext, gameKey);
+                    if (profile != null && profile.isDroneViewUltraEnabled()) {
+                        com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg, profile.getDroneViewTier());
+                        Log.i(TAG, "⚡ [Async] Drone View configs applied for " + pkg + " [tier=" + profile.getDroneViewTier() + "]");
+                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "Async drone view warning for " + pkg + ": " + t.getMessage());
+                }
+
+                // Full config injection suite — heavy shell, safe on worker thread
+                preparePreLaunchConfigInjection(appContext, pkg, fps);
+                Log.i(TAG, "✅ [Async Inject] Config injection complete for " + pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "⚠️ Async pre-launch config warning for " + pkg + ": " + t.getMessage());
+            }
+        });
+
+        // 4b. ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
         // Re-applies configs after game splash/login to guarantee mods never get wiped
         LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
 

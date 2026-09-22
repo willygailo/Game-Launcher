@@ -131,7 +131,19 @@ public class LuaProfileBridge {
                     || "1".equals(rawProps.get("r_ipad_view_fov"))
                     || "1".equals(rawProps.get("r_drone_view"))) {
                 try {
-                    CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
+                    int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+                    String zoomStr = rawProps.get("drone_view_zoom_tier");
+                    if (zoomStr != null) {
+                        try {
+                            int z = Integer.parseInt(zoomStr.trim());
+                            if (z == 1 || z == 15) tier = MlbbDroneViewPatcher.TIER_1_5X;
+                            else if (z == 2 || z == 20) tier = MlbbDroneViewPatcher.TIER_2X;
+                            else if (z == 4 || z == 40) tier = MlbbDroneViewPatcher.TIER_4X;
+                            else if (z == 5 || z == 50) tier = MlbbDroneViewPatcher.TIER_5X;
+                            else tier = MlbbDroneViewPatcher.TIER_3X;
+                        } catch (Throwable ignored) {}
+                    }
+                    CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg, tier);
                 } catch (Throwable ignored) {}
             }
 

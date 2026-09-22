@@ -131,14 +131,43 @@ public class PreLaunchGameDialog {
             rb120.setChecked(true);
         }
 
-        // 3.5 Drone View Switch State
+        // 3.5 Drone View Switch State & Zoom Tier Selector
         androidx.appcompat.widget.SwitchCompat switchDrone = view.findViewById(R.id.switch_pre_launch_drone_view);
+        android.view.View layoutDroneTier = view.findViewById(R.id.layout_pre_launch_drone_tier);
+        android.widget.RadioGroup rgDroneTier = view.findViewById(R.id.rg_pre_launch_drone_tier);
+        android.widget.RadioButton rb15 = view.findViewById(R.id.rb_drone_1_5x);
+        android.widget.RadioButton rb20 = view.findViewById(R.id.rb_drone_2x);
+        android.widget.RadioButton rb30 = view.findViewById(R.id.rb_drone_3x);
+        android.widget.RadioButton rb40 = view.findViewById(R.id.rb_drone_4x);
+        android.widget.RadioButton rb50 = view.findViewById(R.id.rb_drone_5x);
+
         String gameKey = CfgProfileManager.resolveGameKey(pkg);
         CompetitiveCfgProfile currentProfile = CfgProfileManager.loadProfile(context, gameKey);
+        boolean isMlbb = pkg.toLowerCase().contains("mobile.legends") || pkg.toLowerCase().contains("mobilelegends");
+
+        if (layoutDroneTier != null) {
+            layoutDroneTier.setVisibility(isMlbb ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+
         if (switchDrone != null) {
             boolean droneEnabled = (currentProfile != null) ? currentProfile.isDroneViewUltraEnabled() : true;
             switchDrone.setChecked(droneEnabled);
+            if (layoutDroneTier != null && isMlbb) {
+                layoutDroneTier.setVisibility(droneEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+            }
+            switchDrone.setOnCheckedChangeListener((btn, checked) -> {
+                if (layoutDroneTier != null && isMlbb) {
+                    layoutDroneTier.setVisibility(checked ? android.view.View.VISIBLE : android.view.View.GONE);
+                }
+            });
         }
+
+        int currentTier = (currentProfile != null) ? currentProfile.getDroneViewTier() : com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER;
+        if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X && rb15 != null) rb15.setChecked(true);
+        else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X && rb20 != null) rb20.setChecked(true);
+        else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rb40 != null) rb40.setChecked(true);
+        else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
+        else if (rb30 != null) rb30.setChecked(true);
 
         // 4. Action Buttons
         Button btnCancel = view.findViewById(R.id.btn_pre_launch_cancel);
@@ -161,6 +190,13 @@ public class PreLaunchGameDialog {
             final int finalFps = selectedFps;
             final boolean droneEnabled = switchDrone != null && switchDrone.isChecked();
 
+            int selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER;
+            if (rb15 != null && rb15.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X;
+            else if (rb20 != null && rb20.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X;
+            else if (rb40 != null && rb40.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X;
+            else if (rb50 != null && rb50.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X;
+            else selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_3X;
+
             // Dismiss dialog immediately
             dismissCurrent();
 
@@ -176,6 +212,7 @@ public class PreLaunchGameDialog {
             }
             profile.setAntiLogEnabled(true);
             profile.setDroneViewUltraEnabled(droneEnabled);
+            profile.setDroneViewTier(selectedTier);
             CfgProfileManager.saveProfile(context, profile);
             GameProfilePreferences.setTargetHz(context, pkg, finalFps);
 

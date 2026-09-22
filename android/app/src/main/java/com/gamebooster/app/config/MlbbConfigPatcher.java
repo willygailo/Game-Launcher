@@ -75,11 +75,18 @@ public class MlbbConfigPatcher {
      * MLBB Ultra Drone View Panoramic FOV Suite.
      */
     public static void applyMlbbUltraDroneViewMaxFov(String packageName) {
+        applyMlbbUltraDroneViewMaxFov(packageName, MlbbDroneViewPatcher.DEFAULT_TIER);
+    }
+
+    public static void applyMlbbUltraDroneViewMaxFov(String packageName, int droneTier) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbUltraDroneViewMaxFov(path);
         }
-        Log.i(TAG, "MLBB Ultra Drone View Max FOV applied for " + packageName);
+        try {
+            MlbbDroneViewPatcher.applyDroneView(ConfigBackupManager.getAppContext(), packageName, droneTier);
+        } catch (Throwable ignored) {}
+        Log.i(TAG, "MLBB Ultra Drone View Max FOV applied for " + packageName + " [tier=" + droneTier + "]");
     }
 
     /**

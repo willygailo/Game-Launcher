@@ -181,3 +181,35 @@ scratch/
 .agents/
 .claude/
 .cursor/
+.windsurf/
+.copilot/
+.cache/
+.ccls-cache/
+.clangd/
+*.patch
+*.diff
+
+# ====================================================================
+# MLBB Drone View Mod — Source ZIPs & Extracted Working Files
+# ====================================================================
+# Keep the binary assets tracked (mlbb_drone/ is intentionally committed)
+# Ignore the raw source ZIPs so they don't bloat the repo
+"DRONE VIEW ML 1,5X - 5X.zip"
+DRONE\ VIEW\ *.zip
+*drone*view*.zip
+*DRONE*VIEW*.zip
+
+# Mod staging / temp extraction dirs
+mod_staging/
+mod_extracted/
+mod_tmp/
+
+# ====================================================================
+# Game Patcher Backup & Restore Snapshots
+# ====================================================================
+**/config_backup/
+**/cfg_snapshots/
+**/patcher_cache/
+*.cfg.bak
+*.bytes.bak
+

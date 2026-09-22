@@ -51,6 +51,7 @@ public class CompetitiveCfgProfile {
     private boolean fastCooldownEnabled;
     private boolean shield1500Enabled;
     private boolean droneViewUltraEnabled;
+    private int droneViewTier = MlbbDroneViewPatcher.DEFAULT_TIER;
     private boolean hardwareMaskEnabled;
     private boolean antiLogEnabled;
 
@@ -322,6 +323,9 @@ public class CompetitiveCfgProfile {
 
     public boolean isDroneViewUltraEnabled() { return droneViewUltraEnabled; }
     public void setDroneViewUltraEnabled(boolean enabled) { this.droneViewUltraEnabled = enabled; }
+
+    public int getDroneViewTier() { return droneViewTier; }
+    public void setDroneViewTier(int tier) { this.droneViewTier = tier; }
 
     public boolean isHardwareMaskEnabled() { return hardwareMaskEnabled; }
     public void setHardwareMaskEnabled(boolean enabled) { this.hardwareMaskEnabled = enabled; }

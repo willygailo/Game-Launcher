@@ -1,0 +1,5 @@
+-- Flags: FIXED, VERIFIED, HIDDEN
+-- Timestamp: CURRENT_TIMESTAMP
+
+INSERT OR REPLACE INTO resources (name, type, path_id, status, protection_level, created_at)
+VALUES ('load_res', 4, 123003241734, 'active', 'secure', CURRENT_TIMESTAMP);

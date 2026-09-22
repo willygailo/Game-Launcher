@@ -93,6 +93,24 @@ public class GameCfgDialog {
         SwitchCompat switchAntiLog = view.findViewById(R.id.switch_anti_log);
         SwitchCompat switchDroneView = view.findViewById(R.id.switch_drone_view);
 
+        android.view.View layoutCfgDroneTier = view.findViewById(R.id.layout_cfg_drone_tier);
+        RadioGroup rgCfgDroneTier = view.findViewById(R.id.rg_cfg_drone_tier);
+        RadioButton rbCfg15 = view.findViewById(R.id.rb_cfg_drone_1_5x);
+        RadioButton rbCfg20 = view.findViewById(R.id.rb_cfg_drone_2x);
+        RadioButton rbCfg30 = view.findViewById(R.id.rb_cfg_drone_3x);
+        RadioButton rbCfg40 = view.findViewById(R.id.rb_cfg_drone_4x);
+        RadioButton rbCfg50 = view.findViewById(R.id.rb_cfg_drone_5x);
+
+        boolean isMlbbGame = pkg.toLowerCase().contains("mobile.legends") || pkg.toLowerCase().contains("mobilelegends");
+        if (layoutCfgDroneTier != null) {
+            layoutCfgDroneTier.setVisibility(isMlbbGame ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (switchDroneView != null && layoutCfgDroneTier != null && isMlbbGame) {
+            switchDroneView.setOnCheckedChangeListener((b, checked) -> {
+                layoutCfgDroneTier.setVisibility(checked ? android.view.View.VISIBLE : android.view.View.GONE);
+            });
+        }
+
         // Graphics Driver RadioGroup
         RadioGroup rgDriver = view.findViewById(R.id.rg_game_driver);
         RadioButton rbDriverGame = view.findViewById(R.id.rb_driver_game_driver);
@@ -202,7 +220,17 @@ public class GameCfgDialog {
             switchAntiLog.setChecked(currentCfg.isAntiLogEnabled());
             if (switchDroneView != null) {
                 switchDroneView.setChecked(currentCfg.isDroneViewUltraEnabled());
+                if (layoutCfgDroneTier != null && isMlbbGame) {
+                    layoutCfgDroneTier.setVisibility(currentCfg.isDroneViewUltraEnabled() ? android.view.View.VISIBLE : android.view.View.GONE);
+                }
             }
+
+            int currentTier = currentCfg.getDroneViewTier();
+            if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X && rbCfg15 != null) rbCfg15.setChecked(true);
+            else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X && rbCfg20 != null) rbCfg20.setChecked(true);
+            else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rbCfg40 != null) rbCfg40.setChecked(true);
+            else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rbCfg50 != null) rbCfg50.setChecked(true);
+            else if (rbCfg30 != null) rbCfg30.setChecked(true);
 
             int currentFps = currentCfg.getTargetFps();
             if (currentFps >= 185 && rb185 != null) {
@@ -228,6 +256,9 @@ public class GameCfgDialog {
 
             AppExecutors.getInstance().executeCommand(() -> {
                 int restoredCount = ConfigBackupManager.restorePackage(context, pkg);
+                if (pkg.toLowerCase().contains("mobile.legends") || pkg.toLowerCase().contains("mobilelegends")) {
+                    com.gamebooster.app.config.MlbbDroneViewPatcher.restoreStockCamera(context, pkg);
+                }
                 com.gamebooster.app.booster.GpuTweaksChannel.setTargetGameDriver(pkg, com.gamebooster.app.booster.GpuTweaksChannel.GraphicsDriverType.DEFAULT);
                 com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
                 com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(context, com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF);
@@ -289,9 +320,16 @@ public class GameCfgDialog {
                 targetFilter = com.gamebooster.app.overlay.VisualFilterOverlayService.VisualFilterType.OFF;
             }
 
+            int selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER;
+            if (rbCfg15 != null && rbCfg15.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X;
+            else if (rbCfg20 != null && rbCfg20.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X;
+            else if (rbCfg40 != null && rbCfg40.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X;
+            else if (rbCfg50 != null && rbCfg50.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X;
+            else selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_3X;
+
             // Apply resolution scaling, drone view FOV, and visual filter immediately
             if (droneView) {
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg);
+                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg, selectedTier);
             } else if (targetScale < 0.99f) {
                 com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
             } else {
@@ -305,6 +343,7 @@ public class GameCfgDialog {
             // Direct non-blocking notification
             Toast.makeText(context.getApplicationContext(), "⚡ DONE: CFG Applied for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
 
+            final int finalTier = selectedTier;
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
                 try {
@@ -312,6 +351,7 @@ public class GameCfgDialog {
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
                     profile.setDroneViewUltraEnabled(droneView);
+                    profile.setDroneViewTier(finalTier);
                     CfgProfileManager.saveProfile(context, profile);
 
                     // 2. Fast direct config patching for target package only

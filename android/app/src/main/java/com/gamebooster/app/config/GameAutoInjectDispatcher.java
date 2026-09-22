@@ -320,7 +320,14 @@ public final class GameAutoInjectDispatcher {
         // ─── 2026 Master Sovereign 100% Full Working Combat Overdrive Suite ────
         try { MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg); } catch (Throwable ignored) {}
         try {
-            MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg);
+            String gameKey = CfgProfileManager.resolveGameKey(pkg);
+            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(ConfigBackupManager.getAppContext(), gameKey);
+            int tier = (profile != null) ? profile.getDroneViewTier() : MlbbDroneViewPatcher.DEFAULT_TIER;
+            if (profile == null || profile.isDroneViewUltraEnabled()) {
+                MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg, tier);
+            } else {
+                MlbbDroneViewPatcher.restoreStockCamera(ConfigBackupManager.getAppContext(), pkg);
+            }
         } catch (Throwable ignored) {}
     }
 
