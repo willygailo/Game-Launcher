@@ -67,10 +67,27 @@ public class CombatEngineChannel {
         commands.add("settings put system touch_sensitivity 1");
         commands.add("settings put system master_touch_sensitivity 1");
         commands.add("settings put system game_mode_touch 1");
-        commands.add("settings put secure long_press_timeout 120");
-        commands.add("settings put secure multi_press_timeout 80");
+        commands.add("settings put secure long_press_timeout 100");
+        commands.add("settings put secure multi_press_timeout 50");
         commands.add("setprop view.touch_slop 0");
         commands.add("setprop ro.min_pointer_dur 1");
+
+        // Transsion (Tecno HiOS / Infinix XOS / Itel)
+        commands.add("settings put system tran_game_mode_touch 1");
+        commands.add("settings put system tran_touch_rate 1000");
+        commands.add("settings put system tran_game_touch_response 1");
+        commands.add("settings put system tran_touch_sampling_rate 1000");
+        commands.add("settings put system tran_game_boost_touch 1");
+        commands.add("settings put system hios_game_touch 1");
+        commands.add("settings put system xos_game_touch 1");
+        commands.add("setprop persist.sys.tran.touch_rate 1000");
+        commands.add("setprop persist.sys.tran.game_touch 1");
+        commands.add("setprop persist.sys.transsion.touch_boost 1");
+        commands.add("setprop persist.vendor.tran.touch.sampling_rate 1000");
+
+        // MediaTek Helio & Dimensity MTK Gaming Touch Boost
+        commands.add("setprop persist.vendor.mediatek.touch_boost 1");
+        commands.add("setprop debug.mtk.touch_boost 1");
 
         // Universal OEM 1000Hz Touch Drivers (Qualcomm, MediaTek, Samsung, Xiaomi, ROG, RedMagic)
         commands.add("setprop persist.sys.sec.touch_rate 1000");
@@ -84,6 +101,10 @@ public class CombatEngineChannel {
         commands.add("setprop persist.vivo.touch_sample_rate 1000");
         commands.add("setprop persist.sys.nubia.touch_sampling_rate 1000");
         commands.add("setprop persist.sys.redmagic.touch_mode 1");
+        commands.add("setprop persist.mot.touch.sampling_rate 1000");
+        commands.add("setprop persist.sys.honor.touch_boost 1");
+        commands.add("setprop persist.sys.huawei.touch_boost 1");
+        commands.add("setprop persist.sys.sprd.touch_boost 1");
 
         // ── 2. Fast Peek & Lean: Edge & Corner Deadzone Removal ──────────────
         commands.add("settings put system edge_touch_filter 0");
@@ -96,13 +117,32 @@ public class CombatEngineChannel {
         // ── 3. Fast Sprint, Run & Jump: Instant Joystick Motion Dispatch ──────
         commands.add("setprop view.scroll_friction 0.001");
         commands.add("setprop view.fading_edge_length 0");
+        commands.add("setprop persist.sys.input.resampling 0");
+        commands.add("setprop debug.inputflinger.resampling 0");
         commands.add("setprop debug.inputflinger.touch_boost 1");
         commands.add("setprop debug.inputflinger.fling_boost 1");
-        commands.add("setprop debug.input.boost_time_ms 3000");
-        commands.add("setprop debug.input.max_events_per_sec 1000");
+        commands.add("setprop debug.inputflinger.throttle_time 0");
+        commands.add("setprop persist.sys.inputflinger.nice -20");
+        commands.add("setprop debug.input.boost_time_ms 5000");
+        commands.add("setprop debug.input.max_events_per_sec 2000");
         commands.add("setprop debug.hwui.input_latency_timeout 0");
         commands.add("setprop persist.sys.input.latency 0");
-        commands.add("setprop persist.input.velocitytracker.strategy lsq2");
+        commands.add("setprop persist.input.velocitytracker.strategy impulse");
+
+        // Direct Kernel Digitizer Sysfs Overdrive
+        commands.add("echo 1 > /proc/touchpanel/game_switch_enable 2>/dev/null");
+        commands.add("echo 0 > /proc/touchpanel/oppo_tp_limit_enable 2>/dev/null");
+        commands.add("echo 1 > /sys/class/touch/touch_dev/game_mode 2>/dev/null");
+        commands.add("echo 1000 > /sys/class/touch/touch_dev/touch_rate 2>/dev/null");
+        commands.add("echo 1 > /sys/devices/platform/tran_touch/game_mode 2>/dev/null");
+        commands.add("echo 1 > /proc/tran_touch/game_mode 2>/dev/null");
+        commands.add("echo 1 > /sys/class/touch/touch_dev/tran_game_mode 2>/dev/null");
+        commands.add("echo 1 > /sys/module/mtk_fpsgo/parameters/fbt_touch_boost 2>/dev/null");
+        commands.add("echo 1 > /sys/module/ged/parameters/ged_touch_boost 2>/dev/null");
+        commands.add("echo 1 > /sys/kernel/ged/hal/touch_boost 2>/dev/null");
+        commands.add("echo 1 > /sys/devices/system/cpu/cpufreq/schedutil/iowait_boost_enable 2>/dev/null");
+        commands.add("echo 200 > /sys/module/cpu_boost/parameters/input_boost_ms 2>/dev/null");
+        commands.add("sysctl -w kernel.sched_boost=1 2>/dev/null");
 
         // Gyroscope 1000Hz aim precision
         commands.add("setprop debug.sensor.gyro.sample_rate 1000");

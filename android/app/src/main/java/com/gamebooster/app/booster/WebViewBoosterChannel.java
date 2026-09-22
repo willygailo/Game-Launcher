@@ -154,17 +154,20 @@ public final class WebViewBoosterChannel {
                         "--enable-accelerated-mjpeg-decode " +
                         "--enable-oop-rasterization " +
                         "--enable-raw-draw " +
+                        "--enable-skia-graphite " +
                         "--enable-low-latency-webgl " +
                         "--enable-webgl2-compute-context " +
                         "--enable-unsafe-webgpu " +
                         "--enable-gpu-async-worker-context " +
+                        "--disable-backgrounding-occluded-windows " +
+                        "--disable-renderer-backgrounding " +
                         "--canvas-2d-layers " +
                         "--enable-surface-synchronization " +
                         "--enable-quic " +
                         "--enable-tcp-fastopen " +
                         "--enable-fast-unload " +
-                        "--enable-features=Vulkan,UseSkiaRenderer,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebGPU " +
-                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE " +
+                        "--enable-features=Vulkan,UseSkiaRenderer,SkiaGraphite,Canvas2dOOPR,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebAssemblyFastApi,WebGPU,BackForwardCache,Prerender2,UseGpuSchedulerDfs,HighPriorityGpuTaskScheduling,RawDraw,DelegatedCompositing " +
+                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,CalculateNativeWinOcclusion,MediaEngagementBypassAutoplayPolicies " +
                         "--num-raster-threads=" + rasterThreads + " " +
                         "--enable-drdc " +
                         "--enable-threaded-compositing " +
@@ -175,7 +178,7 @@ public final class WebViewBoosterChannel {
                         "--disable-frame-rate-limit " +
                         "--disable-gpu-vsync " +
                         "--max-gum-fps=185 " +
-                        "--js-flags=\"--max-semi-space-size=128 --max-old-space-size=2048 --opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-tier-up --expose-wasm --wasm-simd --harmony-simd\"";
+                        "--js-flags=\"--max-semi-space-size=128 --max-old-space-size=2048 --opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-tier-up --expose-wasm --wasm-simd --harmony-simd --predictable-gc-schedule\"";
             }
 
             case MID_RANGE: {
@@ -190,12 +193,14 @@ public final class WebViewBoosterChannel {
                         "--enable-oop-rasterization " +
                         "--enable-low-latency-webgl " +
                         "--enable-gpu-async-worker-context " +
+                        "--disable-backgrounding-occluded-windows " +
+                        "--disable-renderer-backgrounding " +
                         "--enable-surface-synchronization " +
                         "--enable-quic " +
                         "--enable-tcp-fastopen " +
                         "--enable-fast-unload " +
-                        "--enable-features=CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,WebRtcHWDecoding,WebRtcHWEncoding,AsyncImageDecoding " +
-                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,WebGPU " +
+                        "--enable-features=CanvasOopRasterization,Canvas2dOOPR,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,WebRtcHWDecoding,WebRtcHWEncoding,AsyncImageDecoding,BackForwardCache,Prerender2,HighPriorityGpuTaskScheduling,RawDraw " +
+                        "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,WebGPU,CalculateNativeWinOcclusion " +
                         "--num-raster-threads=" + rasterThreads + " " +
                         "--enable-drdc " +
                         "--enable-threaded-compositing " +
@@ -217,8 +222,8 @@ public final class WebViewBoosterChannel {
                         "--enable-oop-rasterization " +
                         "--enable-threaded-compositing " +
                         "--num-raster-threads=2 " +
-                        "--enable-features=CanvasOopRasterization,GpuRasterization " +
-                        "--disable-features=Vulkan,UseSkiaRenderer,WebGPU,DrDc,DefaultAngleVulkan,VulkanFromANGLE " +
+                        "--enable-features=CanvasOopRasterization,GpuRasterization,ZeroCopyTabSwitch " +
+                        "--disable-features=Vulkan,UseSkiaRenderer,WebGPU,DrDc,DefaultAngleVulkan,VulkanFromANGLE,CalculateNativeWinOcclusion " +
                         "--disable-frame-rate-limit " +
                         "--max-gum-fps=60 " +
                         "--js-flags=\"--max-semi-space-size=32 --max-old-space-size=512 --opt\"";
@@ -256,24 +261,31 @@ public final class WebViewBoosterChannel {
             sb.append("device_config put runtime_native_boot webview_surface_control true; ");
             sb.append("device_config put runtime_native_boot webview_zero_copy true; ");
             sb.append("device_config put runtime_native_boot webview_gpu_raster true; ");
+            sb.append("device_config put runtime_native_boot webview_raw_draw true; ");
+            sb.append("device_config put runtime_native_boot webview_back_forward_cache true; ");
 
             if (tier == DeviceTier.FLAGSHIP) {
                 sb.append("device_config put runtime_native_boot webview_skia_vulkan true; ");
                 sb.append("device_config put runtime_native_boot webview_drdc true; ");
-                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context\"; ");
+                sb.append("device_config put runtime_native_boot webview_graphite true; ");
+                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context --enable-skia-graphite --enable-raw-draw\"; ");
                 sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
                 sb.append("setprop debug.hwui.renderer vulkan; ");
+                sb.append("setprop debug.hwui.render_thread_priority -20; ");
                 sb.append("setprop debug.hwui.fps_limit 0; ");
-                sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"; ");
+                sb.append("setprop debug.chromium.prerender 1; ");
+                sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft --predictable-gc-schedule\"; ");
             } else if (tier == DeviceTier.MID_RANGE) {
                 sb.append("device_config put runtime_native_boot webview_drdc true; ");
-                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization\"; ");
+                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-raw-draw\"; ");
                 sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
+                sb.append("setprop debug.hwui.render_thread_priority -20; ");
                 sb.append("setprop debug.hwui.fps_limit 0; ");
                 sb.append("setprop debug.v8.flags \"--opt --turbo-fast-api-calls --turboshaft\"; ");
             } else {
                 // Budget: Safe properties to avoid OpenGL/Vulkan conflicts
                 sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-oop-rasterization\"; ");
+                sb.append("setprop debug.hwui.render_thread_priority -16; ");
                 sb.append("setprop debug.v8.flags \"--opt\"; ");
             }
 

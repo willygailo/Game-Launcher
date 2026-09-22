@@ -418,11 +418,27 @@ public class PerformanceChannel {
                     "device_config put runtime_native_boot webview_gpu_raster true\n" +
                     "device_config put runtime_native_boot webview_skia_vulkan true\n" +
                     "device_config put runtime_native_boot webview_drdc true\n" +
-                    "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context\"\n" +
-                    "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft\"\n" +
+                    "device_config put runtime_native_boot webview_raw_draw true\n" +
+                    "device_config put runtime_native_boot webview_back_forward_cache true\n" +
+                    "device_config put runtime_native_boot webview_graphite true\n" +
+                    "setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context --enable-skia-graphite --enable-raw-draw\"\n" +
+                    "setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft --predictable-gc-schedule\"\n" +
+                    "setprop debug.hwui.render_thread_priority -20\n" +
+                    "setprop debug.hwui.use_buffer_age true\n" +
+                    "setprop debug.hwui.target_cpu_time_percent 95\n" +
+                    "setprop debug.hwui.use_partial_updates true\n" +
                     "setprop net.ipv4.tcp_congestion_control bbr\n" +
                     "cmd wifi force-low-latency-mode enabled\n" +
-                    // 10. SurfaceFlinger display pipeline — missing flags
+                    // 10. SurfaceFlinger display pipeline & Zero-Latency Presentation
+                    "setprop debug.sf.latch_unsignaled 1\n" +
+                    "setprop debug.sf.disable_backpressure 1\n" +
+                    "setprop debug.sf.auto_latch_unsignaled 1\n" +
+                    "setprop debug.sf.predict_hwc_composition_strategy 1\n" +
+                    "setprop debug.sf.enable_gl_backpressure 0\n" +
+                    "setprop debug.sf.early_phase_offset_ns 500000\n" +
+                    "setprop debug.sf.early_app_phase_offset_ns 500000\n" +
+                    "setprop debug.sf.early_gl_phase_offset_ns 3000000\n" +
+                    "setprop debug.sf.early_gl_app_phase_offset_ns 3000000\n" +
                     // Stop SF from down-clocking refresh rate when detecting "static" game content
                     "setprop debug.sf.use_content_detection_for_refresh_rate false\n" +
                     // Disable HWC virtual display — forces direct composition path
@@ -440,6 +456,16 @@ public class PerformanceChannel {
                     // Disable SF idle timer — prevents refresh rate drops between game frames
                     "setprop ro.surface_flinger.set_idle_timer_ms 0\n" +
                     "setprop ro.surface_flinger.set_touch_timer_ms 0\n" +
+                    // Kernel Scheduler & ART JIT Boost
+                    "sysctl -w kernel.sched_schedstats=0 2>/dev/null\n" +
+                    "sysctl -w kernel.sched_autogroup_enabled=0 2>/dev/null\n" +
+                    "sysctl -w vm.dirty_ratio=10 2>/dev/null\n" +
+                    "sysctl -w vm.dirty_background_ratio=5 2>/dev/null\n" +
+                    "sysctl -w vm.vfs_cache_pressure=50 2>/dev/null\n" +
+                    "setprop dalvik.vm.execution-mode JIT\n" +
+                    "setprop dalvik.vm.dex2oat-threads 8\n" +
+                    "setprop dalvik.vm.image-dex2oat-threads 8\n" +
+                    "setprop dalvik.vm.jittargetfootprint 0\n" +
                     // 11. Extended vendor-specific display FPS keys
                     "settings put system nubia_display_refresh_rate " + hz + "\n" +
                     "settings put system iqoo_ultra_refresh_rate " + hz + "\n" +

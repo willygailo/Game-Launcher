@@ -267,6 +267,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Auto-Open: Immediately start live diagnostics scan on view creation (Zero Wait)
         renderDiagnostics();
 
+        // Hidden Settings: Silently enforce hardware performance flags & next-gen WebView optimization
+        if (getContext() != null) {
+            final Context appCtx = getContext().getApplicationContext();
+            AppExecutors.getInstance().executeCommand(() ->
+                ManualSettingsPreferences.applyHiddenPerformanceSettings(appCtx));
+        }
+
         // Card 2: Esports Gaming Controls
         switchOverlayHud = view.findViewById(R.id.switch_overlay_hud);
         switchGamingDnd = view.findViewById(R.id.switch_gaming_dnd);
@@ -1763,6 +1770,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         AppExecutors.getInstance().executeCommand(() -> {
             boolean ok = PerformanceChannel.applyProfile(getContext(), profile);
             com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
+            ManualSettingsPreferences.applyHiddenPerformanceSettings(getContext());
             GameProfileAutoConfigurator.autoConfigAllGamesAsync(getContext(), targetHz, null);
             CfgProfileManager.applyAllGames(getContext(), targetHz, true, true);
 

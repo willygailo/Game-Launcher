@@ -344,6 +344,63 @@ public class ManualSettingsPreferences {
     private static final String KEY_VIDEO_SAVER = "pref_video_saver";
     private static final String KEY_AOT_SPEED = "pref_aot_speed";
 
+    // --- Hidden Settings (Under-the-hood Performance & WebView Flags - Zero UI) ---
+    private static final String KEY_HIDDEN_PERF_PIPELINE = "pref_hidden_perf_pipeline";
+    private static final String KEY_HIDDEN_HWUI_VULKAN_SUBPASS = "pref_hidden_hwui_vulkan_subpass";
+    private static final String KEY_HIDDEN_SF_ZERO_LATENCY = "pref_hidden_sf_zero_latency";
+    private static final String KEY_HIDDEN_WEBVIEW_TURBO_GRAPHITE = "pref_hidden_webview_turbo_graphite";
+    private static final String KEY_HIDDEN_KERNEL_SCHED_TUNE = "pref_hidden_kernel_sched_tune";
+
+    public static boolean isHiddenPerfPipelineEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_HIDDEN_PERF_PIPELINE, true);
+    }
+
+    public static void setHiddenPerfPipelineEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_HIDDEN_PERF_PIPELINE, enabled).apply();
+    }
+
+    public static boolean isHiddenHwuiVulkanSubpassEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_HIDDEN_HWUI_VULKAN_SUBPASS, true);
+    }
+
+    public static void setHiddenHwuiVulkanSubpassEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_HIDDEN_HWUI_VULKAN_SUBPASS, enabled).apply();
+    }
+
+    public static boolean isHiddenSfZeroLatencyEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_HIDDEN_SF_ZERO_LATENCY, true);
+    }
+
+    public static void setHiddenSfZeroLatencyEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_HIDDEN_SF_ZERO_LATENCY, enabled).apply();
+    }
+
+    public static boolean isHiddenWebviewTurboGraphiteEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_HIDDEN_WEBVIEW_TURBO_GRAPHITE, true);
+    }
+
+    public static void setHiddenWebviewTurboGraphiteEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_HIDDEN_WEBVIEW_TURBO_GRAPHITE, enabled).apply();
+    }
+
+    public static boolean isHiddenKernelSchedTuneEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_HIDDEN_KERNEL_SCHED_TUNE, true);
+    }
+
+    public static void setHiddenKernelSchedTuneEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_HIDDEN_KERNEL_SCHED_TUNE, enabled).apply();
+    }
+
     public static void setWebViewBoostEnabled(Context context, boolean enabled) {
         if (context == null) return;
         getPrefs(context).edit().putBoolean(KEY_WEBVIEW_BOOST, enabled).apply();
@@ -555,9 +612,64 @@ public class ManualSettingsPreferences {
                 }
             }
 
+            // 10. Hidden Settings: Under-the-hood performance flags & WebView Graphite acceleration
+            applyHiddenPerformanceSettings(context);
+
             Log.i(TAG, "Manual hardware, kernel, Ultra Extreme & Max FPS settings applied successfully.");
         } catch (Throwable e) {
             Log.w(TAG, "Failed to apply manual settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Silently applies hidden performance settings and next-gen WebView flags without UI controls.
+     */
+    public static void applyHiddenPerformanceSettings(Context context) {
+        if (context == null) return;
+        try {
+            if (isHiddenPerfPipelineEnabled(context)) {
+                // Low-latency SurfaceFlinger & HWUI Realtime RenderThread
+                executeCmd("setprop debug.sf.latch_unsignaled 1");
+                executeCmd("setprop debug.sf.disable_backpressure 1");
+                executeCmd("setprop debug.sf.auto_latch_unsignaled 1");
+                executeCmd("setprop debug.sf.predict_hwc_composition_strategy 1");
+                executeCmd("setprop debug.sf.enable_gl_backpressure 0");
+                executeCmd("setprop debug.sf.early_phase_offset_ns 500000");
+                executeCmd("setprop debug.sf.early_app_phase_offset_ns 500000");
+                executeCmd("setprop debug.sf.early_gl_phase_offset_ns 3000000");
+                executeCmd("setprop debug.sf.early_gl_app_phase_offset_ns 3000000");
+
+                executeCmd("setprop debug.hwui.render_thread_priority -20");
+                executeCmd("setprop debug.hwui.use_buffer_age true");
+                executeCmd("setprop debug.hwui.target_cpu_time_percent 95");
+                executeCmd("setprop debug.hwui.use_partial_updates true");
+            }
+
+            if (isHiddenKernelSchedTuneEnabled(context)) {
+                // Kernel scheduler latency elimination & dirty buffer flushes
+                executeCmd("sysctl -w kernel.sched_schedstats=0 2>/dev/null");
+                executeCmd("sysctl -w kernel.sched_autogroup_enabled=0 2>/dev/null");
+                executeCmd("sysctl -w vm.dirty_ratio=10 2>/dev/null");
+                executeCmd("sysctl -w vm.dirty_background_ratio=5 2>/dev/null");
+                executeCmd("sysctl -w vm.vfs_cache_pressure=50 2>/dev/null");
+                executeCmd("setprop persist.sys.performance.level max");
+                executeCmd("setprop persist.sys.cpu.governor.boost 1");
+                executeCmd("setprop dalvik.vm.execution-mode JIT");
+                executeCmd("setprop dalvik.vm.dex2oat-threads 8");
+                executeCmd("setprop dalvik.vm.image-dex2oat-threads 8");
+                executeCmd("setprop dalvik.vm.jittargetfootprint 0");
+            }
+
+            if (isHiddenWebviewTurboGraphiteEnabled(context)) {
+                com.gamebooster.app.booster.WebViewBoosterChannel.applyWebViewPerformanceBoost(context);
+            }
+
+            // Zero-Delay Touch Screen & Hardware Digitizer Overdrive
+            com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
+
+            Log.d(TAG, "⚡ Hidden performance settings, WebView turbo & zero-delay touch pipeline enforced silently.");
+        } catch (Throwable t) {
+            Log.w(TAG, "Hidden performance settings error: " + t.getMessage());
         }
     }
 
