@@ -143,7 +143,6 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnTweakFilterCpuGpu;
     private Button btnTweakFilterTouch;
     private Button btnTweakFilterShizuku;
-    private Button btnTweakFilterNetwork;
     private Button btnSettingsTweaksApplyAll;
     private Button btnSettingsTweaksResetAll;
     private com.gamebooster.app.tweaks.TweakCategory currentTweakCategory = com.gamebooster.app.tweaks.TweakCategory.ALL;
@@ -1186,6 +1185,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             });
         }
 
+        // Master Network Optimizer Button — fires all network + kernel sysctl in one tap
+        Button btnApplyAllNetwork = view.findViewById(R.id.btn_apply_all_network);
+        if (btnApplyAllNetwork != null) {
+            btnApplyAllNetwork.setOnClickListener(v -> applyAllNetworkOptimizations());
+        }
+
         // Card 4.5: System & Kernel Tweaks Repository
         View tweaksHeaderTitle = view.findViewById(R.id.tv_settings_tweaks_title);
         if (tweaksHeaderTitle != null) {
@@ -1202,7 +1207,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         btnTweakFilterCpuGpu = view.findViewById(R.id.btn_tweak_filter_cpugpu);
         btnTweakFilterTouch = view.findViewById(R.id.btn_tweak_filter_touch);
         btnTweakFilterShizuku = view.findViewById(R.id.btn_tweak_filter_shizuku);
-        btnTweakFilterNetwork = view.findViewById(R.id.btn_tweak_filter_network);
+        // btnTweakFilterNetwork removed — network tweaks now live in Settings Network section
         btnSettingsTweaksApplyAll = view.findViewById(R.id.btn_settings_tweaks_apply_all);
         btnSettingsTweaksResetAll = view.findViewById(R.id.btn_settings_tweaks_reset_all);
 
@@ -1782,6 +1787,77 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         });
     }
 
+    /**
+     * Master Network Optimizer — fires every NetworkOptimizer method + kernel net sysctl
+     * writes via Shizuku in a single async burst. Called from "⚡ APPLY ALL NETWORK" button.
+     */
+    private void applyAllNetworkOptimizations() {
+        if (!requireShizukuForAction("Apply All Network Optimizations")) return;
+        if (getContext() == null) return;
+        final Context ctx = getContext().getApplicationContext();
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                NetworkOptimizer.disableDataSaver();
+                NetworkOptimizer.disableBatterySaver();
+                NetworkOptimizer.disableWifiPowerSaver();
+                NetworkOptimizer.optimizeTcpBuffers();
+                NetworkOptimizer.optimize5gAnd6gDataNetwork(true);
+                NetworkOptimizer.optimizeWifi6and7LowLatency(true);
+                NetworkOptimizer.setDualDataAndWifiAcceleration(true);
+                NetworkOptimizer.enableRankedLowLatencySocketTuning(ctx);
+                NetworkOptimizer.flushDnsCache();
+                // Kernel net path writes via Shizuku (Android data temp paths)
+                com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
+                    "sysctl -w net.core.rmem_max=33554432 2>/dev/null; " +
+                    "sysctl -w net.core.wmem_max=33554432 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_fastopen=3 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null; " +
+                    "sysctl -w net.core.default_qdisc=fq 2>/dev/null; " +
+                    "sysctl -w net.core.netdev_max_backlog=10000 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_autocorking=0 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_fin_timeout=10 2>/dev/null; " +
+                    "sysctl -w net.ipv4.tcp_keepalive_time=30 2>/dev/null; " +
+                    "settings put global wifi_scan_throttle_enabled 0 2>/dev/null; " +
+                    "settings put global captive_portal_mode 0 2>/dev/null; " +
+                    "settings put global wifi_low_latency_mode 1 2>/dev/null; " +
+                    "setprop persist.vendor.wifi.low_latency 1; " +
+                    "cmd wifi force-low-latency-mode enabled 2>/dev/null; " +
+                    "cmd wifi force-hi-perf-mode enabled 2>/dev/null"
+                );
+                // Sync prefs so switches reflect state on next open
+                if (ctx != null) {
+                    ManualSettingsPreferences.setDisableDataSaverEnabled(ctx, true);
+                    ManualSettingsPreferences.setDisableBatterySaverEnabled(ctx, true);
+                    ManualSettingsPreferences.setDisableWifiSaverEnabled(ctx, true);
+                    ManualSettingsPreferences.setTcpBbrBuffersEnabled(ctx, true);
+                    ManualSettingsPreferences.set5g6gDataEnabled(ctx, true);
+                    ManualSettingsPreferences.setWifiLowLatencyEnabled(ctx, true);
+                    ManualSettingsPreferences.setDualDataWifiEnabled(ctx, true);
+                }
+            } catch (Throwable ignored) {}
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (!isAdded() || getContext() == null) return;
+                // Refresh all switch states
+                isProgrammaticToggle = true;
+                if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(true);
+                if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(true);
+                if (switchDisableWifiSaver != null) switchDisableWifiSaver.setChecked(true);
+                if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(true);
+                if (switch5g6gData != null) switch5g6gData.setChecked(true);
+                if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
+                if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                isProgrammaticToggle = false;
+                updateLiveTelemetryUi();
+                Toast.makeText(getContext(),
+                    "⚡ ALL NETWORK OPTIMIZATIONS APPLIED — Ping Shield Active!",
+                    Toast.LENGTH_LONG).show();
+            });
+        });
+    }
+
     private void openUrl(String url) {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -2224,9 +2300,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnTweakFilterShizuku != null) {
             btnTweakFilterShizuku.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.SHIZUKU_SYSTEM, btnTweakFilterShizuku));
         }
-        if (btnTweakFilterNetwork != null) {
-            btnTweakFilterNetwork.setOnClickListener(v -> selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory.NETWORK_LATENCY, btnTweakFilterNetwork));
-        }
+        // NETWORK filter tab removed — network tweaks are in the Settings Network section
     }
 
     private void selectTweakFilter(com.gamebooster.app.tweaks.TweakCategory cat, Button selectedBtn) {
@@ -2236,7 +2310,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         }
         Button[] filterBtns = new Button[]{
                 btnTweakFilterAll, btnTweakFilterCpuGpu, btnTweakFilterTouch,
-                btnTweakFilterShizuku, btnTweakFilterNetwork
+                btnTweakFilterShizuku
         };
         for (Button b : filterBtns) {
             if (b != null && getContext() != null) {

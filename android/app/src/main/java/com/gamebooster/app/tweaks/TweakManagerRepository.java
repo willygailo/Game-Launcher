@@ -296,39 +296,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // =========================================================================
-        // 4. NETWORK & PACKET PROTOCOL TWEAKS (Unique & Non-Overlapping)
-        // =========================================================================
-
-        TWEAKS.add(new TweakItem(
-                "wlan_fast_roaming_boost",
-                "WLAN Chipset Hardware Low-Latency Lock",
-                "Enables hardware Wi-Fi low-latency mode and disables scan throttling during gameplay",
-                "settings put global wifi_scan_throttle_enabled 0; setprop persist.vendor.wifi.low_latency 1; cmd wifi force-low-latency-mode enabled",
-                "settings put global wifi_scan_throttle_enabled 1; cmd wifi force-low-latency-mode disabled",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "tcp_packet_pacing_gaming",
-                "Immediate Packet Pacing & Anti-Corking",
-                "Disables socket corking so game packets transmit immediately without buffering delays",
-                "setprop net.ipv4.tcp_pacing_ss_ratio 200; setprop net.ipv4.tcp_pacing_ca_ratio 120; setprop net.ipv4.tcp_autocorking 0",
-                "setprop net.ipv4.tcp_autocorking 1",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_captive_portal",
-                "Disable Captive Portal Probe Latency",
-                "Disables background HTTP captive portal network checks to avoid ping spikes",
-                "settings put global captive_portal_mode 0",
-                "settings put global captive_portal_mode 1",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
 
         // =========================================================================
         // 5. FLAGSHIP ZERO-LATENCY, KERNEL GOVERNOR & TCP BBR TWEAKS
@@ -627,98 +594,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        // =========================================================================
-        // 10. HIGH-THROUGHPUT NETWORK & SOCKET PROTOCOL TWEAKS
-        // =========================================================================
-        TWEAKS.add(new TweakItem(
-                "tcp_buffer_memory_expansion",
-                "TCP Read/Write Socket Buffer Expansion (16MB)",
-                "Expands TCP socket read/write window limits to 16MB and netdev queue backlog to 5000 packets to eliminate UDP/TCP packet drops",
-                "sysctl -w net.core.rmem_max=16777216 2>/dev/null; sysctl -w net.core.wmem_max=16777216 2>/dev/null; sysctl -w net.core.rmem_default=262144 2>/dev/null; sysctl -w net.core.wmem_default=262144 2>/dev/null; sysctl -w net.core.netdev_max_backlog=5000 2>/dev/null; setprop net.tcp.buffersize.wifi 524288,1048576,2097152,262144,524288,1048576; setprop net.tcp.buffersize.lte 524288,1048576,2097152,262144,524288,1048576",
-                "sysctl -w net.core.rmem_max=2097152 2>/dev/null; sysctl -w net.core.wmem_max=2097152 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "disable_data_saver",
-                "Disable Data Saver & Uncap Background Throughput",
-                "Completely disables Android system Data Saver and background packet clamping to maximize game bandwidth",
-                "cmd netpolicy set restrict-background false 2>/dev/null; cmd connectivity set-background-data true 2>/dev/null; settings put global restrict_background_data 0 2>/dev/null; settings put global data_saver_enabled 0 2>/dev/null",
-                "cmd netpolicy set restrict-background true 2>/dev/null; settings put global restrict_background_data 1 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "wifi_power_save_disable",
-                "Wi-Fi Power Save Poll & DTIM Sleep Disable",
-                "Prevents Wi-Fi modem firmware from entering power saving DTIM sleep cycles, ensuring zero-millisecond ping spikes in online matches",
-                "settings put global wifi_power_save 0; setprop persist.sys.wifi.power_save 0; setprop persist.vendor.wifi.powersave 0; cmd wifi set-power-save-enabled disabled 2>/dev/null; settings put global wifi_sleep_policy 2 2>/dev/null; settings put global wifi_suspend_optimizations_enabled 0 2>/dev/null; setprop persist.vendor.wifi.twt_disable 1 2>/dev/null; cmd wifi force-low-latency-mode enabled 2>/dev/null; cmd wifi force-hi-perf-mode enabled 2>/dev/null",
-                "settings put global wifi_power_save 1; setprop persist.sys.wifi.power_save 1; cmd wifi set-power-save-enabled enabled 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "dns_over_tls_latency_bypass",
-                "Low-Latency Cloudflare DNS 1.1.1.1 Engine",
-                "Configures ultra-low latency Cloudflare DNS (1.1.1.1 / 1.0.0.1) and Google DNS fallback for instantaneous game matchmaking lookups",
-                "setprop net.dns1 1.1.1.1; setprop net.dns2 8.8.8.8; settings put global private_dns_specifier one.one.one.one",
-                "settings put global private_dns_mode opportunistic",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "udp_game_socket_turbo",
-                "UDP Game Socket Burst Throughput & Zero-Delay Send",
-                "Tunes UDP socket buffers to 32MB max, disables socket Nagle delay for real-time UDP game packets, and maximizes socket receive queue depth for zero-drop burst processing",
-                "sysctl -w net.core.rmem_max=33554432 2>/dev/null; sysctl -w net.core.wmem_max=33554432 2>/dev/null; sysctl -w net.core.optmem_max=65536 2>/dev/null; sysctl -w net.core.netdev_budget=600 2>/dev/null; sysctl -w net.ipv4.udp_rmem_min=8192 2>/dev/null; sysctl -w net.ipv4.udp_wmem_min=8192 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.ipv4.tcp_timestamps=1 2>/dev/null",
-                "sysctl -w net.core.rmem_max=16777216 2>/dev/null; sysctl -w net.core.wmem_max=16777216 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "dns_cache_accelerator",
-                "DNS Pre-Resolution Cache & Negative TTL Reducer",
-                "Maximizes Android DNS resolver cache size, pins positive TTL to 300s, reduces negative TTL to 5s, disables EDNS retry backoff, and forces resolver threads to use AF_INET6-first for modern game CDN routing",
-                "setprop net.dns1 1.1.1.1; setprop net.dns2 1.0.0.1; setprop net.dns3 8.8.8.8; setprop net.dns4 8.8.4.4; settings put global private_dns_specifier one.one.one.one; setprop persist.sys.dns.ttl 300; setprop persist.sys.dns.neg_ttl 5; setprop ro.net.dns_refresh_period 300; setprop persist.net.dnsresolver 1",
-                "settings put global private_dns_mode opportunistic; setprop net.dns1 8.8.8.8",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "wifi_5ghz_band_force_lock",
-                "Wi-Fi 5GHz / 6GHz Band Lock & 80MHz Channel Width Force",
-                "Forces WLAN driver to prefer 5GHz/6GHz bands, pins channel width to 80MHz (or 160MHz where supported), disables 2.4GHz fallback roaming, and locks modulation rate to MCS9/VHT for maximum 802.11ac/ax throughput",
-                "settings put global wifi_frequency_band 1; settings put global wifi_p2p_device_type 0; setprop persist.sys.wifi.band 5; setprop persist.vendor.wifi.band 5; setprop persist.sys.wifi.channel_width 80; setprop persist.vendor.wifi.channel_width 2; setprop persist.sys.wifi.max_mcs 9; setprop persist.sys.wifi.vht 1; cmd wifi set-wifi-enabled enabled 2>/dev/null",
-                "settings put global wifi_frequency_band 0; setprop persist.sys.wifi.band 0",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "wifi_qos_wmm_priority_gaming",
-                "Wi-Fi QoS WMM Voice Priority & Zero AMPDU Delay",
-                "Elevates Wi-Fi QoS to WMM Voice class (AC_VO), minimizes AMPDU frame aggregation delay, pins TX power to maximum, and sets DTIM listen interval to 1 for zero-latency packet delivery on home routers",
-                "setprop persist.sys.wifi.wmm_power_save 0; setprop persist.vendor.wifi.wmm 1; setprop persist.sys.wifi.dtim_multiplier 1; setprop persist.sys.wifi.ps_mechanism 0; setprop persist.sys.wifi.tx_power_max 127; setprop persist.vendor.wifi.tx_power 127; setprop persist.sys.wifi.ampdu_tx 0; setprop persist.sys.wifi.ampdu_rx 0; setprop persist.sys.wifi.wmm_ac_vo_aifs 1; setprop persist.sys.wifi.wmm_ac_vo_cwmin 1",
-                "setprop persist.sys.wifi.wmm_power_save 1; setprop persist.sys.wifi.dtim_multiplier 2; setprop persist.sys.wifi.ps_mechanism 1",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "network_route_scheduler_turbo",
-                "Network Route Scheduler & IRQ Affinity Turbo",
-                "Binds network IRQ processing to high-performance CPU cores, enables RPS (Receive Packet Steering) across all cores, maximizes NIC interrupt coalescing, and sets IP ToS/DSCP to CS6 (Network Control) priority for outbound game packets",
-                "sysctl -w net.core.rps_sock_flow_entries=32768 2>/dev/null; sysctl -w net.ipv4.tcp_ecn=1 2>/dev/null; sysctl -w net.ipv4.ip_default_ttl=128 2>/dev/null; sysctl -w net.ipv4.tcp_syn_retries=3 2>/dev/null; sysctl -w net.ipv4.tcp_synack_retries=3 2>/dev/null; sysctl -w net.ipv4.tcp_fin_timeout=10 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_time=30 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_intvl=5 2>/dev/null; sysctl -w net.ipv4.tcp_keepalive_probes=3 2>/dev/null",
-                "sysctl -w net.ipv4.ip_default_ttl=64 2>/dev/null; sysctl -w net.ipv4.tcp_fin_timeout=60 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
 
         // =========================================================================
         // 11. ANDROID 13 / 14 / 15 / 16 ADVANCED PERFORMANCE & FLAGSHIP TWEAKS
@@ -823,15 +698,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "network_game_ping_optimizer",
-                "Dual-Channel Low-Latency Gaming Ping & Jitter Acceleration",
-                "Optimizes TCP gaming buffer sockets, TCP BBR congestion protocol, and disables Wi-Fi background roaming scans",
-                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null; cmd wifi set-scan-always-available 0 2>/dev/null",
-                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; cmd wifi set-scan-always-available 1 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "no_limit_hardware_overdrive",
@@ -866,15 +732,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "tcp_quickack_gro_gso_packet_turbo",
-                "TCP QuickACK & Hardware GRO/GSO Packet Offloading",
-                "Enforces immediate TCP QuickACK without 200ms delayed ACK pauses, and maximizes hardware Generic Receive/Segmentation Offloading for zero ping jitter",
-                "sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.ipv4.tcp_sack=1 2>/dev/null; sysctl -w net.ipv4.tcp_dsack=1 2>/dev/null; sysctl -w net.core.default_qdisc=fq 2>/dev/null; for i in $(ls /sys/class/net/ 2>/dev/null); do ethtool -K $i gro on gso on 2>/dev/null; done",
-                "sysctl -w net.ipv4.tcp_quickack=0 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=0 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
 
         TWEAKS.add(new TweakItem(
                 "proactive_memory_compaction_shield",
@@ -977,36 +834,6 @@ public class TweakManagerRepository {
                 "sysctl -w vm.swappiness=10 2>/dev/null; sysctl -w vm.vfs_cache_pressure=50 2>/dev/null; sysctl -w vm.dirty_ratio=20 2>/dev/null; sysctl -w vm.dirty_background_ratio=5 2>/dev/null",
                 "sysctl -w vm.swappiness=60 2>/dev/null; sysctl -w vm.vfs_cache_pressure=100 2>/dev/null",
                 TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "tcp_bbr_v3_quickack",
-                "TCP BBR v3 Congestion & Zero Delayed-ACK",
-                "Enforces BBR bottleneck bandwidth pacing with TCP low latency, QuickACK, and notsent_lowat memory limits for minimal ping jitter",
-                "sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null; sysctl -w net.ipv4.tcp_notsent_lowat=16384 2>/dev/null",
-                "sysctl -w net.ipv4.tcp_congestion_control=cubic 2>/dev/null; sysctl -w net.ipv4.tcp_quickack=0 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "fq_codel_bufferbloat_mitigation",
-                "FQ-CoDel Queueing & Bufferbloat Mitigation",
-                "Replaces FIFO network queues with Fair Queueing Controlled Delay (FQ-CoDel) to eliminate latency spikes under heavy packet transmission",
-                "sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null; sysctl -w net.ipv4.tcp_ecn=1 2>/dev/null; sysctl -w net.core.netdev_max_backlog=10000 2>/dev/null",
-                "sysctl -w net.core.default_qdisc=pfifo_fast 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
-                true
-        ));
-
-        TWEAKS.add(new TweakItem(
-                "wifi7_low_latency_gaming_mode",
-                "Wi-Fi 6E/7 Low Latency Gaming Priority",
-                "Configures Wi-Fi driver parameters for uninterrupted channel transmission and disables background network scanning during matches",
-                "cmd wifi set-low-latency-mode enabled 2>/dev/null; settings put global wifi_scan_always_enabled 0 2>/dev/null; setprop wifi.interface.gaming.priority 1",
-                "cmd wifi set-low-latency-mode disabled 2>/dev/null; settings put global wifi_scan_always_enabled 1 2>/dev/null",
-                TweakCategory.NETWORK_LATENCY,
                 true
         ));
 
@@ -1453,7 +1280,7 @@ public class TweakManagerRepository {
         // Mark core performance tweaks as applied
         int count = 0;
         for (TweakItem item : TWEAKS) {
-            if (item.getCategory() == TweakCategory.TOUCH_DISPLAY || item.getCategory() == TweakCategory.NETWORK_LATENCY) {
+            if (item.getCategory() == TweakCategory.TOUCH_DISPLAY) {
                 item.setApplied(true);
                 if (context != null) {
                     TweakPreferences.saveTweakState(context, item.getId(), true);

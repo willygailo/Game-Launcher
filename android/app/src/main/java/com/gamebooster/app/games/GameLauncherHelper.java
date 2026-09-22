@@ -121,8 +121,24 @@ public class GameLauncherHelper {
                 return;
             }
         }
+        // Per-game immediate inject: fire before startActivity so configs land on disk
+        // before the game process spawns. GameAutoInjectDispatcher routes per-package:
+        //   MLBB     → MlbbConfigPatcher + MlbbDroneViewPatcher suite
+        //   PUBGM    → PubgConfigPatcher full suite
+        //   CODM     → CodmConfigPatcher full suite
+        //   FreeFire → FreeFire config suite
+        //   Others   → CommonConfigTuningInjector defaults
+        final Context injectCtx = context.getApplicationContext();
+        final String injectPkg = pkg;
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(injectCtx, injectPkg, false);
+            } catch (Throwable ignored) {}
+        });
+
         com.gamebooster.app.gamemanager.GameManagerLauncher.launchGame(context, game);
     }
+
 
     public static void launchGameWithAutoBoost(Context context, GameAppInfo game) {
         autoLaunchGame(context, game);
