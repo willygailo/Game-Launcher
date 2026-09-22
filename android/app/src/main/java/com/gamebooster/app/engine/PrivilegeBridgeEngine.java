@@ -55,7 +55,12 @@ public class PrivilegeBridgeEngine {
             }
         } catch (Throwable ignored) {}
 
-        return ShizukuExecutor.hasShizukuPermission()
+        boolean binderAlive = false;
+        try {
+            binderAlive = rikka.shizuku.Shizuku.pingBinder();
+        } catch (Throwable ignored) {}
+
+        return (binderAlive && ShizukuExecutor.hasShizukuPermission())
                 || ShizukuManager.isShizukuRunningAndGranted()
                 || ShizukuUserServiceConnector.getInstance().isServiceConnected()
                 || ShizukuConnectionManager.getInstance().isReady()

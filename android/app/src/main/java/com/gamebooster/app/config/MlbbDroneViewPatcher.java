@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.shizuku.ShizukuAutoConnectEngine;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
@@ -14,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import rikka.shizuku.Shizuku;
 
 /**
  * MlbbDroneViewPatcher — High-Performance Working MLBB Drone View Integration Engine.
@@ -99,6 +102,17 @@ public final class MlbbDroneViewPatcher {
         if (pkg == null || (!pkg.contains("mobile.legends") && !pkg.contains("mobilelegends"))) {
             return false;
         }
+
+        // On Android 14/15/16, check binder liveness before attempting privileged file operations
+        try {
+            if (!Shizuku.pingBinder()) {
+                Log.w(TAG, "Shizuku binder is not active before drone injection. Initiating quick rebind...");
+                ShizukuAutoConnectEngine.evaluateAndConnect(context);
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ignored) {}
+            }
+        } catch (Throwable ignored) {}
 
         try {
             AssetManager am = context.getAssets();

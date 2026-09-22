@@ -391,23 +391,43 @@ public final class ShizukuFileManager {
         String mode = chmodMode != null ? chmodMode : "666";
         String cmd = "echo '" + b64 + "' | base64 -d > '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
 
-        if (hasFullAccess()) {
+        boolean privileged = false;
+        try {
+            privileged = hasFullAccess();
+        } catch (Throwable ignored) {}
+
+        if (privileged) {
             String res = CommandExecutor.executeSystemCommand(cmd);
             boolean ok = res != null && !res.toLowerCase().contains("error");
-            return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath)
-                      : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
-        } else {
+            if (ok) {
+                return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath);
+            }
+        }
+
+        // Fallback: Direct FileOutputStream write (with directory creation)
+        try {
+            File f = new File(targetProtectedPath);
+            File parent = f.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
+                fos.write(data);
+                fos.flush();
+            }
             try {
-                File f = new File(targetProtectedPath);
-                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
-                    fos.write(data);
-                    fos.flush();
-                }
                 CommandExecutor.executeSystemCommand("chmod " + mode + " '" + targetProtectedPath + "'");
-                return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
-            } catch (Throwable t) {
-                CommandExecutor.executeSystemCommand(cmd);
-                return FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell");
+            } catch (Throwable ignored) {}
+            return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
+        } catch (Throwable t) {
+            // Secondary fallback: Attempt shell command regardless
+            try {
+                String res = CommandExecutor.executeSystemCommand(cmd);
+                boolean ok = res != null && !res.toLowerCase().contains("error");
+                return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell fallback")
+                          : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
+            } catch (Throwable ex) {
+                return FileOpResult.fail(targetProtectedPath, "All upload strategies failed: " + ex.getMessage());
             }
         }
     }
