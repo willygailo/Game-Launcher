@@ -329,6 +329,9 @@ public final class GameAutoInjectDispatcher {
                 MlbbDroneViewPatcher.restoreStockCamera(ConfigBackupManager.getAppContext(), pkg);
             }
         } catch (Throwable ignored) {}
+
+        // ─── 2026 New Patch Method: Per-Hero Script Dispatch ─────────────────
+        try { MlbbHeroScriptDispatcher.dispatchAllMeta(ConfigBackupManager.getAppContext(), pkg); } catch (Throwable ignored) {}
     }
 
     private static void injectPubgm(String pkg) {

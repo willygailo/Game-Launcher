@@ -7,6 +7,7 @@ import com.gamebooster.app.shizuku.ShizukuFileManager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * NativeConfigInjector — High-Performance C++ / JNI Configuration & Kernel Optimizer.
@@ -131,6 +132,35 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmGodModeFullOverdrive(String path);
     public static native boolean nativeInjectPubgmSovereignOverdriveBypass(String path);
     public static native boolean nativeInjectCodmSovereignOverdriveBypass(String path);
+
+    /**
+     * 2026 New Patch Method: Injects per-hero script modifiers (damage, cooldown, range, speed, etc.)
+     * into MLBB target config paths (PlayerPrefs XML / config files) via batchInjectKeys.
+     */
+    public static boolean injectHeroScriptModifiers(String pkg, Map<String, String> modifiers) {
+        if (pkg == null || pkg.trim().isEmpty() || modifiers == null || modifiers.isEmpty()) {
+            return false;
+        }
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        if (paths == null || paths.isEmpty()) return false;
+        boolean anySuccess = false;
+        for (String path : paths) {
+            if (path == null) continue;
+            String lower = path.toLowerCase().replace('\\', '/');
+            if (lower.contains("/assets/version") || lower.contains("/assets/comlibs")
+                    || lower.contains("md5.xml") || lower.contains("rescheck") || lower.contains("realversion")
+                    || lower.contains("splitlib") || lower.contains("mola_config") || lower.contains("res_skip")) {
+                continue;
+            }
+            if (lower.endsWith(".xml") && lower.contains("/assets/")) {
+                continue;
+            }
+            if (batchInjectKeys(path, modifiers, "[HeroScriptModifiers]")) {
+                anySuccess = true;
+            }
+        }
+        return anySuccess;
+    }
 
     // 2026 Advanced Security & Anti-Tamper Native Bypass Suite
     public static native boolean nativeSecurityBypassStripXattrs(String path);

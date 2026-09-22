@@ -259,4 +259,14 @@ public final class AntiBanStealthEngine {
         Log.d(TAG, "Stealth pre-flight: " + safePaths.size() + "/" + paths.size() + " paths safe for " + packageName);
         return safePaths;
     }
+
+    /**
+     * Applies subtle session drift (±3% to ±5%) to numeric combat values.
+     * Prevents static signature fingerprinting across repeated injection sessions.
+     */
+    public static float driftValue(float base) {
+        // Drift factor between -0.05 and +0.05
+        float factor = 1.0f + ((sRandom.nextFloat() * 0.10f) - 0.05f);
+        return base * factor;
+    }
 }

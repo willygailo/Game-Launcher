@@ -609,6 +609,28 @@ profile.RiverBushVision               = 1
 profile.HeroTargetLockRange           = 9999
 profile.TargetLockProximitySweep      = 3000
 
+-- =============================================================================
+-- 2026.5 NEW PATCH METHOD: HERO SCRIPT DAMAGE & SPEED MODIFIERS (Scribd Doc)
+-- =============================================================================
+profile.game_speed_multiplier         = 2.0
+profile.camera_lock_hero_id           = 0
+profile.fog_of_war_full_reveal        = 1
+profile.hero_vision_range_override    = 9999
+profile.attack_range_override         = 9999
+profile.s1_cd_override                = 0.001
+profile.s2_cd_override                = 0.001
+profile.ult_cd_override               = 0.001
+
+-- PascalCase Compatibility Aliases for Native Patcher
+profile.GameSpeedMultiplier           = 2.0
+profile.CameraLockHeroId              = 0
+profile.FogOfWarFullReveal            = 1
+profile.HeroVisionRangeOverride       = 9999
+profile.AttackRangeOverride           = 9999
+profile.Skill1CdOverride              = 0.001
+profile.Skill2CdOverride              = 0.001
+profile.UltCdOverride                 = 0.001
+
 return profile
 
 

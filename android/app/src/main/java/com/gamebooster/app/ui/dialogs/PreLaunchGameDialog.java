@@ -15,8 +15,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.gamebooster.app.config.MlbbHeroScriptRegistry;
+import com.gamebooster.app.config.MlbbHeroScriptRegistry.HeroEntry;
+import com.gamebooster.app.config.MlbbHeroScriptDispatcher;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.booster.GpuTweaksChannel;
@@ -169,6 +178,56 @@ public class PreLaunchGameDialog {
         else if (currentTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
         else if (rb30 != null) rb30.setChecked(true);
 
+        // 3.6 2026 Season 42 Hero Script Damage & Modifiers Selector (MLBB Only)
+        android.view.View layoutHeroSelector = view.findViewById(R.id.layout_pre_launch_hero_selector);
+        final Spinner spinnerHero = view.findViewById(R.id.spinner_pre_launch_hero_script);
+        final List<Integer> heroIdList = new ArrayList<>();
+
+        if (layoutHeroSelector != null) {
+            layoutHeroSelector.setVisibility(isMlbb ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+
+        if (isMlbb && spinnerHero != null) {
+            List<String> heroLabels = new ArrayList<>();
+            heroLabels.add("🌟 All Meta Heroes (Global Boost + Top 20)");
+            heroIdList.add(0);
+
+            HeroEntry[] metaHeroes = MlbbHeroScriptRegistry.getMetaHeroes();
+            if (metaHeroes != null) {
+                for (HeroEntry h : metaHeroes) {
+                    if (h == null) continue;
+                    heroLabels.add("⚔️ " + h.name + " (" + h.role + ") — [ID:" + h.id + "]");
+                    heroIdList.add(h.id);
+                }
+            }
+
+            ArrayAdapter<String> heroAdapter = new ArrayAdapter<String>(
+                    context, android.R.layout.simple_spinner_dropdown_item, heroLabels) {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    View v = super.getView(position, convertView, parent);
+                    if (v instanceof TextView) {
+                        ((TextView) v).setTextColor(Color.WHITE);
+                        ((TextView) v).setTextSize(11f);
+                    }
+                    return v;
+                }
+
+                @Override
+                public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                    View v = super.getDropDownView(position, convertView, parent);
+                    if (v instanceof TextView) {
+                        ((TextView) v).setTextColor(Color.WHITE);
+                        ((TextView) v).setBackgroundColor(Color.parseColor("#1A2332"));
+                        ((TextView) v).setTextSize(12f);
+                        ((TextView) v).setPadding(24, 16, 24, 16);
+                    }
+                    return v;
+                }
+            };
+            spinnerHero.setAdapter(heroAdapter);
+        }
+
         // 4. Action Buttons
         Button btnCancel = view.findViewById(R.id.btn_pre_launch_cancel);
         Button btnStart = view.findViewById(R.id.btn_pre_launch_start);
@@ -215,6 +274,15 @@ public class PreLaunchGameDialog {
             profile.setDroneViewTier(selectedTier);
             CfgProfileManager.saveProfile(context, profile);
             GameProfilePreferences.setTargetHz(context, pkg, finalFps);
+
+            // 2026 Hero Script Dispatch for MLBB
+            if (isMlbb) {
+                int heroPos = (spinnerHero != null) ? spinnerHero.getSelectedItemPosition() : 0;
+                int heroId = (heroPos >= 0 && heroPos < heroIdList.size()) ? heroIdList.get(heroPos) : 0;
+                try {
+                    MlbbHeroScriptDispatcher.dispatch(context.getApplicationContext(), pkg, heroId);
+                } catch (Throwable ignored) {}
+            }
 
             // Launch the game via unified engine (which executes full cold-start pre-injection and auto-opens the game)
             GameManagerLauncher.launchGame(context, game);

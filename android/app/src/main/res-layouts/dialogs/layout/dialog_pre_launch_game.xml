@@ -348,6 +348,41 @@
         </RadioGroup>
     </LinearLayout>
 
+    <!-- 2026 Season 42 Hero Script Damage & Modifier Selector (MLBB Only) -->
+    <LinearLayout
+        android:id="@+id/layout_pre_launch_hero_selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/card_glass_shape"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚔️ 2026 HERO SCRIPT DAMAGE &amp; MODIFIERS:"
+            android:textColor="@color/accent_neon_green"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="Select specific hero script (10k dmg, 0.001s CD, 2x Game Speed) or All Meta"
+            android:textColor="@color/text_muted"
+            android:textSize="10sp" />
+
+        <Spinner
+            android:id="@+id/spinner_pre_launch_hero_script"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:popupBackground="@drawable/card_glass_shape"
+            android:spinnerMode="dropdown" />
+    </LinearLayout>
+
     <!-- Remove Game Button -->
     <Button
         android:id="@+id/btn_pre_launch_remove_game"
