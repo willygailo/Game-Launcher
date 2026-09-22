@@ -172,11 +172,43 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
-        // startActivity fires FIRST before any heavy shell injection.
-        // The game window opens immediately on tap — config injection
-        // runs async on a background thread after the activity starts.
+        // STEP 2b: PRE-LAUNCH DRONE VIEW WRITE (≤600ms, BLOCKING)
+        // Must run BEFORE startActivity so MLBB reads our patched
+        // BattleSystemConfig.bytes from dragon2017/LoadResManager at
+        // home-screen load time — this is what makes drone view work
+        // in the lobby, not just in battle.
         // ═══════════════════════════════════════════════════════════
+        try {
+            if (pkg.toLowerCase().contains("mobile.legends") || pkg.toLowerCase().contains("mobilelegends")) {
+                String gameKey = CfgProfileManager.resolveGameKey(pkg);
+                CompetitiveCfgProfile preProfile = CfgProfileManager.loadProfile(appContext, gameKey);
+                if (preProfile != null && preProfile.isDroneViewUltraEnabled()) {
+                    final int droneT = preProfile.getDroneViewTier();
+                    // Submit to IO thread pool and wait up to 600ms so files land before MLBB reads them
+                    java.util.concurrent.Future<?> dronePreFuture =
+                            AppExecutors.getInstance().getCommandIO().submit(() -> {
+                                try {
+                                    com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(
+                                            appContext, pkg, droneT);
+                                    Log.i(TAG, "✅ [Pre-Launch Drone] Home-screen FOV patched [tier=" + droneT + "] before activity start");
+                                } catch (Throwable t) {
+                                    Log.w(TAG, "Pre-launch drone write warning: " + t.getMessage());
+                                }
+                            });
+                    try { dronePreFuture.get(600, java.util.concurrent.TimeUnit.MILLISECONDS); }
+                    catch (Throwable ignored) { /* timeout OK — async lobby injection covers it */ }
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Pre-launch drone barrier warning for " + pkg + ": " + t.getMessage());
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
+        // startActivity fires after drone pre-write (≤600ms guard).
+        // Heavy config injection still runs async after activity starts.
+        // ═══════════════════════════════════════════════════════════
+
         boolean launchedDirectly = false;
         if (targetIntent != null) {
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK

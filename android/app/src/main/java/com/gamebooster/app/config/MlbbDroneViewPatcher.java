@@ -125,12 +125,24 @@ public final class MlbbDroneViewPatcher {
                 }
             }
 
-            // Also copy BattleSystemConfig.bytes into dragon2017 fallback path if present
+            // ── dragon2017 fallback (home screen / lobby camera) ───────────────────────
+            // Force-write unconditionally — MLBB reads this at game startup (including lobby),
+            // so this path MUST be populated BEFORE the game process loads to affect home screen FOV.
             for (String rootDir : rootDirs) {
-                String dragonPath = rootDir + "/files/dragon2017/assets/Document/android/BattleSystemConfig.bytes";
-                File df = new File(dragonPath);
-                if (df.getParentFile() != null && (df.getParentFile().exists() || ShizukuFileManager.hasFullAccess())) {
-                    ShizukuFileManager.uploadBytes(dragonPath, battleBytes, "666");
+                // Primary dragon2017 camera config — read at app startup (lobby/home screen)
+                String dragonDocPath = rootDir + "/files/dragon2017/assets/Document/android";
+                String dragonBattlePath = dragonDocPath + "/BattleSystemConfig.bytes";
+                ShizukuFileManager.makeDirectory(dragonDocPath);
+                ShizukuFileManager.uploadBytes(dragonBattlePath, battleBytes, "666");
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + rootDir + "/files/dragon2017\" 2>/dev/null");
+                }
+                // Also write to LoadResManager path — covers MLBB versions 1.8.x+ lobby hot-reload
+                String loadResMgrPath = rootDir + "/files/LoadResManager/Document/android";
+                ShizukuFileManager.makeDirectory(loadResMgrPath);
+                ShizukuFileManager.uploadBytes(loadResMgrPath + "/BattleSystemConfig.bytes", battleBytes, "666");
+                if (anyApplied) {
+                    Log.i(TAG, "🏠 [Home FOV] dragon2017+LoadResManager drone bytes written for: " + rootDir);
                 }
             }
 
