@@ -122,18 +122,42 @@ public final class HardwareDisplayController {
     }
 
     /**
-     * Force-locks the system display refresh rate to the hardware maximum using Shizuku privileged shell.
-     * Prevents OEM adaptive refresh stepping down to 60Hz during gaming.
+     * Force-locks the system display refresh rate dynamically based on hardware capability,
+     * or forces a specific refresh rate override (up to 185Hz).
+     *
+     * @param context App context
+     * @param overrideHz Desired refresh rate override (0 or negative to auto-detect hardware max; up to 185Hz)
      */
-    public static boolean forceUnlockSystemMaxRefreshRate(Context context) {
+    public static boolean forceUnlockSystemRefreshRate(Context context, int overrideHz) {
         if (context == null) return false;
-        int maxHz = Math.round(getMaxHardwareRefreshRate(context));
-        Log.i(TAG, "Hardware ceiling detected: " + maxHz + "Hz. Pushing system overrides via Shizuku...");
+        int targetHz;
+        if (overrideHz > 0) {
+            targetHz = Math.min(overrideHz, 185);
+        } else {
+            targetHz = Math.round(getMaxHardwareRefreshRate(context));
+            if (targetHz < 60) targetHz = 60;
+        }
+
+        Log.i(TAG, "Target refresh rate resolved: " + targetHz + "Hz (Override: " + overrideHz + "). Pushing system & SurfaceFlinger overrides...");
 
         List<String> commands = Arrays.asList(
-                "settings put system peak_refresh_rate " + maxHz,
-                "settings put system min_refresh_rate " + maxHz,
-                "settings put system user_refresh_rate " + maxHz,
+                "settings put system peak_refresh_rate " + targetHz + ".0",
+                "settings put system min_refresh_rate " + targetHz + ".0",
+                "settings put system user_refresh_rate " + targetHz,
+                "settings put global peak_refresh_rate " + targetHz + ".0",
+                "settings put global min_refresh_rate " + targetHz + ".0",
+                "settings put global user_refresh_rate " + targetHz,
+                "settings put global oneplus_screen_refresh_rate " + targetHz,
+                "settings put system miui_refresh_rate " + targetHz,
+                "settings put secure match_content_frame_rate_preference 0",
+                "settings put system match_content_frame_rate 0",
+                "setprop debug.sf.fps_limit " + targetHz,
+                "setprop persist.sys.NV_FPSLIMIT " + targetHz,
+                "setprop persist.sys.game.fps " + targetHz,
+                "service call SurfaceFlinger 1035 i32 " + targetHz,
+                "service call SurfaceFlinger 1036 i32 " + targetHz,
+                "cmd window set-app-refresh-rate global " + targetHz,
+                "cmd game set --fps " + targetHz + " global",
                 "settings put global low_power 0",
                 "settings put global low_power_sticky 0",
                 "settings put global adaptive_battery_management_enabled 0"
@@ -148,5 +172,33 @@ public final class HardwareDisplayController {
             }
         }
         return allSuccess;
+    }
+
+    /**
+     * Overload for backward compatibility - auto-detects hardware ceiling.
+     */
+    public static boolean forceUnlockSystemMaxRefreshRate(Context context) {
+        return forceUnlockSystemRefreshRate(context, 0);
+    }
+
+    /**
+     * Restores system display settings back to OEM adaptive defaults.
+     */
+    public static boolean restoreAdaptiveRefreshRate(Context context) {
+        if (context == null) return false;
+        List<String> commands = Arrays.asList(
+                "settings delete system min_refresh_rate",
+                "settings delete system peak_refresh_rate",
+                "settings delete system user_refresh_rate",
+                "settings delete global min_refresh_rate",
+                "settings delete global peak_refresh_rate",
+                "settings delete global user_refresh_rate",
+                "cmd window set-app-refresh-rate global 0",
+                "cmd game reset global"
+        );
+        for (String cmd : commands) {
+            ShizukuExecutor.executeShizukuCommand(cmd);
+        }
+        return true;
     }
 }

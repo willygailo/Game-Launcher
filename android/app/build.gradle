@@ -39,7 +39,7 @@ android {
 
     defaultConfig {
         applicationId "com.gamebooster.app"
-        minSdk 33
+        minSdk 34
         targetSdk 36
         versionCode 1800
         versionName "18.0.0"

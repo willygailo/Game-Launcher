@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.gamebooster.app.device.DevicePerformanceCapabilities;
+import com.gamebooster.app.config.ConfigBackupManager;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
@@ -87,7 +88,16 @@ public class PerformanceChannel {
      * @param targetHz Target refresh rate (120, 144, 165, or 185)
      */
     public static boolean writeAndExecutePerformanceTweaksScript(int targetHz) {
-        final int hz = targetHz > 0 ? targetHz : 185;
+        Context ctx = ConfigBackupManager.getAppContext();
+        int resolvedHz;
+        if (targetHz > 0) {
+            resolvedHz = Math.min(targetHz, 185);
+        } else if (ctx != null) {
+            resolvedHz = Math.max(Math.round(com.gamebooster.app.device.HardwareDisplayController.getMaxHardwareRefreshRate(ctx)), 185);
+        } else {
+            resolvedHz = 185;
+        }
+        final int hz = resolvedHz;
         try {
             String targetGamesCsv = GpuTweaksChannel.getTargetGamesCsv();
             int coreCount = CpuGovernorChannel.detectCpuCoreCount();

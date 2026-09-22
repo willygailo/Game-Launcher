@@ -74,17 +74,24 @@ public final class MlbbDroneViewPatcher {
     }
 
     /**
-     * Finds the base directory for Mobile Legends data.
+     * Finds the base directory for Mobile Legends data across primary storage,
+     * system app-private, and Android 15/16 multi-user / Private Space profiles.
      */
     public static List<String> resolveMlbbRootDirs(String pkg) {
         List<String> roots = new ArrayList<>();
         if (pkg == null || pkg.trim().isEmpty()) pkg = "com.mobile.legends";
 
         roots.add("/storage/emulated/0/Android/data/" + pkg);
+        roots.add("/sdcard/Android/data/" + pkg);
         roots.add("/data/data/" + pkg);
         roots.add("/data/user/0/" + pkg);
-        roots.add("/sdcard/Android/data/" + pkg);
         roots.add("/storage/emulated/0/Android/media/" + pkg);
+
+        // Android 15 Private Space / App Clones / Work Profiles (User IDs 10..14)
+        for (int userId = 10; userId <= 14; userId++) {
+            roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
+            roots.add("/data/user/" + userId + "/" + pkg);
+        }
         return roots;
     }
 

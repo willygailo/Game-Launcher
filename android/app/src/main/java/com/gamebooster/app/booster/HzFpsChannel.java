@@ -72,14 +72,19 @@ public class HzFpsChannel {
 
         boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
         if (hasPrivilege) {
+            boolean applied = com.gamebooster.app.device.HardwareDisplayController.forceUnlockSystemRefreshRate(context, requestedHz);
+            if (applied) {
+                int targetHz = requestedHz > 0 ? Math.min(requestedHz, 185) : Math.round(com.gamebooster.app.device.HardwareDisplayController.getMaxHardwareRefreshRate(context));
+                return RefreshRateResult.success(requestedHz, targetHz);
+            }
             MaxHzForceChannel.ForceResult r = MaxHzForceChannel.forceApply(requestedHz);
             if (r.success) {
                 return RefreshRateResult.success(requestedHz, r.appliedHz);
             }
         }
 
-        float maxSupported = NativeFrameworkBridge.getHighestSupportedRefreshRate(context);
-        int targetHz = requestedHz;
+        float maxSupported = com.gamebooster.app.device.HardwareDisplayController.getMaxHardwareRefreshRate(context);
+        int targetHz = requestedHz > 0 ? requestedHz : Math.round(maxSupported);
         if (maxSupported > 0 && requestedHz > (int) (maxSupported + 1)) {
             Log.d(TAG, "Requested " + requestedHz + "Hz exceeds display max hardware (" + maxSupported + "Hz), applying available modes.");
         }

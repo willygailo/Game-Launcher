@@ -1587,7 +1587,26 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (btnSettingsScriptFps != null) {
             btnSettingsScriptFps.setOnClickListener(v -> {
                 if (!requireShizukuForAction("FPS & Anti-Log Optimization")) return;
-                runSettingsTerminalQuickCmd("settings put system peak_refresh_rate 185.0; settings put system min_refresh_rate 185.0; setprop debug.sf.fps_limit 185; logcat -c; echo '[185Hz / 185FPS MAX & ANTI-LOG ACTIVE]'");
+                float detectedMax = com.gamebooster.app.device.HardwareDisplayController.getMaxHardwareRefreshRate(getContext());
+                int targetHz = Math.max(Math.round(detectedMax), 185);
+                String script = "settings put system peak_refresh_rate " + targetHz + ".0; " +
+                        "settings put system min_refresh_rate " + targetHz + ".0; " +
+                        "settings put system user_refresh_rate " + targetHz + "; " +
+                        "settings put global peak_refresh_rate " + targetHz + ".0; " +
+                        "settings put global min_refresh_rate " + targetHz + ".0; " +
+                        "settings put global user_refresh_rate " + targetHz + "; " +
+                        "settings put secure match_content_frame_rate_preference 0; " +
+                        "settings put system match_content_frame_rate 0; " +
+                        "setprop debug.sf.fps_limit " + targetHz + "; " +
+                        "setprop persist.sys.NV_FPSLIMIT " + targetHz + "; " +
+                        "setprop persist.sys.game.fps " + targetHz + "; " +
+                        "service call SurfaceFlinger 1035 i32 " + targetHz + "; " +
+                        "service call SurfaceFlinger 1036 i32 " + targetHz + "; " +
+                        "cmd window set-app-refresh-rate global " + targetHz + "; " +
+                        "cmd game set --fps " + targetHz + " global; " +
+                        "logcat -c; " +
+                        "echo '[HARDWARE DETECTED: " + Math.round(detectedMax) + "Hz | " + targetHz + "Hz OVERRIDE & ANTI-LOG ACTIVE]'";
+                runSettingsTerminalQuickCmd(script);
             });
         }
 
