@@ -262,18 +262,26 @@ public class PreLaunchGameDialog {
             String modeName = finalFps >= 144 ? "🚀 NO LIMIT FPS GAMING MODE (" + finalFps + " FPS)" : "🛡️ BALANCE HIGH FPS MODE (120 FPS)";
             Toast.makeText(context.getApplicationContext(), modeName + " — " + (label != null ? label : pkg), Toast.LENGTH_SHORT).show();
 
-            // Build & save competitive profile
-            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
-            if (profile == null) {
-                profile = new CompetitiveCfgProfile(gameKey, finalFps, true, true);
-            } else {
-                profile.setTargetFps(finalFps);
-            }
-            profile.setAntiLogEnabled(true);
+            // Build & save competitive profile — always start from defaultCompetitive()
+            // so ALL features (aimAssist, damage, recoil, trackingBullet, etc.) are
+            // guaranteed ON regardless of what the old saved profile had.
+            final String savedGameKey = gameKey;
+            CompetitiveCfgProfile profile = CompetitiveCfgProfile.defaultCompetitive(gameKey);
+            profile.setTargetFps(finalFps);
             profile.setDroneViewUltraEnabled(droneEnabled);
             profile.setDroneViewTier(selectedTier);
+            profile.setAntiLogEnabled(true);
             CfgProfileManager.saveProfile(context, profile);
             GameProfilePreferences.setTargetHz(context, pkg, finalFps);
+
+            // Immediate async pre-launch inject — don't wait for the 15s lobby delay.
+            // Applies the full tuning suite NOW so everything is live when the game opens.
+            final CompetitiveCfgProfile launchProfile = profile;
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, launchProfile);
+                } catch (Throwable ignored) {}
+            });
 
             // 2026 Hero Script Dispatch for MLBB
             if (isMlbb) {
@@ -286,6 +294,7 @@ public class PreLaunchGameDialog {
 
             // Launch the game via unified engine (which executes full cold-start pre-injection and auto-opens the game)
             GameManagerLauncher.launchGame(context, game);
+
         });
 
         Button btnRemoveGame = view.findViewById(R.id.btn_pre_launch_remove_game);
