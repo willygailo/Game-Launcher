@@ -103,16 +103,29 @@
 
     <!-- ================================================================= -->
     <!-- VIEWPORT 3: EXPANDED CYBER DOCK DASHBOARD MODE                     -->
+    <!-- ScrollView wrapper ensures the dock is fully reachable on small    -->
+    <!-- screens (budget gaming phones <720dp height). The ID stays on the  -->
+    <!-- outer container so bindViews() / applyViewportVisibility() work    -->
+    <!-- without any Java changes.                                          -->
     <!-- ================================================================= -->
-    <LinearLayout
+    <ScrollView
         android:id="@+id/layout_expanded_dock"
         android:layout_width="310dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/hud_card_bg"
-        android:orientation="vertical"
-        android:padding="14dp"
+        android:maxHeight="420dp"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:fillViewport="false"
         android:elevation="12dp"
         android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/hud_card_bg"
+        android:orientation="vertical"
+        android:padding="14dp">
+
 
         <!-- HEADER BAR -->
         <LinearLayout
@@ -510,6 +523,7 @@
                 android:padding="0dp" />
         </LinearLayout>
     </LinearLayout>
+    </ScrollView>
 
     <!-- ================================================================= -->
     <!-- VIEWPORT 4: GHOST EDGE HANDLE / HIDDEN DOCK MODE                 -->

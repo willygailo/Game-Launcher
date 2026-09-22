@@ -136,6 +136,12 @@ public class NativeConfigInjector {
     /**
      * 2026 New Patch Method: Injects per-hero script modifiers (damage, cooldown, range, speed, etc.)
      * into MLBB target config paths (PlayerPrefs XML / config files) via batchInjectKeys.
+     *
+     * Uses a two-stage filter:
+     *  1. Exclusion filter — skip known read-only / integrity-checked paths.
+     *  2. Writable allowlist — only target paths that are confirmed writable at runtime
+     *     (shared_prefs/, files/, Document/ on external storage, or writable file extensions).
+     *     This prevents silent I/O waste on APK/OBB read-only asset mount paths.
      */
     public static boolean injectHeroScriptModifiers(String pkg, Map<String, String> modifiers) {
         if (pkg == null || pkg.trim().isEmpty() || modifiers == null || modifiers.isEmpty()) {
@@ -147,6 +153,7 @@ public class NativeConfigInjector {
         for (String path : paths) {
             if (path == null) continue;
             String lower = path.toLowerCase().replace('\\', '/');
+            // Stage 1: Exclusion filter — skip known read-only / integrity-sensitive paths
             if (lower.contains("/assets/version") || lower.contains("/assets/comlibs")
                     || lower.contains("md5.xml") || lower.contains("rescheck") || lower.contains("realversion")
                     || lower.contains("splitlib") || lower.contains("mola_config") || lower.contains("res_skip")) {
@@ -155,12 +162,44 @@ public class NativeConfigInjector {
             if (lower.endsWith(".xml") && lower.contains("/assets/")) {
                 continue;
             }
+            // Stage 2: Writable allowlist — only write to paths that are actually writable at runtime.
+            // Paths inside APK/OBB install dirs (e.g. /data/app/, /mnt/expand/) are read-only;
+            // attempting to write there wastes I/O and silently fails. Real targets are:
+            //   - shared_prefs/  (PlayerPrefs XML)
+            //   - files/         (game config files in internal storage)
+            //   - /document/     (MLBB Document/ on external storage, outside /assets/)
+            //   - writable config extensions (.ini, .cfg, .json) from dynamic path discovery
+            if (!isWritableModifierTarget(lower)) {
+                continue;
+            }
             if (batchInjectKeys(path, modifiers, "[HeroScriptModifiers]")) {
                 anySuccess = true;
             }
         }
         return anySuccess;
     }
+
+    /**
+     * Returns true only for paths that are runtime-writable by Shizuku/shell.
+     * Excludes read-only APK install paths, OBB mounts, and asset subtrees.
+     */
+    private static boolean isWritableModifierTarget(String lower) {
+        // Confirmed writable storage segments
+        if (lower.contains("/shared_prefs/")) return true;
+        if (lower.contains("/files/"))        return true;
+        // MLBB Document/ on external storage — NOT inside /assets/
+        if (lower.contains("/document/") && !lower.contains("/assets/")) return true;
+        // Writable config file extensions found by dynamic path resolver
+        if (lower.endsWith(".ini"))  return true;
+        if (lower.endsWith(".cfg"))  return true;
+        if (lower.endsWith(".json")) return true;
+        if (lower.endsWith(".sav"))  return true;
+        if (lower.endsWith(".dat"))  return true;
+        // PlayerPrefs XML in /data/data/<pkg>/ — writable via Shizuku
+        if (lower.endsWith(".xml") && (lower.contains("/data/data/") || lower.contains("/data/user/"))) return true;
+        return false;
+    }
+
 
     // 2026 Advanced Security & Anti-Tamper Native Bypass Suite
     public static native boolean nativeSecurityBypassStripXattrs(String path);

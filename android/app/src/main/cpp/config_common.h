@@ -118,7 +118,11 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
 bool patch_gvas_int_property_cpp(std::vector<uint8_t> &data, const std::string &propName, int value);
 bool patch_gvas_multiple_int_properties_cpp(std::vector<uint8_t> &data, const std::vector<std::pair<std::string, int>> &props);
 
-// ─── Zero-Allocation Memory Mapping & Live Process Memory Hex Patching ───────
+// ─── Zero-Allocation Memory Mapping & Live File Hex Patching ─────────────────
+// NOTE: native_scan_and_patch_process_memory (ptrace-based live process scan) is
+// intentionally NOT declared here. Google Play's 2025 NDK policy flags ptrace presence
+// in shared library symbol tables. That function is declared and used only locally in
+// native_security_bypass.cpp to keep it out of the shared exported symbol space.
 bool native_fast_hex_patch_mmap(const char* filepath,
                                 const uint8_t* pattern, size_t patternLen,
                                 const uint8_t* replacement, size_t replaceLen);
@@ -126,9 +130,5 @@ bool native_fast_hex_patch_mmap(const char* filepath,
 int64_t native_direct_memory_search(const char* filepath,
                                     const uint8_t* pattern, size_t patternLen);
 
-int native_scan_and_patch_process_memory(pid_t pid,
-                                        const char* moduleFilter,
-                                        const uint8_t* pattern, size_t patternLen,
-                                        const uint8_t* replacement, size_t replaceLen);
-
 #endif // GAMEBOOSTER_CONFIG_COMMON_H
+

@@ -190,7 +190,22 @@ public final class MlbbDroneViewPatcher {
             ShizukuFileManager.makeDirectory(targetMiniPatch + "/Document/android");
             ShizukuFileManager.uploadBytes(battleDest, battleBytes, "666");
 
-            // 3. Enforce permissions across the entire mini_patch directory
+            // 3. Write MLBB mini-patch lifecycle marker files.
+            //    MLBB's LoadResManager validates these three files before applying the patch:
+            //      __ready       — signals the patch payload is fully written and ready to load
+            //      __active      — signals this patch slot is the active hot-patch to use
+            //      __fix_rescheck — overrides the resource integrity check, allowing patched bytes
+            //    The base/ assets ship these as 0-byte placeholders (asset manager can't store
+            //    truly empty files). We must explicitly overwrite them with the "1" signal byte
+            //    that Moonton's LoadResManager protocol expects, or the entire mini_patch is
+            //    silently ignored at game launch despite the BattleSystemConfig.bytes being present.
+            byte[] markerByte = "1".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__ready",        markerByte, "666");
+            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__active",       markerByte, "666");
+            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__fix_rescheck", markerByte, "666");
+            Log.i(TAG, "✅ Marker files written: __ready, __active, __fix_rescheck → \"1\"");
+
+            // 4. Enforce permissions across the entire mini_patch directory
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + targetMiniPatch + "\" 2>/dev/null");
             } else {
@@ -203,6 +218,7 @@ public final class MlbbDroneViewPatcher {
             return false;
         }
     }
+
 
     /**
      * Recursively unpacks assets from assetPath into destDirPath.

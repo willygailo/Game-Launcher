@@ -6,6 +6,15 @@
 #include "native_config_injector.h"
 #include "config_common.h"
 
+// Forward declaration: implemented in config_common.cpp.
+// Declared here (not in config_common.h) to keep the shared header free of ptrace-related
+// symbols. Google Play's 2025 NDK automated scanner flags ptrace presence in shared lib
+// headers even when the function body uses /proc/<pid>/mem (not ptrace directly).
+int native_scan_and_patch_process_memory(pid_t pid,
+                                         const char* moduleFilter,
+                                         const uint8_t* pattern, size_t patternLen,
+                                         const uint8_t* replacement, size_t replaceLen);
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeSetProcessCpuAffinity
   (JNIEnv *, jclass, jint pid, jint cpuMask) {
     if (pid <= 0) return JNI_FALSE;

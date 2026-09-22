@@ -843,23 +843,50 @@ public final class CommonConfigTuningInjector {
             }
         }
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
-        // 2026: always apply Vulkan + HDR + telemetry suppression + DamageLockMax + AimAssistLockMax
+        // 2026: always apply Vulkan + HDR + telemetry suppression for all games
         applyVulkanOptimization(packageName);
         applyHDRColorProfile(packageName);
         applyAntiCheatSafe2026(packageName);
         applyUnrealEngineOptimization(packageName, profile.getTargetFps());
         applyUnityBootConfigOptimization(packageName, profile.getTargetFps());
         applyUltraExtremeGraphics(packageName, profile.getTargetFps());
-        applyDamageLockMax(packageName);
-        applyAimAssistLockMax(packageName);
         applyVulkanPipelinePrime(packageName);
         applyAntiTelemetrySafe(packageName);
-        // 2026 Skill Economy Overdrive — fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
-        applySkillEconomyMasterSuite(packageName);
-        // 2026 Universal Combat Mechanics & True Damage Overdrive
-        applyUniversalCombatMechanicsOverdrive(packageName);
-        // 2026 Universal Fast Loading & Splash Bypass Turbo
+        // Combat-only overdrive: skip for non-combat games (Genshin, Roblox, CarX, Supercell, etc.)
+        // These keys are irrelevant/harmful to stability on non-battle-royale / non-MOBA titles.
+        if (isCombatGame(packageName)) {
+            applyDamageLockMax(packageName);
+            applyAimAssistLockMax(packageName);
+            // 2026 Skill Economy Overdrive — fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
+            applySkillEconomyMasterSuite(packageName);
+            // 2026 Universal Combat Mechanics & True Damage Overdrive
+            applyUniversalCombatMechanicsOverdrive(packageName);
+        }
+        // 2026 Universal Fast Loading & Splash Bypass Turbo — safe for all games
         applyUniversalFastLoadTurbo(packageName);
+    }
+
+    /**
+     * Returns true if the given package is a combat/battle game where damage lock,
+     * aim assist lock, skill economy, and combat mechanics overdrive injections are meaningful.
+     * Non-combat titles (Genshin, Roblox, CarX, Supercell) are excluded to prevent
+     * stability issues from injecting irrelevant combat config keys into their config files.
+     */
+    private static boolean isCombatGame(String packageName) {
+        if (packageName == null) return false;
+        String p = packageName.toLowerCase();
+        return p.contains("mobile.legends") || p.contains("mobilelegends")
+            || p.contains("pubg") || p.contains("tencent.ig") || p.contains("vng.pubgm") || p.contains("imobile")
+            || p.contains("callofduty") || p.contains("tmgp.cod") || p.contains("warzone")
+            || p.contains("freefire") || p.contains("dts.freefire")
+            || p.contains("wildrift") || p.contains("riotgames.league")
+            || p.contains("sgame") || p.contains("levelinfinite") || p.contains("arenaofvalor")
+            || p.contains("kgtw") || p.contains("kgvn")
+            || p.contains("bloodstrike") || p.contains("newspike")
+            || p.contains("standoff2") || p.contains("axlebolt")
+            || p.contains("arenabreakout") || p.contains("deltaforce") || p.contains("uamo")
+            || p.contains("farlight") || p.contains("solarland")
+            || p.contains("projectc") || p.contains("valorant");
     }
 
     public static void applyUniversalCombatMechanicsOverdrive(String packageName) {

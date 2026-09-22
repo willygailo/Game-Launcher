@@ -196,8 +196,13 @@ public class FloatingOverlayService extends Service {
 
         int layoutFlag = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
-        // FLAG_NOT_FOCUSABLE with WRAP_CONTENT allows touches on the overlay while touches outside pass through to the game
+        // FLAG_NOT_FOCUSABLE: overlay doesn't steal key/IME focus.
+        // FLAG_NOT_TOUCH_MODAL: critical — without this, ANY touch outside the overlay view
+        //   rect is consumed by the overlay window itself and NEVER reaches the game.
+        //   On Android 12+ this is enforced strictly. Must be paired with FLAG_NOT_FOCUSABLE.
+        // FLAG_HARDWARE_ACCELERATED: GPU compositing for smooth HUD rendering.
         int windowFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
 
         params = new WindowManager.LayoutParams(
@@ -668,9 +673,13 @@ public class FloatingOverlayService extends Service {
                 if (windowManager != null && params != null) {
                     int screenWidth = getResources().getDisplayMetrics().widthPixels;
                     if (params.x < screenWidth / 2) {
-                        params.x = 0;
+                        params.x = 0; // Snap to left edge
                     } else {
-                        params.x = Math.max(0, screenWidth - 24);
+                        // Use the view's actual measured pixel width so the edge handle
+                        // stays on-screen on all densities. Fall back to 24px if not yet measured.
+                        int handlePx = (overlayView != null && overlayView.getWidth() > 0)
+                                ? overlayView.getWidth() : 24;
+                        params.x = Math.max(0, screenWidth - handlePx); // Snap to right edge
                     }
                 }
                 break;
@@ -691,7 +700,10 @@ public class FloatingOverlayService extends Service {
         if (handler == null) return;
         handler.removeCallbacks(autoCollapseRunnable);
         if (currentMode == HudMode.EXPANDED_DOCK) {
-            handler.postDelayed(autoCollapseRunnable, 8000);
+            // 12s: gives async turbo ops (RAM purge, Hz lock, etc.) enough time to complete
+            // and show feedback toasts before the dock auto-collapses back to Pill mode.
+            // (Was 8s — too short for background RAM purge + toast + user to read result.)
+            handler.postDelayed(autoCollapseRunnable, 12000);
         }
     }
 
@@ -883,7 +895,12 @@ public class FloatingOverlayService extends Service {
                 tvHudFps.setTextColor(fpsColor);
             }
             if (tvHudFpsStatus != null) {
-                if (isRealGameSurface && onePercentLowFps > 0) {
+                // Show detailed frame stats only when all three data points are valid:
+                //   isRealGameSurface = SurfaceFlinger confirmed a game surface
+                //   onePercentLowFps > 0 = 1% low has been computed (needs ≥1s of data)
+                //   frameTimeMs > 0.0 = at least one frame time sample received
+                // Before first frame arrives, show only the status label to avoid "0.0ms" flash.
+                if (isRealGameSurface && onePercentLowFps > 0 && frameTimeMs > 0.0) {
                     tvHudFpsStatus.setText(String.format("%s • 1%%: %d • 0.1%%: %d (%.1fms ±%.1f)", fpsStatus, onePercentLowFps, zeroPointOnePercentLowFps, frameTimeMs, frameJitterMs));
                 } else {
                     tvHudFpsStatus.setText(fpsStatus);
