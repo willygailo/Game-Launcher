@@ -63,8 +63,8 @@ public class GameBoosterService extends Service {
             applyHzLock(185);
             showToast("⚡ 185 FPS / 185Hz Extreme Mode Locked");
         } else if (ACTION_LOCK_120HZ.equals(action)) {
-            applyHzLock(185);
-            showToast("⚡ 185 FPS / 185Hz Extreme Mode Locked");
+            applyHzLock(120); // FIX #6: was erroneously calling applyHzLock(185)
+            showToast("🎯 120 FPS / 120Hz Smooth Mode Locked");
         } else if (ACTION_CLEAN_RAM.equals(action)) {
             cleanMemory();
             showToast("🧹 RAM & zRAM Compaction Complete");

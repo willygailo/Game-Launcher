@@ -160,6 +160,39 @@ public class AutoGameMonitorService extends Service {
                     com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
                     com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(getApplicationContext(), currentPackage, targetFps, 16);
 
+                    // ── FIX #1+2: Apply full 6-layer hardware spoof on every game launch. ──────
+                    // applyWorkingSpoofForGame() bypasses the isSpoofEnabled() gate (sets it true
+                    // itself), resolves the best-fit flagship profile for this game, and fires
+                    // HardwareMaskEngine across all 6 layers via Shizuku — all without blocking
+                    // the monitor thread.
+                    final String capturedPkg = currentPackage;
+                    final android.content.Context appCtx = getApplicationContext();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        try {
+                            boolean spoofOk = com.gamebooster.app.spoofer.DeviceSpooferEngine
+                                    .applyWorkingSpoofForGame(appCtx, capturedPkg);
+                            Log.i(TAG, "⚡ [AutoSpoof] Spoof apply result=" + spoofOk
+                                    + " for " + capturedPkg);
+                        } catch (Throwable t) {
+                            Log.w(TAG, "[AutoSpoof] Non-fatal spoof error for " + capturedPkg
+                                    + ": " + t.getMessage());
+                        }
+
+                        // ── FIX #3: Dispatch full game-specific inject suite (drone view, damage,
+                        // aim lock, FPS unlock, hero combos, etc.) on launch.
+                        // force=true ensures it runs even if sInjectedPackages cache says "done"
+                        // from a stale previous session — each new launch should always re-inject.
+                        try {
+                            com.gamebooster.app.config.GameAutoInjectDispatcher
+                                    .dispatchForPackage(appCtx, capturedPkg, true);
+                            Log.i(TAG, "✅ [AutoInject] On-launch inject complete for " + capturedPkg);
+                        } catch (Throwable t) {
+                            Log.w(TAG, "[AutoInject] Non-fatal inject error for " + capturedPkg
+                                    + ": " + t.getMessage());
+                        }
+                    });
+                    // ─────────────────────────────────────────────────────────────────────────────
+
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                     com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
                     if (!FloatingOverlayService.isOverlayRunning() && !FloatingOverlayService.isSessionDismissed()) {

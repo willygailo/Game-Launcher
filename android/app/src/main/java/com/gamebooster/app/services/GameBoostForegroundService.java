@@ -130,6 +130,38 @@ public class GameBoostForegroundService extends Service {
         // Immediately enforce privileged background immunity upon startup
         BackgroundLimitImmunityEngine.enforceImmunity(getApplicationContext());
 
+        // FIX #4: When auto-started with a target game package (from AutoGameMonitorService),
+        // delegate the full boost pipeline (spoof + inject + Hz lock) to GameBoosterService via
+        // ACTION_BOOST_GAME. Previously the ForegroundService did nothing on auto-start except
+        // keep the process alive — the boost only fired on manual notification taps.
+        final int finalTargetFps = targetFps;
+        final String finalTargetPkg = targetPackage;
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                if (finalTargetPkg != null && !finalTargetPkg.trim().isEmpty()) {
+                    // Delegate full boost (spoof + inject + Hz + GameMode) to GameBoosterService
+                    Intent boostIntent = new Intent(getApplicationContext(),
+                            com.gamebooster.app.services.GameBoosterService.class);
+                    boostIntent.setAction(com.gamebooster.app.services.GameBoosterService.ACTION_BOOST_GAME);
+                    boostIntent.putExtra(com.gamebooster.app.services.GameBoosterService.EXTRA_PACKAGE_NAME,
+                            finalTargetPkg.trim());
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        getApplicationContext().startForegroundService(boostIntent);
+                    } else {
+                        getApplicationContext().startService(boostIntent);
+                    }
+                    Log.i(TAG, "⚡ [FIX#4] Dispatched ACTION_BOOST_GAME for " + finalTargetPkg);
+                }
+                // Also fire Hz lock immediately via NativeFrameworkBridge for zero-lag effect
+                com.gamebooster.app.engine.NativeFrameworkBridge
+                        .acquireSustainedPerformanceLock(getApplicationContext());
+                com.gamebooster.app.booster.HzFpsChannel
+                        .setRefreshRate(getApplicationContext(), finalTargetFps);
+            } catch (Throwable t) {
+                Log.w(TAG, "FIX#4 boost dispatch error: " + t.getMessage());
+            }
+        });
+
         Log.i(TAG, "🛡️ GameBoostForegroundService (Game Guardian) active for pkg=" + targetPackage + " @ " + targetFps + " FPS");
         return START_STICKY;
     }
