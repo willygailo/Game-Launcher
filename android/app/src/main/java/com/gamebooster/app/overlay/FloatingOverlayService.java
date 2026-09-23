@@ -349,7 +349,7 @@ public class FloatingOverlayService extends Service {
             });
         }
 
-        // 2. 185Hz Extreme Overdrive Lock
+        // 2. 185Hz Extreme Overdrive Lock & On-the-fly Injection
         Button btn185Hz = overlayView.findViewById(R.id.btn_hud_185hz);
         if (btn185Hz != null) {
             btn185Hz.setOnClickListener(v -> {
@@ -357,8 +357,9 @@ public class FloatingOverlayService extends Service {
                 scheduleAutoCollapse();
                 AppExecutors.getInstance().executeCommand(() -> {
                     com.gamebooster.app.booster.MaxHzForceChannel.forceApply(185);
+                    com.gamebooster.app.config.LobbyInjectionEngine.triggerManualLobbyInject(getApplicationContext(), null);
                 });
-                Toast.makeText(getApplicationContext(), "⚡ 185Hz Extreme Overdrive Locked!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "⚡ 185Hz Overdrive & Combat Injected!", Toast.LENGTH_SHORT).show();
                 updateTelemetryData();
             });
         }
