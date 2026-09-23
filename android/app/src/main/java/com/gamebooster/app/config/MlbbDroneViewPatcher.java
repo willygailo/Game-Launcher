@@ -111,12 +111,14 @@ public final class MlbbDroneViewPatcher {
         }
 
         // On Android 14/15/16, check binder liveness before attempting privileged file operations
+        // FIX: Extended rebind wait from 250ms → 1500ms — 250ms was insufficient for Shizuku
+        // to re-establish the binder on modern devices, causing silent partial-write failures.
         try {
             if (!Shizuku.pingBinder()) {
-                Log.w(TAG, "Shizuku binder is not active before drone injection. Initiating quick rebind...");
+                Log.w(TAG, "Shizuku binder is not active before drone injection. Initiating rebind...");
                 ShizukuAutoConnectEngine.evaluateAndConnect(context);
                 try {
-                    Thread.sleep(250);
+                    Thread.sleep(1500); // was 250ms — not enough time for binder rebind
                 } catch (InterruptedException ignored) {}
             }
         } catch (Throwable ignored) {}
@@ -183,40 +185,60 @@ public final class MlbbDroneViewPatcher {
 
     /**
      * Dynamically discovers all active and versioned mini_patch slots in MLBB files.
-     * Searches both root mini_patch and subdirectories (e.g. 1232.1/fix_*, 1232.1/ZC_*, etc.).
+     *
+     * ROOT FIX: Android 13+ scoped storage blocks File.listFiles() on
+     * /Android/data/<pkg>/ — it silently returns null even when the path exists!
+     * We now use ShizukuFileManager.listDirectory() (shell `ls -1`) which bypasses
+     * the MediaProvider restriction and correctly enumerates all hot-patch folders
+     * including fix_1789616705/1, fix_1789550581/2, ZC_*, etc.
      */
     public static List<String> discoverActiveMiniPatchSlots(String rootDir) {
         List<String> slots = new ArrayList<>();
-        // Fallback default slot
+        // Always include hardcoded fallback slot first
         slots.add(rootDir + "/" + MINI_PATCH_SUBPATH);
 
-        File miniPatchDir = new File(rootDir + "/files/mini_patch");
-        if (!miniPatchDir.exists() || !miniPatchDir.isDirectory()) {
+        String miniPatchBase = rootDir + "/files/mini_patch";
+
+        // FIX: Use shell-based listing — File.listFiles() returns null on Android 13+
+        // scoped storage paths (/storage/emulated/0/Android/data/<pkg>/) even when
+        // the directory physically exists and is readable via adb/shell.
+        List<String> versionNames = ShizukuFileManager.listDirectory(miniPatchBase);
+        if (versionNames == null || versionNames.isEmpty()) {
+            // Shell listing also failed (no root/shizuku); return just the fallback slot
+            Log.w(TAG, "discoverActiveMiniPatchSlots: shell ls also empty for " + miniPatchBase
+                    + " — falling back to hardcoded slot only");
             return slots;
         }
 
-        File[] versionDirs = miniPatchDir.listFiles();
-        if (versionDirs == null) return slots;
+        for (String verName : versionNames) {
+            String verPath = miniPatchBase + "/" + verName;
+            // List patch folders inside each version dir (e.g., fix_*, ZC_*)
+            List<String> patchFolderNames = ShizukuFileManager.listDirectory(verPath);
+            if (patchFolderNames == null) continue;
 
-        for (File ver : versionDirs) {
-            if (!ver.isDirectory()) continue;
-            File[] patchFolders = ver.listFiles();
-            if (patchFolders == null) continue;
-
-            for (File pFolder : patchFolders) {
-                if (!pFolder.isDirectory()) continue;
-                // Check sub-slots (e.g., /1, /2)
-                File[] numSlots = pFolder.listFiles();
-                if (numSlots != null) {
-                    for (File subSlot : numSlots) {
-                        if (subSlot.isDirectory()) {
-                            slots.add(subSlot.getAbsolutePath());
+            for (String pName : patchFolderNames) {
+                String pPath = verPath + "/" + pName;
+                // Enumerate numeric sub-slots (/1, /2, etc.)
+                List<String> subSlotNames = ShizukuFileManager.listDirectory(pPath);
+                if (subSlotNames != null) {
+                    for (String sName : subSlotNames) {
+                        // Only include directories (numeric slot IDs)
+                        if (sName.matches("\\d+")) {
+                            String slotPath = pPath + "/" + sName;
+                            if (!slots.contains(slotPath)) {
+                                slots.add(slotPath);
+                                Log.i(TAG, "📂 Discovered active slot: " + slotPath);
+                            }
                         }
                     }
                 }
-                slots.add(pFolder.getAbsolutePath());
+                // Also target the patch folder itself (in case it has no sub-slots)
+                if (!slots.contains(pPath)) {
+                    slots.add(pPath);
+                }
             }
         }
+        Log.i(TAG, "🔍 Total mini_patch slots discovered: " + slots.size() + " for " + rootDir);
         return slots;
     }
 
