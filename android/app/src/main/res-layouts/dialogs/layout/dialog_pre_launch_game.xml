@@ -32,7 +32,7 @@
             android:background="@drawable/badge_neon_cyan"
             android:paddingHorizontal="10dp"
             android:paddingVertical="3dp"
-            android:text="🚀 INSTANT PRE-LAUNCH BOOST"
+            android:text="PRE-LAUNCH DISPLAY PREFERENCE"
             android:textColor="@color/accent_cyan"
             android:textSize="10sp"
             android:textStyle="bold" />
@@ -46,7 +46,7 @@
             android:id="@+id/tv_pre_launch_engine_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="[SHIZUKU ACTIVE]"
+            android:text="[ANDROID DISPLAY MODES]"
             android:textColor="@color/accent_neon_green"
             android:textSize="10sp"
             android:textStyle="bold" />
@@ -96,7 +96,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="🎮 Unreal Engine 4 • Auto-Patch Ready"
+                android:text="Android game • graphics and FPS are game-controlled"
                 android:textColor="@color/accent_neon_green"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -125,7 +125,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Detected Display: Up to 144Hz Native Refresh Rate"
+            android:text="Available display modes"
             android:textColor="@color/accent_cyan"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -136,7 +136,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="SELECT TARGET FPS &amp; REFRESH RATE (Auto-Filtered by Hardware Max Hz):"
+        android:text="SELECT A REPORTED DISPLAY MODE:"
         android:textColor="@color/text_secondary"
         android:textSize="10sp"
         android:textStyle="bold" />
@@ -158,7 +158,7 @@
             android:layout_marginBottom="4dp"
             android:paddingVertical="8dp"
             android:paddingHorizontal="10dp"
-            android:text="⚡ 185 FPS / Hz — Extreme ROG / RedMagic Overclock"
+            android:text="Use 185Hz display mode"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold"
@@ -174,7 +174,7 @@
             android:layout_marginBottom="4dp"
             android:paddingVertical="8dp"
             android:paddingHorizontal="10dp"
-            android:text="⚡ 165 FPS / Hz — eSports Tournament Standard"
+            android:text="Use 165Hz display mode"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold"
@@ -190,7 +190,7 @@
             android:layout_marginBottom="4dp"
             android:paddingVertical="8dp"
             android:paddingHorizontal="10dp"
-            android:text="⚡ 144 FPS / Hz — Ultra High Refresh Rate"
+            android:text="Use 144Hz display mode"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -204,7 +204,7 @@
             android:buttonTint="@color/accent_neon_green"
             android:paddingVertical="8dp"
             android:paddingHorizontal="10dp"
-            android:text="⚡ 120 FPS / Hz — Flagship Pro Gaming"
+            android:text="Use 120Hz display mode"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -222,7 +222,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="AUTOMATIC IN-FLIGHT CONFIG INJECTIONS:"
+            android:text="LAUNCHER BEHAVIOR:"
             android:textColor="@color/accent_neon_green"
             android:textSize="10sp"
             android:textStyle="bold" />
@@ -233,13 +233,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:lineSpacingExtra="3dp"
-            android:text="✔ Auto-patch internal game config &amp; unlock frame rates\n✔ 100% Drone View (MLBB 21:9 Ultra-Wide / PUBGM iPad FOV)\n✔ SurfaceFlinger &amp; Game Mode API hardware refresh lock\n✔ Targeted Vulkan Game Driver isolation (MLBB, CODM, PUBGM)\n✔ Anti-Log &amp; crash telemetry shield"
+            android:text="• Uses display modes reported by Android\n• Stores a per-game display preference\n• The game controls its own graphics and frame rate"
             android:textColor="@color/text_secondary"
             android:textSize="10sp" />
     </LinearLayout>
 
     <!-- 100% Drone View Panoramic FOV Toggle -->
     <LinearLayout
+        android:id="@+id/layout_pre_launch_drone_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -429,7 +430,7 @@
             android:layout_marginStart="6dp"
             android:layout_weight="2"
             android:background="@drawable/btn_cyber_green"
-            android:text="🚀 BOOST &amp; LAUNCH"
+            android:text="LAUNCH GAME"
             android:textColor="#0B0E14"
             android:textSize="13sp"
             android:textStyle="bold" />

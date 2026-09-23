@@ -144,70 +144,17 @@ public class AutoGameMonitorService extends Service {
                 consecutiveUnfocusedCount = 0;
                 if (!currentPackage.equals(lastActiveGamePackage)) {
                     long now = System.currentTimeMillis();
-                    // Debounce: if the game was just exited < 1.5s ago (e.g. brief back press),
-                    // skip the heavyweight session engine — but STILL inject configs.
-                    // A quick re-open (MLBB disconnect, PUBGM matchmake lag, etc.) needs fresh
-                    // configs even if we skip beginSession() overhead.
+                    // Debounce rapid focus changes. We do not modify the detected game.
                     if (now - lastSessionEndTimeMs < SESSION_RESTART_COOLDOWN_MS) {
-                        Log.d(TAG, "Session cooldown active — inject only (no session restart) for: " + currentPackage);
+                        Log.d(TAG, "Session cooldown active for: " + currentPackage);
                         lastActiveGamePackage = currentPackage;
-                        // Dispatch inject even during cooldown — session overhead is skipped but configs land
-                        final String cooldownPkg = currentPackage;
-                        final android.content.Context coolCtx = getApplicationContext();
-                        AppExecutors.getInstance().executeCommand(() -> {
-                            try {
-                                com.gamebooster.app.config.GameAutoInjectDispatcher
-                                        .dispatchForPackage(coolCtx, cooldownPkg, true);
-                                Log.i(TAG, "⚡ [Cooldown Inject] Configs re-applied for: " + cooldownPkg);
-                            } catch (Throwable t) {
-                                Log.w(TAG, "[Cooldown Inject] Error for " + cooldownPkg + ": " + t.getMessage());
-                            }
-                        });
                         return;
                     }
                     lastActiveGamePackage = currentPackage;
                     Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
-                    // Execute full GameManager Session Engine & Game Guardian Foreground Service
-                    int targetFps = com.gamebooster.app.config.GameProfilePreferences.getTargetHz(getApplicationContext(), currentPackage);
-                    if (targetFps <= 0) targetFps = 185;
-                    com.gamebooster.app.services.GameBoostForegroundService.start(getApplicationContext(), currentPackage, targetFps);
-                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunity(getApplicationContext());
+                    // Record the capability-checked launcher session.
                     com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
-                    com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(getApplicationContext(), currentPackage, targetFps, 16);
-
-                    // ── FIX #1+2: Apply full 6-layer hardware spoof on every game launch. ──────
-                    // applyWorkingSpoofForGame() bypasses the isSpoofEnabled() gate (sets it true
-                    // itself), resolves the best-fit flagship profile for this game, and fires
-                    // HardwareMaskEngine across all 6 layers via Shizuku — all without blocking
-                    // the monitor thread.
-                    final String capturedPkg = currentPackage;
-                    final android.content.Context appCtx = getApplicationContext();
-                    AppExecutors.getInstance().executeCommand(() -> {
-                        try {
-                            boolean spoofOk = com.gamebooster.app.spoofer.DeviceSpooferEngine
-                                    .applyWorkingSpoofForGame(appCtx, capturedPkg);
-                            Log.i(TAG, "⚡ [AutoSpoof] Spoof apply result=" + spoofOk
-                                    + " for " + capturedPkg);
-                        } catch (Throwable t) {
-                            Log.w(TAG, "[AutoSpoof] Non-fatal spoof error for " + capturedPkg
-                                    + ": " + t.getMessage());
-                        }
-
-                        // ── FIX #3: Dispatch full game-specific inject suite (drone view, damage,
-                        // aim lock, FPS unlock, hero combos, etc.) on launch.
-                        // force=true ensures it runs even if sInjectedPackages cache says "done"
-                        // from a stale previous session — each new launch should always re-inject.
-                        try {
-                            com.gamebooster.app.config.GameAutoInjectDispatcher
-                                    .dispatchForPackage(appCtx, capturedPkg, true);
-                            Log.i(TAG, "✅ [AutoInject] On-launch inject complete for " + capturedPkg);
-                        } catch (Throwable t) {
-                            Log.w(TAG, "[AutoInject] Non-fatal inject error for " + capturedPkg
-                                    + ": " + t.getMessage());
-                        }
-                    });
-                    // ─────────────────────────────────────────────────────────────────────────────
 
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                     com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
@@ -216,8 +163,8 @@ public class AutoGameMonitorService extends Service {
                     }
 
                     AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "🎮 GAME-MANAGER: " + currentPackage
-                                     + " is Boosted & Optimized!", android.widget.Toast.LENGTH_LONG).show());
+                            android.widget.Toast.makeText(getApplicationContext(), "Game session detected: " + currentPackage,
+                                    android.widget.Toast.LENGTH_SHORT).show());
                 }
             } else if (lastActiveGamePackage != null) {
                 // Ignore transient system packages (in-game overlays, keyboards, Google Play login, dialogs, webviews)
@@ -242,19 +189,11 @@ public class AutoGameMonitorService extends Service {
 
                 // End GameManager Session and revert to baseline
                 com.gamebooster.app.gamemanager.GameManagerSessionEngine.endSession(getApplicationContext(), exitingPkg);
-                com.gamebooster.app.services.GameBoostForegroundService.stop(getApplicationContext());
                 com.gamebooster.app.overlay.GameTurboEdgeService.stop(getApplicationContext());
                 com.gamebooster.app.overlay.VisualFilterOverlayService.stopFilter(getApplicationContext());
                 if (com.gamebooster.app.engine.ResolutionScalerEngine.isResolutionScaled()) {
                     com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
                 }
-
-                // Proactively resurrect Shizuku binder, renew immunity, and sync status immediately after game exit
-                try {
-                    com.gamebooster.app.booster.BackgroundLimitImmunityEngine.enforceImmunity(getApplicationContext());
-                    com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
-                    com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
-                } catch (Throwable ignored) {}
 
                 final com.gamebooster.app.overlay.GameSessionReport report =
                         com.gamebooster.app.overlay.GameSessionRecorder.getInstance().endSession(getApplicationContext());

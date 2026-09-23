@@ -78,12 +78,6 @@ android {
                 storePassword keystoreProperties['storePassword']
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
-            } else {
-                // Fallback to debug keystore for development / local release builds
-                storeFile rootProject.file('debug.keystore')
-                storePassword 'android'
-                keyAlias 'androiddebugkey'
-                keyPassword 'android'
             }
         }
     }
@@ -121,7 +115,9 @@ android {
             }
         }
         release {
-            signingConfig = (hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug)
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.release
+            }
             minifyEnabled = true
             shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -168,6 +164,16 @@ android {
         }
     }
     // AGP 9.4+ removed legacy applicationVariants DSL; use task post-packaging for custom output names
+}
+
+// A distributable release must never be silently signed with the public debug key.
+def releaseSigningTasks = ['validateSigningRelease', 'packageRelease', 'assembleRelease', 'bundleRelease']
+tasks.configureEach { task ->
+    if (!hasReleaseKeystore && releaseSigningTasks.contains(task.name)) {
+        task.doFirst {
+            throw new GradleException('Release signing is not configured. Add android/keystore.properties before building a release.')
+        }
+    }
 }
 
 tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.configureEach { task ->

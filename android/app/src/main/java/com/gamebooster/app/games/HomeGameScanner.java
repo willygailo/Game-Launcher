@@ -198,22 +198,24 @@ public class HomeGameScanner {
             }
         } catch (Throwable ignored) {}
 
-        // 2. PackageInfo with MATCH_ALL
+        // 2. PackageInfo. PackageInfoFlags accepts GET_* and MATCH_* flags,
+        // but MATCH_ALL is an ApplicationInfo-only flag on modern Android.
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(PackageManager.MATCH_ALL));
+                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0));
             } else {
-                pm.getPackageInfo(pkg, PackageManager.MATCH_ALL);
+                pm.getPackageInfo(pkg, 0);
             }
             return true;
         } catch (Throwable ignored) {}
 
-        // 3. ApplicationInfo with MATCH_ALL
+        // 3. ApplicationInfo with no visibility-expanding flags. Package
+        // visibility is controlled by the manifest queries declaration.
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(PackageManager.MATCH_ALL));
+                pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0));
             } else {
-                pm.getApplicationInfo(pkg, PackageManager.MATCH_ALL);
+                pm.getApplicationInfo(pkg, 0);
             }
             return true;
         } catch (Throwable ignored) {}

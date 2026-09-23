@@ -3,9 +3,9 @@ package com.gamebooster.app.device;
 import android.content.Context;
 import android.os.Build;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Single source of truth for performance choices that can safely be offered on
@@ -24,18 +24,16 @@ public final class DevicePerformanceCapabilities {
     private final OemFamily oemFamily;
 
     private DevicePerformanceCapabilities(List<Integer> rates, int currentRefreshRate, OemFamily family) {
-        List<Integer> sorted = new ArrayList<>(rates);
-        if (sorted.isEmpty()) sorted.addAll(List.of(90, 120, 144, 165, 185));
-        Collections.sort(sorted);
-        this.supportedRefreshRates = Collections.unmodifiableList(sorted);
-        this.maxRefreshRate = sorted.get(sorted.size() - 1);
-        this.currentRefreshRate = currentRefreshRate > 0 ? currentRefreshRate : sorted.get(0);
+        this.supportedRefreshRates = RefreshRatePolicy.sanitizeReportedRates(rates);
+        this.maxRefreshRate = supportedRefreshRates.isEmpty()
+                ? 0 : supportedRefreshRates.get(supportedRefreshRates.size() - 1);
+        this.currentRefreshRate = currentRefreshRate > 0 ? currentRefreshRate : maxRefreshRate;
         this.oemFamily = family;
     }
 
     public static DevicePerformanceCapabilities detect(Context context) {
         DisplayCapabilitiesDetector.DisplayCaps caps = DisplayCapabilitiesDetector.detect(context);
-        return new DevicePerformanceCapabilities(caps.getRecommendedRates(), caps.currentRefreshRate, detectOemFamily());
+        return new DevicePerformanceCapabilities(caps.supportedRefreshRates, caps.currentRefreshRate, detectOemFamily());
     }
 
     public List<Integer> getSupportedRefreshRates() {
@@ -55,15 +53,18 @@ public final class DevicePerformanceCapabilities {
     }
 
     public boolean supportsRefreshRate(int hz) {
-        return true;
+        return RefreshRatePolicy.supportsRate(supportedRefreshRates, hz);
     }
 
-    /** Returns the target refresh rate (185 Hz) directly with zero fallback. */
+    /** Resolves a request to an actual display mode exposed by Android. */
     public int resolveRefreshRate(int requestedHz) {
-        return 185;
+        return RefreshRatePolicy.resolveRate(supportedRefreshRates, requestedHz);
     }
 
     public String getCompatibilitySummary() {
+        if (supportedRefreshRates.isEmpty()) {
+            return getOemFamilyLabel() + " device: display modes unavailable";
+        }
         return getOemFamilyLabel() + " device: " + maxRefreshRate + "Hz max (supported: "
                 + supportedRefreshRates + ")";
     }
@@ -83,7 +84,7 @@ public final class DevicePerformanceCapabilities {
     }
 
     public String getRecommendedProfileLabel() {
-        return "MAX 185HZ EXTREME";
+        return maxRefreshRate > 0 ? "MAX " + maxRefreshRate + "HZ" : "SYSTEM DEFAULT";
     }
 
     public static float getThermalHeadroom(Context context, int forecastSeconds) {
@@ -114,8 +115,8 @@ public final class DevicePerformanceCapabilities {
     }
 
     private static OemFamily detectOemFamily() {
-        String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase();
-        String brand = Build.BRAND == null ? "" : Build.BRAND.toLowerCase();
+        String manufacturer = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase(Locale.ROOT);
+        String brand = Build.BRAND == null ? "" : Build.BRAND.toLowerCase(Locale.ROOT);
         String identity = manufacturer + " " + brand;
         if (identity.contains("infinix") || identity.contains("tecno") || identity.contains("itel")
                 || identity.contains("transsion")) return OemFamily.TRANSSION;

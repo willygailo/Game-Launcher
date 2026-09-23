@@ -2,17 +2,19 @@ package com.gamebooster.app.config;
 
 import android.content.Context;
 
-import com.gamebooster.app.device.DevicePerformanceCapabilities;
 import com.gamebooster.app.booster.PerformanceChannel;
+import com.gamebooster.app.device.DevicePerformanceCapabilities;
 
-/** Persists a device-safe performance choice for every game package. Hard-locked to 185Hz. */
+/** Stores a per-game display preference constrained to physical display modes. */
 public final class GameProfilePreferences {
 
     private static final String PREF_NAME = "per_game_performance_profiles";
     private static final String KEY_PROFILE_PREFIX = "profile_";
+    private static final String KEY_TARGET_HZ_PREFIX = "target_hz_";
+    private static final int FALLBACK_HZ = 60;
 
     public enum Profile {
-        MAX_SUPPORTED("Max 185Hz Extreme", 185, true, PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+        MAX_SUPPORTED("Display maximum", 0, true, PerformanceChannel.Profile.PERFORMANCE);
 
         public final String label;
         private final int requestedHz;
@@ -28,74 +30,57 @@ public final class GameProfilePreferences {
         }
 
         int resolveTargetHz(DevicePerformanceCapabilities capabilities) {
-            return 185;
+            return capabilities == null ? FALLBACK_HZ : fallbackToSystemDefault(capabilities.resolveRefreshRate(requestedHz));
         }
     }
 
     private GameProfilePreferences() {}
 
-    /** Always returns MAX_SUPPORTED (185Hz). */
     public static Profile getProfile(Context context, String packageName) {
         return Profile.MAX_SUPPORTED;
     }
 
     public static void setProfile(Context context, String packageName, Profile profile) {
         if (context == null || packageName == null || packageName.trim().isEmpty() || profile == null) return;
+        int targetHz = profile.resolveTargetHz(DevicePerformanceCapabilities.detect(context));
         context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
                 .edit()
-                .putString(KEY_PROFILE_PREFIX + packageName, Profile.MAX_SUPPORTED.name())
+                .putString(KEY_PROFILE_PREFIX + packageName, profile.name())
+                .putInt(KEY_TARGET_HZ_PREFIX + packageName, targetHz)
                 .apply();
     }
 
     public static void setTargetHz(Context context, String packageName, int targetHz) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return;
-        String gameKey = CfgProfileManager.resolveGameKey(packageName);
-        CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
-        if (profile == null) {
-            profile = new CompetitiveCfgProfile(gameKey, targetHz, true, true);
-        } else {
-            profile.setTargetFps(targetHz);
-        }
-        CfgProfileManager.saveProfile(context, profile);
+        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
+        int resolvedHz = fallbackToSystemDefault(capabilities.resolveRefreshRate(targetHz));
+        context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putInt(KEY_TARGET_HZ_PREFIX + packageName, resolvedHz)
+                .apply();
     }
 
-    /** Returns the configured target Hz for the package, defaulting to 185 if not explicitly configured. */
+    /** Returns a display preference, never a claim about a game's internal FPS cap. */
     public static int getTargetHz(Context context, String packageName) {
-        if (context == null || packageName == null) return 185;
-        try {
-            String gameKey = CfgProfileManager.resolveGameKey(packageName);
-            CompetitiveCfgProfile profile = CfgProfileManager.loadProfile(context, gameKey);
-            if (profile != null && profile.getTargetFps() > 0) {
-                return profile.getTargetFps();
-            }
-        } catch (Throwable ignored) {}
-        return 185;
+        if (context == null || packageName == null || packageName.trim().isEmpty()) return FALLBACK_HZ;
+        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
+        int storedHz = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getInt(KEY_TARGET_HZ_PREFIX + packageName, 0);
+        return fallbackToSystemDefault(capabilities.resolveRefreshRate(storedHz));
     }
 
     public static int getTargetHz(Context context, Profile profile) {
-        return profile != null ? profile.requestedHz : 185;
+        if (context == null) return FALLBACK_HZ;
+        Profile resolvedProfile = profile != null ? profile : Profile.MAX_SUPPORTED;
+        return resolvedProfile.resolveTargetHz(DevicePerformanceCapabilities.detect(context));
     }
 
     public static String getSummary(Context context, String packageName) {
-        if (context == null || packageName == null) return "CFG: 185 FPS • ZERO-DELAY TOUCH 185Hz • 1000Hz GYRO • AIM 150% • DMG 150%";
-        String pkg = packageName.toLowerCase();
-        String gameKey = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") ? CompetitiveCfgProfile.GAME_MLBB :
-                         pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") ? CompetitiveCfgProfile.GAME_PUBGM :
-                         pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone") ? CompetitiveCfgProfile.GAME_CODM :
-                         pkg.contains("freefire") || pkg.contains("dts.freefire") ? CompetitiveCfgProfile.GAME_FREEFIRE :
-                         pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hoyoverse") || pkg.contains("hkrpg") || pkg.contains("nap") ? CompetitiveCfgProfile.GAME_GENSHIN :
-                         pkg.contains("wildrift") || pkg.contains("riotgames.league") ? CompetitiveCfgProfile.GAME_WILDRIFT :
-                         pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn") ? CompetitiveCfgProfile.GAME_HOK :
-                         pkg.contains("bloodstrike") || pkg.contains("newspike") ? CompetitiveCfgProfile.GAME_BLOODSTRIKE :
-                         pkg.contains("standoff2") || pkg.contains("axlebolt") ? CompetitiveCfgProfile.GAME_STANDOFF2 :
-                         pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") ? CompetitiveCfgProfile.GAME_CARX :
-                         pkg.contains("uamo") || pkg.contains("arenabreakout") || pkg.contains("deltaforce") ? CompetitiveCfgProfile.GAME_ARENABREAKOUT :
-                         pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans") ? CompetitiveCfgProfile.GAME_SUPERCELL :
-                         pkg.contains("roblox") ? CompetitiveCfgProfile.GAME_ROBLOX :
-                         pkg.contains("projectc") || pkg.contains("valorant") ? CompetitiveCfgProfile.GAME_VALORANT :
-                         pkg.contains("farlight") || pkg.contains("solarland") ? CompetitiveCfgProfile.GAME_FARLIGHT : CompetitiveCfgProfile.GAME_ALL;
+        int targetHz = getTargetHz(context, packageName);
+        return "Display preference: " + targetHz + "Hz • Game FPS is controlled by the game and device";
+    }
 
-        CompetitiveCfgProfile cfg = CfgProfileManager.loadProfile(context, gameKey);
-        return "CFG: " + cfg.getTargetFps() + " FPS • TOUCH " + (cfg.isSuperFastTouchEnabled() ? "185Hz (0ms)" : "STD") + " • HZ " + cfg.getTargetFps() + " • GYRO 1000Hz" + (cfg.isAimAssistEnabled() ? " • AIM 10000" : "") + (cfg.isRecoilControlEnabled() ? " • NO RECOIL" : "") + (cfg.isMlbbDamageScriptEnabled() ? " • DMG 1000+" : "") + (cfg.isTrackingBulletEnabled() ? " • TRACKER 1000+" : "") + (cfg.isFastCooldownEnabled() ? " • FAST CD 99%" : "") + (cfg.isShield1500Enabled() ? " • SHIELD 1500+" : "") + (cfg.isDroneViewUltraEnabled() ? " • DRONE FOV 180" : "") + (cfg.isHardwareMaskEnabled() ? " • SPOOF ACTIVE" : "");
+    private static int fallbackToSystemDefault(int resolvedHz) {
+        return resolvedHz > 0 ? resolvedHz : FALLBACK_HZ;
     }
 }

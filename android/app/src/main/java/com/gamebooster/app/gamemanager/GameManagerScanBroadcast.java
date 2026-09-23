@@ -6,17 +6,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.gamebooster.app.config.GameConfigStorageAccessEngine;
 import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.games.GamePackageRegistry;
-import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
-import com.gamebooster.app.spoofer.HardwareMaskEngine;
 
 /**
  * GameManagerScanBroadcast — BroadcastReceiver that listens for new game installations
- * and updates. Automatically grants permissions, unlocks storage paths, and applies
- * optimal performance configurations via Shizuku upon installation.
+ * and updates. It refreshes launcher state and saves a capability-checked
+ * display preference for recognized games; it never mutates another app.
  */
 public class GameManagerScanBroadcast extends BroadcastReceiver {
 
@@ -54,11 +51,9 @@ public class GameManagerScanBroadcast extends BroadcastReceiver {
                         || pkgLower.contains("mobilelegends");
 
                 if (isGame) {
-                    Log.i(TAG, "⚡ Auto-configuring newly installed game: " + packageName);
-                    GameConfigStorageAccessEngine.grantAllPathsAccess(context, packageName);
-                    HardwareMaskEngine.maskPackage(context, packageName);
-                    GameProfileAutoConfigurator.autoConfigGamePackage(context, packageName, 185);
-                    ShizukuPermissionEnforcer.enforceAllPermissions(context);
+                    int displayHz = GameProfileAutoConfigurator.getTargetFpsHz(context);
+                    GameProfileAutoConfigurator.autoConfigGamePackage(context, packageName, displayHz);
+                    Log.i(TAG, "Saved " + displayHz + "Hz display preference for " + packageName);
                 }
             });
         }

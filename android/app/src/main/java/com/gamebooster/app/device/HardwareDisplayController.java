@@ -4,25 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import com.gamebooster.app.shizuku.ShizukuExecutor;
-
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
- * HardwareDisplayController — Handles display modes enumeration and forces hardware refresh rates (60Hz -> 165Hz+).
- *
- * Implements:
- *  - DisplayManager.getSupportedModes() enumeration
- *  - Activity preferredDisplayModeId injection
- *  - Surface.setFrameRate() and Surface.setFrameRateCategory()
- *  - Shizuku privileged settings overrides: peak_refresh_rate, min_refresh_rate, user_refresh_rate
+ * Reads Android-reported display modes and applies display preferences only
+ * where the user has granted Modify system settings. It never claims to change
+ * a separate game's frame cap or to create a mode the panel does not expose.
  */
 public final class HardwareDisplayController {
 
@@ -30,175 +24,102 @@ public final class HardwareDisplayController {
 
     private HardwareDisplayController() {}
 
-    /**
-     * Finds the maximum physical refresh rate supported by the default display hardware.
-     */
     public static float getMaxHardwareRefreshRate(Context context) {
-        if (context == null) return 60f;
-        DisplayManager dm = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
-        if (dm == null) return 60f;
-        Display display = dm.getDisplay(Display.DEFAULT_DISPLAY);
-        if (display == null) return 60f;
-        Display.Mode[] modes = display.getSupportedModes();
-        if (modes == null) return 60f;
-
-        float maxRate = 60f;
-        for (Display.Mode mode : modes) {
-            if (mode != null && mode.getRefreshRate() > maxRate) {
-                maxRate = mode.getRefreshRate();
-            }
-        }
-        return maxRate;
+        Display.Mode mode = getMaxHardwareMode(context);
+        return mode != null ? mode.getRefreshRate() : 0f;
     }
 
-    /**
-     * Returns the Display.Mode with the highest refresh rate.
-     */
     public static Display.Mode getMaxHardwareMode(Context context) {
         if (context == null) return null;
-        DisplayManager dm = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
-        if (dm == null) return null;
-        Display display = dm.getDisplay(Display.DEFAULT_DISPLAY);
+        DisplayManager manager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+        Display display = manager != null ? manager.getDisplay(Display.DEFAULT_DISPLAY) : null;
         if (display == null) return null;
-        Display.Mode[] modes = display.getSupportedModes();
-        if (modes == null) return null;
 
-        Display.Mode maxMode = null;
-        for (Display.Mode mode : modes) {
-            if (mode != null) {
-                if (maxMode == null || mode.getRefreshRate() > maxMode.getRefreshRate()) {
-                    maxMode = mode;
-                }
+        Display.Mode best = null;
+        for (Display.Mode mode : display.getSupportedModes()) {
+            if (mode != null && (best == null || mode.getRefreshRate() > best.getRefreshRate())) {
+                best = mode;
             }
         }
-        return maxMode;
+        return best;
     }
 
-    /**
-     * Injects the preferred display mode into the window attributes to enforce max Hz on this Activity.
-     */
+    /** Returns a physical display mode reported by Android, or zero if unavailable. */
+    public static int resolveSupportedRefreshRate(Context context, int requestedHz) {
+        if (context == null) return 0;
+        DisplayManager manager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+        Display display = manager != null ? manager.getDisplay(Display.DEFAULT_DISPLAY) : null;
+        if (display == null) return 0;
+
+        ArrayList<Integer> rates = new ArrayList<>();
+        for (Display.Mode mode : display.getSupportedModes()) {
+            if (mode != null) rates.add(Math.round(mode.getRefreshRate()));
+        }
+        return RefreshRatePolicy.resolveRate(rates, requestedHz);
+    }
+
+    /** Applies the highest physical display mode to this app's own window. */
     public static void applyMaxRefreshRateToWindow(Activity activity) {
         if (activity == null) return;
         try {
             Display.Mode maxMode = getMaxHardwareMode(activity);
             if (maxMode == null) return;
-            WindowManager.LayoutParams params = activity.getWindow().getAttributes();
-            params.preferredDisplayModeId = maxMode.getModeId();
-            activity.getWindow().setAttributes(params);
-            Log.i(TAG, "Window preferred display mode set to modeId=" + maxMode.getModeId() + " (" + maxMode.getRefreshRate() + "Hz)");
+            WindowManager.LayoutParams parameters = activity.getWindow().getAttributes();
+            parameters.preferredDisplayModeId = maxMode.getModeId();
+            activity.getWindow().setAttributes(parameters);
+            Log.i(TAG, "Launcher window prefers " + maxMode.getRefreshRate() + "Hz");
         } catch (Throwable t) {
-            Log.w(TAG, "Failed to apply preferred display mode to window: " + t.getMessage());
+            Log.w(TAG, "Unable to set launcher display preference", t);
         }
     }
 
-    /**
-     * Applies frame rate hint directly to a Surface instance (Android 13+).
-     */
+    /** Applies a frame-rate hint to a Surface owned by this app. */
     public static void applySurfaceFrameRate(Surface surface, float targetFps) {
-        if (surface == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                surface.setFrameRate(
-                        targetFps,
-                        Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE,
-                        Surface.CHANGE_FRAME_RATE_ALWAYS
-                );
-                Log.d(TAG, "Surface frame rate hint applied: " + targetFps + "fps");
-            } catch (Throwable t) {
-                Log.w(TAG, "Failed to set Surface frame rate: " + t.getMessage());
-            }
+        if (surface == null || targetFps <= 0) return;
+        try {
+            surface.setFrameRate(targetFps, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE,
+                    Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS);
+        } catch (Throwable t) {
+            Log.d(TAG, "Surface frame-rate hint unavailable: " + t.getMessage());
         }
 
         if (Build.VERSION.SDK_INT >= 34) {
             try {
-                // API 34 FRAME_RATE_CATEGORY_HIGH = 3
-                Method method = surface.getClass().getMethod("setFrameRateCategory", int.class);
-                method.invoke(surface, 3);
-                Log.d(TAG, "Surface FRAME_RATE_CATEGORY_HIGH applied via reflection");
-            } catch (Throwable t) {
-                Log.d(TAG, "setFrameRateCategory not available on this platform");
+                Method method = Surface.class.getMethod("setFrameRateCategory", int.class);
+                method.invoke(surface, 3 /* FRAME_RATE_CATEGORY_HIGH */);
+            } catch (Throwable ignored) {
+                // Category hints are optional and device-dependent.
             }
         }
     }
 
     /**
-     * Force-locks the system display refresh rate dynamically based on hardware capability,
-     * or forces a specific refresh rate override (up to 185Hz).
-     *
-     * @param context App context
-     * @param overrideHz Desired refresh rate override (0 or negative to auto-detect hardware max; up to 185Hz)
+     * Requests a system display preference using public Settings APIs. The user
+     * must have explicitly granted Modify system settings. Returns false when
+     * the permission or requested physical mode is unavailable.
      */
-    public static boolean forceUnlockSystemRefreshRate(Context context, int overrideHz) {
-        if (context == null) return false;
-        int targetHz;
-        if (overrideHz > 0) {
-            targetHz = Math.min(overrideHz, 185);
-        } else {
-            targetHz = Math.round(getMaxHardwareRefreshRate(context));
-            if (targetHz < 60) targetHz = 60;
+    public static boolean forceUnlockSystemRefreshRate(Context context, int requestedHz) {
+        int targetHz = resolveSupportedRefreshRate(context, requestedHz);
+        if (context == null || targetHz <= 0 || !Settings.System.canWrite(context)) return false;
+        try {
+            boolean peak = Settings.System.putFloat(context.getContentResolver(), "peak_refresh_rate", targetHz);
+            boolean min = Settings.System.putFloat(context.getContentResolver(), "min_refresh_rate", targetHz);
+            Log.i(TAG, "Requested supported system display preference: " + targetHz + "Hz");
+            return peak || min;
+        } catch (SecurityException e) {
+            Log.w(TAG, "Modify system settings is not granted", e);
+            return false;
         }
-
-        Log.i(TAG, "Target refresh rate resolved: " + targetHz + "Hz (Override: " + overrideHz + "). Pushing system & SurfaceFlinger overrides...");
-
-        List<String> commands = Arrays.asList(
-                "settings put system peak_refresh_rate " + targetHz + ".0",
-                "settings put system min_refresh_rate " + targetHz + ".0",
-                "settings put system user_refresh_rate " + targetHz,
-                "settings put global peak_refresh_rate " + targetHz + ".0",
-                "settings put global min_refresh_rate " + targetHz + ".0",
-                "settings put global user_refresh_rate " + targetHz,
-                "settings put global oneplus_screen_refresh_rate " + targetHz,
-                "settings put system miui_refresh_rate " + targetHz,
-                "settings put secure match_content_frame_rate_preference 0",
-                "settings put system match_content_frame_rate 0",
-                "setprop debug.sf.fps_limit " + targetHz,
-                "setprop persist.sys.NV_FPSLIMIT " + targetHz,
-                "setprop persist.sys.game.fps " + targetHz,
-                "service call SurfaceFlinger 1035 i32 " + targetHz,
-                "service call SurfaceFlinger 1036 i32 " + targetHz,
-                "cmd window set-app-refresh-rate global " + targetHz,
-                "cmd game set --fps " + targetHz + " global",
-                "settings put global low_power 0",
-                "settings put global low_power_sticky 0",
-                "settings put global adaptive_battery_management_enabled 0"
-        );
-
-        boolean allSuccess = true;
-        for (String cmd : commands) {
-            String res = ShizukuExecutor.executeShizukuCommand(cmd);
-            if (res == null || res.startsWith("ERROR")) {
-                allSuccess = false;
-                Log.w(TAG, "Command warning: " + cmd + " (" + res + ")");
-            }
-        }
-        return allSuccess;
     }
 
-    /**
-     * Overload for backward compatibility - auto-detects hardware ceiling.
-     */
     public static boolean forceUnlockSystemMaxRefreshRate(Context context) {
         return forceUnlockSystemRefreshRate(context, 0);
     }
 
-    /**
-     * Restores system display settings back to OEM adaptive defaults.
-     */
+    /** Restores the public refresh-rate preferences this app may have set. */
     public static boolean restoreAdaptiveRefreshRate(Context context) {
-        if (context == null) return false;
-        List<String> commands = Arrays.asList(
-                "settings delete system min_refresh_rate",
-                "settings delete system peak_refresh_rate",
-                "settings delete system user_refresh_rate",
-                "settings delete global min_refresh_rate",
-                "settings delete global peak_refresh_rate",
-                "settings delete global user_refresh_rate",
-                "cmd window set-app-refresh-rate global 0",
-                "cmd game reset global"
-        );
-        for (String cmd : commands) {
-            ShizukuExecutor.executeShizukuCommand(cmd);
-        }
-        return true;
+        if (context == null || !Settings.System.canWrite(context)) return false;
+        return Settings.System.putString(context.getContentResolver(), "min_refresh_rate", null)
+                | Settings.System.putString(context.getContentResolver(), "peak_refresh_rate", null);
     }
 }
