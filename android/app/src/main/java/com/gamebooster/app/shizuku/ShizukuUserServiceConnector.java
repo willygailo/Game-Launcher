@@ -86,7 +86,7 @@ public class ShizukuUserServiceConnector {
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    int maxAttempts = 15;
+                    int maxAttempts = 3;
                     while (consecutiveRebindFailures.get() < maxAttempts && !isServiceConnected()) {
                         int attempt = consecutiveRebindFailures.getAndIncrement();
                         long waitTime = calculateBackoffDelay(attempt);

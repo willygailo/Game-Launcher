@@ -103,6 +103,9 @@ public final class MlbbDroneViewPatcher {
             context = ConfigBackupManager.getAppContext();
         }
         if (context == null) {
+            context = com.gamebooster.app.GameBoosterApp.getInstance();
+        }
+        if (context == null) {
             Log.w(TAG, "Cannot apply Drone View: context is null");
             return false;
         }
@@ -259,14 +262,19 @@ public final class MlbbDroneViewPatcher {
             ShizukuFileManager.makeDirectory(targetMiniPatch);
             AssetManager am = context.getAssets();
 
-            // 1. Unpack all recursive base files
-            unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch);
+            // 1. Unpack base files ONLY if target slot is a newly generated slot without MLBB resources
+            if (targetMiniPatch.contains(MINI_PATCH_SUBPATH)) {
+                unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch);
+            }
 
-            // 2. Write the specific tier BattleSystemConfig.bytes (triple fallback)
-            String battleDocDir  = targetMiniPatch + "/Document/android";
-            String battleDest    = battleDocDir + "/BattleSystemConfig.bytes";
+            // 2. Write the specific tier BattleSystemConfig.bytes (both Document/android and Document paths)
+            String battleDocDir   = targetMiniPatch + "/Document/android";
+            String battleDest     = battleDocDir + "/BattleSystemConfig.bytes";
+            String battleAltDest  = targetMiniPatch + "/Document/BattleSystemConfig.bytes";
             ShizukuFileManager.makeDirectory(battleDocDir);
+            ShizukuFileManager.makeDirectory(targetMiniPatch + "/Document");
             writeWithFallback(context, battleDest, battleBytes, "666");
+            writeWithFallback(context, battleAltDest, battleBytes, "666");
 
             // 3. Write MLBB mini-patch lifecycle marker files (triple fallback each).
             //    MLBB's LoadResManager validates these three files before applying the patch:
@@ -341,6 +349,21 @@ public final class MlbbDroneViewPatcher {
                 fos.flush();
             }
             return target.exists() && target.length() == data.length;
+        } catch (Throwable ignored) {}
+
+        // Strategy 4: Storage Access Framework (SAF) Document Engine (MT Manager method)
+        try {
+            if (context != null) {
+                String pkg = ShizukuFileManager.extractPackageFromPath(destPath);
+                if (pkg == null) pkg = "com.mobile.legends";
+                if (com.gamebooster.app.saf.SafStorageManager.hasSafPermission(context, pkg)) {
+                    boolean safOk = com.gamebooster.app.saf.SafStorageManager.writeFileBytes(context, pkg, destPath, data);
+                    if (safOk) {
+                        Log.i(TAG, "writeWithFallback via SAF SUCCESS: " + destPath);
+                        return true;
+                    }
+                }
+            }
         } catch (Throwable ignored) {}
 
         Log.w(TAG, "writeWithFallback failed for " + destPath);

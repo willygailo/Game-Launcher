@@ -163,6 +163,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private TextView tvDiagBadgeThermal;
     private TextView tvDiagLiveIndicator;
 
+    // SAF UI (MT Manager rootless access)
+    private TextView tvSafStatusBadge;
+    private Button btnGrantSafStorage;
+
     // Precision Aim Controls
     private Switch switchPrecisionInputTuner;
     private Switch switchCrosshairOverlay;
@@ -273,6 +277,24 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             AppExecutors.getInstance().executeCommand(() ->
                 ManualSettingsPreferences.applyHiddenPerformanceSettings(appCtx));
         }
+
+        // Card 1.5: SAF Storage Access (MT Manager style)
+        tvSafStatusBadge = view.findViewById(R.id.tv_saf_status_badge);
+        btnGrantSafStorage = view.findViewById(R.id.btn_grant_saf_storage);
+        if (btnGrantSafStorage != null) {
+            btnGrantSafStorage.setOnClickListener(v -> {
+                if (getActivity() != null) {
+                    Intent intent = com.gamebooster.app.saf.SafStorageManager.createOpenDocumentTreeIntent("com.mobile.legends");
+                    try {
+                        getActivity().startActivityForResult(intent, com.gamebooster.app.saf.SafStorageManager.REQUEST_CODE_SAF_TREE);
+                        Toast.makeText(getContext(), "Piliin ang 'Use this folder' sa Mobile Legends folder", Toast.LENGTH_LONG).show();
+                    } catch (Throwable t) {
+                        Toast.makeText(getContext(), "Hindi mabuksan ang system folder picker: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+        refreshSafStatus();
 
         // Card 2: Esports Gaming Controls
         switchOverlayHud = view.findViewById(R.id.switch_overlay_hud);
@@ -2111,6 +2133,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     if (tvDiagLiveIndicator != null) {
                         tvDiagLiveIndicator.setText("🟢 LIVE AUTO-SYNC: " + new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(new java.util.Date()));
                     }
+                    refreshSafStatus();
                 });
             } catch (Throwable t) {
                 AppExecutors.getInstance().postToMainThread(() -> {
@@ -2612,12 +2635,34 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     Toast.makeText(getContext(), "Changes saved!", Toast.LENGTH_SHORT).show();
                 })
                 .setNeutralButton("RUN", (dialog, which) -> {
-                    folderManager.saveScript(scriptFile.getName(), etContent.getText().toString());
-                    if (!requireShizukuForAction("Terminal Script Execution")) return;
                     runSettingsTerminalQuickCmd("run " + scriptFile.getName());
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
+    }
+
+    public void refreshSafStatus() {
+        if (getActivity() == null || tvSafStatusBadge == null) return;
+        getActivity().runOnUiThread(() -> {
+            boolean hasSaf = com.gamebooster.app.saf.SafStorageManager.hasSafPermission(getContext(), "com.mobile.legends");
+            if (hasSaf) {
+                tvSafStatusBadge.setText("SAF: ACTIVE (ROOTLESS)");
+                tvSafStatusBadge.setTextColor(0xFF00FF66);
+                tvSafStatusBadge.setBackgroundColor(0x2000FF66);
+                if (btnGrantSafStorage != null) {
+                    btnGrantSafStorage.setText("✅ ANDROID/DATA ACCESS GRANTED (PERMANENT)");
+                    btnGrantSafStorage.setEnabled(true);
+                }
+            } else {
+                tvSafStatusBadge.setText("SAF: NOT GRANTED");
+                tvSafStatusBadge.setTextColor(0xFFFF4444);
+                tvSafStatusBadge.setBackgroundColor(0x20FF4444);
+                if (btnGrantSafStorage != null) {
+                    btnGrantSafStorage.setText("📂 GRANT ANDROID/DATA ACCESS (SAF)");
+                    btnGrantSafStorage.setEnabled(true);
+                }
+            }
+        });
     }
 }
 

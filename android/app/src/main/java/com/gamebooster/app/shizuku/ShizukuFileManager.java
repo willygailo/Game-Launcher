@@ -183,15 +183,50 @@ public final class ShizukuFileManager {
                 if (testF.exists() && testF.length() > 0) {
                     Log.d(TAG, "writeFile via CommandExecutor SUCCESS: " + path);
                     return FileOpResult.ok(path, "Written via standard shell");
-                } else {
-                    Log.w(TAG, "writeFile via CommandExecutor FAILED (Requires Shizuku/Root): " + path + " -> " + res);
-                    return FileOpResult.fail(path, "Unprivileged write failed (Requires Shizuku): " + res);
                 }
+
+                // 3. Storage Access Framework (SAF) Fallback (MT Manager method)
+                try {
+                    Context ctx = com.gamebooster.app.config.ConfigBackupManager.getAppContext();
+                    if (ctx != null) {
+                        String pkg = extractPackageFromPath(path);
+                        if (com.gamebooster.app.saf.SafStorageManager.hasSafPermission(ctx, pkg)) {
+                            boolean safOk = com.gamebooster.app.saf.SafStorageManager.writeTextFile(ctx, pkg, path, content);
+                            if (safOk) {
+                                Log.i(TAG, "writeFile via SAF Document Engine SUCCESS: " + path);
+                                return FileOpResult.ok(path, "Written via SAF Document Engine");
+                            }
+                        }
+                    }
+                } catch (Throwable safT) {
+                    Log.w(TAG, "SAF writeFile fallback exception: " + safT.getMessage());
+                }
+
+                Log.w(TAG, "writeFile via CommandExecutor FAILED (Requires Shizuku/Root/SAF): " + path + " -> " + res);
+                return FileOpResult.fail(path, "Unprivileged write failed (Requires Shizuku or SAF): " + res);
             }
         } catch (Throwable t) {
             Log.e(TAG, "writeFile exception for " + path, t);
             return FileOpResult.fail(path, "Exception: " + t.getMessage());
         }
+    }
+
+    /**
+     * Extracts application package name from paths like /storage/emulated/0/Android/data/<pkg>/...
+     */
+    public static String extractPackageFromPath(String path) {
+        if (path == null) return null;
+        if (path.contains("com.mobile.legends")) return "com.mobile.legends";
+        String[] segments = path.split("/");
+        for (int i = 0; i < segments.length - 1; i++) {
+            if ("data".equals(segments[i]) || "obb".equals(segments[i])) {
+                String next = segments[i + 1];
+                if (next.contains(".")) {
+                    return next;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -412,6 +447,9 @@ public final class ShizukuFileManager {
                 String res = CommandExecutor.executeSystemCommand(cpCmd);
                 stageFile.delete();
 
+                if (res != null && !res.toLowerCase().contains("error")) {
+                    return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via staged copy");
+                }
                 File target = new File(targetProtectedPath);
                 if (target.exists() && target.length() == data.length) {
                     return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via staged copy");
@@ -450,10 +488,30 @@ public final class ShizukuFileManager {
             try {
                 CommandExecutor.executeSystemCommand("chmod " + mode + " '" + targetProtectedPath + "'");
             } catch (Throwable ignored) {}
-            return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
+            if (f.exists() && f.length() == data.length) {
+                return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
+            }
         } catch (Throwable t) {
-            return FileOpResult.fail(targetProtectedPath, "All upload strategies failed: " + t.getMessage());
+            Log.w(TAG, "uploadBytes direct write failed: " + t.getMessage());
         }
+        // Strategy 4: Storage Access Framework (SAF) Document Engine (MT Manager style)
+        try {
+            Context ctx = com.gamebooster.app.config.ConfigBackupManager.getAppContext();
+            if (ctx != null) {
+                String pkg = extractPackageFromPath(targetProtectedPath);
+                if (com.gamebooster.app.saf.SafStorageManager.hasSafPermission(ctx, pkg)) {
+                    boolean safOk = com.gamebooster.app.saf.SafStorageManager.writeFileBytes(ctx, pkg, targetProtectedPath, data);
+                    if (safOk) {
+                        Log.i(TAG, "uploadBytes via SAF Document Engine SUCCESS: " + targetProtectedPath + " (" + data.length + " bytes)");
+                        return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via SAF");
+                    }
+                }
+            }
+        } catch (Throwable safT) {
+            Log.w(TAG, "SAF uploadBytes fallback exception: " + safT.getMessage());
+        }
+
+        return FileOpResult.fail(targetProtectedPath, "All upload strategies failed");
     }
 
     /**

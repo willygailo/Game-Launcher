@@ -292,6 +292,28 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == com.gamebooster.app.saf.SafStorageManager.REQUEST_CODE_SAF_TREE) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                android.net.Uri treeUri = data.getData();
+                boolean persisted = com.gamebooster.app.saf.SafStorageManager.saveAndPersistUri(this, "com.mobile.legends", treeUri);
+                if (persisted) {
+                    Toast.makeText(this, "📂 Storage Access Granted! Permanent SAF Active.", Toast.LENGTH_LONG).show();
+                    Fragment settingsFrag = getSupportFragmentManager().findFragmentByTag(TAG_SETTINGS);
+                    if (settingsFrag instanceof SettingsFragment && settingsFrag.isAdded()) {
+                        ((SettingsFragment) settingsFrag).refreshSafStatus();
+                    }
+                } else {
+                    Toast.makeText(this, "⚠️ Failed to persist storage permission", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Storage access was not selected", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);

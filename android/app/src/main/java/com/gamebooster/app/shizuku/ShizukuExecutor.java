@@ -3,12 +3,17 @@ package com.gamebooster.app.shizuku;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import rikka.shizuku.Shizuku;
+import android.os.IBinder;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 
-import android.util.Log;
+import moe.shizuku.server.IRemoteProcess;
+import moe.shizuku.server.IShizukuService;
+import rikka.shizuku.Shizuku;
+import rikka.shizuku.ShizukuRemoteProcess;
 
 public class ShizukuExecutor {
 
@@ -72,46 +77,29 @@ public class ShizukuExecutor {
             return "ERROR: No elevated channel available (Shizuku binder dead, rish unavailable)";
         }
 
-        // Phase 1.1: Trigger non-blocking UserService bind if needed
-        if (hasShizukuPermission() && !ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-            ShizukuUserServiceConnector.getInstance().bindService();
-        }
-
-        // Tier 1: If Shizuku is granted, try fast direct AIDL UserService first
+        // Tier 1: Direct native Shizuku Server Binder remote process execution (Zero overhead, works on all devices)
         if (hasShizukuPermission()) {
-            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                String aidlRes = ShizukuUserServiceConnector.getInstance().executeCommandDirect(command);
-                if (aidlRes != null) {
-                    return aidlRes;
-                }
-            }
-
             Process process = null;
             try {
-                java.lang.reflect.Method newProcessMethod = Shizuku.class.getDeclaredMethod("newProcess", String[].class, String[].class, String.class);
-                newProcessMethod.setAccessible(true);
-                process = (Process) newProcessMethod.invoke(null, new String[]{"sh", "-c", command}, null, null);
-                if (process != null) {
-                    return readProcessOutput(process, 4000L);
+                IBinder binder = Shizuku.getBinder();
+                if (binder != null && binder.isBinderAlive()) {
+                    IShizukuService service = IShizukuService.Stub.asInterface(binder);
+                    if (service != null) {
+                        IRemoteProcess remoteProcess = service.newProcess(new String[]{"sh", "-c", command}, null, null);
+                        if (remoteProcess != null) {
+                            Constructor<ShizukuRemoteProcess> c =
+                                    ShizukuRemoteProcess.class.getDeclaredConstructor(IRemoteProcess.class);
+                            c.setAccessible(true);
+                            process = c.newInstance(remoteProcess);
+                            String res = readProcessOutput(process, 8000L);
+                            if (res != null && !res.startsWith("ERROR: Command timed out")) {
+                                return res;
+                            }
+                        }
+                    }
                 }
             } catch (Throwable e) {
-                Log.w(TAG, "Shizuku newProcess fallback to rish/UserService: " + e.getMessage());
-                try {
-                    String rishOut = RishManager.executeRishCommand(null, command);
-                    if (rishOut != null && !rishOut.startsWith("ERROR: rish binary not available")) {
-                        return rishOut;
-                    }
-                } catch (Throwable ignored) {}
-
-                try {
-                    // Direct AIDL only — never call executeCommand() here (mutual recursion)
-                    String directRes = ShizukuUserServiceConnector.getInstance().executeCommandDirect(command);
-                    if (directRes != null) {
-                        return directRes;
-                    }
-                } catch (Throwable t) {
-                    Log.e(TAG, "Shizuku UserService failed: " + t.getMessage());
-                }
+                Log.w(TAG, "Shizuku IShizukuService.newProcess execution failed: " + e.getMessage());
             } finally {
                 if (process != null) {
                     try {
@@ -119,6 +107,22 @@ public class ShizukuExecutor {
                     } catch (Throwable ignored) {}
                 }
             }
+
+            // Fallback: AIDL UserService if already connected
+            if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                String aidlRes = ShizukuUserServiceConnector.getInstance().executeCommandDirect(command);
+                if (aidlRes != null) {
+                    return aidlRes;
+                }
+            }
+
+            // Fallback: Rish
+            try {
+                String rishOut = RishManager.executeRishCommand(null, command);
+                if (rishOut != null && !rishOut.startsWith("ERROR: rish binary not available")) {
+                    return rishOut;
+                }
+            } catch (Throwable ignored) {}
         }
 
         // Tier 2: Try rish directly if binder is in background
