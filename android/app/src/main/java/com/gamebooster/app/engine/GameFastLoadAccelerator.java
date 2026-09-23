@@ -105,11 +105,15 @@ public final class GameFastLoadAccelerator {
     /**
      * Maintains launch frequency boost for 12 seconds to ensure heavy shader initialization
      * and OBB extraction complete without thermal drops, then smoothly transitions to sustained mode.
+     *
+     * Bug #8 fixed: was Thread.sleep(12000) blocking a shared thread pool worker for 12s.
+     * Now uses ScheduledExecutorService.schedule() — transition fires at 12s but no thread is held.
      */
     public static void scheduleLaunchSustainTransition(String packageName) {
-        AppExecutors.getInstance().executeCommand(() -> {
+        final java.util.concurrent.ScheduledExecutorService scheduler =
+                java.util.concurrent.Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
             try {
-                Thread.sleep(12000); // 12 seconds launch window
                 // Transition to sustained high-performance gaming state
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommands(
@@ -118,7 +122,10 @@ public final class GameFastLoadAccelerator {
                     );
                 }
                 Log.i(TAG, "⚡ [FastLoad] Launch boost window concluded, transitioned to sustained gaming mode for " + packageName);
-            } catch (Throwable ignored) {}
-        });
+            } catch (Throwable ignored) {
+            } finally {
+                scheduler.shutdown();
+            }
+        }, 12, java.util.concurrent.TimeUnit.SECONDS);
     }
 }

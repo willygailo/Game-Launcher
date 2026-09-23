@@ -9,13 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * AndroidVersionSupportManager — Multi-Generational Android 13 to 16 Architecture Orchestrator.
+ * AndroidVersionSupportManager — Android 14/15/16 Architecture Orchestrator.
  *
  * Provides dedicated runtime feature gating, framework calls, and shell optimizations across:
- * - Android 13 (API 33 - Tiramisu): GameManager performance mode, game_overlay, AppOps permission shields
  * - Android 14 (API 34 - Upside Down Cake): cmd window set-app-refresh-rate, ADPF 2.0 WorkDuration timeline sync
  * - Android 15 (API 35 - Vanilla Ice Cream): ADPF 3.0 predictive thermal headroom, dynamic target duration, PowerHAL fixed performance mode
  * - Android 16 (API 36 - Baklava): Media Performance Class 16 (level 3), Runtime Native Boot app image cache & sched priority, 185Hz display synchronization
+ *
+ * NOTE: minSdk=34. isAndroid14OrHigher() is the lowest meaningful version gate.
  */
 public class AndroidVersionSupportManager {
 
@@ -26,9 +27,8 @@ public class AndroidVersionSupportManager {
     public static final int API_ANDROID_15 = 35;
     public static final int API_ANDROID_16 = 36;
 
-    public static boolean isAndroid13OrHigher() {
-        return Build.VERSION.SDK_INT >= API_ANDROID_13;
-    }
+    // Bug #5 fixed: removed isAndroid13OrHigher() — minSdk=34 makes it permanently true.
+    // Use isAndroid14OrHigher() as the minimum meaningful gate.
 
     public static boolean isAndroid14OrHigher() {
         return Build.VERSION.SDK_INT >= API_ANDROID_14;

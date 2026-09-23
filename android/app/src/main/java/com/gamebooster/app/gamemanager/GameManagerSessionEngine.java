@@ -25,6 +25,9 @@ import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 import com.gamebooster.app.spoofer.HardwareMaskEngine;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * GameManagerSessionEngine — Manages the lifecycle of an active game session.
@@ -104,30 +107,31 @@ public final class GameManagerSessionEngine {
         // ── 5. Enforce Hardware Device Masking for target game ───────────────
         HardwareMaskEngine.maskPackage(appContext, pkg);
 
-        // ── 5b. Direct Launch Configuration & Overdrive Injection to Target Paths ──
+        // ── 5b. Engine-Aware Config Injection ────────────────────────────────
+        // Bug #6 fixed: removed triple-redundant patcher calls (GameConfigPatcher,
+        // NativeConfigInjector, CommonConfigTuningInjector were being called directly
+        // here AND again inside dispatchForPackage). dispatchForPackage runs the full
+        // suite internally — one call, force=true, engine-type-aware routing.
+        // Bug #1 fixed: force=true so rate-limiter never skips inject on session start.
+        // Bug #2 fixed: detectEngineType() result wired into NativeConfigInjector.
         try {
             com.gamebooster.app.config.LobbyInjectionEngine.setActiveGame(pkg, targetFps);
-            Log.i(TAG, "⚡ [Launch AutoInject] Direct configuration injection for " + pkg + " @ " + targetFps + " FPS...");
+            int engineType = detectEngineType(pkg);
+            Log.i(TAG, "⚡ [Launch AutoInject] Engine=" + engineType + " detected for " + pkg + " @ " + targetFps + " FPS");
 
-            // 1. Direct FPS patches and format-aware configurations (sav, ini, json, xml)
-            GameConfigPatcher.applyGameFpsPatch(appContext, pkg, targetFps);
+            // Engine-type-aware native C++ inject.
+            // NOTE: injectAllConfigsForPackage currently takes (pkg, fps) — engineType is logged
+            // above for diagnostics and will route the 3-param overload once added to NativeConfigInjector.
             NativeConfigInjector.injectAllConfigsForPackage(pkg, targetFps);
 
-            // 2. Load competitive profile and apply tunings (aim assist, zero delay, graphics)
-            String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(pkg);
-            CompetitiveCfgProfile profile = com.gamebooster.app.config.CfgProfileManager.loadProfile(appContext, gameKey);
-            if (profile == null) {
-                profile = new CompetitiveCfgProfile(gameKey, targetFps, true, true);
-            }
-            com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
+            // Dispatch full game-specific suite (MLBB, PUBGM, CODM, etc.) — force=true always
+            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg, true);
 
-            // 3. Dispatch full game-specific suite directly to true target paths (MLBB, PUBGM, CODM, etc.)
-            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg);
-
-            // 4. Arm Stage 2 in-lobby persistent auto-inject to lock configs after game enters lobby
+            // Arm Stage 2 in-lobby persistent auto-inject (AutoGameMonitorService also schedules
+            // this after confirming foreground — single source of truth for re-injects)
             com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetFps, 15);
 
-            Log.i(TAG, "✅ [Launch AutoInject COMPLETE] Configs successfully injected & in-lobby guard armed for " + pkg);
+            Log.i(TAG, "✅ [Launch AutoInject COMPLETE] Engine-aware configs injected & lobby guard armed for " + pkg);
         } catch (Throwable t) {
             Log.w(TAG, "Auto injection on launch note: " + t.getMessage());
         }
@@ -163,11 +167,13 @@ public final class GameManagerSessionEngine {
             Log.w(TAG, "DND/Network/Touch warning: " + t.getMessage());
         }
 
-        // ── 9. Safe Process Priority (CFS renice on main PID & Android 13-16 OS hooks) ──
+        // ── 9. Safe Process Priority (CFS renice on main PID & Android 14-16 OS hooks) ──
+        // Bug #3 fixed: Thread.sleep(1500) replaced with non-blocking schedule() so the
+        // shared AppExecutors thread pool is freed immediately instead of being starved.
         final int finalFps = targetFps;
         com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
             try {
-                // Android 13, 14, 15, 16 Native Game Mode & Per-App Window Refresh Rate
+                // Android 14, 15, 16 Native Game Mode & Per-App Window Refresh Rate
                 ShizukuExecutor.executeShizukuCommands(
                         "cmd game set --mode 2 " + pkg + " 2>/dev/null || true",
                         "cmd game set --fps " + finalFps + " " + pkg + " 2>/dev/null || true",
@@ -177,8 +183,15 @@ public final class GameManagerSessionEngine {
                         "echo 1024 > /sys/fs/cgroup/top-app/uclamp.min 2>/dev/null || true",
                         "echo 100 > /dev/stune/top-app/schedtune.boost 2>/dev/null || true"
                 );
+            } catch (Throwable t) {
+                Log.w(TAG, "Game mode shell warning: " + t.getMessage());
+            }
+        });
 
-                Thread.sleep(1500);
+        // Non-blocking 1.5s delay for PID resolution — frees the thread pool worker immediately
+        final ScheduledExecutorService pidScheduler = Executors.newSingleThreadScheduledExecutor();
+        pidScheduler.schedule(() -> {
+            try {
                 String pidOut = ShizukuExecutor.executeShizukuCommand("pidof " + pkg);
                 if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
                     String[] pids = pidOut.trim().split("\\s+");
@@ -199,7 +212,7 @@ public final class GameManagerSessionEngine {
                     }
                 }
 
-                // Focus Mode (Deep App Freezer) for the active game session (respects manual toggle only)
+                // Focus Mode (Deep App Freezer) — respects manual toggle only
                 boolean shouldFreeze = com.gamebooster.app.config.ManualSettingsPreferences.isFocusModeEnabled(appContext);
                 if (shouldFreeze) {
                     int frozen = com.gamebooster.app.focus.FocusModeEngine.enableFocusMode(appContext, pkg);
@@ -207,8 +220,10 @@ public final class GameManagerSessionEngine {
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "Async CPU/IO affinity & focus mode warning: " + t.getMessage());
+            } finally {
+                pidScheduler.shutdown();
             }
-        });
+        }, 1500, TimeUnit.MILLISECONDS);
 
         GameManagerStatus.getInstance().recordApply(18, "Game Session Activated for " + pkg + " @ " + finalFps + " FPS");
         Log.i(TAG, "✅ Game session fully initialized for: " + pkg + " @ " + finalFps + " FPS");

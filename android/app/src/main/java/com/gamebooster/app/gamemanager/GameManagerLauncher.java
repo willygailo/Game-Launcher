@@ -8,6 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -172,89 +173,30 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2b + STEP 3: DRONE PRE-WRITE → ZERO-LATENCY LAUNCH
+        // STEP 3: START THE GAME BEFORE ANY BOOST WORK
         //
-        // FIX Bug #2 (Android 14/15/16): old code blocked the calling thread
-        // up to 600ms via dronePreFuture.get() before startActivity — ANR risk.
-        // FIX Bug #1 (MIUI/ColorOS/OneUI): FLAG_ACTIVITY_CLEAR_TOP was
-        // destroying singleTask game tasks (MLBB, PUBG, CODM) on launch.
-        //
-        // SOLUTION: drone write + startActivity both run on executeCommand().
-        // Only context.startActivity() is posted back to the main thread.
-        // FLAG_ACTIVITY_CLEAR_TOP replaced with FLAG_INCLUDE_STOPPED_PACKAGES.
+        // The command executor is intentionally not in this path. It has a bounded
+        // worker pool shared by config injection and shell work; queuing startActivity
+        // there can leave a PLAY tap with no visible result. A copied intent also avoids
+        // mutating the one retained by the home-card model.
         // ═══════════════════════════════════════════════════════════
-        final Intent finalTargetIntent = targetIntent;
-        AppExecutors.getInstance().executeCommand(() -> {
-            // 2b. MLBB Drone pre-write — off main thread, zero ANR risk
-            try {
-                if (pkg.toLowerCase().contains("mobile.legends")
-                        || pkg.toLowerCase().contains("mobilelegends")) {
-                    String gameKey = CfgProfileManager.resolveGameKey(pkg);
-                    CompetitiveCfgProfile preProfile = CfgProfileManager.loadProfile(appContext, gameKey);
-                    if (preProfile != null && preProfile.isDroneViewUltraEnabled()) {
-                        final int droneT = preProfile.getDroneViewTier();
-                        try {
-                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(appContext, pkg, droneT);
-                            Log.i(TAG, "✅ [Pre-Launch Drone] Home-screen FOV patched [tier=" + droneT + "]");
-                        } catch (Throwable t) {
-                            Log.w(TAG, "Pre-launch drone write warning: " + t.getMessage());
-                        }
-                    }
-                }
-            } catch (Throwable t) {
-                Log.w(TAG, "Pre-launch drone barrier warning for " + pkg + ": " + t.getMessage());
+        final Intent finalTargetIntent = targetIntent != null ? new Intent(targetIntent) : null;
+        Runnable launchNow = () -> {
+            boolean launched = launchWithFrameworkIntent(context, appContext, pkg, finalTargetIntent);
+            if (launched) {
+                boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+                String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Boosting...";
+                Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
+                if (listener != null) listener.onLaunchSuccess(pkg);
+            } else {
+                launchWithPrivilegedFallback(appContext, pkg, finalTargetIntent, gameTitle, fps, listener);
             }
-
-            // 3. Post startActivity to UI thread.
-            //    Android 14/15/16: FLAG_ACTIVITY_CLEAR_TOP removed (kills singleTask tasks).
-            //    FLAG_INCLUDE_STOPPED_PACKAGES added (cold-start works on all ROMs).
-            AppExecutors.getInstance().postToMainThread(() -> {
-                boolean launched = false;
-                if (finalTargetIntent != null) {
-                    finalTargetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                    try {
-                        context.startActivity(finalTargetIntent);
-                        launched = true;
-                    } catch (Throwable t1) {
-                        try {
-                            appContext.startActivity(finalTargetIntent);
-                            launched = true;
-                        } catch (Throwable t2) {
-                            Log.w(TAG, "Direct startActivity failed for " + pkg + ": " + t2.getMessage());
-                        }
-                    }
-                }
-                // Raw-package fallback — works on MIUI/HyperOS, ColorOS, OneUI
-                if (!launched) {
-                    try {
-                        Intent rawFallback = new Intent(Intent.ACTION_MAIN);
-                        rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
-                        rawFallback.setPackage(pkg);
-                        rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                        context.startActivity(rawFallback);
-                        launched = true;
-                        Log.i(TAG, "⚡ [RawPkg Fallback] Launched " + pkg + " via setPackage() raw intent");
-                    } catch (Throwable t3) {
-                        Log.w(TAG, "Raw package fallback failed for " + pkg + ": " + t3.getMessage());
-                    }
-                }
-                if (launched) {
-                    boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
-                    String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Boosting...";
-                    Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
-                    if (listener != null) listener.onLaunchSuccess(pkg);
-                }
-            });
-        });
-
-        // directSuccess = true: the async path above owns the actual launch.
-        // The post-launch boost pipeline below always fires regardless.
-        final boolean directSuccess = true;
-        final Intent resolvedIntent = targetIntent;
+        };
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            launchNow.run();
+        } else {
+            AppExecutors.getInstance().postToMainThread(launchNow);
+        }
 
         // ═══════════════════════════════════════════════════════════
         // STEP 4: ASYNC PARALLEL CONFIG INJECTION + HARDWARE BOOSTS
@@ -302,58 +244,6 @@ public final class GameManagerLauncher {
                 } catch (Throwable t) {
                     Log.w(TAG, "Pre-launch burst background error for " + pkg + ": " + t.getMessage());
                 }
-                // If direct framework launch failed, execute elevated shell dispatch immediately
-                if (!directSuccess) {
-                    boolean elevatedSuccess = false;
-                    ComponentName component = resolvedIntent != null ? resolvedIntent.getComponent() : null;
-                    String compStr = component != null ? component.flattenToShortString() : null;
-
-                    String startCmd = (compStr != null ? "am start -n " + compStr + " 2>/dev/null || " : "")
-                            + "am start --activity-brought-to-front -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p " + pkg + " 2>/dev/null || "
-                            + "monkey -p " + pkg + " -c android.intent.category.LAUNCHER 1 2>/dev/null";
-
-                    if (ShellExecutor.isRootSuAvailable()) {
-                        ShellExecutor.CommandResult rootRes = ShellExecutor.executeSuCommand(startCmd);
-                        if (rootRes.isSuccess()) {
-                            elevatedSuccess = true;
-                        }
-                    }
-
-                    if (!elevatedSuccess && ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
-                        String out = ShizukuUserServiceConnector.getInstance().executeCommand(startCmd);
-                        if (out != null && !out.contains("Error") && !out.contains("Exception")) {
-                            elevatedSuccess = true;
-                        }
-                    }
-
-                    if (!elevatedSuccess && ShizukuExecutor.hasShizukuPermission()) {
-                        String out = ShizukuExecutor.executeShizukuCommand(startCmd);
-                        if (out != null && !out.startsWith("ERROR")) {
-                            elevatedSuccess = true;
-                        }
-                    }
-
-                    if (!elevatedSuccess && RishManager.isRishAvailable()) {
-                        String out = RishManager.executeRishCommand(null, startCmd);
-                        if (out != null && !out.startsWith("ERROR")) {
-                            elevatedSuccess = true;
-                        }
-                    }
-
-
-                    if (elevatedSuccess) {
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            Toast.makeText(appContext, "🚀 Privileged Turbo Launch: " + gameTitle + " @ " + fps + " FPS!", Toast.LENGTH_SHORT).show();
-                            if (listener != null) listener.onLaunchSuccess(pkg);
-                        });
-                    } else {
-                        AppExecutors.getInstance().postToMainThread(() -> {
-                            Toast.makeText(appContext, "⚠️ Elevated Launch Dispatched for " + gameTitle, Toast.LENGTH_SHORT).show();
-                            if (listener != null) listener.onLaunchFailed(pkg, "Unable to launch game activity directly");
-                        });
-                    }
-                }
-
                 // Apply 185 Hz lock to SurfaceFlinger, AOSP & OEM without clamping to 120
                 int maxPhysicalHz = 185;
                 try {
@@ -373,10 +263,14 @@ public final class GameManagerLauncher {
 
                 boolean hasPrivilege = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
                 if (hasPrivilege) {
+                    // Bug #7 fixed: replaced hand-written partial command list with
+                    // AndroidVersionSupportManager.applyVersionOptimizations() — this now
+                    // correctly fires Android 14/15/16 shell paths (PowerHAL, --performance-class 3)
+                    // that were missing from the manual list.
+                    com.gamebooster.app.engine.AndroidVersionSupportManager.applyVersionOptimizations(appContext, pkg, safeFps);
+
+                    // GPU Vulkan driver opt-in (kept separate — not in version manager)
                     CommandExecutor.executeBatchCommands(java.util.Arrays.asList(
-                        "cmd game mode performance " + pkg + " 2>/dev/null",
-                        "cmd window set-app-refresh-rate " + pkg + " " + safeFps + " 2>/dev/null",
-                        "cmd game set --fps " + safeFps + " " + pkg + " 2>/dev/null",
                         "settings put global game_driver_opt_in_apps " + pkg + " 2>/dev/null",
                         "settings put global updatable_driver_production_opt_in_apps \"\" 2>/dev/null",
                         "setprop debug.sf.fps_limit " + safeFps,
@@ -419,6 +313,114 @@ public final class GameManagerLauncher {
                     AppExecutors.getInstance().postToMainThread(() -> listener.onLaunchFailed(pkg, t.getMessage()));
                 }
             }
+        });
+    }
+
+    /**
+     * Starts a launchable game immediately. This method must only be called from the
+     * main thread so an Activity caller retains its foreground-launch allowance.
+     */
+    private static boolean launchWithFrameworkIntent(Context sourceContext, Context appContext,
+                                                     String packageName, Intent launchIntent) {
+        if (launchIntent != null) {
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            try {
+                sourceContext.startActivity(launchIntent);
+                Log.i(TAG, "Framework launch started for " + packageName);
+                return true;
+            } catch (Throwable sourceError) {
+                Log.w(TAG, "Caller-context launch failed for " + packageName + ": "
+                        + sourceError.getMessage());
+                try {
+                    appContext.startActivity(new Intent(launchIntent));
+                    Log.i(TAG, "Application-context launch started for " + packageName);
+                    return true;
+                } catch (Throwable appError) {
+                    Log.w(TAG, "Application-context launch failed for " + packageName + ": "
+                            + appError.getMessage());
+                }
+            }
+        }
+
+        // Some OEM launchers reject an explicit component but still accept a package-scoped
+        // MAIN/LAUNCHER intent. Keep this as a framework fallback before any shell command.
+        try {
+            Intent rawFallback = new Intent(Intent.ACTION_MAIN);
+            rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
+            rawFallback.setPackage(packageName);
+            rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            appContext.startActivity(rawFallback);
+            Log.i(TAG, "Package-scoped framework launch started for " + packageName);
+            return true;
+        } catch (Throwable rawError) {
+            Log.w(TAG, "Package-scoped framework launch failed for " + packageName + ": "
+                    + rawError.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Elevated dispatch is a last resort only. Normal app-to-app launching does not require
+     * root or Shizuku, and a failed framework launch must never silently disappear.
+     */
+    private static void launchWithPrivilegedFallback(Context appContext, String packageName,
+                                                     Intent resolvedIntent, String gameTitle, int fps,
+                                                     OnGameLaunchListener listener) {
+        Toast.makeText(appContext, "⚠️ Retrying game launch…", Toast.LENGTH_SHORT).show();
+        AppExecutors.getInstance().executeCommand(() -> {
+            boolean elevatedSuccess = false;
+            ComponentName component = resolvedIntent != null ? resolvedIntent.getComponent() : null;
+            String componentName = component != null ? component.flattenToShortString() : null;
+            String startCommand = (componentName != null
+                    ? "am start -n " + componentName + " 2>/dev/null || " : "")
+                    + "am start --activity-brought-to-front -a android.intent.action.MAIN"
+                    + " -c android.intent.category.LAUNCHER -p " + packageName + " 2>/dev/null"
+                    + " || monkey -p " + packageName
+                    + " -c android.intent.category.LAUNCHER 1 2>/dev/null";
+
+            try {
+                if (ShellExecutor.isRootSuAvailable()) {
+                    elevatedSuccess = ShellExecutor.executeSuCommand(startCommand).isSuccess();
+                }
+                if (!elevatedSuccess
+                        && ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                    String output = ShizukuUserServiceConnector.getInstance().executeCommand(startCommand);
+                    elevatedSuccess = output != null && !output.contains("Error")
+                            && !output.contains("Exception");
+                }
+                if (!elevatedSuccess && ShizukuExecutor.hasShizukuPermission()) {
+                    String output = ShizukuExecutor.executeShizukuCommand(startCommand);
+                    elevatedSuccess = output != null && !output.startsWith("ERROR");
+                }
+                if (!elevatedSuccess && RishManager.isRishAvailable()) {
+                    String output = RishManager.executeRishCommand(null, startCommand);
+                    elevatedSuccess = output != null && !output.startsWith("ERROR");
+                }
+            } catch (Throwable fallbackError) {
+                Log.w(TAG, "Privileged launch fallback failed for " + packageName + ": "
+                        + fallbackError.getMessage());
+            }
+
+            final boolean launched = elevatedSuccess;
+            AppExecutors.getInstance().postToMainThread(() -> {
+                if (launched) {
+                    Toast.makeText(appContext, "🚀 Launching " + gameTitle + " @ " + fps + " FPS",
+                            Toast.LENGTH_SHORT).show();
+                    if (listener != null) listener.onLaunchSuccess(packageName);
+                } else {
+                    Toast.makeText(appContext,
+                            "❌ Cannot open " + gameTitle + ". Open it once from the phone launcher, then retry.",
+                            Toast.LENGTH_LONG).show();
+                    if (listener != null) {
+                        listener.onLaunchFailed(packageName,
+                                "No launchable activity was accepted by the device");
+                    }
+                }
+            });
         });
     }
 
