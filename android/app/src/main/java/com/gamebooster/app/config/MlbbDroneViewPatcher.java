@@ -162,9 +162,11 @@ public final class MlbbDroneViewPatcher {
                 for (String docDir : targetDocPaths) {
                     ShizukuFileManager.makeDirectory(docDir);
                     String battlePath = docDir + "/BattleSystemConfig.bytes";
-                    ShizukuFileManager.uploadBytes(battlePath, battleBytes, "777");
-                    anyApplied = true;
-                    Log.i(TAG, "🎯 [Direct Camera] Deployed BattleSystemConfig.bytes [" + getTierLabel(tier) + "] to: " + battlePath);
+                    boolean ok = writeWithFallback(context, battlePath, battleBytes, "777");
+                    if (ok) {
+                        anyApplied = true;
+                        Log.i(TAG, "🎯 [Direct Camera] Deployed BattleSystemConfig.bytes [" + getTierLabel(tier) + "] to: " + battlePath);
+                    }
                 }
 
                 if (ShizukuExecutor.hasShizukuPermission()) {
@@ -244,6 +246,13 @@ public final class MlbbDroneViewPatcher {
 
     /**
      * Unpacks all base mini-patch assets and the tier BattleSystemConfig.bytes into targetMiniPatch.
+     *
+     * WRITE STRATEGY — triple fallback per file:
+     *  1. ShizukuFileManager.uploadBytes (AIDL UserService)
+     *  2. ShizukuExecutor shell `printf '1' > path` — survives UserService crash
+     *  3. Direct Java FileOutputStream — works for /storage/emulated/0 (external) without root
+     * Shizuku UserService crashes during game launch (logcat: System.exit status:1 from service
+     * process). The shell binder (shizuku_server) stays alive, so shell-echo always works.
      */
     private static boolean deployMiniPatch(Context context, String targetMiniPatch, byte[] battleBytes) {
         try {
@@ -253,25 +262,24 @@ public final class MlbbDroneViewPatcher {
             // 1. Unpack all recursive base files
             unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch);
 
-            // 2. Write the specific tier BattleSystemConfig.bytes
-            String battleDest = targetMiniPatch + "/Document/android/BattleSystemConfig.bytes";
-            ShizukuFileManager.makeDirectory(targetMiniPatch + "/Document/android");
-            ShizukuFileManager.uploadBytes(battleDest, battleBytes, "666");
+            // 2. Write the specific tier BattleSystemConfig.bytes (triple fallback)
+            String battleDocDir  = targetMiniPatch + "/Document/android";
+            String battleDest    = battleDocDir + "/BattleSystemConfig.bytes";
+            ShizukuFileManager.makeDirectory(battleDocDir);
+            writeWithFallback(context, battleDest, battleBytes, "666");
 
-            // 3. Write MLBB mini-patch lifecycle marker files.
+            // 3. Write MLBB mini-patch lifecycle marker files (triple fallback each).
             //    MLBB's LoadResManager validates these three files before applying the patch:
-            //      __ready       — signals the patch payload is fully written and ready to load
-            //      __active      — signals this patch slot is the active hot-patch to use
-            //      __fix_rescheck — overrides the resource integrity check, allowing patched bytes
-            //    The base/ assets ship these as 0-byte placeholders (asset manager can't store
-            //    truly empty files). We must explicitly overwrite them with the "1" signal byte
-            //    that Moonton's LoadResManager protocol expects, or the entire mini_patch is
-            //    silently ignored at game launch despite the BattleSystemConfig.bytes being present.
-            byte[] markerByte = "1".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__ready",        markerByte, "666");
-            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__active",       markerByte, "666");
-            ShizukuFileManager.uploadBytes(targetMiniPatch + "/__fix_rescheck", markerByte, "666");
-            Log.i(TAG, "✅ Marker files written: __ready, __active, __fix_rescheck → \"1\"");
+            //      __ready        — signals the patch payload is fully written and ready to load
+            //      __active       — signals this slot is the active hot-patch to use
+            //      __fix_rescheck — overrides resource integrity check, allowing patched bytes
+            //    Must contain the byte '1' (0x31). Zero-byte files are silently ignored by
+            //    Moonton's LoadResManager regardless of BattleSystemConfig.bytes being present.
+            byte[] markerByte = new byte[]{ (byte) '1' };
+            boolean m1 = writeWithFallback(context, targetMiniPatch + "/__ready",        markerByte, "666");
+            boolean m2 = writeWithFallback(context, targetMiniPatch + "/__active",       markerByte, "666");
+            boolean m3 = writeWithFallback(context, targetMiniPatch + "/__fix_rescheck", markerByte, "666");
+            Log.i(TAG, "✅ Marker files [__ready=" + m1 + " __active=" + m2 + " __fix_rescheck=" + m3 + "] → '1' @ " + targetMiniPatch);
 
             // 4. Enforce permissions across the entire mini_patch directory
             if (ShizukuExecutor.hasShizukuPermission()) {
@@ -285,6 +293,58 @@ public final class MlbbDroneViewPatcher {
             Log.e(TAG, "Failed to deploy mini_patch to " + targetMiniPatch, t);
             return false;
         }
+    }
+
+    /**
+     * Writes {@code data} to {@code destPath} with robust fallbacks:
+     *  1. ShizukuFileManager.uploadBytes — staged privileged copy (works for files of any size without ARG_MAX)
+     *  2. Shell echo — for 1-byte marker files (__ready, __active, __fix_rescheck)
+     *  3. Java FileOutputStream — works for /storage/emulated/0 external paths without root
+     *
+     * Returns true if at least one strategy succeeded.
+     */
+    private static boolean writeWithFallback(Context context, String destPath, byte[] data, String chmod) {
+        if (destPath == null || data == null) return false;
+
+        // Strategy 1: ShizukuFileManager staged upload
+        try {
+            ShizukuFileManager.FileOpResult res = ShizukuFileManager.uploadBytes(destPath, data, chmod);
+            if (res != null && res.success) {
+                return true;
+            }
+            java.io.File f = new java.io.File(destPath);
+            if (f.exists() && f.length() == data.length) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        // Strategy 2: For 1-byte marker files, shell echo directly
+        if (data.length == 1 && data[0] == (byte)'1') {
+            try {
+                String cmd = "mkdir -p \"$(dirname '" + destPath + "')\" && echo -n 1 > \"" + destPath + "\" && chmod " + chmod + " \"" + destPath + "\" 2>/dev/null";
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(cmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+                return true;
+            } catch (Throwable ignored) {}
+        }
+
+        // Strategy 3: Direct Java FileOutputStream
+        try {
+            java.io.File target = new java.io.File(destPath);
+            java.io.File parent = target.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            try (FileOutputStream fos = new FileOutputStream(target)) {
+                fos.write(data);
+                fos.flush();
+            }
+            return target.exists() && target.length() == data.length;
+        } catch (Throwable ignored) {}
+
+        Log.w(TAG, "writeWithFallback failed for " + destPath);
+        return false;
     }
 
 

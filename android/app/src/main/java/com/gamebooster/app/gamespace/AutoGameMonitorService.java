@@ -154,16 +154,25 @@ public class AutoGameMonitorService extends Service {
                     Log.i(TAG, "GAME LAUNCH DETECTED: " + currentPackage + " — Starting GameManager Session");
 
                     // Record the capability-checked launcher session.
-                    com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(getApplicationContext(), currentPackage);
+                    final Context appCtx = getApplicationContext();
+                    com.gamebooster.app.gamemanager.GameManagerSessionEngine.beginSession(appCtx, currentPackage);
+
+                    final int targetHz = com.gamebooster.app.config.GameProfilePreferences.getTargetHz(appCtx, currentPackage);
+                    // DUAL-STAGE AUTO INJECTION PIPELINE:
+                    // Stage 1 (Instant): Display Hz, CPU/GPU Turbo, Graphics Cfg, Drone View & Hardware Spoof
+                    com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appCtx, currentPackage, targetHz);
+
+                    // Stage 2 (10s Lobby-Safe): In-Lobby Stealth Overdrive & Multi-Slot Drone View Re-injection
+                    com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appCtx, currentPackage, targetHz, 10);
 
                     // Auto-Start Floating Gaming HUD & Bind Real FPS Target
                     com.gamebooster.app.overlay.RealGameFpsMonitor.getInstance().setTargetPackage(currentPackage);
                     if (!FloatingOverlayService.isOverlayRunning() && !FloatingOverlayService.isSessionDismissed()) {
-                        FloatingOverlayService.startOverlay(getApplicationContext());
+                        FloatingOverlayService.startOverlay(appCtx);
                     }
 
                     AppExecutors.getInstance().postToMainThread(() ->
-                            android.widget.Toast.makeText(getApplicationContext(), "Game session detected: " + currentPackage,
+                            android.widget.Toast.makeText(appCtx, "⚡ Auto-Optimized: " + currentPackage,
                                     android.widget.Toast.LENGTH_SHORT).show());
                 }
             } else if (lastActiveGamePackage != null) {

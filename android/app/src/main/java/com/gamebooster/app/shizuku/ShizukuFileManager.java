@@ -387,24 +387,56 @@ public final class ShizukuFileManager {
             return FileOpResult.fail(targetProtectedPath, "Path or data is null");
         }
         ensureParentDirectory(targetProtectedPath);
-        String b64 = Base64.encodeToString(data, Base64.NO_WRAP);
-        String mode = chmodMode != null ? chmodMode : "666";
-        String cmd = "echo '" + b64 + "' | base64 -d > '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
+        String mode = (chmodMode != null && !chmodMode.isEmpty()) ? chmodMode : "666";
 
-        boolean privileged = false;
+        // Strategy 1: Staged Copy via App's accessible storage
+        // Completely bypasses shell command-line size limits (ARG_MAX) for files of any size (e.g. 690KB BattleSystemConfig)
         try {
-            privileged = hasFullAccess();
-        } catch (Throwable ignored) {}
+            Context ctx = com.gamebooster.app.config.ConfigBackupManager.getAppContext();
+            File stageDir = ctx != null ? ctx.getExternalFilesDir(null) : null;
+            if (stageDir == null && ctx != null) {
+                stageDir = ctx.getFilesDir();
+            }
+            if (stageDir != null) {
+                if (!stageDir.exists()) stageDir.mkdirs();
+                File stageFile = new File(stageDir, "stage_upload_" + System.currentTimeMillis() + "_" + Math.abs(targetProtectedPath.hashCode()) + ".tmp");
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(stageFile)) {
+                    fos.write(data);
+                    fos.flush();
+                }
+                stageFile.setReadable(true, false);
 
-        if (privileged) {
-            String res = CommandExecutor.executeSystemCommand(cmd);
-            boolean ok = res != null && !res.toLowerCase().contains("error");
-            if (ok) {
-                return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath);
+                String cpCmd = "mkdir -p \"$(dirname '" + targetProtectedPath + "')\" && cp -f '" 
+                        + stageFile.getAbsolutePath() + "' '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
+                
+                String res = CommandExecutor.executeSystemCommand(cpCmd);
+                stageFile.delete();
+
+                File target = new File(targetProtectedPath);
+                if (target.exists() && target.length() == data.length) {
+                    return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via staged copy");
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "uploadBytes staging failed: " + t.getMessage());
+        }
+
+        // Strategy 2: If data is small (<= 16KB), base64 shell pipeline
+        if (data.length <= 16384) {
+            try {
+                String b64 = Base64.encodeToString(data, Base64.NO_WRAP);
+                String cmd = "mkdir -p \"$(dirname '" + targetProtectedPath + "')\" && echo '" + b64 + "' | base64 -d > '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
+                String res = CommandExecutor.executeSystemCommand(cmd);
+                File target = new File(targetProtectedPath);
+                if (target.exists() && target.length() == data.length) {
+                    return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes to " + targetProtectedPath);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "uploadBytes base64 pipeline failed: " + t.getMessage());
             }
         }
 
-        // Fallback: Direct FileOutputStream write (with directory creation)
+        // Strategy 3: Direct FileOutputStream write (with directory creation)
         try {
             File f = new File(targetProtectedPath);
             File parent = f.getParentFile();
@@ -420,15 +452,7 @@ public final class ShizukuFileManager {
             } catch (Throwable ignored) {}
             return FileOpResult.ok(targetProtectedPath, "Uploaded bytes directly");
         } catch (Throwable t) {
-            // Secondary fallback: Attempt shell command regardless
-            try {
-                String res = CommandExecutor.executeSystemCommand(cmd);
-                boolean ok = res != null && !res.toLowerCase().contains("error");
-                return ok ? FileOpResult.ok(targetProtectedPath, "Uploaded bytes via shell fallback")
-                          : FileOpResult.fail(targetProtectedPath, "Upload failed: " + res);
-            } catch (Throwable ex) {
-                return FileOpResult.fail(targetProtectedPath, "All upload strategies failed: " + ex.getMessage());
-            }
+            return FileOpResult.fail(targetProtectedPath, "All upload strategies failed: " + t.getMessage());
         }
     }
 
