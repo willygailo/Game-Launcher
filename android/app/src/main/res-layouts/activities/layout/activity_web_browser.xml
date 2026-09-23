@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_web_browser_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#07090E">
+
+    <!-- Top Browser Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:gravity="center_vertical"
+        android:background="#0D111A"
+        android:paddingHorizontal="8dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_browser_back"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="Back" />
+
+        <EditText
+            android:id="@+id/et_browser_url"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:background="@drawable/card_glass_shape"
+            android:hint="Search web or enter URL..."
+            android:textColorHint="#64748B"
+            android:textColor="#00F0FF"
+            android:textSize="13sp"
+            android:paddingHorizontal="12dp"
+            android:singleLine="true"
+            android:imeOptions="actionGo"
+            android:inputType="textUri" />
+
+        <Button
+            android:id="@+id/btn_browser_go"
+            android:layout_width="44dp"
+            android:layout_height="38dp"
+            android:background="@drawable/btn_cyber_cyan"
+            android:text="GO"
+            android:textColor="#080B11"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btn_browser_refresh"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:src="@android:drawable/ic_menu_rotate"
+            android:contentDescription="Refresh" />
+
+        <Button
+            android:id="@+id/btn_browser_close"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/btn_cyber_dark"
+            android:text="✕"
+            android:textColor="#FF5555"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/pb_browser_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="#00F0FF"
+        android:visibility="gone" />
+
+    <!-- Web View Frame -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/webview_browser"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layerType="hardware" />
+    </FrameLayout>
+</LinearLayout>

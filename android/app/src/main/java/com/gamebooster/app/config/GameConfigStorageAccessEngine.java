@@ -207,13 +207,6 @@ public final class GameConfigStorageAccessEngine {
         String myPkg = context.getPackageName();
 
         List<String> globalCmds = new ArrayList<>();
-        globalCmds.add("pm grant " + myPkg + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null");
-        globalCmds.add("pm grant " + myPkg + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null");
-        globalCmds.add("pm grant " + myPkg + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null");
-        globalCmds.add("appops set " + myPkg + " MANAGE_EXTERNAL_STORAGE allow");
-        globalCmds.add("appops set " + myPkg + " NO_ISOLATED_STORAGE allow");
-        globalCmds.add("appops set " + myPkg + " LEGACY_STORAGE allow");
-
         globalCmds.add("chmod 777 /sdcard/Android/data 2>/dev/null");
         globalCmds.add("chmod 777 /sdcard/Android/obb 2>/dev/null");
         globalCmds.add("chmod 777 /sdcard/Android/media 2>/dev/null");

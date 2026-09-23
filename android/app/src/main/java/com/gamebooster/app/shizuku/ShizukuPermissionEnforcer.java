@@ -71,14 +71,7 @@ public class ShizukuPermissionEnforcer {
 
             List<String> batchCmds = new ArrayList<>();
 
-            // 1. Android 13-16 Scoped Storage & Granular Media Permissions
-            batchCmds.add("pm grant " + pkg + " android.permission.MANAGE_EXTERNAL_STORAGE 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_EXTERNAL_STORAGE 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.WRITE_EXTERNAL_STORAGE 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_IMAGES 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VIDEO 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_AUDIO 2>/dev/null");
-            batchCmds.add("pm grant " + pkg + " android.permission.READ_MEDIA_VISUAL_USER_SELECTED 2>/dev/null");
+            // 1. Android 13-16 Notification & Runtime Permissions
             batchCmds.add("pm grant " + pkg + " android.permission.POST_NOTIFICATIONS 2>/dev/null");
 
             // 2. Android 14, 15, and 16 Foreground Service & Alarm Permissions
@@ -119,13 +112,8 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("pm grant " + pkg + " android.permission.STATUS_BAR 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.INTERACT_ACROSS_USERS 2>/dev/null");
 
-            // 4. Complete AppOps Overrides
+            // 4. Complete AppOps Overrides (excluding storage appops for self to avoid Android OS killing this process)
             String[] allAppOps = new String[]{
-                    "MANAGE_EXTERNAL_STORAGE",
-                    "READ_EXTERNAL_STORAGE",
-                    "WRITE_EXTERNAL_STORAGE",
-                    "NO_ISOLATED_STORAGE",
-                    "LEGACY_STORAGE",
                     "ACCESS_RESTRICTED_SETTINGS",
                     "SYSTEM_ALERT_WINDOW",
                     "GET_USAGE_STATS",

@@ -143,14 +143,20 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4: RECORD A CAPABILITY-CHECKED SESSION AFTER LAUNCH
-        // The launcher never edits another app's files, process scheduling,
-        // hardware identity, or thermal policy. The game is already starting,
-        // so this work stays off the main thread.
+        // STEP 4: DUAL-STAGE AUTO INJECTION PIPELINE
+        // Stage 1 (Instant): Display Hz, CPU/GPU Turbo, Graphics Cfg & Hardware Spoof
+        // Stage 2 (10s Lobby-Safe): In-Lobby Combat Overdrive & Hero Scripts Re-injection
         // ═══════════════════════════════════════════════════════════
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
+                // STAGE 1: Instant full 3-tier master enforcement & initial configs
+                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
+
+                // STAGE 2: Schedule In-Lobby Stealth Overdrive re-injection at exactly 10 seconds
+                // (Waits for splash screen / Moonton integrity check to complete, then locks combat mods)
+                com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetHz, 10);
+
                 GameManagerSessionEngine.beginSession(appContext, pkg);
                 com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
                 com.gamebooster.app.overlay.GameSessionRecorder.getInstance()

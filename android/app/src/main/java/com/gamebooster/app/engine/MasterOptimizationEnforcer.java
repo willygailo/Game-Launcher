@@ -331,30 +331,29 @@ public class MasterOptimizationEnforcer {
                 // TIER 3: APK CORE GAME CONFIG PATCHING & HARDWARE SPOOFER
                 // ─────────────────────────────────────────────────────────────
 
-                // Root-dependent steps — skipped when Tier 1 failed (Phase 1.2)
+                // Tier 3: Config Injection & Engine Tuning
+                report.attemptStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", () -> {
+                    GameConfigPatcher.applyGameFpsPatch(appContext, pkg, forcedFps);
+                    com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
+                });
+
+                report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->
+                        DeviceSpooferEngine.applySpoofing(appContext, pkg));
+
+                // Root / Shizuku dependent system-level overrides
                 if (tier1Ok) {
-                    report.attemptStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", () -> {
-                            GameConfigPatcher.applyGameFpsPatch(appContext, pkg, forcedFps);
-                            com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
-                    });
                     report.attemptStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", () ->
                             MaxHzForceChannel.forceApply(forcedFps));
                     report.attemptStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", () ->
                             PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE));
                     report.attemptStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", () ->
                             PerformanceChannel.writeAndExecuteRootTweaksScript(forcedFps));
-                    report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->
-                            DeviceSpooferEngine.applySpoofing(appContext, pkg));
                 } else {
-                    report.addStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", false,
-                            "SKIPPED — depends on Tier 1 (Shizuku)");
                     report.addStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", false,
                             "SKIPPED — depends on Tier 1 (Shizuku)");
                     report.addStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", false,
                             "SKIPPED — depends on Tier 1 (Shizuku)");
                     report.addStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", false,
-                            "SKIPPED — depends on Tier 1 (Shizuku)");
-                    report.addStep("Tier 3", "DeviceSpooferEngine.applySpoofing", false,
                             "SKIPPED — depends on Tier 1 (Shizuku)");
                 }
 

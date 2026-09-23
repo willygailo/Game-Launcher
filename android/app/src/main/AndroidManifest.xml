@@ -333,5 +333,13 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:label="Shizuku Core Console" />
 
+        <activity
+            android:name="com.gamebooster.app.ui.activities.WebBrowserActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="Game Launcher Web Search" />
+
     </application>
 </manifest>
