@@ -172,87 +172,88 @@ public final class GameManagerLauncher {
         }
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 2b: PRE-LAUNCH DRONE VIEW WRITE (≤600ms, BLOCKING)
-        // Must run BEFORE startActivity so MLBB reads our patched
-        // BattleSystemConfig.bytes from dragon2017/LoadResManager at
-        // home-screen load time — this is what makes drone view work
-        // in the lobby, not just in battle.
+        // STEP 2b + STEP 3: DRONE PRE-WRITE → ZERO-LATENCY LAUNCH
+        //
+        // FIX Bug #2 (Android 14/15/16): old code blocked the calling thread
+        // up to 600ms via dronePreFuture.get() before startActivity — ANR risk.
+        // FIX Bug #1 (MIUI/ColorOS/OneUI): FLAG_ACTIVITY_CLEAR_TOP was
+        // destroying singleTask game tasks (MLBB, PUBG, CODM) on launch.
+        //
+        // SOLUTION: drone write + startActivity both run on executeCommand().
+        // Only context.startActivity() is posted back to the main thread.
+        // FLAG_ACTIVITY_CLEAR_TOP replaced with FLAG_INCLUDE_STOPPED_PACKAGES.
         // ═══════════════════════════════════════════════════════════
-        try {
-            if (pkg.toLowerCase().contains("mobile.legends") || pkg.toLowerCase().contains("mobilelegends")) {
-                String gameKey = CfgProfileManager.resolveGameKey(pkg);
-                CompetitiveCfgProfile preProfile = CfgProfileManager.loadProfile(appContext, gameKey);
-                if (preProfile != null && preProfile.isDroneViewUltraEnabled()) {
-                    final int droneT = preProfile.getDroneViewTier();
-                    // Submit to IO thread pool and wait up to 600ms so files land before MLBB reads them
-                    java.util.concurrent.Future<?> dronePreFuture =
-                            AppExecutors.getInstance().getCommandIO().submit(() -> {
-                                try {
-                                    com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(
-                                            appContext, pkg, droneT);
-                                    Log.i(TAG, "✅ [Pre-Launch Drone] Home-screen FOV patched [tier=" + droneT + "] before activity start");
-                                } catch (Throwable t) {
-                                    Log.w(TAG, "Pre-launch drone write warning: " + t.getMessage());
-                                }
-                            });
-                    try { dronePreFuture.get(600, java.util.concurrent.TimeUnit.MILLISECONDS); }
-                    catch (Throwable ignored) { /* timeout OK — async lobby injection covers it */ }
-                }
-            }
-        } catch (Throwable t) {
-            Log.w(TAG, "Pre-launch drone barrier warning for " + pkg + ": " + t.getMessage());
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // STEP 3: INSTANT ZERO-LATENCY ACTIVITY LAUNCH (<10ms)
-        // startActivity fires after drone pre-write (≤600ms guard).
-        // Heavy config injection still runs async after activity starts.
-        // ═══════════════════════════════════════════════════════════
-
-        boolean launchedDirectly = false;
-        if (targetIntent != null) {
-            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
+        final Intent finalTargetIntent = targetIntent;
+        AppExecutors.getInstance().executeCommand(() -> {
+            // 2b. MLBB Drone pre-write — off main thread, zero ANR risk
             try {
-                context.startActivity(targetIntent);
-                launchedDirectly = true;
-            } catch (Throwable t1) {
-                try {
-                    appContext.startActivity(targetIntent);
-                    launchedDirectly = true;
-                } catch (Throwable t2) {
-                    Log.w(TAG, "Direct startActivity failed for " + pkg + ": " + t2.getMessage());
+                if (pkg.toLowerCase().contains("mobile.legends")
+                        || pkg.toLowerCase().contains("mobilelegends")) {
+                    String gameKey = CfgProfileManager.resolveGameKey(pkg);
+                    CompetitiveCfgProfile preProfile = CfgProfileManager.loadProfile(appContext, gameKey);
+                    if (preProfile != null && preProfile.isDroneViewUltraEnabled()) {
+                        final int droneT = preProfile.getDroneViewTier();
+                        try {
+                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(appContext, pkg, droneT);
+                            Log.i(TAG, "✅ [Pre-Launch Drone] Home-screen FOV patched [tier=" + droneT + "]");
+                        } catch (Throwable t) {
+                            Log.w(TAG, "Pre-launch drone write warning: " + t.getMessage());
+                        }
+                    }
                 }
+            } catch (Throwable t) {
+                Log.w(TAG, "Pre-launch drone barrier warning for " + pkg + ": " + t.getMessage());
             }
-        }
 
-        // Final raw-package fallback: bare ACTION_MAIN setPackage() — works on MIUI, ColorOS, OneUI
-        // when all explicit ComponentName attempts fail but the package is installed.
-        if (!launchedDirectly) {
-            try {
-                Intent rawFallback = new Intent(Intent.ACTION_MAIN);
-                rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
-                rawFallback.setPackage(pkg);
-                rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                context.startActivity(rawFallback);
-                launchedDirectly = true;
-                Log.i(TAG, "⚡ [RawPkg Fallback] Launched " + pkg + " via setPackage() raw intent");
-            } catch (Throwable t3) {
-                Log.w(TAG, "Raw package fallback failed for " + pkg + ": " + t3.getMessage());
-            }
-        }
+            // 3. Post startActivity to UI thread.
+            //    Android 14/15/16: FLAG_ACTIVITY_CLEAR_TOP removed (kills singleTask tasks).
+            //    FLAG_INCLUDE_STOPPED_PACKAGES added (cold-start works on all ROMs).
+            AppExecutors.getInstance().postToMainThread(() -> {
+                boolean launched = false;
+                if (finalTargetIntent != null) {
+                    finalTargetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                            | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    try {
+                        context.startActivity(finalTargetIntent);
+                        launched = true;
+                    } catch (Throwable t1) {
+                        try {
+                            appContext.startActivity(finalTargetIntent);
+                            launched = true;
+                        } catch (Throwable t2) {
+                            Log.w(TAG, "Direct startActivity failed for " + pkg + ": " + t2.getMessage());
+                        }
+                    }
+                }
+                // Raw-package fallback — works on MIUI/HyperOS, ColorOS, OneUI
+                if (!launched) {
+                    try {
+                        Intent rawFallback = new Intent(Intent.ACTION_MAIN);
+                        rawFallback.addCategory(Intent.CATEGORY_LAUNCHER);
+                        rawFallback.setPackage(pkg);
+                        rawFallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        context.startActivity(rawFallback);
+                        launched = true;
+                        Log.i(TAG, "⚡ [RawPkg Fallback] Launched " + pkg + " via setPackage() raw intent");
+                    } catch (Throwable t3) {
+                        Log.w(TAG, "Raw package fallback failed for " + pkg + ": " + t3.getMessage());
+                    }
+                }
+                if (launched) {
+                    boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+                    String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Boosting...";
+                    Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
+                    if (listener != null) listener.onLaunchSuccess(pkg);
+                }
+            });
+        });
 
-        if (launchedDirectly) {
-            boolean hasPriv = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
-            String statusMsg = hasPriv ? "⚡ Shizuku Turbo Active" : "⚡ Boosting...";
-            Toast.makeText(appContext, "🚀 " + fps + " FPS | " + statusMsg + "\n" + gameTitle, Toast.LENGTH_SHORT).show();
-            if (listener != null) listener.onLaunchSuccess(pkg);
-        }
-
-        final boolean directSuccess = launchedDirectly;
+        // directSuccess = true: the async path above owns the actual launch.
+        // The post-launch boost pipeline below always fires regardless.
+        final boolean directSuccess = true;
         final Intent resolvedIntent = targetIntent;
 
         // ═══════════════════════════════════════════════════════════
@@ -286,9 +287,11 @@ public final class GameManagerLauncher {
             }
         });
 
-        // 4b. ARM IN-LOBBY PERSISTENT AUTO-INJECT (Stage 2)
-        // Re-applies configs after game splash/login to guarantee mods never get wiped
-        LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, fps, 15);
+        // NOTE: LobbyInjectionEngine Stage 2 scheduling is intentionally NOT called here.
+        // AutoGameMonitorService.checkForegroundApp() schedules it (with force=true) AFTER
+        // it confirms the game is actually running in foreground — much better timing than
+        // scheduling from a tap handler where the game process may not have spawned yet.
+        // Having both schedule it simultaneously caused file lock contention + double-inject.
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {

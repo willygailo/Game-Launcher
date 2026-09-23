@@ -11,11 +11,19 @@
 -dontusemixedcaseclassnames
 -verbose
 
+# Preserve line numbers, source file info, and reflection annotations for crash debugging
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+-renamesourcefileattribute SourceFile
+
 # Suppress warnings from hidden Android framework APIs and build tools
 -dontwarn android.os.SystemProperties
 -dontwarn android.view.IWindowManager
 -dontwarn android.app.IActivityManager
+-dontwarn android.app.ActivityThread
 -dontwarn android.content.pm.IPackageManager
+-dontwarn android.os.ServiceManager
+-dontwarn android.hardware.display.IDisplayManager
 -dontwarn sun.misc.Unsafe
 
 # ----------------------------------------------------------------------------
@@ -60,6 +68,12 @@
 -keep class com.gamebooster.app.config.NativeConfigInjector {
     public static native <methods>;
     public static *;
+    *;
+}
+-keep class com.gamebooster.app.engine.lua.LuaConfigEngine {
+    public static native <methods>;
+    public static *;
+    *;
 }
 -keepclassmembers class * {
     @androidx.annotation.Keep <methods>;
@@ -67,11 +81,15 @@
 }
 
 # ----------------------------------------------------------------------------
-# 4. SHIZUKU API, BINDER IPC & AIDL USER SERVICES (rikka / moe / shizuku)
+# 4. SHIZUKU API, BINDER IPC & AIDL USER SERVICES (rikka / moe / dev.rikka)
 # ----------------------------------------------------------------------------
--dontwarn rikka.shizuku.**
--keep class rikka.shizuku.** { *; }
--keep interface rikka.shizuku.** { *; }
+-dontwarn dev.rikka.**
+-keep class dev.rikka.** { *; }
+-keep interface dev.rikka.** { *; }
+-dontwarn rikka.**
+-keep class rikka.** { *; }
+-keep interface rikka.** { *; }
+-dontwarn moe.shizuku.**
 -keep class moe.shizuku.** { *; }
 -keep interface moe.shizuku.** { *; }
 -keep class com.gamebooster.app.shizuku.** { *; }
@@ -115,6 +133,10 @@
 # ----------------------------------------------------------------------------
 # 6. ALL INTERNAL SUBSYSTEMS & MODULES (com.gamebooster.app.**)
 # ----------------------------------------------------------------------------
+-keep class com.gamebooster.app.** { *; }
+-keep interface com.gamebooster.app.** { *; }
+
+-keep class com.gamebooster.app.apk.** { *; }
 -keep class com.gamebooster.app.booster.** { *; }
 -keep class com.gamebooster.app.config.** { *; }
 -keep class com.gamebooster.app.core.** { *; }

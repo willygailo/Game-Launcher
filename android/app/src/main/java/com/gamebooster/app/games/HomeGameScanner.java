@@ -243,13 +243,13 @@ public class HomeGameScanner {
             return null;
         }
 
-        // 1. Try standard PackageManager launch intent (Gold standard explicit component)
+        // 1. Standard PackageManager launch intent (gold standard explicit component)
         try {
             Intent pmIntent = pm.getLaunchIntentForPackage(pkg);
             if (pmIntent != null) {
                 pmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return pmIntent;
             }
         } catch (Throwable ignored) {}
@@ -260,20 +260,20 @@ public class HomeGameScanner {
             if (leanback != null) {
                 leanback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return leanback;
             }
         } catch (Throwable ignored) {}
 
-        // 3. Query explicit MAIN + LAUNCHER activities with MATCH_ALL
+        // 3. Query explicit MAIN + LAUNCHER activities (Android 14+)
         try {
             Intent query = new Intent(Intent.ACTION_MAIN, null);
             query.addCategory(Intent.CATEGORY_LAUNCHER);
             query.setPackage(pkg);
-            int matchFlags = PackageManager.MATCH_ALL;
-            List<ResolveInfo> list = pm.queryIntentActivities(query, matchFlags);
-            if ((list == null || list.isEmpty()) && matchFlags != 0) {
-                list = pm.queryIntentActivities(query, 0);
+            List<ResolveInfo> list = pm.queryIntentActivities(
+                    query, PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+            if (list == null || list.isEmpty()) {
+                list = pm.queryIntentActivities(query, PackageManager.ResolveInfoFlags.of(0));
             }
             if (list != null && !list.isEmpty() && list.get(0).activityInfo != null) {
                 ActivityInfo aInfo = list.get(0).activityInfo;
@@ -282,7 +282,7 @@ public class HomeGameScanner {
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return intent;
             }
         } catch (Throwable ignored) {}
@@ -292,7 +292,8 @@ public class HomeGameScanner {
             Intent queryInfo = new Intent(Intent.ACTION_MAIN, null);
             queryInfo.addCategory(Intent.CATEGORY_INFO);
             queryInfo.setPackage(pkg);
-            List<ResolveInfo> listInfo = pm.queryIntentActivities(queryInfo, 0);
+            List<ResolveInfo> listInfo = pm.queryIntentActivities(queryInfo,
+                    PackageManager.ResolveInfoFlags.of(0));
             if (listInfo != null && !listInfo.isEmpty() && listInfo.get(0).activityInfo != null) {
                 ActivityInfo aInfo = listInfo.get(0).activityInfo;
                 Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -300,14 +301,15 @@ public class HomeGameScanner {
                 intent.setComponent(new ComponentName(aInfo.packageName, aInfo.name));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                        | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 return intent;
             }
         } catch (Throwable ignored) {}
 
-        // 5. Query any exported Activity declared in PackageInfo
+        // 5. Query any exported Activity declared in PackageInfo (Android 14+)
         try {
-            android.content.pm.PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_ACTIVITIES);
+            android.content.pm.PackageInfo pi = pm.getPackageInfo(pkg,
+                    PackageManager.PackageInfoFlags.of(PackageManager.GET_ACTIVITIES));
             if (pi != null && pi.activities != null && pi.activities.length > 0) {
                 for (ActivityInfo ai : pi.activities) {
                     if (ai != null && ai.exported && ai.name != null) {
@@ -315,21 +317,21 @@ public class HomeGameScanner {
                         intent.setComponent(new ComponentName(pkg, ai.name));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                                 | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                         return intent;
                     }
                 }
             }
         } catch (Throwable ignored) {}
 
-        // 6. Safe explicit component fallback for installed package
+        // 6. Safe explicit package fallback for any installed package
         try {
             Intent fallback = new Intent(Intent.ACTION_MAIN);
             fallback.addCategory(Intent.CATEGORY_LAUNCHER);
             fallback.setPackage(pkg);
             fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             return fallback;
         } catch (Throwable ignored) {}
 
@@ -355,8 +357,10 @@ public class HomeGameScanner {
                     android.content.Intent launcherQuery = new android.content.Intent(android.content.Intent.ACTION_MAIN);
                     launcherQuery.addCategory(android.content.Intent.CATEGORY_LAUNCHER);
                     launcherQuery.setPackage(pkg);
+                    // Android 14+: use typed ResolveInfoFlags
                     java.util.List<android.content.pm.ResolveInfo> resolved =
-                            pm.queryIntentActivities(launcherQuery, 0);
+                            pm.queryIntentActivities(launcherQuery,
+                                    android.content.pm.PackageManager.ResolveInfoFlags.of(0));
                     if (resolved == null || resolved.isEmpty()) return false;
                 }
             } catch (Throwable ignored) {}

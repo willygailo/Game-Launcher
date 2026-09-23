@@ -37,6 +37,17 @@ public class BootReceiver extends BroadcastReceiver {
 
             GpuTweaksChannel.enableVulkanRenderer();
             TouchLatencyChannel.enableUltraTouchResponse();
+
+            // Start persistent game detection + auto-inject service on boot.
+            // Without this, after a reboot the service is dead until the user
+            // opens the app manually — games opened from the home screen or other
+            // launchers would not get auto-inject.
+            try {
+                com.gamebooster.app.gamespace.AutoGameMonitorService.start(context);
+                Log.i(TAG, "✅ AutoGameMonitorService started from BootReceiver");
+            } catch (Throwable t) {
+                Log.w(TAG, "AutoGameMonitorService boot start error: " + t.getMessage());
+            }
         } else if (ACTION_LAUNCH_GAME.equals(action) || ACTION_APPLY_CONFIG_ONLY.equals(action)) {
             final PendingResult pendingResult = goAsync();
             final String rawPkg = intent.getStringExtra("package_name") != null ? intent.getStringExtra("package_name") : intent.getStringExtra("pkg");

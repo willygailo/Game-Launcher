@@ -48,7 +48,9 @@ public class AutoGameMonitorService extends Service {
     private String lastActiveGamePackage = null;
     /** Timestamp of the last game session end. Used to debounce rapid back+return cycles. */
     private long lastSessionEndTimeMs = 0;
-    private static final long SESSION_RESTART_COOLDOWN_MS = 5_000; // 5 seconds
+    // 1.5s cooldown: long enough to debounce a single back-press, short enough
+    // that a real re-open (e.g. MLBB disconnect → re-open) still gets auto-inject.
+    private static final long SESSION_RESTART_COOLDOWN_MS = 1_500;
 
     private int consecutiveUnfocusedCount = 0;
 
@@ -142,11 +144,25 @@ public class AutoGameMonitorService extends Service {
                 consecutiveUnfocusedCount = 0;
                 if (!currentPackage.equals(lastActiveGamePackage)) {
                     long now = System.currentTimeMillis();
-                    // Debounce: if the game was just exited < 5s ago (e.g. brief back press),
-                    // don't re-trigger a full beginSession — let the game resume naturally.
+                    // Debounce: if the game was just exited < 1.5s ago (e.g. brief back press),
+                    // skip the heavyweight session engine — but STILL inject configs.
+                    // A quick re-open (MLBB disconnect, PUBGM matchmake lag, etc.) needs fresh
+                    // configs even if we skip beginSession() overhead.
                     if (now - lastSessionEndTimeMs < SESSION_RESTART_COOLDOWN_MS) {
-                        Log.d(TAG, "Session cooldown active — skipping re-trigger for: " + currentPackage);
-                        lastActiveGamePackage = currentPackage; // still update so we track it
+                        Log.d(TAG, "Session cooldown active — inject only (no session restart) for: " + currentPackage);
+                        lastActiveGamePackage = currentPackage;
+                        // Dispatch inject even during cooldown — session overhead is skipped but configs land
+                        final String cooldownPkg = currentPackage;
+                        final android.content.Context coolCtx = getApplicationContext();
+                        AppExecutors.getInstance().executeCommand(() -> {
+                            try {
+                                com.gamebooster.app.config.GameAutoInjectDispatcher
+                                        .dispatchForPackage(coolCtx, cooldownPkg, true);
+                                Log.i(TAG, "⚡ [Cooldown Inject] Configs re-applied for: " + cooldownPkg);
+                            } catch (Throwable t) {
+                                Log.w(TAG, "[Cooldown Inject] Error for " + cooldownPkg + ": " + t.getMessage());
+                            }
+                        });
                         return;
                     }
                     lastActiveGamePackage = currentPackage;

@@ -126,6 +126,18 @@ public class GameBoosterApp extends Application {
             } catch (Throwable t) {
                 Log.w(TAG, "HomeGameScanner pre-cache error: " + t.getMessage());
             }
+
+            // F. Start persistent game detection + auto-inject service.
+            // This is the core engine that watches for game opens and fires
+            // GameAutoInjectDispatcher for MLBB, PUBGM, CODM, etc. automatically.
+            // Must be started here (not in a Fragment) so it runs on first launch,
+            // before the user navigates anywhere in the UI.
+            try {
+                com.gamebooster.app.gamespace.AutoGameMonitorService.start(appCtx);
+                Log.i(TAG, "✅ AutoGameMonitorService started — game detection active");
+            } catch (Throwable t) {
+                Log.w(TAG, "AutoGameMonitorService start error: " + t.getMessage());
+            }
         });
 
         Log.i(TAG, "Game Booster Application initialized successfully.");
