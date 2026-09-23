@@ -181,9 +181,7 @@ public class DeviceSpooferEngine {
             return false;
         }
 
-        // Phase 2.5: per-game aware pre-apply sanity check. The strict block is
-        // reserved for kernel-anti-cheat titles (Tencent ACE etc.); soft-AC and
-        // AC-free games apply with a warning so the spoof works on any device.
+        // Feature compatibility check: informs of chipset differences but never blocks user-selected profiles
         try {
             com.gamebooster.app.device.DeviceDetector.ChipsetVendor deviceChipset =
                     com.gamebooster.app.device.DeviceDetector.detectChipsetVendor();
@@ -192,14 +190,13 @@ public class DeviceSpooferEngine {
             SpoofSanityChecker.SanityResult sanity =
                     SpoofValidator.checkPreApplySanity(deviceChipset, profile, riskTier);
             if (!sanity.allowed) {
-                lastSanityBlockReason = sanity.reason;
-                lastSanityWarning = null;
-                Log.w(TAG, "Spoof BLOCKED for " + profile.id + " (" + riskTier + "): " + sanity.reason);
-                return false;
+                lastSanityWarning = "Advisory: " + sanity.reason;
+                Log.w(TAG, "Proceeding with user spoof for " + profile.id + " (" + riskTier + "): " + sanity.reason);
+            } else {
+                lastSanityWarning = sanity.warning;
             }
             lastSanityBlockReason = null;
-            lastSanityWarning = sanity.warning;
-            Log.i(TAG, "Pre-apply sanity check passed: " + sanity.reason);
+            Log.i(TAG, "Pre-apply sanity verified: " + sanity.reason);
         } catch (Throwable t) {
             Log.w(TAG, "Sanity check non-fatal, proceeding: " + t.getMessage());
         }

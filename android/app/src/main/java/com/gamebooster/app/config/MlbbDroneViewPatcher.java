@@ -133,37 +133,44 @@ public final class MlbbDroneViewPatcher {
                 return false;
             }
 
+            // 1. Dynamic Mini-Patch Slots Discovery & Multi-Slot Deployment
             for (String rootDir : rootDirs) {
                 File root = new File(rootDir);
-                // Deploy if root exists or if privileged access is available
                 if (root.exists() || ShizukuFileManager.hasFullAccess()) {
-                    String targetMiniPatch = rootDir + "/" + MINI_PATCH_SUBPATH;
-                    boolean ok = deployMiniPatch(context, targetMiniPatch, battleBytes);
-                    if (ok) {
-                        anyApplied = true;
-                        Log.i(TAG, "✅ Deployed Drone View [" + getTierLabel(tier) + "] to: " + targetMiniPatch);
+                    List<String> activePatchSlots = discoverActiveMiniPatchSlots(rootDir);
+                    for (String slotDir : activePatchSlots) {
+                        boolean ok = deployMiniPatch(context, slotDir, battleBytes);
+                        if (ok) {
+                            anyApplied = true;
+                            Log.i(TAG, "✅ Deployed Drone View [" + getTierLabel(tier) + "] to slot: " + slotDir);
+                        }
                     }
                 }
             }
 
-            // ── dragon2017 fallback (home screen / lobby camera) ───────────────────────
-            // Force-write unconditionally — MLBB reads this at game startup (including lobby),
-            // so this path MUST be populated BEFORE the game process loads to affect home screen FOV.
+            // 2. Direct dragon2017 & Document Assets Deployment (Primary In-Game Camera Source)
             for (String rootDir : rootDirs) {
-                // Primary dragon2017 camera config — read at app startup (lobby/home screen)
-                String dragonDocPath = rootDir + "/files/dragon2017/assets/Document/android";
-                String dragonBattlePath = dragonDocPath + "/BattleSystemConfig.bytes";
-                ShizukuFileManager.makeDirectory(dragonDocPath);
-                ShizukuFileManager.uploadBytes(dragonBattlePath, battleBytes, "666");
+                String[] targetDocPaths = {
+                    rootDir + "/files/dragon2017/assets/Document/android",
+                    rootDir + "/files/dragon2017/assets/Document",
+                    rootDir + "/files/LoadResManager/Document/android",
+                    rootDir + "/files/LoadResManager/Document"
+                };
+
+                for (String docDir : targetDocPaths) {
+                    ShizukuFileManager.makeDirectory(docDir);
+                    String battlePath = docDir + "/BattleSystemConfig.bytes";
+                    ShizukuFileManager.uploadBytes(battlePath, battleBytes, "777");
+                    anyApplied = true;
+                    Log.i(TAG, "🎯 [Direct Camera] Deployed BattleSystemConfig.bytes [" + getTierLabel(tier) + "] to: " + battlePath);
+                }
+
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + rootDir + "/files/dragon2017\" 2>/dev/null");
-                }
-                // Also write to LoadResManager path — covers MLBB versions 1.8.x+ lobby hot-reload
-                String loadResMgrPath = rootDir + "/files/LoadResManager/Document/android";
-                ShizukuFileManager.makeDirectory(loadResMgrPath);
-                ShizukuFileManager.uploadBytes(loadResMgrPath + "/BattleSystemConfig.bytes", battleBytes, "666");
-                if (anyApplied) {
-                    Log.i(TAG, "🏠 [Home FOV] dragon2017+LoadResManager drone bytes written for: " + rootDir);
+                    ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + rootDir + "/files/mini_patch\" 2>/dev/null");
+                } else {
+                    CommandExecutor.executeSystemCommand("chmod -R 777 \"" + rootDir + "/files/dragon2017\" 2>/dev/null");
+                    CommandExecutor.executeSystemCommand("chmod -R 777 \"" + rootDir + "/files/mini_patch\" 2>/dev/null");
                 }
             }
 
@@ -172,6 +179,45 @@ public final class MlbbDroneViewPatcher {
             Log.e(TAG, "Error applying Drone View for " + pkg, t);
             return false;
         }
+    }
+
+    /**
+     * Dynamically discovers all active and versioned mini_patch slots in MLBB files.
+     * Searches both root mini_patch and subdirectories (e.g. 1232.1/fix_*, 1232.1/ZC_*, etc.).
+     */
+    public static List<String> discoverActiveMiniPatchSlots(String rootDir) {
+        List<String> slots = new ArrayList<>();
+        // Fallback default slot
+        slots.add(rootDir + "/" + MINI_PATCH_SUBPATH);
+
+        File miniPatchDir = new File(rootDir + "/files/mini_patch");
+        if (!miniPatchDir.exists() || !miniPatchDir.isDirectory()) {
+            return slots;
+        }
+
+        File[] versionDirs = miniPatchDir.listFiles();
+        if (versionDirs == null) return slots;
+
+        for (File ver : versionDirs) {
+            if (!ver.isDirectory()) continue;
+            File[] patchFolders = ver.listFiles();
+            if (patchFolders == null) continue;
+
+            for (File pFolder : patchFolders) {
+                if (!pFolder.isDirectory()) continue;
+                // Check sub-slots (e.g., /1, /2)
+                File[] numSlots = pFolder.listFiles();
+                if (numSlots != null) {
+                    for (File subSlot : numSlots) {
+                        if (subSlot.isDirectory()) {
+                            slots.add(subSlot.getAbsolutePath());
+                        }
+                    }
+                }
+                slots.add(pFolder.getAbsolutePath());
+            }
+        }
+        return slots;
     }
 
     /**

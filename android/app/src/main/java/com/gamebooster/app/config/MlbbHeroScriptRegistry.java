@@ -200,6 +200,11 @@ public final class MlbbHeroScriptRegistry {
         return result;
     }
 
+    /** Returns all registered heroes (all roles: Mage, Fighter, MM, Assassin, Tank, Support). */
+    public static HeroEntry[] getAllHeroes() {
+        return sById.values().toArray(new HeroEntry[0]);
+    }
+
     public static String getFallbackScript()  { return FALLBACK_SCRIPT; }
     public static String getHeroScriptsDir()  { return HERO_SCRIPTS_DIR; }
 

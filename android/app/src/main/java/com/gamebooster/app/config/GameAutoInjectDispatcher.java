@@ -44,9 +44,14 @@ public final class GameAutoInjectDispatcher {
             return;
         }
         String pkg = packageName.trim().toLowerCase();
-        Log.i(TAG, "⚡ [Full Inject] Executing complete overdrive suite for " + pkg);
-
         try {
+            Context ctx = context != null ? context : ConfigBackupManager.getAppContext();
+            try {
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(ctx, pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "Device spoof injection note for " + pkg + ": " + t.getMessage());
+            }
+
             if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
                 MlbbConfigPatcher.applyFastLoadSplashBypass(pkg);
                 MlbbConfigPatcher.applyFastFarmingAllHero(pkg);
@@ -64,8 +69,10 @@ public final class GameAutoInjectDispatcher {
                 MlbbConfigPatcher.applyAimAssistConfig(pkg);
                 MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg);
                 MlbbConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
+                MlbbConfigPatcher.applyMlbbAllRolesNoLimitSuite(pkg);
+                MlbbConfigPatcher.applyMlbbAllItemsNoLimitSuite(pkg);
                 if (context != null) {
-                    MlbbHeroScriptDispatcher.dispatchAllMeta(context, pkg);
+                    MlbbHeroScriptDispatcher.dispatchAllHeroes(context, pkg);
                 }
             } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
                 PubgConfigPatcher.applyDamage10000AttackSpeedMax(pkg);

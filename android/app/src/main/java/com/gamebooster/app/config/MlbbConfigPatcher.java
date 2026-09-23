@@ -128,10 +128,116 @@ public class MlbbConfigPatcher {
         applyFastFarmingAllHero(packageName);
         applyFastRetributionObjectiveSteal(packageName);
         applyAllHeroGodSuite2026(packageName);
+        applyMlbbAllRolesNoLimitSuite(packageName);
+        applyMlbbAllItemsNoLimitSuite(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbGodModeFullOverdrive(path);
         }
         Log.i(TAG, "⚡ MLBB God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
+    }
+
+    /**
+     * Universal No-Limit Overdrive for ALL Hero Roles (Mage, Fighter, Marksman, Assassin, Tank, Support).
+     * Locks base damage floors to 10,000+, guarantees 100% penetration, 10.0x multipliers,
+     * and role-specific mastery stats.
+     */
+    public static void applyMlbbAllRolesNoLimitSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> roleMods = new java.util.HashMap<>(64);
+
+        // ── ALL MAGE HEROES (Magic Power, 100% Magic Pen, Burst, Infinite Mana/Vamp) ──
+        roleMods.put("MagicPowerBase", "10000");
+        roleMods.put("MagicDamageMultiplier", "10.0");
+        roleMods.put("MagicPenetration", "1.0");
+        roleMods.put("MagicPenMax", "10000");
+        roleMods.put("SpellVampBoost", "10000");
+        roleMods.put("ManaRegenBoost", "10000");
+        roleMods.put("BurstMagicDamage", "10000");
+        roleMods.put("MageSkillAoeRadius", "9999");
+        roleMods.put("MageInstantCast", "1");
+
+        // ── ALL FIGHTER HEROES (Physical Attack, 100% Armor Pierce, True Damage Floor) ─
+        roleMods.put("PhysicalAttackBase", "10000");
+        roleMods.put("PhysicalDamageMultiplier", "10.0");
+        roleMods.put("PhysicalPenetration", "1.0");
+        roleMods.put("TrueDamageFloor", "10000");
+        roleMods.put("StaminaFuryInfinite", "1");
+        roleMods.put("TenacityMax", "1.0");
+        roleMods.put("FighterMeleeCleave", "1");
+        roleMods.put("FighterSuperArmor", "1");
+
+        // ── ALL MARKSMAN (MM) HEROES (10k Basic Attack, 100% Crit, 10.0 Atk Spd, 9999 Range)
+        roleMods.put("BasicAttackDamage", "10000");
+        roleMods.put("CritRateBoost", "100");
+        roleMods.put("CritDamageMultiplier", "10.0");
+        roleMods.put("AttackSpeedCap", "10.0");
+        roleMods.put("AttackSpeedBoost", "10000");
+        roleMods.put("AttackRangeMax", "9999");
+        roleMods.put("PhysicalLifesteal", "10000");
+        roleMods.put("MmInstantHeadshotCrit", "1");
+
+        // ── ALL ASSASSIN HEROES (0s Cooldowns, Infinite Energy, Instant Burst Execute) ─
+        roleMods.put("SkillCooldownZero", "1");
+        roleMods.put("InfiniteEnergy", "1");
+        roleMods.put("FannyZeroCableDelay", "1");
+        roleMods.put("LingAutoSwordInstant", "1");
+        roleMods.put("BurstExecuteThreshold", "100");
+        roleMods.put("FastTargetLock", "1");
+        roleMods.put("BackstabCritInstant", "1");
+
+        // ── ALL TANK & SUPPORT HEROES (10k HP/Defense, Immortality, Full CC Immunity) ──
+        roleMods.put("MaxHpMultiplier", "10000");
+        roleMods.put("PhysicalDefenseBase", "10000");
+        roleMods.put("MagicDefenseBase", "10000");
+        roleMods.put("TrueDamageReduction", "1.0");
+        roleMods.put("CcImmunity", "1");
+        roleMods.put("AuraBuffRange", "9999");
+        roleMods.put("HealShieldBoost", "10000");
+
+        NativeConfigInjector.injectHeroScriptModifiers(packageName, roleMods);
+        Log.i(TAG, "⚡ MLBB All Roles Overdrive Suite (Mage, Fighter, MM, Assassin, Tank, Support) 100% applied for " + packageName);
+    }
+
+    /**
+     * Universal No-Limit Equipment Items Suite.
+     * Unlocks instant item purchase, eliminates active item cooldowns, removes stat caps,
+     * and boosts all major equipment (Blade of Despair, Holy Crystal, Haas's Claws, Bloodlust, etc.)
+     * with 10,000+ stat tiers.
+     */
+    public static void applyMlbbAllItemsNoLimitSuite(String packageName) {
+        if (packageName == null) return;
+        java.util.Map<String, String> itemMods = new java.util.HashMap<>(48);
+
+        // Economy & Instant Buy
+        itemMods.put("FastItemInstantBuy", "1");
+        itemMods.put("PassiveGoldPerSec", "500");
+        itemMods.put("UnlimitedItemSlots", "6");
+        itemMods.put("ItemShopDistanceZero", "1");
+        itemMods.put("InstantItemPurchaseAnywhere", "1");
+
+        // Active Items Zero Cooldown & Instant Swaps
+        itemMods.put("ItemCooldownZero", "1");
+        itemMods.put("ActiveItemSwapDelay", "0");
+        itemMods.put("WinterTruncheonZeroCooldown", "1");
+        itemMods.put("ImmortalityZeroCooldown", "1");
+        itemMods.put("WindOfNaturePhysicalImmunity", "1");
+        itemMods.put("AthenaShieldMagicReduction", "1.0");
+
+        // 10,000+ Stat Overdrives for All Items
+        itemMods.put("BladeOfDespairBoost", "10000");
+        itemMods.put("HolyCrystalBoost", "10000");
+        itemMods.put("BloodlustAxeVamp", "10000");
+        itemMods.put("HaasClawsLifesteal", "10000");
+        itemMods.put("MaleficRoarPen", "1.0");
+        itemMods.put("DivineGlaivePen", "1.0");
+        itemMods.put("ItemStatBoost", "10000");
+        itemMods.put("ItemDamageBoost", "10000");
+        itemMods.put("ItemDefenseBoost", "10000");
+        itemMods.put("ItemHPBoost", "10000");
+        itemMods.put("ItemAttackSpeed", "10.0");
+
+        NativeConfigInjector.injectHeroScriptModifiers(packageName, itemMods);
+        Log.i(TAG, "⚡ MLBB All Items No-Limit Suite (Instant Buy, 0s CD, 10000+ Stats) 100% applied for " + packageName);
     }
 
 

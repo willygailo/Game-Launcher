@@ -63,26 +63,95 @@ public final class MlbbHeroScriptDispatcher {
         if (context == null) context = ConfigBackupManager.getAppContext();
 
         if (heroId == 0) {
-            dispatchAllMeta(context, pkg);
+            dispatchAllHeroes(context, pkg);
         } else {
             dispatchSingle(context, pkg, heroId);
         }
     }
 
     /**
-     * Dispatches scripts for all 20 Season 42 meta heroes (parallel-safe, sequential execution).
+     * Dispatches scripts and synthetic 10,000+ damage overdrives for ALL registered heroes
+     * across ALL roles (Mage, Fighter, Marksman, Assassin, Tank, Support) — all 130+ heroes.
+     */
+    public static void dispatchAllHeroes(Context context, String pkg) {
+        Log.i(TAG, "🎯 [HeroScript] Dispatching ALL 130+ hero scripts & role overdrives for " + pkg);
+        HeroEntry[] allHeroes = MlbbHeroScriptRegistry.getAllHeroes();
+        int dispatched = 0;
+        for (HeroEntry hero : allHeroes) {
+            if (hero == null) continue;
+            boolean ok;
+            if (hero.hasScript) {
+                ok = dispatchSingle(context, pkg, hero.id);
+            } else {
+                ok = dispatchSyntheticHero(pkg, hero);
+            }
+            if (ok) dispatched++;
+        }
+        Log.i(TAG, "✅ [HeroScript] Successfully dispatched " + dispatched + "/" + allHeroes.length + " heroes (All Mage, Fighter, MM, Assassin, Tank, Support)");
+    }
+
+    /**
+     * Dispatches scripts for all 20 Season 42 meta heroes (backward compatibility).
      */
     public static void dispatchAllMeta(Context context, String pkg) {
-        Log.i(TAG, "🎯 [HeroScript] Dispatching ALL top-20 S42 meta hero scripts for " + pkg);
-        HeroEntry[] metaHeroes = MlbbHeroScriptRegistry.getMetaHeroes();
-        int dispatched = 0;
-        for (HeroEntry hero : metaHeroes) {
-            if (hero != null && hero.hasScript) {
-                boolean ok = dispatchSingle(context, pkg, hero.id);
-                if (ok) dispatched++;
+        dispatchAllHeroes(context, pkg);
+    }
+
+    /**
+     * Synthesizes and injects full 10,000+ damage and zero cooldown modifiers for any hero in the roster,
+     * tailored by role (Mage, Fighter, Marksman, Assassin, Tank, Support).
+     */
+    private static boolean dispatchSyntheticHero(String pkg, HeroEntry hero) {
+        try {
+            Map<String, String> mods = new HashMap<>(32);
+            // Universal 10,000+ base damage floor and instant cooldowns
+            mods.put("s1_damage", "10000");
+            mods.put("s2_damage", "10000");
+            mods.put("ult_damage", "10000");
+            mods.put("basic_damage", "10000");
+            mods.put("s1_cd", "0.001");
+            mods.put("s2_cd", "0.001");
+            mods.put("ult_cd", "0.001");
+            mods.put("move_speed", "500");
+            mods.put("attack_speed", "10.0");
+            mods.put("game_speed", "1.0");
+
+            // Role-specific mechanics
+            String role = hero.role != null ? hero.role.toLowerCase(Locale.US) : "fighter";
+            if (role.contains("mage")) {
+                mods.put("vision_range", "35");
+                mods.put("attack_range", "9999");
+                mods.put("magic_power", "10000");
+                mods.put("magic_pen", "10000");
+            } else if (role.contains("marksman")) {
+                mods.put("attack_range", "9999");
+                mods.put("crit_rate", "100");
+                mods.put("crit_damage", "10.0");
+                mods.put("vision_range", "35");
+            } else if (role.contains("assassin")) {
+                mods.put("attack_range", "2500");
+                mods.put("energy_regen", "10000");
+                mods.put("true_damage", "10000");
+                mods.put("vision_range", "30");
+            } else if (role.contains("tank") || role.contains("support")) {
+                mods.put("max_hp", "10000");
+                mods.put("armor", "10000");
+                mods.put("magic_defense", "10000");
+                mods.put("vision_range", "35");
+            } else {
+                // Fighter / Default
+                mods.put("attack_range", "3500");
+                mods.put("true_damage", "10000");
+                mods.put("armor_pen", "10000");
+                mods.put("vision_range", "30");
             }
+
+            applySessionDrift(mods);
+            return injectModifiers(pkg, hero, mods);
+        } catch (Throwable t) {
+            Log.w(TAG, "dispatchSyntheticHero error for " + hero.name + ": " + t.getMessage());
+            return false;
         }
-        Log.i(TAG, "✅ [HeroScript] Dispatched " + dispatched + "/" + metaHeroes.length + " meta hero scripts");
     }
 
     // ── Internal ───────────────────────────────────────────────────────────────

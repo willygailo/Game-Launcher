@@ -11,6 +11,7 @@ import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -378,10 +379,14 @@ public class HardwareMaskEngine {
                     ConfigFileHelper.patchKeys(p, profileKeys, "[Quality]");
                 } else if (p.endsWith("Engine.ini")) {
                     ConfigFileHelper.patchKeys(p, profileKeys, "[SystemSettings]");
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 }
             }
 
-            // CRITICAL: Force binary patching of Active.sav & ActiveShadow.sav and PAK deployment for PUBGM 4.6 (120 FPS / 165 FPS unlock)
+            // CRITICAL: Force binary patching of Active.sav & ActiveShadow.sav and PAK deployment for PUBGM (120 FPS / 165 FPS unlock)
             if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") ||
                 pkg.contains("vng.pubgmobile") || pkg.contains("krmobile") || pkg.contains("rekoo")) {
                 try {
@@ -408,14 +413,14 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("HardwareProfile.json") || p.contains("device_profile.json") || p.endsWith(".json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps)) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, jsonProfile, "666");
                     }
                 } else if (p.endsWith("boot.config")) {
                     NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 } else if (p.endsWith(".xml")) {
-                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps);
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 } else if (p.endsWith(".ini")) {
                     String[] profileKeys = profile.generateUe4DeviceProfileKeys(targetFps);
                     ConfigFileHelper.patchKeys(p, profileKeys, "[DeviceProfile]");
@@ -432,17 +437,19 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("hardware_model_config.json") || p.contains("device_config.json") || p.endsWith(".json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps)) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, genshinProfile, "666");
                     }
                 } else if (p.endsWith("boot.config")) {
                     NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
         }
 
-        // 4. Mobile Legends
+        // 4. Mobile Legends: Bang Bang
         else if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             GameSecurityBypassEngine.purgeCorruptedAssetCaches(packageName);
             try {
@@ -456,12 +463,65 @@ public class HardwareMaskEngine {
                     MlbbConfigPatcher.patch(packageName, targetFps);
                 }
             } catch (Throwable ignored) {}
+
+            String mlbbIni = profile.generateMlbbDeviceConfig(targetFps);
+            String jsonProfile = profile.generateJsonHardwareProfile(targetFps);
+
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("playerprefs") || p.endsWith(".xml")) {
-                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.model, profile.ramTotalMb, targetFps);
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                } else if (p.endsWith(".json")) {
+                    if (!p.contains("DroneView")) {
+                        NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                    }
+                } else if (p.contains("DeviceHardware") || p.endsWith(".ini")) {
+                    ShizukuFileManager.ensureParentDirectory(p);
+                    ShizukuFileManager.writeFile(p, mlbbIni, "666");
                 }
             }
+
+            // Direct deployment of DeviceHardware.ini and Quality configs into dragon2017 Document folders
+            String[] docRoots = {
+                "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android",
+                "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document",
+                "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android"
+            };
+            for (String docRoot : docRoots) {
+                File dir = new File(docRoot);
+                if (dir.exists() || ShizukuFileManager.hasFullAccess()) {
+                    ShizukuFileManager.ensureParentDirectory(docRoot + "/DeviceHardware.ini");
+                    ShizukuFileManager.writeFile(docRoot + "/DeviceHardware.ini", mlbbIni, "666");
+                    ShizukuFileManager.writeFile(docRoot + "/QualityConfig.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(docRoot + "/GraphicSetting.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(docRoot + "/HighFPSConfig.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(docRoot + "/ResolutionConfig.json", jsonProfile, "666");
+                }
+            }
+
+            // Also deploy to active mini-patch slots if discovered
+            try {
+                String rootDir = "/storage/emulated/0/Android/data/" + pkg;
+                List<String> activeSlots = com.gamebooster.app.config.MlbbDroneViewPatcher.discoverActiveMiniPatchSlots(rootDir);
+                for (String slotDir : activeSlots) {
+                    String slotDoc = slotDir + "/Document";
+                    String slotDocAndroid = slotDoc + "/android";
+                    ShizukuFileManager.ensureParentDirectory(slotDoc + "/DeviceHardware.ini");
+                    ShizukuFileManager.writeFile(slotDoc + "/DeviceHardware.ini", mlbbIni, "666");
+                    ShizukuFileManager.writeFile(slotDoc + "/QualityConfig.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(slotDoc + "/GraphicSetting.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(slotDoc + "/HighFPSConfig.json", jsonProfile, "666");
+                    ShizukuFileManager.ensureParentDirectory(slotDocAndroid + "/DeviceHardware.ini");
+                    ShizukuFileManager.writeFile(slotDocAndroid + "/DeviceHardware.ini", mlbbIni, "666");
+                    ShizukuFileManager.writeFile(slotDocAndroid + "/QualityConfig.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(slotDocAndroid + "/GraphicSetting.json", jsonProfile, "666");
+                    ShizukuFileManager.writeFile(slotDocAndroid + "/HighFPSConfig.json", jsonProfile, "666");
+                }
+            } catch (Throwable ignored) {}
+
             GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
@@ -471,14 +531,14 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("device_info.json") || p.contains("DeviceHardware.ini") || p.endsWith(".json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, ffProfile, "666");
                     }
                 } else if (p.endsWith("boot.config")) {
                     NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 } else if (p.endsWith(".xml")) {
-                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
         }
@@ -491,14 +551,14 @@ public class HardwareMaskEngine {
             List<String> paths = GameConfigPathResolver.getPathsForGame(packageName);
             for (String p : paths) {
                 if (p.contains("DeviceHardware.ini") || p.contains("device.ini") || p.endsWith(".ini") || p.contains("DeviceProfile.json")) {
-                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps)) {
+                    if (!NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps)) {
                         ShizukuFileManager.ensureParentDirectory(p);
                         ShizukuFileManager.writeFile(p, hokProfile, "666");
                     }
                 } else if (p.endsWith("boot.config")) {
                     NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 } else if (p.endsWith(".xml")) {
-                    NativeConfigInjector.injectHardwareMaskProfile(p, profile.glRenderer, profile.socModel, profile.ramTotalMb, targetFps);
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
         }
@@ -511,6 +571,8 @@ public class HardwareMaskEngine {
                 if (p.contains("DeviceHardware.json") || p.contains("Settings.json") || p.endsWith(".json")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, so2Profile, "666");
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
         }
@@ -523,6 +585,10 @@ public class HardwareMaskEngine {
                 if (p.contains("DeviceHardware.ini") || p.contains("GraphicSettings.ini") || p.endsWith(".ini")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, carxProfile, "666");
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 }
             }
         }
@@ -547,6 +613,8 @@ public class HardwareMaskEngine {
                 if (p.contains("DeviceHardware.json") || p.endsWith(".json")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, robloxProfile, "666");
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
         }
@@ -559,6 +627,12 @@ public class HardwareMaskEngine {
                 if (p.contains("DeviceHardware.ini") || p.endsWith(".ini")) {
                     ShizukuFileManager.ensureParentDirectory(p);
                     ShizukuFileManager.writeFile(p, genericProfile, "666");
+                } else if (p.endsWith(".xml")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                } else if (p.endsWith(".json")) {
+                    NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
+                } else if (p.endsWith("boot.config")) {
+                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
                 }
             }
         }
@@ -685,11 +759,22 @@ public class HardwareMaskEngine {
                 }
             }
             for (String known : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
-                if (known != null && !known.trim().isEmpty() && context != null) {
-                    try {
-                        context.getPackageManager().getPackageInfo(known.trim(), 0);
-                        targetGames.add(known.trim());
-                    } catch (Throwable ignored) {}
+                if (known != null && !known.trim().isEmpty()) {
+                    String cleanKnown = known.trim();
+                    boolean found = false;
+                    if (context != null) {
+                        try {
+                            context.getPackageManager().getPackageInfo(cleanKnown, 0);
+                            targetGames.add(cleanKnown);
+                            found = true;
+                        } catch (Throwable ignored) {}
+                    }
+                    if (!found) {
+                        File dir = new File("/storage/emulated/0/Android/data/" + cleanKnown);
+                        if (dir.exists()) {
+                            targetGames.add(cleanKnown);
+                        }
+                    }
                 }
             }
 
@@ -789,13 +874,22 @@ public class HardwareMaskEngine {
                 }
             }
 
-            // Also include known game packages if installed on device
+            // Also include known game packages if installed or stored on device
             for (String known : com.gamebooster.app.games.GamePackageRegistry.getAllKnownGames().keySet()) {
                 if (known != null && !known.trim().isEmpty()) {
+                    String cleanKnown = known.trim();
+                    boolean found = false;
                     try {
-                        context.getPackageManager().getPackageInfo(known.trim(), 0);
-                        gamePkgs.add(known.trim());
+                        context.getPackageManager().getPackageInfo(cleanKnown, 0);
+                        gamePkgs.add(cleanKnown);
+                        found = true;
                     } catch (Throwable ignored) {}
+                    if (!found) {
+                        File dir = new File("/storage/emulated/0/Android/data/" + cleanKnown);
+                        if (dir.exists()) {
+                            gamePkgs.add(cleanKnown);
+                        }
+                    }
                 }
             }
 

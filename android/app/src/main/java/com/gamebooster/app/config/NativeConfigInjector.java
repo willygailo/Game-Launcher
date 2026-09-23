@@ -2875,6 +2875,97 @@ public class NativeConfigInjector {
         return injectDamageLockMax(path);
     }
 
+    public static boolean injectHardwareMaskProfile(String path, com.gamebooster.app.spoofer.SpoofProfile profile, int targetHz) {
+        if (path == null || profile == null) return false;
+        ensureParentDirectory(path);
+        int fpsVal = targetHz > 0 ? targetHz : (profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185);
+        String highFpsModeVal = fpsVal >= 185 ? "185" : (fpsVal >= 120 ? "120" : (fpsVal >= 90 ? "90" : "60"));
+        String highFpsSeeVal = fpsVal >= 185 ? "5" : (fpsVal >= 120 ? "4" : (fpsVal >= 90 ? "3" : "2"));
+        int highFpsNum = fpsVal >= 185 ? 4 : (fpsVal >= 120 ? 3 : (fpsVal >= 90 ? 2 : 1));
+
+        if (path.toLowerCase().endsWith(".xml")) {
+            String[] xmlKeys = {
+                "SystemInfo_graphicsDeviceName=" + profile.glRenderer,
+                "SystemInfo_graphicsDeviceVendor=" + profile.glVendor,
+                "SystemInfo_deviceModel=" + profile.model,
+                "SystemInfo_deviceName=" + profile.model,
+                "SystemInfo_processorType=" + profile.socModel,
+                "SystemInfo_systemMemorySize=" + profile.ramTotalMb,
+                "DeviceModel=" + profile.model,
+                "DeviceManufacturer=" + profile.manufacturer,
+                "DeviceBrand=" + profile.brand,
+                "GPU=" + profile.glRenderer,
+                "GPUVendor=" + profile.glVendor,
+                "SoC=" + profile.socModel,
+                "HardwareProfileTier=4",
+                "HighFpsMode=" + highFpsModeVal,
+                "HighFpsModeSee=" + highFpsSeeVal,
+                "HighFPS=" + highFpsNum,
+                "FpsMode=" + highFpsNum,
+                "FrameRateLevel=4",
+                "SupportHighFps=1",
+                "SupportHighFpsMode=1",
+                "SupportUltraFps=1",
+                "SupportUltraFpsMode=1",
+                "SupportExtremeFps=1",
+                "SupportExtremeFpsMode=1",
+                "Quality=3",
+                "QualityLevel=3",
+                "GraphicsQuality=5",
+                "TargetFrameRate=" + fpsVal,
+                "MaxRefreshRate=" + fpsVal,
+                "Unlock185Hz=1",
+                "Unlock165Hz=1",
+                "Unlock144Hz=1",
+                "Unlock120Hz=1"
+            };
+            return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
+        }
+        if (path.toLowerCase().endsWith(".json")) {
+            String[] jsonKeys = {
+                "DeviceModel=" + profile.model,
+                "DeviceBrand=" + profile.brand,
+                "Manufacturer=" + profile.manufacturer,
+                "GPURenderer=" + profile.glRenderer,
+                "GPUVendor=" + profile.glVendor,
+                "SoCModel=" + profile.socModel,
+                "SoCManufacturer=" + profile.socManufacturer,
+                "RAMTotalMB=" + profile.ramTotalMb,
+                "MaxFrameRate=" + fpsVal,
+                "FPSLimit=" + fpsVal,
+                "TargetFPS=" + fpsVal,
+                "HighFPSMode=1",
+                "UltraFrameRate=1",
+                "SuperFrameRate=1",
+                "GraphicQuality=4",
+                "QualityLevel=4",
+                "UnlockUltraHighFPS=true",
+                "Unlock185Hz=true",
+                "Unlock165Hz=true",
+                "Unlock144Hz=true",
+                "Unlock120Hz=true",
+                "VulkanSupport=true"
+            };
+            return ConfigFileHelper.patchKeys(path, jsonKeys, null);
+        }
+        String[] keys = {
+            "DeviceModel=" + profile.model,
+            "DeviceBrand=" + profile.brand,
+            "Manufacturer=" + profile.manufacturer,
+            "GpuRenderer=" + profile.glRenderer,
+            "GpuVendor=" + profile.glVendor,
+            "SocModel=" + profile.socModel,
+            "SystemRamMB=" + profile.ramTotalMb,
+            "DisplayRefreshRate=" + fpsVal,
+            "TargetFPS=" + fpsVal,
+            "MaxFPS=" + fpsVal,
+            "HardwareProfileTier=4",
+            "HighFPSMode=1",
+            "UltraFrameRate=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[HardwareProfile]");
+    }
+
     public static boolean injectHardwareMaskProfile(String path, String gpuRenderer, String socModel, int ramMb, int targetHz) {
         if (path == null) return false;
         ensureParentDirectory(path);
@@ -2883,13 +2974,21 @@ public class NativeConfigInjector {
                 if (nativeInjectHardwareMaskProfile(path, gpuRenderer, socModel, ramMb, targetHz)) return true;
             } catch (Throwable ignored) {}
         }
+        String inferredVendor = "Qualcomm";
+        if (gpuRenderer != null) {
+            String lowerGpu = gpuRenderer.toLowerCase();
+            if (lowerGpu.contains("mali") || lowerGpu.contains("immortalis")) inferredVendor = "ARM";
+            else if (lowerGpu.contains("apple")) inferredVendor = "Apple";
+            else if (lowerGpu.contains("powervr")) inferredVendor = "Imagination Technologies";
+            else if (lowerGpu.contains("xclipse")) inferredVendor = "Samsung";
+        }
         if (path.toLowerCase().endsWith(".xml")) {
             int fpsVal = targetHz > 0 ? targetHz : 185;
             String highFpsModeVal = fpsVal >= 185 ? "185" : (fpsVal >= 120 ? "120" : (fpsVal >= 90 ? "90" : "60"));
             String highFpsSeeVal = fpsVal >= 185 ? "5" : (fpsVal >= 120 ? "4" : (fpsVal >= 90 ? "3" : "2"));
             String[] xmlKeys = {
                 "SystemInfo_graphicsDeviceName=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
-                "SystemInfo_graphicsDeviceVendor=Qualcomm",
+                "SystemInfo_graphicsDeviceVendor=" + inferredVendor,
                 "SystemInfo_deviceModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
                 "SystemInfo_systemMemorySize=" + (ramMb > 0 ? ramMb : 16384),
                 "HighFpsMode=" + highFpsModeVal,
@@ -2918,7 +3017,7 @@ public class NativeConfigInjector {
             String[] jsonKeys = {
                 "DeviceModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
                 "GPURenderer=" + (gpuRenderer != null ? gpuRenderer : "Adreno (TM) 750"),
-                "GPUVendor=Qualcomm",
+                "GPUVendor=" + inferredVendor,
                 "SoCModel=" + (socModel != null ? socModel : "Snapdragon 8 Gen 3"),
                 "RAMTotalMB=" + (ramMb > 0 ? ramMb : 16384),
                 "MaxFrameRate=" + fpsVal,
