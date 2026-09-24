@@ -142,6 +142,25 @@ public final class GameManagerLauncher {
         Runnable postLaunchPipeline = () -> {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
+                    // If MLBB, inject Drone View concurrently while game splash screen is initializing
+                    if (isMlbb) {
+                        try {
+                            android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
+                            boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
+                            int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+                            if (droneEnabled) {
+                                boolean ok = com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(appContext, pkg, droneTier);
+                                if (ok) {
+                                    AppExecutors.getInstance().postToMainThread(() -> {
+                                        Toast.makeText(appContext, "🎯 MLBB Drone View " + com.gamebooster.app.config.MlbbDroneViewPatcher.getTierLabel(droneTier) + " Ready & Injected!", Toast.LENGTH_SHORT).show();
+                                    });
+                                }
+                            }
+                        } catch (Throwable t) {
+                            Log.w(TAG, "Post-launch Drone View setup: " + t.getMessage());
+                        }
+                    }
+
                     // STAGE 1: Instant full 3-tier master enforcement & initial configs
                     com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
 
@@ -159,42 +178,17 @@ public final class GameManagerLauncher {
             });
         };
 
-        if (isMlbb) {
-            // Check Shizuku status for user feedback
-            if (!com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()) {
-                Toast.makeText(appContext, "⚠️ Shizuku is not running! Please start Shizuku to apply Drone View.", Toast.LENGTH_LONG).show();
-            }
-
-            // High-speed pre-flight injection: runs atomic batch in ~150ms BEFORE launching activity!
-            AppExecutors.getInstance().executeCommand(() -> {
-                try {
-                    android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
-                    boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
-                    int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
-                    if (droneEnabled) {
-                        boolean ok = com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(appContext, pkg, droneTier);
-                        if (ok) {
-                            AppExecutors.getInstance().postToMainThread(() -> {
-                                Toast.makeText(appContext, "🎯 MLBB Drone View " + com.gamebooster.app.config.MlbbDroneViewPatcher.getTierLabel(droneTier) + " Ready & Injected!", Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    }
-                } catch (Throwable t) {
-                    Log.w(TAG, "Pre-flight Drone View setup: " + t.getMessage());
-                }
-
-                // Immediately fire launchNow on main thread right as files are confirmed on disk
-                AppExecutors.getInstance().postToMainThread(launchNow);
-                postLaunchPipeline.run();
-            });
+        // ═══════════════════════════════════════════════════════════
+        // STEP 4: GUARANTEED IMMEDIATE LAUNCH ON MAIN THREAD
+        // Always launch the game first without ANY blocking operations
+        // so Android receives the foreground launch within the tap window!
+        // ═══════════════════════════════════════════════════════════
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            launchNow.run();
         } else {
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                launchNow.run();
-            } else {
-                AppExecutors.getInstance().postToMainThread(launchNow);
-            }
-            postLaunchPipeline.run();
+            AppExecutors.getInstance().postToMainThread(launchNow);
         }
+        postLaunchPipeline.run();
     }
 
     /**
@@ -240,8 +234,30 @@ public final class GameManagerLauncher {
         } catch (Throwable rawError) {
             Log.w(TAG, "Package-scoped framework launch failed for " + packageName + ": "
                     + rawError.getMessage());
-            return false;
         }
+
+        // Privileged Shizuku / Shell fallback to force launch if OEM framework blocks it
+        try {
+            String monkeyCmd = "monkey -p " + packageName + " -c android.intent.category.LAUNCHER 1";
+            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                String out = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(monkeyCmd);
+                if (out != null && !out.contains("No activities found")) {
+                    Log.i(TAG, "Shizuku privileged launch started for " + packageName);
+                    return true;
+                }
+            } else if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                com.gamebooster.app.engine.ShellExecutor.CommandResult res =
+                        com.gamebooster.app.engine.ShellExecutor.executeSuCommand(monkeyCmd);
+                if (res.isSuccess() && !res.stdout.contains("No activities found")) {
+                    Log.i(TAG, "Root privileged launch started for " + packageName);
+                    return true;
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Privileged launch fallback failed for " + packageName + ": " + t.getMessage());
+        }
+
+        return false;
     }
 
     /** Reports a framework launch failure without executing shell fallbacks. */

@@ -230,6 +230,16 @@ public class HomeGameScanner {
             return true;
         } catch (Throwable ignored) {}
 
+        // 5. Privileged shell package check fallback (Shizuku)
+        try {
+            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                String out = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("pm path " + pkg);
+                if (out != null && out.contains("package:")) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
         return false;
     }
 
