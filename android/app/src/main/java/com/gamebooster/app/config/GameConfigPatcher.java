@@ -180,7 +180,8 @@ public class GameConfigPatcher {
             if (MlbbConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) MlbbConfigPatcher.patchUltraExtreme185(pkg);
             else if (forcedFps >= 165) MlbbConfigPatcher.patchUltraExtreme165(pkg);
-            else if (forcedFps >= 144) MlbbConfigPatcher.patchUltraExtreme144(pkg);
+            else if (forcedFps >= 120) MlbbConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 90) MlbbConfigPatcher.patchUltraExtreme144(pkg);
             MlbbConfigPatcher.applySuperFastTouch(pkg);
             MlbbConfigPatcher.applyAimAssistConfig(pkg);
             MlbbConfigPatcher.applyRecoilControlConfig(pkg);
@@ -200,7 +201,8 @@ public class GameConfigPatcher {
             if (CodmConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) CodmConfigPatcher.patchUltraExtreme185(pkg);
             else if (forcedFps >= 165) CodmConfigPatcher.patchUltraExtreme165(pkg);
-            else if (forcedFps >= 144) CodmConfigPatcher.patchUltraExtreme144(pkg);
+            else if (forcedFps >= 120) CodmConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 90) CodmConfigPatcher.patchUltraExtreme144(pkg);
             CodmConfigPatcher.applySuperFastTouch(pkg);
             CodmConfigPatcher.applyAimAssistConfig(pkg);
             CodmConfigPatcher.applyRecoilControlConfig(pkg);
@@ -219,7 +221,8 @@ public class GameConfigPatcher {
             if (PubgConfigPatcher.patchCompetitive(pkg, forcedFps)) patchedFiles++;
             if (forcedFps >= 185) PubgConfigPatcher.patchUltraExtreme185(pkg);
             else if (forcedFps >= 165) PubgConfigPatcher.patchUltraExtreme165(pkg);
-            else if (forcedFps >= 144) PubgConfigPatcher.patchUltraExtreme144(pkg);
+            else if (forcedFps >= 120) PubgConfigPatcher.patchUltraExtreme185(pkg);
+            else if (forcedFps >= 90) PubgConfigPatcher.patchUltraExtreme144(pkg);
             PubgConfigPatcher.deployPakPatch(pkg);
             PubgConfigPatcher.applySuperFastTouch(pkg);
             PubgConfigPatcher.applyAimAssistConfig(pkg);

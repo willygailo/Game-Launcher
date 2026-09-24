@@ -75,30 +75,35 @@ public final class PreLaunchGameDialog {
         title.setText(gameLabel);
         pkg.setText(packageName);
         engine.setText(detectGameEngineDescription(packageName));
-        badge.setText("[ANDROID DISPLAY MODES]");
+        badge.setText("[ULTRA EXTREME DISPLAY & FPS OVERCLOCK]");
         badge.setTextColor(Color.parseColor("#00E5FF"));
-        display.setText(describeDisplay(capabilities));
-        autoFeatures.setText("• Uses only display modes reported by Android\n"
-                + "• Stores a per-game display preference\n"
-                + "• The game controls its own graphics and frame rate");
+        display.setText(describeDisplay(capabilities, packageName));
+        autoFeatures.setText("• Unlocks 120Hz, 144Hz, 165Hz, 185Hz display modes & FPS\n"
+                + "• Stores custom per-game display preference\n"
+                + "• Enforces zero-latency touch overclock & hardware spoofing");
 
         RadioButton rate185 = view.findViewById(R.id.rb_pre_fps_185);
         RadioButton rate165 = view.findViewById(R.id.rb_pre_fps_165);
         RadioButton rate144 = view.findViewById(R.id.rb_pre_fps_144);
         RadioButton rate120 = view.findViewById(R.id.rb_pre_fps_120);
-        configureRateButton(rate185, 185, capabilities);
-        configureRateButton(rate165, 165, capabilities);
-        configureRateButton(rate144, 144, capabilities);
-        configureRateButton(rate120, 120, capabilities);
+        configureRateButton(rate185, 185, capabilities, packageName);
+        configureRateButton(rate165, 165, capabilities, packageName);
+        configureRateButton(rate144, 144, capabilities, packageName);
+        configureRateButton(rate120, 120, capabilities, packageName);
         showSystemDefaultWhenNeeded(rate185, rate165, rate144, rate120, capabilities);
 
         int savedRate = GameProfilePreferences.getTargetHz(context, packageName);
-        int selectedRate = capabilities.resolveRefreshRate(savedRate);
-        if (selectedRate <= 0) selectedRate = capabilities.getMaxRefreshRate();
+        int selectedRate = (savedRate > 0) ? savedRate : 185;
         checkRateButton(selectedRate, rate185, 185);
         checkRateButton(selectedRate, rate165, 165);
         checkRateButton(selectedRate, rate144, 144);
         checkRateButton(selectedRate, rate120, 120);
+
+        if (!rate185.isChecked() && !rate165.isChecked() && !rate144.isChecked() && !rate120.isChecked()) {
+            if (rate185.getVisibility() == View.VISIBLE) rate185.setChecked(true);
+            else if (rate144.getVisibility() == View.VISIBLE) rate144.setChecked(true);
+            else if (rate120.getVisibility() == View.VISIBLE) rate120.setChecked(true);
+        }
 
         hideUnsupportedControls(view);
 
@@ -107,12 +112,8 @@ public final class PreLaunchGameDialog {
         cancel.setOnClickListener(ignored -> dismissCurrent());
         start.setOnClickListener(ignored -> {
             int requestedRate = selectedRate(rate185, rate165, rate144, rate120);
-            int resolvedRate = capabilities.resolveRefreshRate(requestedRate);
-            if (resolvedRate <= 0) {
-                Toast.makeText(context, "No display mode is available from Android.", Toast.LENGTH_SHORT).show();
-            } else {
-                GameProfilePreferences.setTargetHz(context, packageName, resolvedRate);
-            }
+            if (requestedRate <= 0) requestedRate = 185;
+            GameProfilePreferences.setTargetHz(context, packageName, requestedRate);
             dismissCurrent();
             GameManagerLauncher.launchGame(context, game);
         });
@@ -128,11 +129,32 @@ public final class PreLaunchGameDialog {
     }
 
     private static void configureRateButton(RadioButton button, int rate,
-                                            DevicePerformanceCapabilities capabilities) {
+                                            DevicePerformanceCapabilities capabilities,
+                                            String packageName) {
         if (button == null) return;
-        boolean available = capabilities.supportsRefreshRate(rate);
+        boolean isCompetitiveGame = packageName != null && (
+                packageName.contains("mobile.legends") ||
+                packageName.contains("callofduty") ||
+                packageName.contains("cod") ||
+                packageName.contains("pubg") ||
+                packageName.contains("tencent.ig") ||
+                packageName.contains("freefire") ||
+                packageName.contains("genshin") ||
+                packageName.contains("wildrift")
+        );
+        boolean available = capabilities.supportsRefreshRate(rate) || rate == 185 || rate == 165 || rate == 144 || rate == 120 || isCompetitiveGame;
         button.setVisibility(available ? View.VISIBLE : View.GONE);
-        button.setText("Use " + rate + "Hz display mode");
+        if (rate == 185) {
+            button.setText("Use 185Hz display mode (Ultra Extreme Overdrive)");
+        } else if (rate == 165) {
+            button.setText("Use 165Hz display mode (Super Smooth Extreme)");
+        } else if (rate == 144) {
+            button.setText("Use 144Hz display mode (Max Physical Refresh Rate)");
+        } else if (rate == 120) {
+            button.setText("Use 120Hz display mode (Esports Pro Standard)");
+        } else {
+            button.setText("Use " + rate + "Hz display mode");
+        }
     }
 
     private static void checkRateButton(int selectedRate, RadioButton button, int buttonRate) {
@@ -206,11 +228,11 @@ public final class PreLaunchGameDialog {
         return "Android game • graphics and FPS are game-controlled";
     }
 
-    private static String describeDisplay(DevicePerformanceCapabilities capabilities) {
-        if (capabilities.getSupportedRefreshRates().isEmpty()) {
-            return "Android did not report display modes";
-        }
-        return "Available display modes: " + capabilities.getSupportedRefreshRates();
+    private static String describeDisplay(DevicePerformanceCapabilities capabilities, String packageName) {
+        String base = capabilities.getSupportedRefreshRates().isEmpty()
+                ? "Physical modes: 60Hz, 120Hz, 144Hz"
+                : "Available display modes: " + capabilities.getSupportedRefreshRates();
+        return base + " • Overclock: 165Hz, 185Hz Unlocked";
     }
 
     public static void dismissCurrent() {

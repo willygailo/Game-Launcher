@@ -52,20 +52,28 @@ public final class GameProfilePreferences {
 
     public static void setTargetHz(Context context, String packageName, int targetHz) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return;
-        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
-        int resolvedHz = fallbackToSystemDefault(capabilities.resolveRefreshRate(targetHz));
+        int resolvedHz;
+        if (targetHz >= 165) {
+            resolvedHz = targetHz;
+        } else {
+            DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
+            resolvedHz = fallbackToSystemDefault(capabilities.resolveRefreshRate(targetHz));
+        }
         context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putInt(KEY_TARGET_HZ_PREFIX + packageName, resolvedHz)
                 .apply();
     }
 
-    /** Returns a display preference, never a claim about a game's internal FPS cap. */
+    /** Returns a display preference, preserving overdrive modes (165Hz/185Hz). */
     public static int getTargetHz(Context context, String packageName) {
         if (context == null || packageName == null || packageName.trim().isEmpty()) return FALLBACK_HZ;
-        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
         int storedHz = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
                 .getInt(KEY_TARGET_HZ_PREFIX + packageName, 0);
+        if (storedHz >= 165) {
+            return storedHz;
+        }
+        DevicePerformanceCapabilities capabilities = DevicePerformanceCapabilities.detect(context);
         return fallbackToSystemDefault(capabilities.resolveRefreshRate(storedHz));
     }
 

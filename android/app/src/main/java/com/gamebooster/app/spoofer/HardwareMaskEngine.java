@@ -89,9 +89,16 @@ public class HardwareMaskEngine {
             int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
 
             // ═══════════════════════════════════════════════════════════════════
-            //  LAYER 1: LAUNCHER TELEMETRY & APP-SCOPED PROPS (Zero OS Tampering)
-            //  Does NOT alter global ro.product.* or ro.build.* properties.
+            //  LAYER 1: LAUNCHER TELEMETRY & HARDWARE SPOOF PROPS
+            //  Enforces flagship identity across system props and settings
             // ═══════════════════════════════════════════════════════════════════
+            batchCommands.add("setprop debug.game.spoofed_model \"" + profile.model + "\"");
+            batchCommands.add("setprop debug.game.spoofed_brand \"" + profile.brand + "\"");
+            batchCommands.add("setprop debug.game.spoofed_manufacturer \"" + profile.manufacturer + "\"");
+            batchCommands.add("setprop debug.game.spoofed_device \"" + profile.device + "\"");
+            batchCommands.add("setprop debug.game.spoofed_product \"" + profile.productName + "\"");
+            batchCommands.add("setprop debug.game.spoofed_hardware \"" + profile.hardware + "\"");
+            batchCommands.add("setprop debug.game.spoofed_board \"" + profile.board + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
@@ -104,6 +111,11 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
             batchCommands.add("setprop debug.vulkan.pipeline_cache 1");
+
+            // Device Name spoofing via elevated Settings provider (read by game discovery & device identity)
+            batchCommands.add("settings put global device_name \"" + profile.displayName + "\" 2>/dev/null");
+            batchCommands.add("settings put system device_name \"" + profile.displayName + "\" 2>/dev/null");
+            batchCommands.add("settings put secure bluetooth_name \"" + profile.displayName + "\" 2>/dev/null");
 
             // 2026 Anti-Cheat Detection Bypass: Verified Boot & Integrity state
             batchCommands.add("setprop debug.game.spoofed_verifiedbootstate \"green\"");
@@ -402,6 +414,20 @@ public class HardwareMaskEngine {
                 } catch (Throwable t) {
                     Log.w(TAG, "patchActiveSavBinary error: " + t.getMessage());
                 }
+
+                // Guaranteed Shizuku elevated shell write fallback for PUBGM UE4 configs
+                try {
+                    String ue4Ini = profile.generateUe4DeviceProfile(targetFps);
+                    byte[] iniBytes = ue4Ini.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    String iniB64 = android.util.Base64.encodeToString(iniBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                    String pubgFallbackCmd =
+                        "mkdir -p /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android 2>/dev/null; " +
+                        "echo '" + iniB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini 2>/dev/null; " +
+                        "chmod 666 /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/UserCustom.ini 2>/dev/null; " +
+                        "echo '" + iniB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini 2>/dev/null; " +
+                        "chmod 666 /sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Config/Android/DeviceProfile.ini 2>/dev/null";
+                    ShizukuExecutor.executeShizukuCommand(pubgFallbackCmd);
+                } catch (Throwable ignored) {}
             }
             GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
@@ -427,6 +453,19 @@ public class HardwareMaskEngine {
                     ConfigFileHelper.patchKeys(p, profileKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
                 }
             }
+
+            // Guaranteed Shizuku elevated shell write fallback for CODM profiles
+            try {
+                byte[] jsonBytes = jsonProfile.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String jsonB64 = android.util.Base64.encodeToString(jsonBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                String codFallbackCmd =
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files/Config 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/Config/HardwareProfile.json 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/Config/HardwareProfile.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/HardwareProfile.json 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/HardwareProfile.json 2>/dev/null";
+                ShizukuExecutor.executeShizukuCommand(codFallbackCmd);
+            } catch (Throwable ignored) {}
             GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
@@ -457,11 +496,14 @@ public class HardwareMaskEngine {
                     MlbbConfigPatcher.patchUltraExtreme185(packageName);
                 } else if (targetFps >= 165) {
                     MlbbConfigPatcher.patchUltraExtreme165(packageName);
-                } else if (targetFps >= 144) {
+                } else if (targetFps >= 120) {
+                    MlbbConfigPatcher.patchUltraExtreme185(packageName);
+                } else if (targetFps >= 90) {
                     MlbbConfigPatcher.patchUltraExtreme144(packageName);
                 } else {
                     MlbbConfigPatcher.patch(packageName, targetFps);
                 }
+                MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(packageName, targetFps);
             } catch (Throwable ignored) {}
 
             String mlbbIni = profile.generateMlbbDeviceConfig(targetFps);
@@ -491,16 +533,49 @@ public class HardwareMaskEngine {
                 "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android"
             };
             for (String docRoot : docRoots) {
-                File dir = new File(docRoot);
-                if (dir.exists() || ShizukuFileManager.hasFullAccess()) {
+                try {
                     ShizukuFileManager.ensureParentDirectory(docRoot + "/DeviceHardware.ini");
                     ShizukuFileManager.writeFile(docRoot + "/DeviceHardware.ini", mlbbIni, "666");
                     ShizukuFileManager.writeFile(docRoot + "/QualityConfig.json", jsonProfile, "666");
                     ShizukuFileManager.writeFile(docRoot + "/GraphicSetting.json", jsonProfile, "666");
                     ShizukuFileManager.writeFile(docRoot + "/HighFPSConfig.json", jsonProfile, "666");
                     ShizukuFileManager.writeFile(docRoot + "/ResolutionConfig.json", jsonProfile, "666");
+                } catch (Throwable t) {
+                    Log.w(TAG, "docRoot write exception for " + docRoot + ": " + t.getMessage());
                 }
             }
+
+            // Guaranteed Shizuku elevated shell write fallback for MLBB Document and Document/android
+            try {
+                byte[] iniBytes = mlbbIni.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String iniB64 = android.util.Base64.encodeToString(iniBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                byte[] jsonBytes = jsonProfile.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String jsonB64 = android.util.Base64.encodeToString(jsonBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+
+                String shizukuFallbackCmd =
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android 2>/dev/null; " +
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files/Config 2>/dev/null; " +
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files/battle_config 2>/dev/null; " +
+                    "echo '" + iniB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/DeviceHardware.ini 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/DeviceHardware.ini 2>/dev/null; " +
+                    "echo '" + iniB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/DeviceHardware.ini 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/DeviceHardware.ini 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/QualityConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/QualityConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/HighFPSConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/HighFPSConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/GraphicSetting.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/GraphicSetting.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/ResolutionConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/ResolutionConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/FpsSetting.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/FpsSetting.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/Config/QualityConfig.json 2>/dev/null; " +
+                    "echo '" + jsonB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/battle_config/QualityConfig.json 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.json 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.json 2>/dev/null";
+                ShizukuExecutor.executeShizukuCommand(shizukuFallbackCmd);
+            } catch (Throwable ignored) {}
 
             // Also deploy to active mini-patch slots if discovered
             try {
@@ -670,14 +745,16 @@ public class HardwareMaskEngine {
      */
     public static boolean maskPackage(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return false;
-        if (context == null || !SpoofPreferences.isSpoofEnabled(context)) return false;
-        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
-        if (activeId == null || activeId.trim().isEmpty()) {
-            return false;
+        String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
+        SpoofProfile profile = null;
+        if (activeId != null && !activeId.trim().isEmpty()) {
+            profile = SpoofProfileRegistry.getById(activeId);
         }
-        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
         if (profile == null) {
-            Log.d(TAG, "No spoof profile available for id: " + activeId + ". Skipping maskPackage.");
+            profile = DeviceSpooferEngine.getRecommendedProfile(packageName);
+        }
+        if (profile == null) {
+            Log.d(TAG, "No spoof profile available for " + packageName + ". Skipping maskPackage.");
             return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
@@ -709,6 +786,13 @@ public class HardwareMaskEngine {
             int targetHz = Math.max(60, Math.min(maxPhysicalHz, profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185));
 
             // 1. App-Scoped Launcher & Debug Props
+            batchCommands.add("setprop debug.game.spoofed_model \"" + profile.model + "\"");
+            batchCommands.add("setprop debug.game.spoofed_brand \"" + profile.brand + "\"");
+            batchCommands.add("setprop debug.game.spoofed_manufacturer \"" + profile.manufacturer + "\"");
+            batchCommands.add("setprop debug.game.spoofed_device \"" + profile.device + "\"");
+            batchCommands.add("setprop debug.game.spoofed_product \"" + profile.productName + "\"");
+            batchCommands.add("setprop debug.game.spoofed_hardware \"" + profile.hardware + "\"");
+            batchCommands.add("setprop debug.game.spoofed_board \"" + profile.board + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc \"" + profile.socModel + "\"");
             batchCommands.add("setprop debug.game.spoofed_soc_vendor \"" + profile.socManufacturer + "\"");
             batchCommands.add("setprop debug.game.spoofed_cpu_cores \"" + profile.cpuCores + "\"");
@@ -721,6 +805,9 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_ram \"" + profile.ramTotalMb + "\"");
             batchCommands.add("setprop debug.game.spoofed_ram_avail \"" + profile.ramAvailableMb + "\"");
             batchCommands.add("setprop debug.vulkan.pipeline_cache 1");
+            batchCommands.add("settings put global device_name \"" + profile.displayName + "\" 2>/dev/null");
+            batchCommands.add("settings put system device_name \"" + profile.displayName + "\" 2>/dev/null");
+            batchCommands.add("settings put secure bluetooth_name \"" + profile.displayName + "\" 2>/dev/null");
             batchCommands.add("setprop debug.game.spoofed_verifiedbootstate \"green\"");
             batchCommands.add("setprop debug.game.spoofed_flash_locked \"1\"");
             batchCommands.add("setprop debug.game.spoofed_bootloader \"locked\"");
@@ -837,10 +924,15 @@ public class HardwareMaskEngine {
      * Masks ALL installed applications and games on the device across Android 13, 14, 15, and 16.
      */
     public static int maskAllInstalledApplications(Context context) {
-        if (context == null || !SpoofPreferences.isSpoofEnabled(context)) return 0;
+        if (context == null) return 0;
         String activeId = SpoofPreferences.getActiveProfileId(context);
-        if (activeId == null || activeId.trim().isEmpty()) return 0;
-        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
+        SpoofProfile profile = null;
+        if (activeId != null && !activeId.trim().isEmpty()) {
+            profile = SpoofProfileRegistry.getById(activeId);
+        }
+        if (profile == null) {
+            profile = SpoofProfileRegistry.getDefaultProfile();
+        }
         if (profile == null) return 0;
         return maskAllInstalledApplications(context, profile);
     }

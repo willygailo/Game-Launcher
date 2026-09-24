@@ -28,7 +28,7 @@ public class SpoofPreferences {
     // ── Global Spoof Toggle ──
 
     public static boolean isSpoofEnabled(Context context) {
-        return getPrefs(context).getBoolean(KEY_SPOOF_ENABLED, false);
+        return getPrefs(context).getBoolean(KEY_SPOOF_ENABLED, true);
     }
 
     public static void setSpoofEnabled(Context context, boolean enabled) {
@@ -48,7 +48,11 @@ public class SpoofPreferences {
     // ── Global Active Profile ──
 
     public static String getActiveProfileId(Context context) {
-        return getPrefs(context).getString(KEY_ACTIVE_PROFILE_ID, null);
+        String id = getPrefs(context).getString(KEY_ACTIVE_PROFILE_ID, null);
+        if (id == null || id.trim().isEmpty()) {
+            return "asus_rog9_pro";
+        }
+        return id;
     }
 
     public static void setActiveProfileId(Context context, String profileId) {

@@ -53,6 +53,10 @@ public final class GameAutoInjectDispatcher {
             }
 
             if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+                MlbbConfigPatcher.patchUltraExtreme185(pkg);
+                MlbbConfigPatcher.patch(pkg, 185);
+                MlbbConfigPatcher.patchCompetitive(pkg, 185);
+                MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(pkg, 185);
                 MlbbConfigPatcher.applyFastLoadSplashBypass(pkg);
                 MlbbConfigPatcher.applyFastFarmingAllHero(pkg);
                 MlbbConfigPatcher.applyFastRetributionObjectiveSteal(pkg);
@@ -75,6 +79,8 @@ public final class GameAutoInjectDispatcher {
                     MlbbHeroScriptDispatcher.dispatchAllHeroes(context, pkg);
                 }
             } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
+                PubgConfigPatcher.patchUltraExtreme185(pkg);
+                PubgConfigPatcher.patch(pkg, 185);
                 PubgConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 PubgConfigPatcher.applyPubgmGodModeFullOverdrive(pkg);
                 PubgConfigPatcher.applyPubgmMasterSuite(pkg);
@@ -84,6 +90,8 @@ public final class GameAutoInjectDispatcher {
                 PubgConfigPatcher.applyPubgUltraDroneViewMaxFov(pkg);
                 PubgConfigPatcher.deployPakPatch(pkg);
             } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+                CodmConfigPatcher.patchUltraExtreme185(pkg);
+                CodmConfigPatcher.patch(pkg, 185);
                 CodmConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 CodmConfigPatcher.applyCodmGodModeFullOverdrive(pkg);
                 CodmConfigPatcher.applyCodmMasterSuite(pkg);

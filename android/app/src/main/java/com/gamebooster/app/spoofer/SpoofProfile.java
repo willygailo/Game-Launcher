@@ -590,6 +590,8 @@ public class SpoofProfile {
 
     public String generateJsonHardwareProfile(int targetFps) {
         int safeFps = targetFps > 0 ? Math.min(185, targetFps) : 185;
+        int highFpsMode = safeFps >= 120 ? 3 : (safeFps >= 90 ? 2 : 1);
+        int frameRateLevel = safeFps >= 165 ? 6 : (safeFps >= 144 ? 5 : (safeFps >= 120 ? 4 : (safeFps >= 90 ? 3 : 2)));
         return "{\n" +
                 "  \"DeviceModel\": \"" + model + "\",\n" +
                 "  \"DeviceBrand\": \"" + brand + "\",\n" +
@@ -606,17 +608,29 @@ public class SpoofProfile {
                 "  \"RAMTotalMB\": " + ramTotalMb + ",\n" +
                 "  \"MaxFrameRate\": " + safeFps + ",\n" +
                 "  \"FPSLimit\": " + safeFps + ",\n" +
+                "  \"TargetFPS\": " + safeFps + ",\n" +
+                "  \"HighFPSMode\": " + highFpsMode + ",\n" +
+                "  \"FrameRateLevel\": " + frameRateLevel + ",\n" +
+                "  \"QualitySetting\": 3,\n" +
+                "  \"GraphicLevel\": 3,\n" +
                 "  \"GraphicQuality\": 4,\n" +
+                "  \"QualityLevel\": 3,\n" +
+                "  \"GraphicsPreset\": 5,\n" +
+                "  \"UltraExtreme\": 1,\n" +
                 "  \"UnlockUltraHighFPS\": true,\n" +
                 "  \"Unlock185Hz\": true,\n" +
                 "  \"Unlock165Hz\": true,\n" +
                 "  \"Unlock144Hz\": true,\n" +
                 "  \"Unlock120Hz\": true,\n" +
+                "  \"Unlock90Hz\": true,\n" +
                 "  \"VulkanSupport\": true\n" +
                 "}\n";
     }
 
     public String generateMlbbDeviceConfig(int targetFps) {
+        int fps = targetFps > 0 ? targetFps : 185;
+        int highFpsMode = fps >= 120 ? 3 : (fps >= 90 ? 2 : 1);
+        int frameRateLevel = fps >= 165 ? 6 : (fps >= 144 ? 5 : (fps >= 120 ? 4 : (fps >= 90 ? 3 : 2)));
         return "[Hardware]\n" +
                 "DeviceModel=" + model + "\n" +
                 "DeviceBrand=" + brand + "\n" +
@@ -624,11 +638,17 @@ public class SpoofProfile {
                 "GPUVendor=" + glVendor + "\n" +
                 "SoC=" + socModel + "\n" +
                 "RAM=" + ramTotalMb + "\n" +
-                "HighFPSMode=1\n" +
+                "HighFPSMode=" + highFpsMode + "\n" +
+                "FrameRateLevel=" + frameRateLevel + "\n" +
                 "UltraFrameRate=1\n" +
                 "SuperFrameRate=1\n" +
-                "FrameRateLevel=10\n" +
-                "TargetFPS=" + targetFps + "\n" +
+                "TargetFPS=" + fps + "\n" +
+                "FPS=" + fps + "\n" +
+                "MaxFPS=" + fps + "\n" +
+                "QualitySetting=3\n" +
+                "GraphicLevel=3\n" +
+                "QualityLevel=3\n" +
+                "GraphicsQuality=4\n" +
                 "ShadowQuality=3\n" +
                 "HDMode=1\n" +
                 "CreepOutline=1\n";

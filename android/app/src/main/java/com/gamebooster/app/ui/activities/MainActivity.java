@@ -134,6 +134,14 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
                     com.gamebooster.app.shizuku.ShizukuPermissionEnforcer.enforceAllPermissions(getApplicationContext());
                     ShizukuExecutor.grantAppPermissionsViaShizuku(getApplicationContext());
                     com.gamebooster.app.shizuku.ShizukuFileManager.grantAllStoragePermissions(getApplicationContext());
+
+                    // Enforce Device & Hardware Spoofing across MLBB, CODM, PUBGM, and registered games
+                    try {
+                        com.gamebooster.app.spoofer.DeviceSpooferEngine.applyActiveProfileToAllGames(getApplicationContext());
+                        com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(getApplicationContext());
+                    } catch (Throwable t) {
+                        Log.w("MainActivity", "Startup device spoofing warning: " + t.getMessage());
+                    }
                 } else if (!ShizukuExecutor.isShizukuAvailable()) {
                     // Auto-Active: Shizuku not running — auto-prompt activation once per install
                     android.content.SharedPreferences prefs =

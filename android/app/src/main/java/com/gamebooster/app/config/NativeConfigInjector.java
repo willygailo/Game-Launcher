@@ -2879,9 +2879,8 @@ public class NativeConfigInjector {
         if (path == null || profile == null) return false;
         ensureParentDirectory(path);
         int fpsVal = targetHz > 0 ? targetHz : (profile.maxRefreshRateHz > 0 ? profile.maxRefreshRateHz : 185);
-        String highFpsModeVal = fpsVal >= 185 ? "185" : (fpsVal >= 120 ? "120" : (fpsVal >= 90 ? "90" : "60"));
-        String highFpsSeeVal = fpsVal >= 185 ? "5" : (fpsVal >= 120 ? "4" : (fpsVal >= 90 ? "3" : "2"));
-        int highFpsNum = fpsVal >= 185 ? 4 : (fpsVal >= 120 ? 3 : (fpsVal >= 90 ? 2 : 1));
+        int highFpsNum = fpsVal >= 165 ? 4 : (fpsVal >= 120 ? 3 : (fpsVal >= 90 ? 2 : 1));
+        int frameRateLevel = fpsVal >= 165 ? 6 : (fpsVal >= 144 ? 5 : (fpsVal >= 120 ? 4 : (fpsVal >= 90 ? 3 : 2)));
 
         if (path.toLowerCase().endsWith(".xml")) {
             String[] xmlKeys = {
@@ -2898,11 +2897,11 @@ public class NativeConfigInjector {
                 "GPUVendor=" + profile.glVendor,
                 "SoC=" + profile.socModel,
                 "HardwareProfileTier=4",
-                "HighFpsMode=" + highFpsModeVal,
-                "HighFpsModeSee=" + highFpsSeeVal,
+                "HighFPSMode=" + highFpsNum,
+                "HighFpsMode=" + highFpsNum,
                 "HighFPS=" + highFpsNum,
                 "FpsMode=" + highFpsNum,
-                "FrameRateLevel=4",
+                "FrameRateLevel=" + frameRateLevel,
                 "SupportHighFps=1",
                 "SupportHighFpsMode=1",
                 "SupportUltraFps=1",
@@ -2911,13 +2910,20 @@ public class NativeConfigInjector {
                 "SupportExtremeFpsMode=1",
                 "Quality=3",
                 "QualityLevel=3",
+                "QualitySetting=3",
+                "GraphicLevel=3",
                 "GraphicsQuality=5",
+                "TargetFPS=" + fpsVal,
+                "FPS=" + fpsVal,
+                "MaxFPS=" + fpsVal,
                 "TargetFrameRate=" + fpsVal,
                 "MaxRefreshRate=" + fpsVal,
-                "Unlock185Hz=1",
-                "Unlock165Hz=1",
+                "Unlock90Hz=1",
+                "Unlock120Hz=1",
                 "Unlock144Hz=1",
-                "Unlock120Hz=1"
+                "Unlock165Hz=1",
+                "Unlock185Hz=1",
+                "Unlock240Hz=1"
             };
             return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
         }
@@ -2934,16 +2940,22 @@ public class NativeConfigInjector {
                 "MaxFrameRate=" + fpsVal,
                 "FPSLimit=" + fpsVal,
                 "TargetFPS=" + fpsVal,
-                "HighFPSMode=1",
+                "HighFPSMode=" + highFpsNum,
+                "FrameRateLevel=" + frameRateLevel,
                 "UltraFrameRate=1",
                 "SuperFrameRate=1",
+                "QualitySetting=3",
+                "GraphicLevel=3",
                 "GraphicQuality=4",
-                "QualityLevel=4",
+                "QualityLevel=3",
+                "GraphicsPreset=5",
+                "UltraExtreme=1",
                 "UnlockUltraHighFPS=true",
-                "Unlock185Hz=true",
-                "Unlock165Hz=true",
-                "Unlock144Hz=true",
+                "Unlock90Hz=true",
                 "Unlock120Hz=true",
+                "Unlock144Hz=true",
+                "Unlock165Hz=true",
+                "Unlock185Hz=true",
                 "VulkanSupport=true"
             };
             return ConfigFileHelper.patchKeys(path, jsonKeys, null);
@@ -2960,8 +2972,12 @@ public class NativeConfigInjector {
             "TargetFPS=" + fpsVal,
             "MaxFPS=" + fpsVal,
             "HardwareProfileTier=4",
-            "HighFPSMode=1",
-            "UltraFrameRate=1"
+            "HighFPSMode=" + highFpsNum,
+            "FrameRateLevel=" + frameRateLevel,
+            "QualitySetting=3",
+            "GraphicLevel=3",
+            "UltraFrameRate=1",
+            "SuperFrameRate=1"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[HardwareProfile]");
     }
@@ -3841,13 +3857,41 @@ public class NativeConfigInjector {
                 if (nativeInjectMlbb165FpsGraphics(path, targetFps, qualityLevel)) return true;
             } catch (Throwable ignored) {}
         }
-        int fps = targetFps > 0 ? targetFps : 165;
-        int q = qualityLevel > 0 ? qualityLevel : 4;
+        int fps = targetFps > 0 ? targetFps : 185;
+        int q = qualityLevel > 0 ? qualityLevel : 3;
+        int highFpsMode = fps >= 120 ? 3 : (fps >= 90 ? 2 : 1);
+        int frameRateLevel = fps >= 165 ? 6 : (fps >= 144 ? 5 : (fps >= 120 ? 4 : (fps >= 90 ? 3 : 2)));
         String[] keys = {
-            "HighFPSMode=1", "UltraFrameRate=1", "SuperFrameRate=1", "TargetFPS=" + fps,
-            "FrameRateLimit=" + fps, "QualitySetting=" + q, "GraphicLevel=" + q,
-            "PerformanceLevel=3", "Unlock120Hz=1", "Unlock144Hz=1", "Unlock165Hz=1",
-            "TouchBoostHz=" + fps, "ZeroDelayTouch=1", "bFramePacingEnabled=True"
+            "HighFPSMode=" + highFpsMode,
+            "FrameRateLevel=" + frameRateLevel,
+            "FPS=" + fps,
+            "MaxFPS=" + fps,
+            "TargetFPS=" + fps,
+            "FrameRateLimit=" + fps,
+            "UltraFrameRate=1",
+            "SuperFrameRate=1",
+            "HighFrameRate=1",
+            "UnlockFPS=1",
+            "SuperHighFPS=1",
+            "QualitySetting=" + q,
+            "GraphicLevel=" + q,
+            "QualityLevel=" + q,
+            "GraphicsQuality=5",
+            "PerformanceLevel=3",
+            "HDMode=1",
+            "Shadow=1",
+            "Outline=1",
+            "Unlock90Hz=1",
+            "Unlock120Hz=1",
+            "Unlock144Hz=1",
+            "Unlock165Hz=1",
+            "Unlock185Hz=1",
+            "Unlock240Hz=1",
+            "HFR=1",
+            "ShowFPS=1",
+            "TouchBoostHz=" + fps,
+            "ZeroDelayTouch=1",
+            "bFramePacingEnabled=True"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbGraphics]");
     }

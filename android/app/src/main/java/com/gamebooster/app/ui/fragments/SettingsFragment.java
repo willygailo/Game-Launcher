@@ -23,6 +23,14 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
+import android.graphics.Color;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -246,12 +254,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         Button btnDiagClear = view.findViewById(R.id.btn_diag_clear);
         if (btnDiagRefresh != null) {
             btnDiagRefresh.setOnClickListener(v -> {
-                if (tvDiagStatus != null) {
-                    tvDiagStatus.setText("⚡ Rescanning all hardware bridges, network & system connections...");
+                if (tvDiagLiveIndicator != null) {
+                    tvDiagLiveIndicator.setText("🔄 LIVE SYNCING...");
                 }
-                renderDiagnostics();
+                updateLiveQuickMetrics();
+                renderDiagnostics(false);
                 if (getContext() != null) {
-                    Toast.makeText(getContext(), "🔄 Refreshing system diagnostics...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "🔄 Live diagnostics synchronized", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -263,13 +272,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (getContext() != null) {
                     boolean cleared = com.gamebooster.app.diagnostics.DiagnosticsExporter.clearAllDiagnosticsData(getContext());
                     Toast.makeText(getContext(), cleared ? "🧹 All crash logs & diagnostic cache cleared!" : "🧹 Diagnostic logs reset", Toast.LENGTH_SHORT).show();
-                    renderDiagnostics();
+                    renderDiagnostics(false);
                 }
             });
         }
 
-        // Auto-Open: Immediately start live diagnostics scan on view creation (Zero Wait)
-        renderDiagnostics();
+        // Auto-Open: Immediately populate live status & start continuous ticker (Zero Wait, Walang Scanning)
+        if (getContext() != null) {
+            String initialFastSnapshot = com.gamebooster.app.diagnostics.DiagnosticsExporter.getCachedOrFastSnapshot(getContext());
+            if (tvDiagStatus != null) {
+                tvDiagStatus.setText(initialFastSnapshot);
+            }
+        }
+        updateLiveQuickMetrics();
+        renderDiagnostics(true);
+        startLiveDiagnosticsTicker();
 
         // Hidden Settings: Silently enforce hardware performance flags & next-gen WebView optimization
         if (getContext() != null) {
@@ -1819,9 +1836,16 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     } else if (pkg.contains("callofduty") || pkg.contains("cod")) {
                         CodmConfigPatcher.patchUltraExtreme165(pkg);
                     }
-                } else if (targetHz == 120) {
+                } else if (targetHz >= 120) {
                     if (pkg.contains("tencent.ig") || pkg.contains("pubg")) {
                         PubgConfigPatcher.patchUltraHdr120(pkg);
+                        CommandExecutor.executeSystemCommand("cmd game set --fps 120 " + pkg + " 2>/dev/null");
+                    } else if (pkg.contains("mobile.legends")) {
+                        MlbbConfigPatcher.patchUltraExtreme185(pkg);
+                        CommandExecutor.executeSystemCommand("cmd game set --fps 120 " + pkg + " 2>/dev/null");
+                    } else if (pkg.contains("callofduty") || pkg.contains("cod")) {
+                        CodmConfigPatcher.patchUltraExtreme165(pkg);
+                        CommandExecutor.executeSystemCommand("cmd game set --fps 120 " + pkg + " 2>/dev/null");
                     }
                 }
                 CommonConfigTuningInjector.applyFullRankedMasterySuite(pkg);
@@ -1955,12 +1979,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
         }
         refreshAllStatuses();
+        startLiveDiagnosticsTicker();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         if (videoSettingsBg != null) videoSettingsBg.pause();
+        stopLiveDiagnosticsTicker();
     }
 
     @Override
@@ -1968,6 +1994,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         super.onHiddenChanged(hidden);
         if (hidden) {
             if (videoSettingsBg != null) videoSettingsBg.pause();
+            stopLiveDiagnosticsTicker();
         } else {
             if (videoSettingsBg != null) videoSettingsBg.play();
             if (getContext() != null) {
@@ -1976,13 +2003,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
             }
             refreshAllStatuses();
-            renderDiagnostics();
+            renderDiagnostics(true);
+            startLiveDiagnosticsTicker();
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        stopLiveDiagnosticsTicker();
         if (videoSettingsBg != null) {
             videoSettingsBg.release();
             videoSettingsBg = null;
@@ -2066,9 +2095,119 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         });
     }
 
-    private void renderDiagnostics() {
+    private long mLastFullDiagRefresh = 0;
+    private final Handler mDiagLiveHandler = new Handler(Looper.getMainLooper());
+    private boolean mDiagTickerActive = false;
+
+    private final Runnable mDiagLiveRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isAdded() || isHidden() || getActivity() == null) {
+                mDiagTickerActive = false;
+                return;
+            }
+            updateLiveQuickMetrics();
+            long now = System.currentTimeMillis();
+            if (now - mLastFullDiagRefresh >= 3000) {
+                mLastFullDiagRefresh = now;
+                renderDiagnostics(true /* isSilent */);
+            }
+            mDiagLiveHandler.postDelayed(this, 1500);
+        }
+    };
+
+    private void startLiveDiagnosticsTicker() {
+        if (mDiagTickerActive) return;
+        mDiagTickerActive = true;
+        mDiagLiveHandler.removeCallbacks(mDiagLiveRunnable);
+        mDiagLiveHandler.post(mDiagLiveRunnable);
+    }
+
+    private void stopLiveDiagnosticsTicker() {
+        mDiagTickerActive = false;
+        mDiagLiveHandler.removeCallbacks(mDiagLiveRunnable);
+    }
+
+    private void updateLiveQuickMetrics() {
+        if (!isAdded()) return;
         final Context ctx = getContext() != null ? getContext().getApplicationContext() : null;
         if (ctx == null) return;
+
+        boolean shizukuOk = ShizukuManager.isShizukuRunningAndGranted()
+                || com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
+        boolean aidlOk = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected();
+
+        boolean isWifi = false;
+        String netSpeed = "";
+        try {
+            ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                Network activeNet = cm.getActiveNetwork();
+                NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
+                isWifi = caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+                if (isWifi) {
+                    android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+                    if (wm != null) {
+                        @SuppressWarnings("deprecation")
+                        android.net.wifi.WifiInfo winfo = wm.getConnectionInfo();
+                        if (winfo != null && winfo.getLinkSpeed() > 0) {
+                            netSpeed = winfo.getLinkSpeed() + "M";
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        float batteryTemp = -1f;
+        try {
+            Intent bat = ctx.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+            if (bat != null) {
+                int t = bat.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
+                if (t > 0) batteryTemp = t / 10.0f;
+            }
+        } catch (Throwable ignored) {}
+
+        if (tvDiagBadgeShizuku != null) {
+            tvDiagBadgeShizuku.setText(shizukuOk ? "⚡ SHIZUKU: ACTIVE (UID 2000)" : "⚠️ SHIZUKU: DISCONNECTED");
+            tvDiagBadgeShizuku.setTextColor(shizukuOk ? Color.parseColor("#00F0FF") : Color.parseColor("#FF5555"));
+        }
+        if (tvDiagBadgeAidl != null) {
+            tvDiagBadgeAidl.setText(aidlOk ? "🔌 AIDL: BOUND (ACTIVE)" : "🟡 AIDL: STANDBY");
+            tvDiagBadgeAidl.setTextColor(aidlOk ? Color.parseColor("#00FF66") : Color.parseColor("#FFAA00"));
+        }
+        if (tvDiagBadgeNet != null) {
+            String netStr = isWifi ? ("📶 WI-FI (" + (!netSpeed.isEmpty() ? netSpeed : "LOW-LATENCY") + ")") : "🚀 5G/MOBILE DATA";
+            tvDiagBadgeNet.setText(netStr);
+            tvDiagBadgeNet.setTextColor(Color.parseColor("#E2E8F0"));
+        }
+        if (tvDiagBadgeThermal != null) {
+            String tempStr = batteryTemp > 0 ? String.format(Locale.US, "🌡️ %.1f°C", batteryTemp) : "🌡️ THERMAL: OK";
+            tvDiagBadgeThermal.setText(tempStr);
+            tvDiagBadgeThermal.setTextColor(batteryTemp > 42.0f ? Color.parseColor("#FF4444") : Color.parseColor("#FFAA00"));
+        }
+        if (tvDiagLiveIndicator != null) {
+            String timeStr = new SimpleDateFormat("HH:mm:ss", Locale.US).format(new Date());
+            tvDiagLiveIndicator.setText("🟢 LIVE AUTO-SYNC: " + timeStr);
+        }
+        refreshSafStatus();
+    }
+
+    private void renderDiagnostics() {
+        renderDiagnostics(false);
+    }
+
+    private void renderDiagnostics(boolean isSilent) {
+        final Context ctx = getContext() != null ? getContext().getApplicationContext() : null;
+        if (ctx == null) return;
+
+        // Instant 0ms fill if tvDiagStatus is blank or contains static placeholder
+        if (tvDiagStatus != null) {
+            CharSequence current = tvDiagStatus.getText();
+            if (current == null || current.length() == 0 || current.toString().startsWith("⚡ Scanning") || current.toString().startsWith("⚡ Initializing")) {
+                tvDiagStatus.setText(com.gamebooster.app.diagnostics.DiagnosticsExporter.getCachedOrFastSnapshot(ctx));
+            }
+        }
+        updateLiveQuickMetrics();
 
         AppExecutors.getInstance().executeScan(() -> {
             try {
@@ -2080,67 +2219,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 java.util.List<String> lines = com.gamebooster.app.diagnostics.DiagnosticsExporter.buildSnapshot(ctx);
                 final String text = com.gamebooster.app.diagnostics.DiagnosticsExporter.join(lines);
 
-                // Quick badge metrics
-                boolean shizukuOk = ShizukuManager.isShizukuRunningAndGranted()
-                        || com.gamebooster.app.engine.PrivilegeBridgeEngine.isShizukuVirtualRootReady();
-                boolean aidlOk = com.gamebooster.app.shizuku.ShizukuUserServiceConnector.getInstance().isServiceConnected();
-                boolean isWifi = false;
-                try {
-                    android.net.ConnectivityManager cm = (android.net.ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-                    if (cm != null) {
-                        android.net.Network activeNet = cm.getActiveNetwork();
-                        android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(activeNet);
-                        isWifi = caps != null && caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI);
-                    }
-                } catch (Throwable ignored) {}
-
-                float batteryTemp = -1f;
-                try {
-                    android.content.Intent bat = ctx.registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
-                    if (bat != null) {
-                        int t = bat.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, -1);
-                        if (t > 0) batteryTemp = t / 10.0f;
-                    }
-                } catch (Throwable ignored) {}
-
-                final float finalTemp = batteryTemp;
-                final boolean finalShizuku = shizukuOk;
-                final boolean finalAidl = aidlOk;
-                final boolean finalWifi = isWifi;
-
                 AppExecutors.getInstance().postToMainThread(() -> {
                     if (!isAdded()) return;
                     if (tvDiagStatus != null) {
                         tvDiagStatus.setText(text);
                     }
-                    if (tvDiagBadgeShizuku != null) {
-                        tvDiagBadgeShizuku.setText(finalShizuku ? "⚡ SHIZUKU: ACTIVE (UID 2000)" : "⚠️ SHIZUKU: DISCONNECTED");
-                        tvDiagBadgeShizuku.setTextColor(finalShizuku ? android.graphics.Color.parseColor("#00F0FF") : android.graphics.Color.parseColor("#FF5555"));
-                    }
-                    if (tvDiagBadgeAidl != null) {
-                        tvDiagBadgeAidl.setText(finalAidl ? "🔌 AIDL: BOUND (ACTIVE)" : "🟡 AIDL: STANDBY");
-                        tvDiagBadgeAidl.setTextColor(finalAidl ? android.graphics.Color.parseColor("#00FF66") : android.graphics.Color.parseColor("#FFAA00"));
-                    }
-                    if (tvDiagBadgeNet != null) {
-                        tvDiagBadgeNet.setText(finalWifi ? "📶 WI-FI LOW-LATENCY" : "🚀 5G/MOBILE DATA");
-                        tvDiagBadgeNet.setTextColor(android.graphics.Color.parseColor("#E2E8F0"));
-                    }
-                    if (tvDiagBadgeThermal != null) {
-                        String tempStr = finalTemp > 0 ? String.format(java.util.Locale.US, "🌡️ %.1f°C", finalTemp) : "🌡️ THERMAL: OK";
-                        tvDiagBadgeThermal.setText(tempStr);
-                        tvDiagBadgeThermal.setTextColor(finalTemp > 42.0f ? android.graphics.Color.parseColor("#FF4444") : android.graphics.Color.parseColor("#FFAA00"));
-                    }
-                    if (tvDiagLiveIndicator != null) {
-                        tvDiagLiveIndicator.setText("🟢 LIVE AUTO-SYNC: " + new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(new java.util.Date()));
-                    }
-                    refreshSafStatus();
+                    updateLiveQuickMetrics();
                 });
             } catch (Throwable t) {
-                AppExecutors.getInstance().postToMainThread(() -> {
-                    if (tvDiagStatus != null) {
-                        tvDiagStatus.setText("⚠️ Diagnostics Query Error: " + t.getMessage());
-                    }
-                });
+                android.util.Log.w("SettingsFragment", "Background diagnostics refresh error: " + t.getMessage());
             }
         });
     }

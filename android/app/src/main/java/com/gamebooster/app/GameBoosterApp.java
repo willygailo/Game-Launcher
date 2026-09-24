@@ -138,6 +138,13 @@ public class GameBoosterApp extends Application {
             } catch (Throwable t) {
                 Log.w(TAG, "AutoGameMonitorService start error: " + t.getMessage());
             }
+
+            // G. Pre-warm System Diagnostics Snapshot in memory for instant zero-wait live display
+            try {
+                com.gamebooster.app.diagnostics.DiagnosticsExporter.prewarm(appCtx);
+            } catch (Throwable t) {
+                Log.w(TAG, "Diagnostics pre-warm error: " + t.getMessage());
+            }
         });
 
         Log.i(TAG, "Game Booster Application initialized successfully.");

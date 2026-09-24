@@ -29,8 +29,12 @@ public final class GameProfileAutoConfigurator {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);
     }
 
-    /** Resolves to a physical mode reported by Android, with 60Hz as a safe display fallback. */
+    /** Resolves to a physical mode reported by Android or high-tier gaming overdrive (120/144/165/185Hz). */
     public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
+        if (targetFpsHz >= 185) return 185;
+        if (targetFpsHz >= 165) return 165;
+        if (targetFpsHz >= 144) return 144;
+        if (targetFpsHz >= 120) return 120;
         if (context == null) return targetFpsHz > 0 ? targetFpsHz : 60;
         int resolved = DevicePerformanceCapabilities.detect(context).resolveRefreshRate(targetFpsHz);
         return resolved > 0 ? resolved : 60;

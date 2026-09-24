@@ -157,8 +157,8 @@ public final class ShizukuFileManager {
             byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
             String b64;
             try {
-                b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
-                if (b64 == null) {
+                b64 = Base64.encodeToString(bytes, Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                if (b64 == null || b64.isEmpty()) {
                     b64 = java.util.Base64.getEncoder().encodeToString(bytes);
                 }
             } catch (Throwable t) {

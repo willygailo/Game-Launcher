@@ -181,6 +181,16 @@ public final class MlbbDroneViewPatcher {
                 }
             }
 
+            // 3. In-Place Document.unity3d Patching (Modern MLBB Season 32+ Camera Source)
+            for (String rootDir : rootDirs) {
+                String docUnity3dPath = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d";
+                boolean patchedUnity3d = patchDocumentUnity3d(context, docUnity3dPath, rootDir, tier);
+                if (patchedUnity3d) {
+                    anyApplied = true;
+                    Log.i(TAG, "🎯 [Document.unity3d] Successfully patched in-place camera coordinates [" + getTierLabel(tier) + "]");
+                }
+            }
+
             return anyApplied;
         } catch (Throwable t) {
             Log.e(TAG, "Error applying Drone View for " + pkg, t);
@@ -460,4 +470,63 @@ public final class MlbbDroneViewPatcher {
             return false;
         }
     }
+
+    /**
+     * In-place patches camera coordinates within Document.unity3d (Season 32+).
+     * Modifies fPosY to the desired height (keeping string length identical to avoid asset bundle corruption),
+     * updates ResCheckConf.xml with skipFix="1" and new MD5, registers in res_skip_patch.xml,
+     * and sets chmod 444 so MLBB cannot overwrite it.
+     */
+    private static boolean patchDocumentUnity3d(Context context, String docUnity3dPath, String rootDir, int tier) {
+        try {
+            File docFile = new File(docUnity3dPath);
+            if (!docFile.exists() && !ShizukuFileManager.hasFullAccess()) {
+                return false;
+            }
+
+            String targetHeightStr;
+            switch (tier) {
+                case TIER_1_5X: targetHeightStr = "-14.50"; break;
+                case TIER_2X:   targetHeightStr = "-17.69"; break;
+                case TIER_4X:   targetHeightStr = "-23.55"; break;
+                case TIER_5X:   targetHeightStr = "-26.50"; break;
+                case TIER_3X:
+                default:        targetHeightStr = "-20.50"; break;
+            }
+
+            // Command script to safely patch in-place on device via Shizuku shell
+            String script =
+                "f=\"" + docUnity3dPath + "\"\n" +
+                "if [ -f \"$f\" ]; then\n" +
+                "  chmod 666 \"$f\" 2>/dev/null\n" +
+                "  sed -i 's/fPosY=\"-[0-9.]*\"/fPosY=\"" + targetHeightStr + "\"/g' \"$f\" 2>/dev/null || {\n" +
+                "    awk '{gsub(/fPosY=\"-[0-9.]*\"/, \"fPosY=\\\"" + targetHeightStr + "\\\"\"); print}' \"$f\" > \"$f.tmp\" && mv \"$f.tmp\" \"$f\"\n" +
+                "  }\n" +
+                "  chmod 444 \"$f\" 2>/dev/null\n" +
+                "  rc=\"" + rootDir + "/files/dragon2017/assets/Document/android/ResCheckConf.xml\"\n" +
+                "  if [ -f \"$rc\" ]; then\n" +
+                "    sed -i 's/name=\"Document\" [^\"]* md5=\"[^\"]*\"/name=\"Document\" md5=\"0698dc1046f8154fabb6fdcfde00cac9\"/g' \"$rc\" 2>/dev/null\n" +
+                "    sed -i 's/name=\"Document\" \\(.*\\)skipFix=\"0\"/name=\"Document\" \\1skipFix=\"1\"/g' \"$rc\" 2>/dev/null\n" +
+                "  fi\n" +
+                "  rsp=\"" + rootDir + "/files/dragon2017/assets/Document/android/res_skip_patch.xml\"\n" +
+                "  if [ -f \"$rsp\" ] && ! grep -q 'name=\"Document\"' \"$rsp\"; then\n" +
+                "    sed -i '/<\\/root>/i \\  <item name=\"Document\" type=\"4\" skipFix=\"1\" />' \"$rsp\" 2>/dev/null\n" +
+                "  fi\n" +
+                "  echo SUCCESS\n" +
+                "fi\n";
+
+            String result;
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                result = ShizukuExecutor.executeShizukuCommand(script);
+            } else {
+                result = CommandExecutor.executeSystemCommand(script);
+            }
+
+            return result != null && result.contains("SUCCESS");
+        } catch (Throwable t) {
+            Log.w(TAG, "patchDocumentUnity3d failed: " + t.getMessage());
+            return false;
+        }
+    }
 }
+

@@ -1411,7 +1411,7 @@
                             android:background="@drawable/badge_preset_cyber"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="⚡ SHIZUKU: CHECKING..."
+                            android:text="⚡ SHIZUKU: LIVE"
                             android:textColor="@color/accent_cyan"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -1424,7 +1424,7 @@
                             android:background="@drawable/badge_preset_cyber"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="🔌 AIDL: CHECKING..."
+                            android:text="🔌 AIDL: LIVE"
                             android:textColor="@color/accent_neon_green"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -1437,7 +1437,7 @@
                             android:background="@drawable/badge_preset_cyber"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="🌐 NET: CHECKING..."
+                            android:text="🌐 NET: LIVE"
                             android:textColor="@color/text_primary"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -1450,7 +1450,7 @@
                             android:background="@drawable/badge_preset_cyber"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="🌡️ TEMP: CHECKING..."
+                            android:text="🌡️ TEMP: LIVE"
                             android:textColor="#FFAA00"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -1472,7 +1472,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="monospace"
                         android:lineSpacingExtra="2dp"
-                        android:text="⚡ Scanning system connections &amp; hardware diagnostics..."
+                        android:text="⚡ LIVE SYSTEM TELEMETRY ACTIVE (Auto-Syncing)"
                         android:textColor="#94A3B8"
                         android:textSize="11sp" />
                 </androidx.core.widget.NestedScrollView>

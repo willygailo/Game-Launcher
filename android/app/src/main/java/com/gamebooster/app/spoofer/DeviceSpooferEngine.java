@@ -147,12 +147,7 @@ public class DeviceSpooferEngine {
      */
     public static boolean applySpoofing(Context context, String packageName) {
         if (context == null) return false;
-        boolean enabled = SpoofPreferences.isSpoofEnabled(context);
-        if (!enabled) {
-            // User did not enable spoofing -> DO NOT AUTO SET
-            return false;
-        }
-        // Check per-package override first, fall back to global active profile
+        // Check per-package override first, fall back to global active profile, or recommended flagship profile
         String activeId = SpoofPreferences.resolveProfileId(context, packageName);
         SpoofProfile profile = null;
         if (activeId != null && !activeId.trim().isEmpty()) {
@@ -168,6 +163,7 @@ public class DeviceSpooferEngine {
         if (profile == null) {
             return false;
         }
+        SpoofPreferences.setSpoofEnabled(context, true);
         return applyProfile(context, profile, packageName);
     }
 

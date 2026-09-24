@@ -3,6 +3,10 @@ package com.gamebooster.app.config;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import com.gamebooster.app.shizuku.ShizukuFileManager;
+import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 /**
  * MlbbConfigPatcher — 2026 Safe PlayerPrefs & Zero-Corruption Engine for Mobile Legends: Bang Bang.
@@ -535,6 +539,190 @@ public class MlbbConfigPatcher {
 
     private static final String TAG = "MlbbConfigPatcher";
 
+    /**
+     * Injects unlocked MLBB graphics & frame rate directly into prefs_int, boot.config,
+     * and Document/ / Document/android/ JSON configurations with Shizuku elevated fallback.
+     */
+    public static void applyMlbbPrefsIntAndBootConfig(String packageName, int targetFps) {
+        if (packageName == null) return;
+        int fps = targetFps > 0 ? targetFps : 185;
+        int highFpsMode = fps >= 120 ? 3 : (fps >= 90 ? 2 : 1);
+        int frameRateLevel = fps >= 165 ? 6 : (fps >= 144 ? 5 : (fps >= 120 ? 4 : (fps >= 90 ? 3 : 2)));
+
+        // 1. Target prefs_int files
+        String[] prefsIntPaths = {
+            "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/prefs_int",
+            "/sdcard/Android/data/" + packageName + "/files/dragon2017/assets/prefs_int",
+            "/storage/emulated/0/Android/data/" + packageName + "/files/Dragon2017/assets/prefs_int",
+            "/sdcard/Android/data/" + packageName + "/files/Dragon2017/assets/prefs_int"
+        };
+
+        Map<String, String> prefsMap = new LinkedHashMap<>();
+        prefsMap.put("HighFPSMode", String.valueOf(highFpsMode));
+        prefsMap.put("FrameRateLevel", String.valueOf(frameRateLevel));
+        prefsMap.put("QualitySetting", "3");
+        prefsMap.put("GraphicLevel", "3");
+        prefsMap.put("QualityLevel", "3");
+        prefsMap.put("GraphicsQuality", "5");
+        prefsMap.put("GraphicsPreset", "5");
+        prefsMap.put("UltraExtreme", "1");
+        prefsMap.put("UltraExtreme2026", "1");
+        prefsMap.put("HDMode", "1");
+        prefsMap.put("Shadow", "1");
+        prefsMap.put("Outline", "1");
+        prefsMap.put("FPS", String.valueOf(fps));
+        prefsMap.put("MaxFPS", String.valueOf(fps));
+        prefsMap.put("TargetFPS", String.valueOf(fps));
+        prefsMap.put("FrameRateLimit", String.valueOf(fps));
+        prefsMap.put("HighFrameRate", "1");
+        prefsMap.put("UnlockFPS", "1");
+        prefsMap.put("SuperHighFPS", "1");
+        prefsMap.put("Unlock90Hz", "1");
+        prefsMap.put("Unlock120Hz", "1");
+        prefsMap.put("Unlock144Hz", "1");
+        prefsMap.put("Unlock165Hz", "1");
+        prefsMap.put("Unlock185Hz", "1");
+        prefsMap.put("Unlock240Hz", "1");
+        prefsMap.put("HFR", "1");
+        prefsMap.put("ShowFPS", "1");
+        prefsMap.put("PerformanceLevel", "3");
+        prefsMap.put("HeroLock", "1");
+        prefsMap.put("AimMethod", "1");
+        prefsMap.put("TargetPriority", "0");
+        prefsMap.put("SkillSmartAim", "1");
+        prefsMap.put("CameraHeight", "4");
+
+        for (String p : prefsIntPaths) {
+            try {
+                String existing = ShizukuFileManager.readFile(p);
+                Map<String, String> currentEntries = new LinkedHashMap<>();
+                if (!existing.isEmpty()) {
+                    for (String line : existing.split("\\r?\\n")) {
+                        line = line.trim();
+                        if (line.isEmpty()) continue;
+                        int colon = line.indexOf(':');
+                        if (colon > 0) {
+                            currentEntries.put(line.substring(0, colon).trim(), line.substring(colon + 1).trim());
+                        }
+                    }
+                }
+                currentEntries.putAll(prefsMap);
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, String> e : currentEntries.entrySet()) {
+                    sb.append(e.getKey()).append(":").append(e.getValue()).append("\n");
+                }
+                String content = sb.toString();
+                ShizukuFileManager.ensureParentDirectory(p);
+                ShizukuFileManager.writeFile(p, content, "666");
+
+                byte[] bytes = content.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                ShizukuExecutor.executeShizukuCommand("echo '" + b64 + "' | base64 -d > " + p + " 2>/dev/null; chmod 666 " + p + " 2>/dev/null");
+            } catch (Throwable t) {
+                Log.w(TAG, "Error patching prefs_int at " + p + ": " + t.getMessage());
+            }
+        }
+
+        // 2. Target boot.config files
+        String[] bootPaths = {
+            "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/boot.config",
+            "/sdcard/Android/data/" + packageName + "/files/dragon2017/assets/boot.config",
+            "/storage/emulated/0/Android/data/" + packageName + "/files/boot.config",
+            "/sdcard/Android/data/" + packageName + "/files/boot.config"
+        };
+        String bootContent =
+            "target-frame-rate=" + fps + "\n" +
+            "application-target-frame-rate=" + fps + "\n" +
+            "wait-for-native-debugger=0\n" +
+            "vr-device-cardboard-enable=0\n" +
+            "gfx-enable-native-gles=1\n" +
+            "vulkan-enable-validation-layers=0\n" +
+            "force-driver-memory-reclaim=1\n" +
+            "single-threaded-rendering=0\n";
+
+        for (String bp : bootPaths) {
+            try {
+                ShizukuFileManager.ensureParentDirectory(bp);
+                ShizukuFileManager.writeFile(bp, bootContent, "666");
+                byte[] bytes = bootContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                ShizukuExecutor.executeShizukuCommand("echo '" + b64 + "' | base64 -d > " + bp + " 2>/dev/null; chmod 666 " + bp + " 2>/dev/null");
+            } catch (Throwable t) {
+                Log.w(TAG, "Error writing boot.config at " + bp + ": " + t.getMessage());
+            }
+        }
+
+        // 3. Target Document & Document/android JSON configs
+        String[] docJsonFiles = {
+            "QualityConfig.json",
+            "HighFPSConfig.json",
+            "GraphicSetting.json",
+            "ResolutionConfig.json",
+            "FpsSetting.json",
+            "PerformanceConfig.json"
+        };
+        String jsonPayload = "{\n" +
+            "  \"HighFPSMode\": " + highFpsMode + ",\n" +
+            "  \"FrameRateLevel\": " + frameRateLevel + ",\n" +
+            "  \"QualitySetting\": 3,\n" +
+            "  \"GraphicLevel\": 3,\n" +
+            "  \"QualityLevel\": 3,\n" +
+            "  \"GraphicsQuality\": 5,\n" +
+            "  \"GraphicsPreset\": 5,\n" +
+            "  \"UltraExtreme\": 1,\n" +
+            "  \"UltraFrameRate\": 1,\n" +
+            "  \"SuperFrameRate\": 1,\n" +
+            "  \"TargetFPS\": " + fps + ",\n" +
+            "  \"FPS\": " + fps + ",\n" +
+            "  \"MaxFPS\": " + fps + ",\n" +
+            "  \"FrameRateLimit\": " + fps + ",\n" +
+            "  \"HighFrameRate\": 1,\n" +
+            "  \"UnlockFPS\": 1,\n" +
+            "  \"SuperHighFPS\": 1,\n" +
+            "  \"Unlock90Hz\": 1,\n" +
+            "  \"Unlock120Hz\": 1,\n" +
+            "  \"Unlock144Hz\": 1,\n" +
+            "  \"Unlock165Hz\": 1,\n" +
+            "  \"Unlock185Hz\": 1,\n" +
+            "  \"Unlock240Hz\": 1,\n" +
+            "  \"HFR\": 1,\n" +
+            "  \"ShowFPS\": 1,\n" +
+            "  \"PerformanceLevel\": 3,\n" +
+            "  \"HDMode\": 1,\n" +
+            "  \"Shadow\": 1,\n" +
+            "  \"Outline\": 1,\n" +
+            "  \"TouchBoostHz\": " + fps + ",\n" +
+            "  \"ZeroDelayTouch\": 1,\n" +
+            "  \"bFramePacingEnabled\": \"True\",\n" +
+            "  \"VulkanSupport\": true\n" +
+            "}\n";
+
+        String[] docRoots = {
+            "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/Document",
+            "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/Document/android",
+            "/sdcard/Android/data/" + packageName + "/files/dragon2017/assets/Document",
+            "/sdcard/Android/data/" + packageName + "/files/dragon2017/assets/Document/android",
+            "/storage/emulated/0/Android/data/" + packageName + "/files/Config",
+            "/sdcard/Android/data/" + packageName + "/files/Config",
+            "/storage/emulated/0/Android/data/" + packageName + "/files/battle_config",
+            "/sdcard/Android/data/" + packageName + "/files/battle_config"
+        };
+
+        byte[] jsonBytes = jsonPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String jsonB64 = android.util.Base64.encodeToString(jsonBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+
+        for (String root : docRoots) {
+            for (String file : docJsonFiles) {
+                String target = root + "/" + file;
+                try {
+                    ShizukuFileManager.ensureParentDirectory(target);
+                    ShizukuFileManager.writeFile(target, jsonPayload, "666");
+                    ShizukuExecutor.executeShizukuCommand("mkdir -p " + root + " 2>/dev/null; echo '" + jsonB64 + "' | base64 -d > " + target + " 2>/dev/null; chmod 666 " + target + " 2>/dev/null");
+                } catch (Throwable ignored) {}
+            }
+        }
+    }
+
     // ─── Standard Patch ───────────────────────────────────────────────────────
 
     public static boolean patch(String packageName, int targetFps) {
@@ -545,6 +733,7 @@ public class MlbbConfigPatcher {
         for (String path : paths) {
             if (applyPatch(path, forcedFps)) patched++;
         }
+        applyMlbbPrefsIntAndBootConfig(packageName, forcedFps);
         Log.i(TAG, "MLBB safe patch: " + patched + " files for " + packageName + " @ " + forcedFps + "fps");
         return patched > 0;
     }
@@ -637,10 +826,11 @@ public class MlbbConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (ConfigFileHelper.patchKeys(path, xmlKeys, "[Graphics]")) {
-                written++;
-            }
+            boolean p1 = ConfigFileHelper.patchKeys(path, xmlKeys, "[Graphics]");
+            boolean p2 = NativeConfigInjector.injectMlbb165FpsGraphics(path, 144, 3);
+            if (p1 || p2) written++;
         }
+        applyMlbbPrefsIntAndBootConfig(packageName, 144);
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB UltraExtreme144 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
@@ -733,10 +923,11 @@ public class MlbbConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (ConfigFileHelper.patchKeys(path, xmlKeys, "[Graphics]")) {
-                written++;
-            }
+            boolean p1 = ConfigFileHelper.patchKeys(path, xmlKeys, "[Graphics]");
+            boolean p2 = NativeConfigInjector.injectMlbb165FpsGraphics(path, 185, 3);
+            if (p1 || p2) written++;
         }
+        applyMlbbPrefsIntAndBootConfig(packageName, 185);
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB UltraExtreme185 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
@@ -844,12 +1035,11 @@ public class MlbbConfigPatcher {
         List<String> paths = getConfigPaths(packageName);
         int written = 0;
         for (String path : paths) {
-            if (NativeConfigInjector.injectMlbb165FpsGraphics(path, 165, 3)) {
-                written++;
-            } else if (ConfigFileHelper.patchKeys(path, keys, "<map>")) {
-                written++;
-            }
+            boolean p1 = ConfigFileHelper.patchKeys(path, keys, "<map>");
+            boolean p2 = NativeConfigInjector.injectMlbb165FpsGraphics(path, 165, 3);
+            if (p1 || p2) written++;
         }
+        applyMlbbPrefsIntAndBootConfig(packageName, 165);
         AntiLogPatcher.applyAntiLog(packageName);
         Log.i(TAG, "MLBB UltraExtreme165 2026 patch: " + written + " paths for " + packageName);
         return written > 0;
@@ -1203,10 +1393,9 @@ public class MlbbConfigPatcher {
             "PreloadShaders=1",
             "AllowOcclusionQueries=1"
         };
-        if (NativeConfigInjector.injectMlbb165FpsGraphics(path, forcedFps, 3)) {
-            return true;
-        }
-        return ConfigFileHelper.patchKeys(path, keys, "<map>");
+        boolean b1 = ConfigFileHelper.patchKeys(path, keys, "<map>");
+        boolean b2 = NativeConfigInjector.injectMlbb165FpsGraphics(path, forcedFps, 3);
+        return b1 || b2;
     }
 
     // ─── 2026 Skill Economy Overdrive ─────────────────────────────────────────
