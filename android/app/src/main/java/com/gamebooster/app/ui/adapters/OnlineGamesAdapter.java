@@ -64,7 +64,11 @@ public class OnlineGamesAdapter extends RecyclerView.Adapter<OnlineGamesAdapter.
         }
 
         View.OnClickListener launchClick = v -> {
-            WebBrowserActivity.openUrl(context, item.getWebUrl(), item.getTitle());
+            String url = item.getWebUrl();
+            if (url == null || url.trim().isEmpty()) {
+                url = "https://html.duckduckgo.com/html/?q=" + android.net.Uri.encode(item.getTitle() + " online game");
+            }
+            WebBrowserActivity.openUrl(context, url, item.getTitle());
         };
 
         holder.itemView.setOnClickListener(launchClick);

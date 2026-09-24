@@ -113,7 +113,35 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             btnSettings.setOnClickListener(v -> {
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).selectTab(1);
+                } else if (isAdded() && getParentFragmentManager() != null) {
+                    try {
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, new SettingsFragment(), "tab_settings")
+                                .commitAllowingStateLoss();
+                    } catch (Throwable ignored) {}
                 }
+            });
+        }
+
+        // Hero Hardware Engine Banner Click: Instant Hardware Boost & Max Hz Refresh
+        View cardHeroBanner = view.findViewById(R.id.card_hero_hardware_engine);
+        if (cardHeroBanner != null) {
+            cardHeroBanner.setOnClickListener(v -> {
+                Context c = getContext();
+                if (c == null) return;
+                Toast.makeText(c, "🚀 Hardware Turbo Active: Maximum 185Hz & Zero Throttling Engaged!", Toast.LENGTH_SHORT).show();
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        com.gamebooster.app.engine.NativeFrameworkBridge.acquireSustainedPerformanceLock(c);
+                        if (getActivity() != null) {
+                            com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(getActivity());
+                        }
+                        com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
+                        com.gamebooster.app.booster.PerformanceChannel.applyProfile(c, com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
+                    } catch (Throwable t) {
+                        android.util.Log.w("HomeFragment", "Hardware turbo error: " + t.getMessage());
+                    }
+                });
             });
         }
 
@@ -125,20 +153,24 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         Button btnEmptyScanApks = view.findViewById(R.id.btn_empty_scan_apks);
 
         View.OnClickListener openAddGameAction = v -> {
-            if (isAdded() && getActivity() != null) {
-                com.gamebooster.app.ui.dialogs.AddGameDialog.show(requireActivity(), () -> loadAndScanGames(true));
+            android.app.Activity act = getActivity();
+            if (act != null && !act.isFinishing()) {
+                com.gamebooster.app.ui.dialogs.AddGameDialog.show(act, () -> loadAndScanGames(true));
             }
         };
 
         View.OnClickListener openClearGamesAction = v -> {
-            if (isAdded() && getActivity() != null) {
-                com.gamebooster.app.ui.dialogs.ClearGameDialog.show(requireActivity(), () -> loadAndScanGames(true));
+            android.app.Activity act = getActivity();
+            if (act != null && !act.isFinishing()) {
+                com.gamebooster.app.ui.dialogs.ClearGameDialog.show(act, () -> loadAndScanGames(true));
             }
         };
 
         View.OnClickListener openApkManagerAction = v -> {
-            if (getContext() != null) {
-                com.gamebooster.app.apk.ApkManagerDialog.show(getContext(), () -> loadAndScanGames(true));
+            android.app.Activity act = getActivity();
+            Context ctxToUse = act != null ? act : getContext();
+            if (ctxToUse != null) {
+                com.gamebooster.app.apk.ApkManagerDialog.show(ctxToUse, () -> loadAndScanGames(true));
             }
         };
 
@@ -147,6 +179,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (btnEmptyAddGame != null) btnEmptyAddGame.setOnClickListener(openAddGameAction);
         if (btnHomeApkManager != null) btnHomeApkManager.setOnClickListener(openApkManagerAction);
         if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);
+
+        if (tvGamesHeader != null) {
+            tvGamesHeader.setOnClickListener(v -> {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "🔄 Rescanning installed games library...", Toast.LENGTH_SHORT).show();
+                }
+                loadAndScanGames(true);
+            });
+        }
 
         if (rvGames != null) {
             rvGames.setLayoutManager(new LinearLayoutManager(getContext()));

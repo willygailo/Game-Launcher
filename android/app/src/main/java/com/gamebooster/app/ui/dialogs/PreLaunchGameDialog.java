@@ -36,13 +36,23 @@ public final class PreLaunchGameDialog {
 
     public static void show(Context context, GameAppInfo game) {
         if (context == null || game == null) return;
-        if (!(context instanceof Activity)) {
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        } else if (context instanceof android.content.ContextWrapper) {
+            Context base = context;
+            while (base instanceof android.content.ContextWrapper) {
+                if (base instanceof Activity) {
+                    activity = (Activity) base;
+                    break;
+                }
+                base = ((android.content.ContextWrapper) base).getBaseContext();
+            }
+        }
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             GameManagerLauncher.launchGame(context, game);
             return;
         }
-
-        Activity activity = (Activity) context;
-        if (activity.isFinishing() || activity.isDestroyed()) return;
 
         dismissCurrent();
         Dialog dialog = new Dialog(activity);

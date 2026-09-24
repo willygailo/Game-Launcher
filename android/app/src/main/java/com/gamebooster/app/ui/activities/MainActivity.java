@@ -2,6 +2,7 @@ package com.gamebooster.app.ui.activities;
 import com.gamebooster.app.config.*;
 
 import android.content.Intent;
+import java.io.File;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             "🏠",
             "⚙️"
     };
+
+    public static final int REQUEST_CODE_PICK_APK = 1003;
 
     public void selectTab(int position) {
         TabLayout tabLayout = findViewById(R.id.tab_layout);
@@ -318,6 +321,33 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
             } else {
                 Toast.makeText(this, "Storage access was not selected", Toast.LENGTH_SHORT).show();
             }
+        } else if (requestCode == REQUEST_CODE_PICK_APK && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            android.net.Uri apkUri = data.getData();
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    File cacheApk = new File(getCacheDir(), "picked_install.apk");
+                    try (java.io.InputStream in = getContentResolver().openInputStream(apkUri);
+                         java.io.FileOutputStream out = new java.io.FileOutputStream(cacheApk)) {
+                        byte[] buf = new byte[8192];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(this, "⚡ Installing selected APK package...", Toast.LENGTH_SHORT).show();
+                        com.gamebooster.app.apk.ApkInstallerEngine.installApk(this, cacheApk.getAbsolutePath(), (success, message) -> {
+                            if (success) {
+                                reloadHomeGames();
+                            }
+                        });
+                    });
+                } catch (Throwable t) {
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(this, "Failed to read APK file: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
         }
     }
 

@@ -3,6 +3,7 @@ package com.gamebooster.app.apk;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
@@ -38,10 +39,20 @@ public class ApkManagerDialog {
 
     public static void show(Context context, OnApkManagerChangeListener changeListener) {
         if (context == null) return;
-        if (!(context instanceof Activity)) return;
-
-        Activity activity = (Activity) context;
-        if (activity.isFinishing() || activity.isDestroyed()) return;
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        } else if (context instanceof android.content.ContextWrapper) {
+            Context base = context;
+            while (base instanceof android.content.ContextWrapper) {
+                if (base instanceof Activity) {
+                    activity = (Activity) base;
+                    break;
+                }
+                base = ((android.content.ContextWrapper) base).getBaseContext();
+            }
+        }
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
 
         dismissCurrent();
 
@@ -130,9 +141,19 @@ public class ApkManagerDialog {
         }
 
         if (btnPickFile != null) {
+            final Activity actRef = activity;
             btnPickFile.setOnClickListener(v -> {
-                Toast.makeText(context, "Scanning storage automatically...", Toast.LENGTH_SHORT).show();
-                startScan(context, adapter, pbLoading, tvCountInfo, layoutEmpty, rvApks);
+                try {
+                    Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                    pickIntent.setType("application/vnd.android.package-archive");
+                    pickIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                    pickIntent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/vnd.android.package-archive", "application/octet-stream"});
+                    actRef.startActivityForResult(Intent.createChooser(pickIntent, "Select APK to Install"), com.gamebooster.app.ui.activities.MainActivity.REQUEST_CODE_PICK_APK);
+                    dismissCurrent();
+                } catch (Throwable t) {
+                    Toast.makeText(context, "Scanning storage automatically...", Toast.LENGTH_SHORT).show();
+                    startScan(context, adapter, pbLoading, tvCountInfo, layoutEmpty, rvApks);
+                }
             });
         }
 

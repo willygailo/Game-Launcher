@@ -66,6 +66,9 @@ public class ShizukuStatusDashboardView extends LinearLayout {
         tvAppStatus = findViewById(R.id.tv_status_app);
         btnAction = findViewById(R.id.btn_action_shizuku);
 
+        setClickable(true);
+        setFocusable(true);
+        setOnClickListener(v -> handleActionClick());
         btnAction.setOnClickListener(v -> handleActionClick());
     }
 

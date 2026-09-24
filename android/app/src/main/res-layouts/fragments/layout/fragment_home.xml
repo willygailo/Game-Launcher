@@ -100,9 +100,13 @@
             android:layout_marginBottom="16dp" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_hero_hardware_engine"
             android:layout_width="match_parent"
             android:layout_height="145dp"
             android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
             app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#00000000">

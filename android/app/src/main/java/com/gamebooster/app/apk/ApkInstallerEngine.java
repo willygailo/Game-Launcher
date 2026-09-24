@@ -73,6 +73,26 @@ public class ApkInstallerEngine {
             }
         }
 
+        // Privileged Shizuku scan: bypasses Android 11-16 scoped storage restrictions on Download folders
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            try {
+                String cmd = "find /storage/emulated/0/Download /storage/emulated/0/Downloads /sdcard/Download /sdcard/Downloads /sdcard/Telegram -maxdepth 4 -name \"*.apk\" 2>/dev/null";
+                String output = ShizukuExecutor.executeShizukuCommand(cmd);
+                if (output != null && !output.isEmpty() && !output.startsWith("ERROR:")) {
+                    for (String line : output.split("\n")) {
+                        String p = line.trim();
+                        if (!p.isEmpty() && p.endsWith(".apk")) {
+                            File f = new File(p);
+                            if (f.exists() && !scannedPaths.contains(f.getAbsolutePath())) {
+                                apkFiles.add(f);
+                                scannedPaths.add(f.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+
         for (File f : apkFiles) {
             try {
                 String path = f.getAbsolutePath();

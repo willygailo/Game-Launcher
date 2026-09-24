@@ -119,7 +119,7 @@ public class AddGameAdapter extends RecyclerView.Adapter<AddGameAdapter.AddGameV
 
             updateButtonState(item);
 
-            btnToggle.setOnClickListener(v -> {
+            View.OnClickListener toggleClick = v -> {
                 item.isAdded = !item.isAdded;
                 if (item.isAdded) {
                     GameLauncherHelper.addCustomPackage(context, item.packageName);
@@ -130,7 +130,10 @@ public class AddGameAdapter extends RecyclerView.Adapter<AddGameAdapter.AddGameV
                 }
                 updateButtonState(item);
                 if (onChangeCallback != null) onChangeCallback.run();
-            });
+            };
+
+            btnToggle.setOnClickListener(toggleClick);
+            itemView.setOnClickListener(toggleClick);
         }
 
         private void updateButtonState(AppPickerItem item) {

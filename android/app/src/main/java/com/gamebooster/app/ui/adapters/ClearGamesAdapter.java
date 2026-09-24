@@ -139,7 +139,7 @@ public class ClearGamesAdapter extends RecyclerView.Adapter<ClearGamesAdapter.Cl
                 tvBadge.setBackgroundResource(R.drawable.badge_neon_green);
             }
 
-            btnRemove.setOnClickListener(v -> {
+            View.OnClickListener removeClick = v -> {
                 int pos = getAdapterPosition();
                 if (pos == RecyclerView.NO_POSITION || pos >= filteredList.size()) return;
 
@@ -160,7 +160,10 @@ public class ClearGamesAdapter extends RecyclerView.Adapter<ClearGamesAdapter.Cl
                 if (modifiedListener != null) {
                     modifiedListener.onGameRemoved(removedGame, originalList.size());
                 }
-            });
+            };
+
+            btnRemove.setOnClickListener(removeClick);
+            itemView.setOnClickListener(removeClick);
         }
     }
 }
