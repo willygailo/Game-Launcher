@@ -350,7 +350,7 @@ public class MasterOptimizationEnforcer {
                 // Tier 3: Config Injection & Engine Tuning
                 report.attemptStep("Tier 3", "GameConfigPatcher.applyGameFpsPatch(" + pkg + ", " + forcedFps + ")", () -> {
                     GameConfigPatcher.applyGameFpsPatch(appContext, pkg, forcedFps);
-                    com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
+                    com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg, true);
                 });
 
                 report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->

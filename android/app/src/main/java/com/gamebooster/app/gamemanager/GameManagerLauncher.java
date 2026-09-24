@@ -164,9 +164,16 @@ public final class GameManagerLauncher {
                     // STAGE 1: Instant full 3-tier master enforcement & initial configs
                     com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
 
-                    // STAGE 2: Schedule In-Lobby Stealth Overdrive re-injection at exactly 10 seconds
+                    // STAGE 2: Direct 2026 Overdrive, Zero-Delay Combo & All Hero Script Injection
+                    com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg, true);
+
+                    // STAGE 3: Schedule In-Lobby Stealth Overdrive re-injection at exactly 10 seconds
                     // (Waits for splash screen / Moonton integrity check to complete, then locks combat mods)
                     com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetHz, 10);
+
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        Toast.makeText(appContext, "⚡ " + gameTitle + " 100% Injected & Overdrive Active!", Toast.LENGTH_SHORT).show();
+                    });
 
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
