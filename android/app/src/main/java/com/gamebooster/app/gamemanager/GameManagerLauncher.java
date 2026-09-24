@@ -150,6 +150,20 @@ public final class GameManagerLauncher {
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
+                // Background Drone View injection right as game starts
+                if (pkg != null && (pkg.contains("mobile.legends") || pkg.contains("mobilelegends"))) {
+                    try {
+                        android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
+                        boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
+                        int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+                        if (droneEnabled) {
+                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(appContext, pkg, droneTier);
+                        }
+                    } catch (Throwable t) {
+                        Log.w(TAG, "MLBB Drone View background setup: " + t.getMessage());
+                    }
+                }
+
                 // STAGE 1: Instant full 3-tier master enforcement & initial configs
                 com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
 

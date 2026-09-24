@@ -193,12 +193,25 @@ public final class LobbyInjectionEngine {
                     } catch (Throwable ignored) {}
                 });
 
-                // ── MLBB WAVE-2: Drone View Re-Patch at +45s ────────────────────────────────
-                // MLBB downloads NEW mini_patch hot-fix slots during lobby login (e.g. fix_1790076887).
-                // The 10s Stage-2 wave runs BEFORE those slots exist. A second wave at 45s catches
-                // any slot that appeared after login (Moonton's LoadResManager picks the newest
-                // timestamp slot, so every new slot must be patched or drone view silently reverts).
+                // ── MLBB IN-LOBBY ENFORCEMENT & DRONE VIEW RE-PATCH ───────────
                 if (pkg != null && (pkg.contains("mobile.legends") || pkg.contains("mobilelegends"))) {
+                    try {
+                        Context appCtx = (context != null) ? context.getApplicationContext() : null;
+                        android.content.SharedPreferences prefs = appCtx != null
+                                ? appCtx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE)
+                                : null;
+                        boolean enabled = (prefs == null) || prefs.getBoolean("drone_enabled", true);
+                        int tier = (prefs != null) ? prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER) : MlbbDroneViewPatcher.DEFAULT_TIER;
+                        if (enabled) {
+                            boolean ok = MlbbDroneViewPatcher.applyDroneView(appCtx, pkg, tier);
+                            Log.i(TAG, ok
+                                    ? "🎯 [Stage 2 In-Lobby] MLBB Drone View [" + MlbbDroneViewPatcher.getTierLabel(tier) + "] locked successfully"
+                                    : "⚠️ [Stage 2 In-Lobby] MLBB Drone View lock returned false");
+                        }
+                    } catch (Throwable droneErr) {
+                        Log.w(TAG, "Stage 2 MLBB Drone View reinject warning: " + droneErr.getMessage());
+                    }
+
                     scheduleDroneViewWave2(context, pkg);
                 }
 
@@ -209,39 +222,63 @@ public final class LobbyInjectionEngine {
     }
 
     /**
-     * Schedules a second-wave MLBB drone view re-inject 45 seconds after lobby load.
-     *
-     * WHY: Moonton's LoadResManager downloads and registers new mini_patch hot-fix
-     * slots in the background during the login / home screen load phase (~15-40s).
-     * If a new slot appears after our 10s Stage-2 wave, MLBB prioritises it by
-     * timestamp and our drone view bytes are ignored. This 45s wave re-discovers
-     * all slots (including any freshly downloaded ones) and re-deploys the patch.
+     * Schedules waves of MLBB drone view re-injection after lobby load.
+     * Catches post-login mini_patch slot downloads and re-asserts read-only locks.
      */
     private static void scheduleDroneViewWave2(Context context, String pkg) {
         final Context appCtx = (context != null) ? context.getApplicationContext() : null;
         final String finalPkg = pkg;
+
+        // Wave 2: 18 seconds after launch (when lobby UI is interactive)
         Runnable wave2 = () -> sWorkerExecutor.execute(() -> {
             try {
-                Log.i(TAG, "🌊 [Wave-2] Re-patching MLBB Drone View at +45s for " + finalPkg
-                        + " (catching post-login mini_patch slot downloads)...");
+                Log.i(TAG, "🌊 [Wave-2] Re-patching MLBB Drone View at +18s for " + finalPkg);
                 int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+                boolean enabled = true;
                 try {
-                    // Honour any user-selected tier stored in preferences
                     android.content.SharedPreferences prefs = appCtx != null
                             ? appCtx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE)
                             : null;
-                    if (prefs != null) tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                    if (prefs != null) {
+                        enabled = prefs.getBoolean("drone_enabled", true);
+                        if (!enabled) return;
+                        tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                    }
                 } catch (Throwable ignored) {}
 
-                boolean ok = MlbbDroneViewPatcher.applyDroneView(appCtx, finalPkg, tier);
-                Log.i(TAG, ok
-                        ? "✅ [Wave-2] Drone View re-patch SUCCESS for " + finalPkg
-                        : "⚠️ [Wave-2] Drone View re-patch returned false for " + finalPkg);
+                if (enabled) {
+                    MlbbDroneViewPatcher.applyDroneView(appCtx, finalPkg, tier);
+                }
             } catch (Throwable t) {
-                Log.w(TAG, "[Wave-2] Drone View re-patch error for " + finalPkg + ": " + t.getMessage());
+                Log.w(TAG, "[Wave-2] Drone View error: " + t.getMessage());
             }
         });
-        sMainHandler.postDelayed(wave2, 45_000L); // 45 seconds after lobby injection
-        Log.i(TAG, "⏳ [Wave-2] MLBB Drone View re-patch scheduled at T+45s for " + pkg);
+        sMainHandler.postDelayed(wave2, 18_000L);
+
+        // Wave 3: 35 seconds (Final security reinforcement)
+        Runnable wave3 = () -> sWorkerExecutor.execute(() -> {
+            try {
+                Log.i(TAG, "🌊 [Wave-3] Final reinforcement of MLBB Drone View at +35s for " + finalPkg);
+                int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+                boolean enabled = true;
+                try {
+                    android.content.SharedPreferences prefs = appCtx != null
+                            ? appCtx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE)
+                            : null;
+                    if (prefs != null) {
+                        enabled = prefs.getBoolean("drone_enabled", true);
+                        if (!enabled) return;
+                        tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                    }
+                } catch (Throwable ignored) {}
+
+                if (enabled) {
+                    MlbbDroneViewPatcher.applyDroneView(appCtx, finalPkg, tier);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "[Wave-3] Drone View error: " + t.getMessage());
+            }
+        });
+        sMainHandler.postDelayed(wave3, 35_000L);
     }
 }

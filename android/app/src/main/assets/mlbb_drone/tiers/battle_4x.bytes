@@ -14,8 +14,8 @@
       <SCameraCamp iId="1" fPosX="14.93" fPosY="-21.41" fPosZ="14.85" fRotX="42.86" fRotY="44.9" fRotZ="-0.07" fFov="0" fScreenPtCastDis="30"/>
       <SCameraCamp iId="2" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
       <SCameraCamp iId="3" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="4" fPosX="0.78" fPosY="-21.41" fPosZ="19.46" fRotX="45" fRotY="1.9" fRotZ="1.1" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="5" fPosX="-13.65" fPosY="-27.30" fPosZ="-20.96" fRotX="57" fRotY="-180" fRotZ="0" fScreenPtCastDis="30"/>
+      <SCameraCamp iId="4" fPosX="0.4" fPosY="-10.98" ffPosZ="9.98" fRotX="45" fRotY="1.9" fRotZ="1.1" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="5" fPosX="-7" fPosY="-14" fPosZ="-10.75" fRotX="57" fRotY="-180" fRotZ="0" fScreenPtCastDis="15"/>
 	  <SCameraCamp iId="6" fPosX="9.47" fPosY="-36" fPosZ="-21.2" fRotX="55" fRotY="-180" fRotZ="0" fScreenPtCastDis="40"/>	
       <SCameraCamp iId="7" fPosX="-9.47" fPosY="-36" fPosZ="21.2" fRotX="55" fRotY="0" fRotZ="0" fScreenPtCastDis="40"/>		
 	  <SCameraCamp iId="8" fPosX="-6.54" fPosY="-17" fPosZ="-6.27" fRotX="60" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/><!--破晓行动-->
@@ -25,31 +25,22 @@
     </SCamera>
     <SCamera iIndex="2">
       <!--By GhostYT-->
-      <SCameraCamp iId="1" fPosX="14.93" fPosY="-21.41" fPosZ="14.85" fRotX="42.86" fRotY="44.9" fRotZ="-0.07" fFov="0" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="2" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="3" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="4" fPosX="0.78" fPosY="-21.41" fPosZ="19.46" fRotX="45" fRotY="1.9" fRotZ="1.1" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="5" fPosX="-13.65" fPosY="-27.30" fPosZ="-20.96" fRotX="57" fRotY="-180" fRotZ="0" fScreenPtCastDis="30"/>
+      <SCameraCamp iId="1" fPosX="7.66" fPosY="-10.98" fPosZ="7.62" fRotX="42.86" fRotY="44.9" fRotZ="-0.07" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="2" fPosX="-7.66" fPosY="-10.98" fPosZ="-7.62" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="3" fPosX="-7.66" fPosY="-10.98" fPosZ="-7.62" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="4" fPosX="0.4" fPosY="-10.98" fPosZ="9.98" fRotX="45" fRotY="1.9" fRotZ="1.1" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="5" fPosX="-7" fPosY="-14" fPosZ="-10.75" fRotX="57" fRotY="-180" fRotZ="0" fScreenPtCastDis="15"/>
 	  <SCameraCamp iId="6" fPosX="9.47" fPosY="-36" fPosZ="-21.2" fRotX="55" fRotY="-180" fRotZ="0" fScreenPtCastDis="40"/>	
       <SCameraCamp iId="7" fPosX="-9.47" fPosY="-36" fPosZ="21.2" fRotX="55" fRotY="0" fRotZ="0" fScreenPtCastDis="40"/>		
 	  <SCameraCamp iId="8" fPosX="-6.54" fPosY="-17" fPosZ="-6.27" fRotX="60" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/><!--破晓行动-->
-	  <SCameraCamp iId="9" fPosX="7.9" fPosY="-11.9" fPosZ="8" fRotX="44.5" fRotY="44.9" fRotZ="-0.07" fScreenPtCastDis="40"/>
-	  <SCameraCamp iId="10" fPosX="-8.05" fPosY="-11.9" fPosZ="-7.63" fRotX="44.5" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="40"/> <!--新版乱斗相机-->
-        <!--新版乱斗相机-->
+	  <SCameraCamp iId="9" fPosX="6.67" fPosY="-10.29" fPosZ="5.97" fRotX="44.5" fRotY="44.9" fRotZ="-0.07" fScreenPtCastDis="40"/>
+	  <SCameraCamp iId="10" fPosX="-6.67" fPosY="-10.29" fPosZ="-6.25" fRotX="44.5" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="40"/> <!--新版乱斗相机-->
+	  
     </SCamera>
 	<SCamera iIndex="3">
-      <!--By GhostYT-->
-      <SCameraCamp iId="1" fPosX="14.93" fPosY="-21.41" fPosZ="14.85" fRotX="42.86" fRotY="44.9" fRotZ="-0.07" fFov="0" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="2" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="3" fPosX="-14.93" fPosY="-21.41" fPosZ="-14.85" fRotX="42.86" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="4" fPosX="0.78" fPosY="-21.41" fPosZ="19.46" fRotX="45" fRotY="1.9" fRotZ="1.1" fScreenPtCastDis="30"/>
-      <SCameraCamp iId="5" fPosX="-13.65" fPosY="-27.30" fPosZ="-20.96" fRotX="57" fRotY="-180" fRotZ="0" fScreenPtCastDis="30"/>
-	  <SCameraCamp iId="6" fPosX="9.47" fPosY="-36" fPosZ="-21.2" fRotX="55" fRotY="-180" fRotZ="0" fScreenPtCastDis="40"/>	
-      <SCameraCamp iId="7" fPosX="-9.47" fPosY="-36" fPosZ="21.2" fRotX="55" fRotY="0" fRotZ="0" fScreenPtCastDis="40"/>		
-	  <SCameraCamp iId="8" fPosX="-6.54" fPosY="-17" fPosZ="-6.27" fRotX="60" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/><!--破晓行动-->
-	  <SCameraCamp iId="9" fPosX="7.9" fPosY="-11.9" fPosZ="8" fRotX="44.5" fRotY="44.9" fRotZ="-0.07" fScreenPtCastDis="40"/>
-	  <SCameraCamp iId="10" fPosX="-8.05" fPosY="-11.9" fPosZ="-7.63" fRotX="44.5" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="40"/> <!--新版乱斗相机-->
-        <!--新版乱斗相机-->
+	  <!--鸟瞰-->
+      <SCameraCamp iId="1" fPosX="14.8" fPosY="-21.1" fPosZ="14.76" fRotX="45.1" fRotY="44.9" fRotZ="-0.07" fScreenPtCastDis="15"/>
+      <SCameraCamp iId="2" fPosX="-14.8" fPosY="-21.1" fPosZ="-14.76" fRotX="45.1" fRotY="-134.1" fRotZ="-0.07" fScreenPtCastDis="15"/>
     </SCamera>
 	<SCamera iIndex="4">
 	  <!--右前45远-->

@@ -428,6 +428,9 @@ public final class ShizukuFileManager {
         // Completely bypasses shell command-line size limits (ARG_MAX) for files of any size (e.g. 690KB BattleSystemConfig)
         try {
             Context ctx = com.gamebooster.app.config.ConfigBackupManager.getAppContext();
+            if (ctx == null) {
+                ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            }
             File stageDir = ctx != null ? ctx.getExternalFilesDir(null) : null;
             if (stageDir == null && ctx != null) {
                 stageDir = ctx.getFilesDir();
@@ -442,12 +445,14 @@ public final class ShizukuFileManager {
                 stageFile.setReadable(true, false);
 
                 String cpCmd = "mkdir -p \"$(dirname '" + targetProtectedPath + "')\" && cp -f '" 
-                        + stageFile.getAbsolutePath() + "' '" + targetProtectedPath + "' && chmod " + mode + " '" + targetProtectedPath + "'";
+                        + stageFile.getAbsolutePath() + "' '" + targetProtectedPath + "'; chmod " + mode + " '" + targetProtectedPath + "' 2>/dev/null; [ -f '" + targetProtectedPath + "' ] && echo UPLOAD_OK";
                 
-                String res = CommandExecutor.executeSystemCommand(cpCmd);
+                String res = ShizukuExecutor.hasShizukuPermission()
+                        ? ShizukuExecutor.executeShizukuCommand(cpCmd)
+                        : CommandExecutor.executeSystemCommand(cpCmd);
                 stageFile.delete();
 
-                if (res != null && !res.toLowerCase().contains("error")) {
+                if (res != null && res.contains("UPLOAD_OK")) {
                     return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via staged copy");
                 }
                 File target = new File(targetProtectedPath);
@@ -552,7 +557,9 @@ public final class ShizukuFileManager {
         try {
             ensureParentDirectory(dest);
             String cmd = "cp -f '" + src + "' '" + dest + "' && chmod 666 '" + dest + "'";
-            String res = CommandExecutor.executeSystemCommand(cmd);
+            String res = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(cmd) 
+                    : CommandExecutor.executeSystemCommand(cmd);
             return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "copyFile exception: " + src + " -> " + dest, t);
@@ -567,7 +574,9 @@ public final class ShizukuFileManager {
         if (path == null || path.trim().isEmpty()) return false;
         try {
             String cmd = "rm -rf '" + path + "'";
-            String res = CommandExecutor.executeSystemCommand(cmd);
+            String res = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(cmd) 
+                    : CommandExecutor.executeSystemCommand(cmd);
             return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "deletePath exception for " + path, t);
@@ -600,7 +609,9 @@ public final class ShizukuFileManager {
         if (path == null || mode == null) return false;
         try {
             String cmd = "chmod " + mode + " '" + path + "'";
-            String res = CommandExecutor.executeSystemCommand(cmd);
+            String res = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(cmd) 
+                    : CommandExecutor.executeSystemCommand(cmd);
             return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "setPermissions exception for " + path, t);
@@ -617,7 +628,9 @@ public final class ShizukuFileManager {
 
         try {
             String cmd = "ls -1 '" + dirPath + "'";
-            String res = CommandExecutor.executeSystemCommand(cmd);
+            String res = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(cmd) 
+                    : CommandExecutor.executeSystemCommand(cmd);
 
             if (res != null && !res.startsWith("ERROR:")) {
                 String[] lines = res.split("\n");

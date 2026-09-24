@@ -213,3 +213,4 @@ mod_tmp/
 *.cfg.bak
 *.bytes.bak
 
+extract/

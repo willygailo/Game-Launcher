@@ -835,12 +835,31 @@ public final class CommonConfigTuningInjector {
         if (profile.isAimAssistEnabled()) applyAllScopeAimPrecision(packageName);
         if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName);
         if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName);
-        if (profile.isDroneViewUltraEnabled()) {
-            applyDroneViewUltraConfig(packageName, profile.getDroneViewTier());
-        } else {
-            if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
-                try { MlbbDroneViewPatcher.restoreStockCamera(ConfigBackupManager.getAppContext(), packageName); } catch (Throwable ignored) {}
+        boolean isMlbb = packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends");
+        int droneTier = profile.getDroneViewTier();
+        boolean droneEnabled = profile.isDroneViewUltraEnabled();
+        if (isMlbb) {
+            try {
+                android.content.Context ctx = ConfigBackupManager.getAppContext();
+                if (ctx != null) {
+                    android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
+                    if (prefs.contains("drone_enabled")) {
+                        droneEnabled = prefs.getBoolean("drone_enabled", true);
+                    } else {
+                        droneEnabled = true;
+                    }
+                    if (prefs.contains("drone_tier")) {
+                        droneTier = prefs.getInt("drone_tier", droneTier);
+                    }
+                } else {
+                    droneEnabled = true;
+                }
+            } catch (Throwable ignored) {
+                droneEnabled = true;
             }
+        }
+        if (droneEnabled) {
+            applyDroneViewUltraConfig(packageName, droneTier);
         }
         if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
         // 2026: always apply Vulkan + HDR + telemetry suppression for all games

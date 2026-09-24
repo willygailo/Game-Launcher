@@ -70,9 +70,20 @@ public final class GameAutoInjectDispatcher {
                 MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg);
                 MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg);
                 MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg);
-                MlbbConfigPatcher.applyAimAssistConfig(pkg);
-                MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg);
-                MlbbConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
+                int mlbbDroneTier = MlbbDroneViewPatcher.DEFAULT_TIER;
+                boolean mlbbDroneEnabled = true;
+                try {
+                    android.content.SharedPreferences dPrefs = ctx != null
+                            ? ctx.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE)
+                            : null;
+                    if (dPrefs != null) {
+                        mlbbDroneEnabled = dPrefs.getBoolean("drone_enabled", true);
+                        mlbbDroneTier = dPrefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                    }
+                } catch (Throwable ignored) {}
+                if (mlbbDroneEnabled) {
+                    MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg, mlbbDroneTier);
+                }
                 MlbbConfigPatcher.applyMlbbAllRolesNoLimitSuite(pkg);
                 MlbbConfigPatcher.applyMlbbAllItemsNoLimitSuite(pkg);
                 if (context != null) {

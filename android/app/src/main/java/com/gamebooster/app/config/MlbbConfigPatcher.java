@@ -79,7 +79,17 @@ public class MlbbConfigPatcher {
      * MLBB Ultra Drone View Panoramic FOV Suite.
      */
     public static void applyMlbbUltraDroneViewMaxFov(String packageName) {
-        applyMlbbUltraDroneViewMaxFov(packageName, MlbbDroneViewPatcher.DEFAULT_TIER);
+        int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+        try {
+            android.content.Context ctx = ConfigBackupManager.getAppContext();
+            if (ctx == null) ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
+                if (!prefs.getBoolean("drone_enabled", true)) return;
+                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+            }
+        } catch (Throwable ignored) {}
+        applyMlbbUltraDroneViewMaxFov(packageName, tier);
     }
 
     public static void applyMlbbUltraDroneViewMaxFov(String packageName, int droneTier) {

@@ -2,6 +2,7 @@ package com.gamebooster.app.config;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Looper;
 import android.util.Log;
 
 import com.gamebooster.app.engine.CommandExecutor;
@@ -37,7 +38,7 @@ public final class MlbbDroneViewPatcher {
     public static final int TIER_3X   = 30;
     public static final int TIER_4X   = 40;
     public static final int TIER_5X   = 50;
-    public static final int DEFAULT_TIER = TIER_3X;
+    public static final int DEFAULT_TIER = TIER_2X;
 
     private static final String MINI_PATCH_SUBPATH = "files/mini_patch/1232.1/ZC_7108472971/2";
     private static final String ASSET_BASE_DIR = "mlbb_drone/base";
@@ -120,9 +121,11 @@ public final class MlbbDroneViewPatcher {
             if (!Shizuku.pingBinder()) {
                 Log.w(TAG, "Shizuku binder is not active before drone injection. Initiating rebind...");
                 ShizukuAutoConnectEngine.evaluateAndConnect(context);
-                try {
-                    Thread.sleep(1500); // was 250ms — not enough time for binder rebind
-                } catch (InterruptedException ignored) {}
+                if (Looper.myLooper() != Looper.getMainLooper()) {
+                    try {
+                        Thread.sleep(800);
+                    } catch (InterruptedException ignored) {}
+                }
             }
         } catch (Throwable ignored) {}
 
@@ -138,6 +141,7 @@ public final class MlbbDroneViewPatcher {
                 return false;
             }
 
+            // 1. Dynamic Mini-Patch Slots Discovery & Multi-Slot Deployment
             // 1. Dynamic Mini-Patch Slots Discovery & Multi-Slot Deployment
             for (String rootDir : rootDirs) {
                 File root = new File(rootDir);
@@ -165,19 +169,11 @@ public final class MlbbDroneViewPatcher {
                 for (String docDir : targetDocPaths) {
                     ShizukuFileManager.makeDirectory(docDir);
                     String battlePath = docDir + "/BattleSystemConfig.bytes";
-                    boolean ok = writeWithFallback(context, battlePath, battleBytes, "777");
+                    boolean ok = writeWithFallback(context, battlePath, battleBytes, "666");
                     if (ok) {
                         anyApplied = true;
                         Log.i(TAG, "🎯 [Direct Camera] Deployed BattleSystemConfig.bytes [" + getTierLabel(tier) + "] to: " + battlePath);
                     }
-                }
-
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + rootDir + "/files/dragon2017\" 2>/dev/null");
-                    ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + rootDir + "/files/mini_patch\" 2>/dev/null");
-                } else {
-                    CommandExecutor.executeSystemCommand("chmod -R 777 \"" + rootDir + "/files/dragon2017\" 2>/dev/null");
-                    CommandExecutor.executeSystemCommand("chmod -R 777 \"" + rootDir + "/files/mini_patch\" 2>/dev/null");
                 }
             }
 
@@ -200,79 +196,90 @@ public final class MlbbDroneViewPatcher {
 
     /**
      * Dynamically discovers all active and versioned mini_patch slots in MLBB files.
-     *
-     * ROOT FIX: Android 13+ scoped storage blocks File.listFiles() on
-     * /Android/data/<pkg>/ — it silently returns null even when the path exists!
-     * We now use ShizukuFileManager.listDirectory() (shell `ls -1`) which bypasses
-     * the MediaProvider restriction and correctly enumerates all hot-patch folders
-     * including fix_1789616705/1, fix_1789550581/2, ZC_*, etc.
+     * Uses shell find + ls enumeration + known live patch slot fallbacks.
      */
     public static List<String> discoverActiveMiniPatchSlots(String rootDir) {
         List<String> slots = new ArrayList<>();
-        // Always include hardcoded fallback slot first
-        slots.add(rootDir + "/" + MINI_PATCH_SUBPATH);
-
         String miniPatchBase = rootDir + "/files/mini_patch";
 
-        // FIX: Use shell-based listing — File.listFiles() returns null on Android 13+
-        // scoped storage paths (/storage/emulated/0/Android/data/<pkg>/) even when
-        // the directory physically exists and is readable via adb/shell.
-        List<String> versionNames = ShizukuFileManager.listDirectory(miniPatchBase);
-        if (versionNames == null || versionNames.isEmpty()) {
-            // Shell listing also failed (no root/shizuku); return just the fallback slot
-            Log.w(TAG, "discoverActiveMiniPatchSlots: shell ls also empty for " + miniPatchBase
-                    + " — falling back to hardcoded slot only");
-            return slots;
+        // Always include known active slots so deployment never misses live patch folders
+        String[] knownSlots = {
+            rootDir + "/" + MINI_PATCH_SUBPATH,
+            miniPatchBase + "/1232.1/ZC_7108472971/2",
+            miniPatchBase + "/1232.1/ZC_7117732192/1",
+            miniPatchBase + "/1232.1/fix_1788688104/1",
+            miniPatchBase + "/1232.1/fix_1788790164/1",
+            miniPatchBase + "/1232.1/fix_1789548222/1",
+            miniPatchBase + "/1232.1/fix_1789550581/2",
+            miniPatchBase + "/1232.1/fix_1789616705/1",
+            miniPatchBase + "/1232.1/fix_1789890026/1"
+        };
+        for (String ks : knownSlots) {
+            if (!slots.contains(ks)) slots.add(ks);
         }
 
-        for (String verName : versionNames) {
-            String verPath = miniPatchBase + "/" + verName;
-            // List patch folders inside each version dir (e.g., fix_*, ZC_*)
-            List<String> patchFolderNames = ShizukuFileManager.listDirectory(verPath);
-            if (patchFolderNames == null) continue;
-
-            for (String pName : patchFolderNames) {
-                String pPath = verPath + "/" + pName;
-                // Enumerate numeric sub-slots (/1, /2, etc.)
-                List<String> subSlotNames = ShizukuFileManager.listDirectory(pPath);
-                if (subSlotNames != null) {
-                    for (String sName : subSlotNames) {
-                        // Only include directories (numeric slot IDs)
-                        if (sName.matches("\\d+")) {
-                            String slotPath = pPath + "/" + sName;
-                            if (!slots.contains(slotPath)) {
-                                slots.add(slotPath);
-                                Log.i(TAG, "📂 Discovered active slot: " + slotPath);
-                            }
+        // Fast shell find across mini_patch directory (finds any new slots registered by Moonton)
+        try {
+            String findCmd = "find \"" + miniPatchBase + "\" -maxdepth 3 -type d 2>/dev/null";
+            String findOut = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(findCmd) 
+                    : CommandExecutor.executeSystemCommand(findCmd);
+            if (findOut != null && !findOut.startsWith("ERROR:")) {
+                String[] lines = findOut.split("\n");
+                for (String line : lines) {
+                    String tr = line.trim();
+                    if (tr.matches(".*/(ZC_|fix_)[^/]+(/\\d+)?$")) {
+                        if (!slots.contains(tr)) {
+                            slots.add(tr);
+                            Log.i(TAG, "📂 Shell find discovered slot: " + tr);
                         }
                     }
                 }
-                // Also target the patch folder itself (in case it has no sub-slots)
-                if (!slots.contains(pPath)) {
-                    slots.add(pPath);
+            }
+        } catch (Throwable ignored) {}
+
+        // Supplementary shell directory listing
+        List<String> versionNames = ShizukuFileManager.listDirectory(miniPatchBase);
+        if (versionNames != null) {
+            for (String verName : versionNames) {
+                String verPath = miniPatchBase + "/" + verName;
+                List<String> patchFolderNames = ShizukuFileManager.listDirectory(verPath);
+                if (patchFolderNames == null) continue;
+
+                for (String pName : patchFolderNames) {
+                    String pPath = verPath + "/" + pName;
+                    List<String> subSlotNames = ShizukuFileManager.listDirectory(pPath);
+                    if (subSlotNames != null) {
+                        for (String sName : subSlotNames) {
+                            if (sName.matches("\\d+")) {
+                                String slotPath = pPath + "/" + sName;
+                                if (!slots.contains(slotPath)) {
+                                    slots.add(slotPath);
+                                    Log.i(TAG, "📂 Discovered active slot: " + slotPath);
+                                }
+                            }
+                        }
+                    }
+                    if (!slots.contains(pPath)) {
+                        slots.add(pPath);
+                    }
                 }
             }
         }
-        Log.i(TAG, "🔍 Total mini_patch slots discovered: " + slots.size() + " for " + rootDir);
+
+        Log.i(TAG, "🔍 Total mini_patch slots targeted: " + slots.size() + " for " + rootDir);
         return slots;
     }
 
     /**
      * Unpacks all base mini-patch assets and the tier BattleSystemConfig.bytes into targetMiniPatch.
-     *
-     * WRITE STRATEGY — triple fallback per file:
-     *  1. ShizukuFileManager.uploadBytes (AIDL UserService)
-     *  2. ShizukuExecutor shell `printf '1' > path` — survives UserService crash
-     *  3. Direct Java FileOutputStream — works for /storage/emulated/0 (external) without root
-     * Shizuku UserService crashes during game launch (logcat: System.exit status:1 from service
-     * process). The shell binder (shizuku_server) stays alive, so shell-echo always works.
      */
     private static boolean deployMiniPatch(Context context, String targetMiniPatch, byte[] battleBytes) {
         try {
             ShizukuFileManager.makeDirectory(targetMiniPatch);
             AssetManager am = context.getAssets();
 
-            // 1. Unpack base files ONLY if target slot is a newly generated slot without MLBB resources
+            // 1. Unpack base files if target slot is a newly generated slot without MLBB resources
             if (targetMiniPatch.contains(MINI_PATCH_SUBPATH)) {
                 unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch);
             }
@@ -283,28 +290,23 @@ public final class MlbbDroneViewPatcher {
             String battleAltDest  = targetMiniPatch + "/Document/BattleSystemConfig.bytes";
             ShizukuFileManager.makeDirectory(battleDocDir);
             ShizukuFileManager.makeDirectory(targetMiniPatch + "/Document");
+
             writeWithFallback(context, battleDest, battleBytes, "666");
             writeWithFallback(context, battleAltDest, battleBytes, "666");
 
-            // 3. Write MLBB mini-patch lifecycle marker files (triple fallback each).
-            //    MLBB's LoadResManager validates these three files before applying the patch:
-            //      __ready        — signals the patch payload is fully written and ready to load
-            //      __active       — signals this slot is the active hot-patch to use
-            //      __fix_rescheck — overrides resource integrity check, allowing patched bytes
-            //    Must contain the byte '1' (0x31). Zero-byte files are silently ignored by
-            //    Moonton's LoadResManager regardless of BattleSystemConfig.bytes being present.
+            // 3. Write MLBB mini-patch lifecycle marker files
             byte[] markerByte = new byte[]{ (byte) '1' };
-            boolean m1 = writeWithFallback(context, targetMiniPatch + "/__ready",        markerByte, "666");
-            boolean m2 = writeWithFallback(context, targetMiniPatch + "/__active",       markerByte, "666");
-            boolean m3 = writeWithFallback(context, targetMiniPatch + "/__fix_rescheck", markerByte, "666");
-            Log.i(TAG, "✅ Marker files [__ready=" + m1 + " __active=" + m2 + " __fix_rescheck=" + m3 + "] → '1' @ " + targetMiniPatch);
+            boolean m1 = writeWithFallback(context, targetMiniPatch + "/__ready",  markerByte, "666");
+            boolean m2 = writeWithFallback(context, targetMiniPatch + "/__active", markerByte, "666");
 
-            // 4. Enforce permissions across the entire mini_patch directory
-            if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand("chmod -R 777 \"" + targetMiniPatch + "\" 2>/dev/null");
+            // Write authentic SQL __fix_rescheck asset
+            byte[] fixBytes = readAssetBytes(am, ASSET_BASE_DIR + "/__fix_rescheck");
+            if (fixBytes != null && fixBytes.length > 0) {
+                writeWithFallback(context, targetMiniPatch + "/__fix_rescheck", fixBytes, "666");
             } else {
-                CommandExecutor.executeSystemCommand("chmod -R 777 \"" + targetMiniPatch + "\" 2>/dev/null");
+                writeWithFallback(context, targetMiniPatch + "/__fix_rescheck", markerByte, "666");
             }
+            Log.i(TAG, "✅ Marker files deployed @ " + targetMiniPatch + " [ready=" + m1 + " active=" + m2 + "]");
 
             return true;
         } catch (Throwable t) {
@@ -315,14 +317,42 @@ public final class MlbbDroneViewPatcher {
 
     /**
      * Writes {@code data} to {@code destPath} with robust fallbacks:
-     *  1. ShizukuFileManager.uploadBytes — staged privileged copy (works for files of any size without ARG_MAX)
-     *  2. Shell echo — for 1-byte marker files (__ready, __active, __fix_rescheck)
-     *  3. Java FileOutputStream — works for /storage/emulated/0 external paths without root
-     *
-     * Returns true if at least one strategy succeeded.
+     *  1. Direct Shizuku shell copy via verified physical file existence and size check
+     *  2. ShizukuFileManager staged upload
+     *  3. Base64 shell pipeline (for files <= 16KB)
+     *  4. Direct Java FileOutputStream
+     *  5. SAF Document Engine
      */
     private static boolean writeWithFallback(Context context, String destPath, byte[] data, String chmod) {
         if (destPath == null || data == null) return false;
+
+        // Strategy 0: Direct Shizuku shell copy via accessible temp file (guaranteed bypass of Scoped Storage)
+        try {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                Context appCtx = context != null ? context.getApplicationContext() : ConfigBackupManager.getAppContext();
+                if (appCtx == null) appCtx = com.gamebooster.app.GameBoosterApp.getInstance();
+                File tempDir = appCtx != null ? appCtx.getExternalFilesDir(null) : null;
+                if (tempDir == null && appCtx != null) tempDir = appCtx.getCacheDir();
+                if (tempDir != null) {
+                    if (!tempDir.exists()) tempDir.mkdirs();
+                    File temp = new File(tempDir, "drone_stage_" + System.currentTimeMillis() + "_" + Math.abs(destPath.hashCode()) + ".tmp");
+                    try (FileOutputStream fos = new FileOutputStream(temp)) {
+                        fos.write(data);
+                        fos.flush();
+                    }
+                    temp.setReadable(true, false);
+                    String copyCmd = "mkdir -p \"$(dirname '" + destPath + "')\" && cp -f '" + temp.getAbsolutePath() + "' '" + destPath + "'; chmod 666 '" + destPath + "' 2>/dev/null; [ -f '" + destPath + "' ] && [ $(wc -c < '" + destPath + "') -ge " + Math.max(1, data.length / 2) + " ] && echo DRONE_COPY_OK";
+                    String res = ShizukuExecutor.executeShizukuCommand(copyCmd);
+                    temp.delete();
+                    if (res != null && res.contains("DRONE_COPY_OK")) {
+                        Log.i(TAG, "writeWithFallback via Shizuku shell SUCCESS: " + destPath + " (" + data.length + " bytes)");
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "writeWithFallback Strategy 0 error: " + t.getMessage());
+        }
 
         // Strategy 1: ShizukuFileManager staged upload
         try {
@@ -336,16 +366,17 @@ public final class MlbbDroneViewPatcher {
             }
         } catch (Throwable ignored) {}
 
-        // Strategy 2: For 1-byte marker files, shell echo directly
-        if (data.length == 1 && data[0] == (byte)'1') {
+        // Strategy 2: For small files (<= 16KB), base64 shell pipeline
+        if (data.length <= 16384) {
             try {
-                String cmd = "mkdir -p \"$(dirname '" + destPath + "')\" && echo -n 1 > \"" + destPath + "\" && chmod " + chmod + " \"" + destPath + "\" 2>/dev/null";
-                if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.executeShizukuCommand(cmd);
-                } else {
-                    CommandExecutor.executeSystemCommand(cmd);
+                String b64 = android.util.Base64.encodeToString(data, android.util.Base64.NO_WRAP);
+                String cmd = "mkdir -p \"$(dirname '" + destPath + "')\" && echo '" + b64 + "' | base64 -d > '" + destPath + "'; chmod 666 '" + destPath + "' 2>/dev/null; [ -f '" + destPath + "' ] && echo DRONE_COPY_OK";
+                String res = ShizukuExecutor.hasShizukuPermission()
+                        ? ShizukuExecutor.executeShizukuCommand(cmd)
+                        : CommandExecutor.executeSystemCommand(cmd);
+                if (res != null && res.contains("DRONE_COPY_OK")) {
+                    return true;
                 }
-                return true;
             } catch (Throwable ignored) {}
         }
 
@@ -449,19 +480,28 @@ public final class MlbbDroneViewPatcher {
         try {
             List<String> rootDirs = resolveMlbbRootDirs(pkg);
             for (String rootDir : rootDirs) {
-                String battleFile = rootDir + "/" + MINI_PATCH_SUBPATH + "/Document/android/BattleSystemConfig.bytes";
-                File f = new File(battleFile);
-                if (f.exists()) {
-                    f.delete();
+                // Unlock directories so deletion succeeds
+                String unlockCmd = "chmod -R 777 \"" + rootDir + "/files/mini_patch\" 2>/dev/null; " +
+                                   "chmod -R 777 \"" + rootDir + "/files/dragon2017/assets/Document\" 2>/dev/null";
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(unlockCmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(unlockCmd);
                 }
-                ShizukuFileManager.deleteFile(battleFile);
+
+                List<String> activePatchSlots = discoverActiveMiniPatchSlots(rootDir);
+                for (String slotDir : activePatchSlots) {
+                    ShizukuFileManager.deleteFile(slotDir + "/Document/android/BattleSystemConfig.bytes");
+                    ShizukuFileManager.deleteFile(slotDir + "/Document/BattleSystemConfig.bytes");
+                    ShizukuFileManager.deleteFile(slotDir + "/__ready");
+                    ShizukuFileManager.deleteFile(slotDir + "/__active");
+                    ShizukuFileManager.deleteFile(slotDir + "/__fix_rescheck");
+                }
 
                 String dragonBattle = rootDir + "/files/dragon2017/assets/Document/android/BattleSystemConfig.bytes";
-                File df = new File(dragonBattle);
-                if (df.exists()) {
-                    df.delete();
-                }
                 ShizukuFileManager.deleteFile(dragonBattle);
+                ShizukuFileManager.deleteFile(rootDir + "/files/dragon2017/assets/Document/BattleSystemConfig.bytes");
+                ShizukuFileManager.deleteFile(rootDir + "/files/LoadResManager/Document/android/BattleSystemConfig.bytes");
             }
             Log.i(TAG, "🧹 MLBB Drone View reverted to stock camera for " + pkg);
             return true;

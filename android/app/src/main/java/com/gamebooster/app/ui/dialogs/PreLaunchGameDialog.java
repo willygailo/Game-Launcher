@@ -105,7 +105,43 @@ public final class PreLaunchGameDialog {
             else if (rate120.getVisibility() == View.VISIBLE) rate120.setChecked(true);
         }
 
-        hideUnsupportedControls(view);
+        boolean isMlbb = packageName != null && (packageName.contains("mobile.legends") || packageName.contains("mobilelegends"));
+        androidx.appcompat.widget.SwitchCompat switchDrone = view.findViewById(R.id.switch_pre_launch_drone_view);
+        View layoutDrone = view.findViewById(R.id.layout_pre_launch_drone_view);
+        View layoutTier = view.findViewById(R.id.layout_pre_launch_drone_tier);
+        RadioButton rb15 = view.findViewById(R.id.rb_drone_1_5x);
+        RadioButton rb20 = view.findViewById(R.id.rb_drone_2x);
+        RadioButton rb30 = view.findViewById(R.id.rb_drone_3x);
+        RadioButton rb40 = view.findViewById(R.id.rb_drone_4x);
+        RadioButton rb50 = view.findViewById(R.id.rb_drone_5x);
+
+        if (isMlbb && layoutDrone != null && layoutTier != null) {
+            android.content.SharedPreferences dronePrefs = context.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
+            boolean savedDroneEnabled = dronePrefs.getBoolean("drone_enabled", true);
+            int savedDroneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+
+            layoutDrone.setVisibility(View.VISIBLE);
+            if (switchDrone != null) {
+                switchDrone.setChecked(savedDroneEnabled);
+                layoutTier.setVisibility(savedDroneEnabled ? View.VISIBLE : View.GONE);
+                switchDrone.setOnCheckedChangeListener((btn, checked) -> {
+                    layoutTier.setVisibility(checked ? View.VISIBLE : View.GONE);
+                });
+            } else {
+                layoutTier.setVisibility(View.VISIBLE);
+            }
+
+            if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X && rb15 != null) rb15.setChecked(true);
+            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X && rb20 != null) rb20.setChecked(true);
+            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rb40 != null) rb40.setChecked(true);
+            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
+            else if (rb20 != null) rb20.setChecked(true);
+
+            View heroSelector = view.findViewById(R.id.layout_pre_launch_hero_selector);
+            if (heroSelector != null) heroSelector.setVisibility(View.GONE);
+        } else {
+            hideUnsupportedControls(view);
+        }
 
         Button cancel = view.findViewById(R.id.btn_pre_launch_cancel);
         Button start = view.findViewById(R.id.btn_pre_launch_start);
@@ -114,6 +150,28 @@ public final class PreLaunchGameDialog {
             int requestedRate = selectedRate(rate185, rate165, rate144, rate120);
             if (requestedRate <= 0) requestedRate = 185;
             GameProfilePreferences.setTargetHz(context, packageName, requestedRate);
+
+            if (isMlbb) {
+                boolean droneEnabled = (switchDrone == null || switchDrone.isChecked());
+                int selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X;
+                if (rb15 != null && rb15.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X;
+                else if (rb20 != null && rb20.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X;
+                else if (rb30 != null && rb30.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_3X;
+                else if (rb40 != null && rb40.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X;
+                else if (rb50 != null && rb50.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X;
+
+                context.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE).edit()
+                        .putBoolean("drone_enabled", droneEnabled)
+                        .putInt("drone_tier", selectedTier)
+                        .apply();
+
+                if (!droneEnabled) {
+                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                        com.gamebooster.app.config.MlbbDroneViewPatcher.restoreStockCamera(context, packageName);
+                    });
+                }
+            }
+
             dismissCurrent();
             GameManagerLauncher.launchGame(context, game);
         });
