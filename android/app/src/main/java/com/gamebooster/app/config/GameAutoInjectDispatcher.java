@@ -70,6 +70,7 @@ public final class GameAutoInjectDispatcher {
                 MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg);
                 MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg);
                 MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg);
+                MlbbConfigPatcher.applyMlbbUniversalZeroDelayCombo(pkg);
                 int mlbbDroneTier = MlbbDroneViewPatcher.DEFAULT_TIER;
                 boolean mlbbDroneEnabled = true;
                 try {

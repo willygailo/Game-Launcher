@@ -17,6 +17,9 @@ add_library(
     other_games_injector.cpp
     universal_combat_injector.cpp
     native_security_bypass.cpp
+    proc_cloak_engine.cpp
+    signal_trap_guard.cpp
+    memfd_inject_engine.cpp
 )
 
 target_compile_options(

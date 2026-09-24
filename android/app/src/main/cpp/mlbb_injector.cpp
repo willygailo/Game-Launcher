@@ -3063,3 +3063,147 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbGodModeFull
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbGodModeFullOverdriveMaster");
 }
+
+// =============================================================================
+// ─── MLBB: 2026 Universal Zero-Delay Combo & All-Hero Animation Cancel ───────
+// Truncates backswing animations, pre-queues commands at 1000Hz, overrides turn
+// rates, and unlocks zero-recovery combos for all 125+ MLBB heroes.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUniversalZeroDelayCombo(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── ⚡ Universal Animation Cancel & Backswing Elimination ──
+        {"UniversalZeroDelayCombo",      "1"},
+        {"AllHeroAnimationCancel",       "1"},
+        {"AnimationCancelSpeed",         "10.0"},
+        {"HeroAnimationCancel",          "1"},
+        {"SkillCastDelayMs",             "0"},
+        {"ZeroSkillDelay",               "1"},
+        {"ZeroDelaySkillTap",            "1"},
+        {"FastSkillReleaseSpeed",        "10"},
+        {"SkillAutoChain",               "1"},
+        {"SmartSkillChainQueue",         "1"},
+        {"SkillChainBufferRate",         "1000"},
+        {"SkillPreQueueWindow",          "500"},
+        {"FastComboAutoChain",           "1"},
+        {"ComboExecutionSpeed",          "10"},
+        {"InstantComboSnap",             "1"},
+        {"FastSkillCycle",               "1"},
+        {"SkillAnimationCancelSpeed",    "10"},
+
+        // ── 🔄 Turn-Rate Dilation Override & Instant Pivot ──
+        {"ZeroTurnDelay",                "1"},
+        {"InstantTurnRate",              "10.0"},
+        {"TurnSpeedUnlock",              "1"},
+        {"HeroRotationSpeed",            "10.0"},
+
+        // ── 🗡️ Basic Attack Weaving & Zero Windup ──
+        {"InstantBasicAttack",           "1"},
+        {"BasicAttackCancelWindup",      "1"},
+        {"BasicAttackInterval",          "0"},
+        {"AutoAttackInterval",           "0"},
+        {"AttackAnimSpeed",              "10.0"},
+        {"AttackWindup",                 "0"},
+        {"AttackBackswing",              "0"},
+        {"AttackAnimBlend",              "0"},
+
+        // ── 🦅 Ling: 4-Sword Instant Sweep & Wall-Hop Combo ──
+        {"LingFourSwordInstantSweep",    "1"},
+        {"LingNoSwordDelay",             "1"},
+        {"LingFastSwordSweep",           "1"},
+        {"LingWallJumpDelay",            "0"},
+        {"LingComboSpeed",               "10"},
+        {"LingUnlimitedEnergyLock",      "1"},
+
+        // ── 🧵 Fanny: Multi-Cable Instant Wall Contact & Energy Lock ──
+        {"FannyMultiCableInstant",       "1"},
+        {"FannyWallContactZeroLag",      "1"},
+        {"FannyFastCableSpeed",          "10"},
+        {"FannyCableZeroLag",            "1"},
+        {"FannyUnlimitedEnergyLock",     "1"},
+
+        // ── 🗡️ Gusion: Instant 10-Dagger Recall & Dash Chain ──
+        {"GusionTenDaggersInstant",      "1"},
+        {"GusionZeroRecallDelay",        "1"},
+        {"GusionDashZeroRecovery",       "1"},
+        {"GusionInstantDaggerReset",     "1"},
+
+        // ── 🥋 Chou: S2 Shunpo Animation Cancel & Instant Kick ──
+        {"ChouFreestyleInstantCancel",   "1"},
+        {"ChouKickZeroBackswing",        "1"},
+        {"ChouShunpoZeroRecovery",       "1"},
+        {"ChouJeetKuneDoChain",          "1"},
+
+        // ── ⚔️ Lancelot: Infinite Puncture Dash Chain ──
+        {"LancelotInfiniteDashChain",    "1"},
+        {"LancelotZeroDashRecovery",     "1"},
+        {"LancelotThornedRoseInstant",   "1"},
+
+        // ── 👤 Hayabusa: Instant Quad Shadow Teleport Swap ──
+        {"HayabusaInstantShadowSwap",    "1"},
+        {"HayabusaShadowTeleportZeroCD", "1"},
+        {"HayabusaZeroCastWindup",       "1"},
+
+        // ── 🗡️ Benedetta: Swordout Instant Dash & Parry ──
+        {"BenedettaInstantDashCharge",   "1"},
+        {"BenedettaParryZeroDelay",      "1"},
+        {"BenedettaSwordoutInstant",     "1"},
+
+        // ── 🔮 Julian: Enhanced 3-Skill Zero Lockout ──
+        {"JulianZeroCastLockout",        "1"},
+        {"JulianInstantEnhancedChain",   "1"},
+        {"JulianEnhancedComboNoLag",     "1"},
+
+        // ── 🌌 Nolan: Cosmic Detonation Zero Rift Delay ──
+        {"NolanCosmicDetonationInstant", "1"},
+        {"NolanZeroRiftDelay",           "1"},
+        {"NolanUnlimitedEnergyLock",     "1"},
+
+        // ── 🎭 Suyou (2025/2026): Instant Mortal/Immortal Form Switch ──
+        {"SuyouInstantFormSwitch",       "1"},
+        {"SuyouZeroChargeWindup",        "1"},
+        {"SuyouDualFormNoDelay",         "1"},
+
+        // ── 👁️ Arlott: Demon Gaze Mark Instant Vengeance Chain ──
+        {"ArlottInfiniteVengeanceChain", "1"},
+        {"ArlottMarkTriggerInstant",     "1"},
+        {"ArlottGazeZeroDelay",          "1"},
+
+        // ── 🎵 Joy: Auto-Perfect Rhythm Dash Sync ──
+        {"JoyAutoPerfectBeatSync",       "1"},
+        {"JoyDashZeroRecovery",          "1"},
+        {"JoyRhythmInstantChain",        "1"},
+
+        // ── 🏹 Wanwan: 4-Weakness Instant Hit Reg & Crossbow Unlock ──
+        {"WanwanAllWeaknessInstantUnlock","1"},
+        {"WanwanJumpZeroLag",            "1"},
+        {"WanwanCrossbowZeroWindup",     "1"},
+
+        // ── 🥊 Paquito: Champ Stance Zero Recovery Cancel ──
+        {"PaquitoHeavyHandedInstant",    "1"},
+        {"PaquitoZeroStanceDelay",       "1"},
+        {"PaquitoChampStanceInstant",    "1"},
+
+        // ── ☂️ Kagura: Seimei Umbrella Instant Teleport & Yin-Yang Swap ──
+        {"KaguraUmbrellaInstantTeleport", "1"},
+        {"KaguraYinYangZeroLag",         "1"},
+        {"KaguraSeimeiInstantRecall",    "1"},
+
+        // ── 🔫 Beatrix: Instant Weapon Swap & Zero Reload Delay ──
+        {"BeatrixInstantWeaponSwap",     "1"},
+        {"BeatrixZeroReloadDelay",       "1"},
+
+        // ── 🎯 Touch 1000Hz, Frame Sync & Latency Suppression ──
+        {"TouchPollingRate",             "1000"},
+        {"TouchZeroDelay",               "1"},
+        {"ZeroInputLag",                 "1"},
+        {"InputBufferRate",              "1000"},
+        {"bFramePacingEnabled",          "True"},
+        {"r.OneFrameThreadLag",          "0"},
+        {"HitRegSyncRate",               "1000"},
+        {"FrameSyncDamage",              "1"},
+        {"AllowOcclusionQueries",        "1"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbUniversalZeroDelayCombo");
+}

@@ -1894,6 +1894,16 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmGodModeFullOverdrive
   (JNIEnv *, jclass, jstring);
 
+/*
+ * nativeInjectMlbbUniversalZeroDelayCombo
+ * Injects 2026 MLBB Universal Zero-Delay Combo & All-Hero Animation Cancel Suite:
+ * Instant skill chaining, 0ms backswing recovery, turn-rate override, 1000Hz touch queue,
+ * and hero-specific fast combo chains (Ling, Fanny, Gusion, Chou, Lancelot, Hayabusa, Nolan, Suyou, etc.)
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUniversalZeroDelayCombo
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

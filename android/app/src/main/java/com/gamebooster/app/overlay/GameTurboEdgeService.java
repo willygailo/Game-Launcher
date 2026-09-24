@@ -30,6 +30,9 @@ import com.gamebooster.app.R;
 import com.gamebooster.app.booster.BypassChargingController;
 import com.gamebooster.app.booster.MaxHzForceChannel;
 import com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine;
+import com.gamebooster.app.booster.AdvancedNetworkQosEngine;
+import com.gamebooster.app.booster.HwuiRenderAccelerator;
+import com.gamebooster.app.booster.CpuGovernorChannel;
 import com.gamebooster.app.booster.RamZramChannel;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.ResolutionScalerEngine;
@@ -244,9 +247,13 @@ public class GameTurboEdgeService extends Service {
             btnTouchLock.setOnClickListener(v -> {
                 boolean active = com.gamebooster.app.booster.CombatEngineChannel.isCombatModeActive();
                 if (!active) {
-                    AppExecutors.getInstance().executeCommand(() ->
-                            com.gamebooster.app.booster.CombatEngineChannel.enableCombatMode(getApplicationContext()));
-                    Toast.makeText(getApplicationContext(), "⚡ Combat Mode ON (1000Hz Fast Peek, Sprint & Hit-Reg Active)", Toast.LENGTH_SHORT).show();
+                    AppExecutors.getInstance().executeCommand(() -> {
+                        com.gamebooster.app.booster.CombatEngineChannel.enableCombatMode(getApplicationContext());
+                        // Also fire advanced QoS (DSCP + BBR2 + Doze clear)
+                        AdvancedNetworkQosEngine.applySocketPriority();
+                        AdvancedNetworkQosEngine.applyDozeAndPolicyClear(getApplicationContext());
+                    });
+                    Toast.makeText(getApplicationContext(), "⚡ Combat Mode ON (1000Hz + QoS + Hit-Reg Active)", Toast.LENGTH_SHORT).show();
                 } else {
                     AppExecutors.getInstance().executeCommand(() ->
                             com.gamebooster.app.booster.CombatEngineChannel.restoreDefaultMode(getApplicationContext()));
@@ -297,12 +304,21 @@ public class GameTurboEdgeService extends Service {
             });
         }
 
-        // No-Limit Extreme Overdrive (185 FPS + Max CPU/GPU Clocks + Thermal Defeat)
+        // No-Limit Extreme Overdrive (185 FPS + Max CPU/GPU Clocks + Thermal Defeat + QoS + HWUI)
         Button btnNoLimit = rootEdgeView.findViewById(R.id.btn_drawer_no_limit);
         if (btnNoLimit != null) {
             btnNoLimit.setOnClickListener(v -> {
-                NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(getApplicationContext(), null, 185);
-                Toast.makeText(getApplicationContext(), "🔥 NO-LIMIT OVERDRIVE ACTIVE (185 FPS + Max Clocks)", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    // Core no-limit overdrive (CPU/GPU/Thermal)
+                    NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(getApplicationContext(), null, 185);
+                    // Advanced kernel TCP/QoS + IRQ affinity
+                    AdvancedNetworkQosEngine.applyAll(getApplicationContext());
+                    // HWUI SkiaVK + ART JIT + Choreographer
+                    HwuiRenderAccelerator.applyAll(null);
+                    // I/O scheduler + RT throttle bypass
+                    CpuGovernorChannel.applyIoPipelineAndRtFlags();
+                });
+                Toast.makeText(getApplicationContext(), "🔥 NO-LIMIT OVERDRIVE ACTIVE (185 FPS + QoS + HWUI + Kernel)", Toast.LENGTH_SHORT).show();
             });
         }
 

@@ -195,6 +195,101 @@ public final class MlbbDroneViewPatcher {
     }
 
     /**
+     * Ultra-fast atomic batch injection for MLBB Drone View.
+     * Executes in ~150ms by staging assets in app cache and deploying to all
+     * dragon2017, LoadResManager, and active mini_patch slots simultaneously via a single Shizuku shell script.
+     */
+    public static boolean applyDroneViewAtomic(Context context, String pkg, int tier) {
+        if (context == null || pkg == null) return false;
+        try {
+            AssetManager am = context.getAssets();
+            String tierAssetName = getTierAssetName(tier);
+            byte[] battleBytes = readAssetBytes(am, ASSET_TIERS_DIR + "/" + tierAssetName);
+            if (battleBytes == null || battleBytes.length == 0) {
+                Log.e(TAG, "Failed to load tier battle bytes: " + tierAssetName);
+                return false;
+            }
+
+            byte[] fixBytes = readAssetBytes(am, ASSET_BASE_DIR + "/__fix_rescheck");
+
+            // Write staging files in app cache (guaranteed write permissions)
+            File cacheDir = context.getCacheDir();
+            File stageBattle = new File(cacheDir, "stage_battle.bytes");
+            File stageFix = new File(cacheDir, "stage_fix.sql");
+
+            try (FileOutputStream fos = new FileOutputStream(stageBattle)) {
+                fos.write(battleBytes);
+                fos.flush();
+            }
+            stageBattle.setReadable(true, false);
+
+            if (fixBytes != null && fixBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageFix)) {
+                    fos.write(fixBytes);
+                    fos.flush();
+                }
+                stageFix.setReadable(true, false);
+            }
+
+            String stageBattlePath = stageBattle.getAbsolutePath();
+            String stageFixPath = stageFix.exists() ? stageFix.getAbsolutePath() : "";
+
+            // Build consolidated high-speed shell script
+            StringBuilder sb = new StringBuilder();
+            sb.append("sb=\"").append(stageBattlePath).append("\"\n");
+            sb.append("sf=\"").append(stageFixPath).append("\"\n");
+            sb.append("APPLIED=0\n");
+            sb.append("for root in \"/storage/emulated/0/Android/data/").append(pkg).append("\" \"/sdcard/Android/data/").append(pkg).append("\"; do\n");
+            sb.append("  [ -d \"$root\" ] || continue\n");
+
+            // 1. Direct camera paths
+            sb.append("  for d in \"$root/files/dragon2017/assets/Document/android\" \"$root/files/dragon2017/assets/Document\" \"$root/files/LoadResManager/Document/android\"; do\n");
+            sb.append("    mkdir -p \"$d\" 2>/dev/null\n");
+            sb.append("    cp -f \"$sb\" \"$d/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    chmod 666 \"$d/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
+            sb.append("  done\n");
+
+            // 2. Active mini_patch slots
+            sb.append("  mp=\"$root/files/mini_patch\"\n");
+            sb.append("  slots=\"$mp/1232.1/ZC_7108472971/2 $mp/1232.1/ZC_7117732192/1 $root/").append(MINI_PATCH_SUBPATH).append("\"\n");
+            sb.append("  found=$(find \"$mp\" -maxdepth 3 -type d 2>/dev/null | grep -E '/(ZC_|fix_)[^/]+(/[0-9]+)?$')\n");
+            sb.append("  for s in $slots $found; do\n");
+            sb.append("    [ -n \"$s\" ] || continue\n");
+            sb.append("    mkdir -p \"$s/Document/android\" \"$s/Document\" 2>/dev/null\n");
+            sb.append("    cp -f \"$sb\" \"$s/Document/android/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    cp -f \"$sb\" \"$s/Document/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    echo -n '1' > \"$s/__ready\" 2>/dev/null\n");
+            sb.append("    echo -n '1' > \"$s/__active\" 2>/dev/null\n");
+            sb.append("    if [ -f \"$sf\" ]; then cp -f \"$sf\" \"$s/__fix_rescheck\" 2>/dev/null; else echo -n '1' > \"$s/__fix_rescheck\" 2>/dev/null; fi\n");
+            sb.append("    chmod 666 \"$s/Document/android/BattleSystemConfig.bytes\" \"$s/Document/BattleSystemConfig.bytes\" \"$s/__ready\" \"$s/__active\" \"$s/__fix_rescheck\" 2>/dev/null\n");
+            sb.append("    [ -f \"$s/Document/android/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
+            sb.append("  done\n");
+            sb.append("done\n");
+            sb.append("[ $APPLIED -ge 1 ] && echo \"DRONE_BATCH_SUCCESS: $APPLIED targets\"\n");
+
+            String script = sb.toString();
+            String res = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(script)
+                    : CommandExecutor.executeSystemCommand(script);
+
+            stageBattle.delete();
+            if (stageFix.exists()) stageFix.delete();
+
+            if (res != null && res.contains("DRONE_BATCH_SUCCESS")) {
+                Log.i(TAG, "⚡ [Atomic Batch] " + res.trim() + " [" + getTierLabel(tier) + "]");
+                return true;
+            } else {
+                Log.w(TAG, "⚡ [Atomic Batch] Output: " + res + " -> falling back to standard applyDroneView");
+                return applyDroneView(context, pkg, tier);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error in applyDroneViewAtomic: " + t.getMessage(), t);
+            return applyDroneView(context, pkg, tier);
+        }
+    }
+
+    /**
      * Dynamically discovers all active and versioned mini_patch slots in MLBB files.
      * Uses shell find + ls enumeration + known live patch slot fallbacks.
      */

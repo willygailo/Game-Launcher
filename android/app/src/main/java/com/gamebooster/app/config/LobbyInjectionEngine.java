@@ -203,7 +203,7 @@ public final class LobbyInjectionEngine {
                         boolean enabled = (prefs == null) || prefs.getBoolean("drone_enabled", true);
                         int tier = (prefs != null) ? prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER) : MlbbDroneViewPatcher.DEFAULT_TIER;
                         if (enabled) {
-                            boolean ok = MlbbDroneViewPatcher.applyDroneView(appCtx, pkg, tier);
+                            boolean ok = MlbbDroneViewPatcher.applyDroneViewAtomic(appCtx, pkg, tier);
                             Log.i(TAG, ok
                                     ? "🎯 [Stage 2 In-Lobby] MLBB Drone View [" + MlbbDroneViewPatcher.getTierLabel(tier) + "] locked successfully"
                                     : "⚠️ [Stage 2 In-Lobby] MLBB Drone View lock returned false");
@@ -247,7 +247,7 @@ public final class LobbyInjectionEngine {
                 } catch (Throwable ignored) {}
 
                 if (enabled) {
-                    MlbbDroneViewPatcher.applyDroneView(appCtx, finalPkg, tier);
+                    MlbbDroneViewPatcher.applyDroneViewAtomic(appCtx, finalPkg, tier);
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "[Wave-2] Drone View error: " + t.getMessage());
@@ -273,7 +273,7 @@ public final class LobbyInjectionEngine {
                 } catch (Throwable ignored) {}
 
                 if (enabled) {
-                    MlbbDroneViewPatcher.applyDroneView(appCtx, finalPkg, tier);
+                    MlbbDroneViewPatcher.applyDroneViewAtomic(appCtx, finalPkg, tier);
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "[Wave-3] Drone View error: " + t.getMessage());

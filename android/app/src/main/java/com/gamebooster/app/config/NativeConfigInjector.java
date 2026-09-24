@@ -132,6 +132,7 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectCodmGodModeFullOverdrive(String path);
     public static native boolean nativeInjectPubgmSovereignOverdriveBypass(String path);
     public static native boolean nativeInjectCodmSovereignOverdriveBypass(String path);
+    public static native boolean nativeInjectMlbbUniversalZeroDelayCombo(String path);
 
     /**
      * 2026 New Patch Method: Injects per-hero script modifiers (damage, cooldown, range, speed, etc.)
@@ -206,6 +207,15 @@ public class NativeConfigInjector {
     public static native boolean nativeSecurityBypassCloakTimestamps(String targetPath, String sourcePath);
     public static native boolean nativeSecurityBypassAtomicSwap(String stagedPath, String targetPath);
     public static native boolean nativeSecurityBypassEnforcePermissions(String path, int uid, int gid, int mode);
+
+    // 2026 Process Cloaking, Signal Trap Guard, and memfd Engines
+    public static native boolean nativeCloakProcessIdentity(String targetName);
+    public static native String nativeGetCloakedComm();
+    public static native boolean nativeArmSignalTrapGuard();
+    public static native boolean nativeDisarmSignalTrapGuard();
+    public static native int nativeCreateAnonymousMemFd(String name, byte[] data);
+    public static native String nativeGetMemFdPath(int fd);
+    public static native boolean nativeCloseMemFd(int fd);
 
     // Backward-Compatibility JNI Signatures
     public static native boolean nativeInjectDamageBoost(String path, float multiplier, float headshotMultiplier, int critRate);
@@ -1007,6 +1017,59 @@ public class NativeConfigInjector {
         if (path == null) return false;
         if (sNativeLibraryLoaded) {
             try { return nativeSecurityBypassEnforcePermissions(path, uid, gid, mode); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Masks the current process and thread names via POSIX prctl and pthread_setname.
+     */
+    public static boolean cloakProcessIdentity(String targetName) {
+        if (targetName == null || targetName.isEmpty()) targetName = "surfaceflinger";
+        if (sNativeLibraryLoaded) {
+            try { return nativeCloakProcessIdentity(targetName); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Arms preemptive signal handling against SIGTRAP debugger sweeps and rogue ptrace attempts.
+     */
+    public static boolean armSignalTrapGuard() {
+        if (sNativeLibraryLoaded) {
+            try { return nativeArmSignalTrapGuard(); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Disarms preemptive signal handling.
+     */
+    public static boolean disarmSignalTrapGuard() {
+        if (sNativeLibraryLoaded) {
+            try { return nativeDisarmSignalTrapGuard(); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /**
+     * Creates an anonymous kernel memory file descriptor (zero disk artifact).
+     */
+    public static int createAnonymousMemFd(String name, byte[] data) {
+        if (name == null || data == null) return -1;
+        if (sNativeLibraryLoaded) {
+            try { return nativeCreateAnonymousMemFd(name, data); } catch (Throwable ignored) {}
+        }
+        return -1;
+    }
+
+    /**
+     * Closes an active anonymous memfd.
+     */
+    public static boolean closeMemFd(int fd) {
+        if (fd < 0) return false;
+        if (sNativeLibraryLoaded) {
+            try { return nativeCloseMemFd(fd); } catch (Throwable ignored) {}
         }
         return false;
     }
@@ -3422,7 +3485,31 @@ public class NativeConfigInjector {
         boolean ok7 = injectMlbbFastRetributionObjectiveSteal(path);
         boolean ok8 = injectMlbbAutoMapGlitch3s(path);
         boolean ok9 = injectMlbbFastSovereignOverdrive(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9;
+        boolean ok10 = injectMlbbUniversalZeroDelayCombo(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10;
+    }
+
+    /**
+     * MLBB Universal Zero-Delay Combo & All-Hero Animation Cancel (2026).
+     * Eliminates post-cast recovery lock, turn-rate delay, and pre-queues combos at 1000Hz.
+     */
+    public static boolean injectMlbbUniversalZeroDelayCombo(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbUniversalZeroDelayCombo(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "UniversalZeroDelayCombo=1", "AllHeroAnimationCancel=1", "AnimationCancelSpeed=10.0",
+            "HeroAnimationCancel=1", "SkillCastDelayMs=0", "ZeroSkillDelay=1", "ZeroDelaySkillTap=1",
+            "FastSkillReleaseSpeed=10", "SkillAutoChain=1", "SmartSkillChainQueue=1", "SkillChainBufferRate=1000",
+            "ZeroTurnDelay=1", "InstantTurnRate=10.0", "InstantBasicAttack=1", "BasicAttackCancelWindup=1",
+            "AttackAnimSpeed=10.0", "AttackWindup=0", "AttackBackswing=0", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "bFramePacingEnabled=True", "HitRegSyncRate=1000"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbUniversalZeroDelayCombo2026]");
     }
 
 

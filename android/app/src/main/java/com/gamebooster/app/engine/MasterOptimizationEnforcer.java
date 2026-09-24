@@ -18,6 +18,9 @@ import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.shizuku.ShizukuUserServiceConnector;
 import com.gamebooster.app.spoofer.DeviceSpooferEngine;
 import com.gamebooster.app.tweaks.TweakManagerRepository;
+import com.gamebooster.app.booster.AdvancedNetworkQosEngine;
+import com.gamebooster.app.booster.HwuiRenderAccelerator;
+import com.gamebooster.app.booster.CpuGovernorChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +65,10 @@ public class MasterOptimizationEnforcer {
             final boolean[] shizukuTierRan = {false};
 
             try {
+                // Pre-flight stealth cloaking
+                com.gamebooster.app.config.NativeConfigInjector.cloakProcessIdentity("surfaceflinger");
+                com.gamebooster.app.config.NativeConfigInjector.armSignalTrapGuard();
+
                 // ─────────────────────────────────────────────────────────────
                 // TIER 1: SHIZUKU PRIVILEGED TEMPORARY ROOT EXECUTION
                 // ─────────────────────────────────────────────────────────────
@@ -112,6 +119,11 @@ public class MasterOptimizationEnforcer {
                 // 3C. Touch, Precision Gyro & Network Turbo
                 com.gamebooster.app.booster.TouchLatencyChannel.enableUltraTouchResponse();
                 com.gamebooster.app.booster.NetworkOptimizer.optimizeAllDataAndWifi(appContext);
+
+                // 3C-ext. Advanced Kernel TCP/QoS + HWUI Pipeline Acceleration
+                AdvancedNetworkQosEngine.applyAll(appContext);
+                HwuiRenderAccelerator.applyAll(null); // Global pipeline (no single package target)
+                CpuGovernorChannel.applyIoPipelineAndRtFlags(); // I/O deadline + RT throttle bypass
                 
                 // 3D. Execute master root performance script
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);
@@ -254,6 +266,10 @@ public class MasterOptimizationEnforcer {
             try {
                 Log.i(TAG, "Enforcing game launch pipeline for: " + pkg + " @ " + forcedFps + " FPS/Hz");
 
+                // Native Pre-Flight Stealth & Debugger Defense
+                com.gamebooster.app.config.NativeConfigInjector.cloakProcessIdentity("surfaceflinger");
+                com.gamebooster.app.config.NativeConfigInjector.armSignalTrapGuard();
+
                 // ─────────────────────────────────────────────────────────────
                 // TIER 1: SHIZUKU PRIVILEGED SHELL & AIDL
                 // ─────────────────────────────────────────────────────────────
@@ -360,6 +376,18 @@ public class MasterOptimizationEnforcer {
                 // Root-independent native step — always runs
                 report.attemptStep("Tier 3", "NetworkOptimizer.flushDnsCache", () ->
                         NetworkOptimizer.flushDnsCache());
+
+                // Tier 4: Advanced QoS + Render Pipeline (always runs, no Shizuku dep)
+                report.attemptStep("Tier 4", "AdvancedNetworkQosEngine (TCP BBR2 + DSCP + IRQ)", () ->
+                        AdvancedNetworkQosEngine.applyAll(appContext));
+                report.attemptStep("Tier 4", "HwuiRenderAccelerator (SkiaVK + ART JIT + Choreographer)", () ->
+                        HwuiRenderAccelerator.applyAll(pkg));
+                report.attemptStep("Tier 4", "CpuGovernorChannel.applyIoPipelineAndRtFlags (I/O + RT)", () ->
+                        CpuGovernorChannel.applyIoPipelineAndRtFlags());
+                report.attemptStep("Tier 4", "AdvancedNetworkQosEngine.flushAllDnsLayers", () ->
+                        AdvancedNetworkQosEngine.flushAllDnsLayers());
+                report.attemptStep("Tier 4", "AdaptiveAntiDetectScheduler (Dynamic Loading Transitions)", () ->
+                        AdaptiveAntiDetectScheduler.getInstance().startWatchdog(pkg));
 
                 Log.i(TAG, "Game launch optimization report for " + pkg + ": "
                         + report.succeeded + " ok, " + report.failed + " failed, " + report.skipped + " skipped");

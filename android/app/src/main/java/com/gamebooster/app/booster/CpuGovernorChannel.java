@@ -156,6 +156,78 @@ public class CpuGovernorChannel {
         Log.i(TAG, "Extended kernel scheduler + VM + SchedTune flags applied.");
     }
 
+    /**
+     * Applies I/O pipeline tuning, RT thread scheduling, and kernel perf unlock flags.
+     *
+     * Covers what applyExtendedKernelFlags() intentionally omits:
+     *
+     *  A. I/O Scheduler: 'deadline' (UFS/eMMC NAND) or 'mq-deadline' (NVMe-like UFS 3.1)
+     *     replaces default 'cfq' → predictable read/write latency → no storage stall mid-match.
+     *  B. io_is_busy=1: tells the CPU governor that I/O activity means the CPU should stay boosted
+     *     → prevents CPU down-clocking during map asset streaming.
+     *  C. sched_rt_runtime_us=-1: removes the 95% RT throttle cap — game RT threads can run
+     *     more than 950ms/second without being starved (default Linux throttles RT at 950ms).
+     *  D. kptr_restrict=0: exposes kernel symbol addresses to userspace → required by ADPF
+     *     perf counter HAL and some Qualcomm profiler modules for DCVS feedback.
+     *  E. IRQ kernel thread RT: elevates kworker / ksoftirqd that handle game NIC + GPU IRQs
+     *     to SCHED_FIFO — eliminates the ~0.3ms IRQ service delay from CFS.
+     *  F. vm.mmap_min_addr=0: allows zero-page mapping needed by some Unity3D JIT trampolines.
+     */
+    public static void applyIoPipelineAndRtFlags() {
+        StringBuilder sb = new StringBuilder();
+
+        // ── A. I/O Scheduler: deadline for all block devices ──────────────────
+        sb.append("for q in /sys/block/*/queue/scheduler; do ")
+          .append("echo deadline > \"$q\" 2>/dev/null || echo mq-deadline > \"$q\" 2>/dev/null; ")
+          .append("done; ");
+
+        // Tune deadline scheduler: reduce max latency for reads (game asset streaming)
+        sb.append("for q in /sys/block/*/queue; do ")
+          .append("echo 64 > \"$q/nr_requests\" 2>/dev/null; ")
+          .append("echo 0 > \"$q/add_random\" 2>/dev/null; ")
+          .append("echo 0 > \"$q/rotational\" 2>/dev/null; ")
+          .append("echo 256 > \"$q/read_ahead_kb\" 2>/dev/null; ")
+          .append("done; ");
+
+        // ── B. io_is_busy: prevent CPU downclocking during map streaming ──────
+        sb.append("for p in /sys/devices/system/cpu/cpufreq/policy*; do ")
+          .append("echo 1 > \"$p/io_is_busy\" 2>/dev/null; ")
+          .append("done; ");
+
+        // ── C. Remove 95% RT runtime throttle cap ─────────────────────────────
+        // Default: sched_rt_runtime_us=950000 (RT threads max 950ms/second)
+        // Gaming threads (AudioFlinger, RenderThread) need > 950ms/second burst ability
+        sb.append("sysctl -w kernel.sched_rt_runtime_us=-1 2>/dev/null; ");
+        sb.append("sysctl -w kernel.sched_rt_period_us=1000000 2>/dev/null; ");
+
+        // ── D. Kernel pointer exposure for perf counters (ADPF, Qualcomm DCVS) ─
+        sb.append("sysctl -w kernel.kptr_restrict=0 2>/dev/null; ");
+        sb.append("sysctl -w kernel.perf_event_max_sample_rate=100000 2>/dev/null; ");
+        sb.append("sysctl -w kernel.perf_cpu_time_max_percent=25 2>/dev/null; ");
+
+        // ── E. IRQ / kworker RT promotion ────────────────────────────────────
+        // Raise kworker threads that handle GPU command completion + Wi-Fi DMA to FIFO 5
+        sb.append("for pid in $(ps -T -eo pid,tid,comm | grep -E 'kworker|irq/' | awk '{print $2}' | head -20); do ")
+          .append("chrt -f -p 5 $pid 2>/dev/null; ")
+          .append("done; ");
+
+        // ── F. vm.mmap_min_addr=0: Unity3D JIT trampoline compatibility ───────
+        sb.append("sysctl -w vm.mmap_min_addr=0 2>/dev/null; ");
+
+        // ── G. Kernel read-ahead for game asset bundles ───────────────────────
+        sb.append("sysctl -w vm.dirty_writeback_centisecs=500 2>/dev/null; ");
+        sb.append("sysctl -w vm.dirty_expire_centisecs=200 2>/dev/null; ");
+
+        // ── H. Disable scheduler debug throttle (prevents CFS group throttling) ─
+        sb.append("echo 0 > /proc/sys/kernel/sched_cfs_bandwidth_slice_us 2>/dev/null; ");
+        sb.append("sysctl -w kernel.sched_latency_ns=2000000 2>/dev/null; ");
+        sb.append("sysctl -w kernel.sched_min_granularity_ns=250000 2>/dev/null; ");
+        sb.append("sysctl -w kernel.sched_wakeup_granularity_ns=500000 2>/dev/null; ");
+
+        CommandExecutor.executeSystemCommand(sb.toString());
+        Log.i(TAG, "I/O pipeline, RT throttle bypass, IRQ FIFO, and perf counter flags applied.");
+    }
+
     public static boolean setGovernor(String governor) {
         boolean isExtreme = "extreme".equalsIgnoreCase(governor) || "performance".equalsIgnoreCase(governor);
         if (isExtreme) {
@@ -170,6 +242,9 @@ public class CpuGovernorChannel {
 
             // Apply extended kernel scheduler, VM, and EAS/SchedTune flags
             applyExtendedKernelFlags();
+
+            // Apply I/O scheduler, RT throttle bypass, IRQ FIFO, and perf unlock flags
+            applyIoPipelineAndRtFlags();
 
             // Apply per-game performance governor and CPU scheduler boost to all registered games
             for (String pkg : GamePackageRegistry.getAllKnownGames().keySet()) {

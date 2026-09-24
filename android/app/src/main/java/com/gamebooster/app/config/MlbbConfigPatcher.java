@@ -1800,8 +1800,9 @@ public class MlbbConfigPatcher {
         applyLingNoEnergyLimit(packageName);
         applyLingFastestSword(packageName);
 
-        // 3. No Delay (Touch 1000Hz, Frame Sync)
+        // 3. No Delay (Touch 1000Hz, Frame Sync, Universal Animation Cancel & Backswing Elimination)
         applyUniversalZeroDelaySkillTapAllHero(packageName);
+        applyMlbbUniversalZeroDelayCombo(packageName);
 
         // 4. Aim Assist & Hero Lock
         applyMlbbRankedAimAssist(packageName);
@@ -1830,6 +1831,17 @@ public class MlbbConfigPatcher {
 
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
         Log.i(TAG, "🔥 [MLBB 100% OVERDRIVE COMPLETE] All user requested features applied for " + packageName);
+    }
+
+    /**
+     * MLBB Universal Zero-Delay Combo & All-Hero Animation Cancel (2026).
+     */
+    public static void applyMlbbUniversalZeroDelayCombo(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbUniversalZeroDelayCombo(path);
+        }
+        Log.i(TAG, "⚡ MLBB Universal Zero-Delay Combo applied across all config nodes for " + packageName);
     }
 }
 

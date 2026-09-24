@@ -136,49 +136,65 @@ public final class GameManagerLauncher {
                 reportLaunchFailure(appContext, pkg, gameTitle, listener);
             }
         };
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            launchNow.run();
-        } else {
-            AppExecutors.getInstance().postToMainThread(launchNow);
-        }
 
-        // ═══════════════════════════════════════════════════════════
-        // STEP 4: DUAL-STAGE AUTO INJECTION PIPELINE
-        // Stage 1 (Instant): Display Hz, CPU/GPU Turbo, Graphics Cfg & Hardware Spoof
-        // Stage 2 (10s Lobby-Safe): In-Lobby Combat Overdrive & Hero Scripts Re-injection
-        // ═══════════════════════════════════════════════════════════
+        final boolean isMlbb = pkg.contains("mobile.legends") || pkg.contains("mobilelegends");
 
-        AppExecutors.getInstance().executeCommand(() -> {
-            try {
-                // Background Drone View injection right as game starts
-                if (pkg != null && (pkg.contains("mobile.legends") || pkg.contains("mobilelegends"))) {
-                    try {
-                        android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
-                        boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
-                        int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
-                        if (droneEnabled) {
-                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneView(appContext, pkg, droneTier);
+        Runnable postLaunchPipeline = () -> {
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    // STAGE 1: Instant full 3-tier master enforcement & initial configs
+                    com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
+
+                    // STAGE 2: Schedule In-Lobby Stealth Overdrive re-injection at exactly 10 seconds
+                    // (Waits for splash screen / Moonton integrity check to complete, then locks combat mods)
+                    com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetHz, 10);
+
+                    GameManagerSessionEngine.beginSession(appContext, pkg);
+                    com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
+                    com.gamebooster.app.overlay.GameSessionRecorder.getInstance()
+                            .startSession(appContext, pkg, gameTitle);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Game session start warning for " + pkg + ": " + t.getMessage());
+                }
+            });
+        };
+
+        if (isMlbb) {
+            // Check Shizuku status for user feedback
+            if (!com.gamebooster.app.shizuku.ShizukuManager.isShizukuRunningAndGranted()) {
+                Toast.makeText(appContext, "⚠️ Shizuku is not running! Please start Shizuku to apply Drone View.", Toast.LENGTH_LONG).show();
+            }
+
+            // High-speed pre-flight injection: runs atomic batch in ~150ms BEFORE launching activity!
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
+                    boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
+                    int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+                    if (droneEnabled) {
+                        boolean ok = com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(appContext, pkg, droneTier);
+                        if (ok) {
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                Toast.makeText(appContext, "🎯 MLBB Drone View " + com.gamebooster.app.config.MlbbDroneViewPatcher.getTierLabel(droneTier) + " Ready & Injected!", Toast.LENGTH_SHORT).show();
+                            });
                         }
-                    } catch (Throwable t) {
-                        Log.w(TAG, "MLBB Drone View background setup: " + t.getMessage());
                     }
+                } catch (Throwable t) {
+                    Log.w(TAG, "Pre-flight Drone View setup: " + t.getMessage());
                 }
 
-                // STAGE 1: Instant full 3-tier master enforcement & initial configs
-                com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
-
-                // STAGE 2: Schedule In-Lobby Stealth Overdrive re-injection at exactly 10 seconds
-                // (Waits for splash screen / Moonton integrity check to complete, then locks combat mods)
-                com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appContext, pkg, targetHz, 10);
-
-                GameManagerSessionEngine.beginSession(appContext, pkg);
-                com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);
-                com.gamebooster.app.overlay.GameSessionRecorder.getInstance()
-                        .startSession(appContext, pkg, gameTitle);
-            } catch (Throwable t) {
-                Log.w(TAG, "Game session start warning for " + pkg + ": " + t.getMessage());
+                // Immediately fire launchNow on main thread right as files are confirmed on disk
+                AppExecutors.getInstance().postToMainThread(launchNow);
+                postLaunchPipeline.run();
+            });
+        } else {
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                launchNow.run();
+            } else {
+                AppExecutors.getInstance().postToMainThread(launchNow);
             }
-        });
+            postLaunchPipeline.run();
+        }
     }
 
     /**

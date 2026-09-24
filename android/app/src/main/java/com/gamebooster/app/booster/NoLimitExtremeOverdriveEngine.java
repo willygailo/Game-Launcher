@@ -74,7 +74,13 @@ public final class NoLimitExtremeOverdriveEngine {
                 // 6. 1000Hz Ultra Touch & Combat Engine
                 CombatEngineChannel.enableCombatMode(context);
 
-                // 7. Battery Bypass Charging Shield (if plugged into charger)
+                // 7. Advanced Network QoS: BBR2, DSCP socket priority, IRQ affinity
+                com.gamebooster.app.booster.AdvancedNetworkQosEngine.applyAll(context);
+
+                // 8. HWUI Render Pipeline: SkiaVK, ART JIT warmup, Choreographer tuning
+                com.gamebooster.app.booster.HwuiRenderAccelerator.applyAll(packageName);
+
+                // 9. Battery Bypass Charging Shield (if plugged into charger)
                 if (BypassChargingController.isChargerConnected(context)) {
                     BypassChargingController.enableBypassCharging(context);
                 }
