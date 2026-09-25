@@ -4,6 +4,7 @@ import com.gamebooster.app.config.*;
 import android.content.Context;
 
 import com.gamebooster.app.core.AppExecutors;
+import com.gamebooster.app.device.HardwareDisplayController;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.engine.EngineMode;
 
@@ -208,10 +209,10 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "thermalservice_override",
-                "Thermal Throttling Bypass Override",
-                "Overrides Android ThermalService status to normal (0) and sets vendor thermal mode to performance",
-                "cmd thermalservice override-status 0; cmd thermal override-status 0; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
-                "cmd thermalservice override-status -1; cmd thermal override-status -1; setprop debug.thermal.throttle.disable 0; setprop vendor.thermal.mode normal",
+                "Nuclear Thermal Throttling Bypass & Sysfs Defeat",
+                "Disables Linux kernel thermal zones, elevates trip points to 120°C, resets cooling devices, terminates OEM thermal daemons, and forces PowerHAL sustained performance",
+                "for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
+                "for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done; start thermald 2>/dev/null; start thermal-engine 2>/dev/null; start mi_thermald 2>/dev/null; start vendor.thermal-engine 2>/dev/null; cmd thermalservice override-status -1 2>/dev/null; cmd thermal override-status -1 2>/dev/null; cmd power set-fixed-performance-mode-enabled false 2>/dev/null; cmd power set-mode 0 0 2>/dev/null; cmd power set-mode 2 0 2>/dev/null; setprop debug.thermal.throttle.disable 0; setprop vendor.thermal.mode normal",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -701,9 +702,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "no_limit_hardware_overdrive",
-                "No-Limit Extreme Hardware Overdrive (185 FPS + Max Clocks)",
-                "Locks all CPU clusters scaling_min_freq to max, performance governor, Adreno/Mali GPU boost, SurfaceFlinger 185Hz, and thermal trip point immunity",
-                "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; setprop debug.adreno.turbo 1; setprop debug.mali.force_gpu_boost 1; setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; service call SurfaceFlinger 1035 i32 185",
+                "No-Limit Extreme Hardware Overdrive (Hardware Max FPS + Max Clocks)",
+                "Locks all CPU clusters scaling_min_freq to max, performance governor, Adreno/Mali GPU boost, SurfaceFlinger hardware max Hz, and thermal trip point immunity",
+                "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; setprop debug.adreno.turbo 1; setprop debug.mali.force_gpu_boost 1; setprop debug.sf.fps_limit {TARGET_HZ}; setprop persist.sys.NV_FPSLIMIT {TARGET_HZ}; service call SurfaceFlinger 1035 i32 {TARGET_HZ}",
                 "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; setprop debug.adreno.turbo 0; setprop debug.mali.force_gpu_boost 0; setprop debug.sf.fps_limit 60",
                 TweakCategory.CPU_GPU,
                 true
@@ -910,7 +911,8 @@ public class TweakManagerRepository {
     public static boolean applyTweak(Context context, TweakItem tweak) {
         if (tweak == null) return false;
 
-        executePrivilegedCommand(tweak.getApplyCommand());
+        String cmd = TweakSelfHealingVerifier.adaptCommandForHardware(tweak.getApplyCommand(), context);
+        executePrivilegedCommand(cmd);
 
         tweak.setApplied(true);
         if (context != null) {
@@ -944,7 +946,7 @@ public class TweakManagerRepository {
 
         List<String> batchCmds = new ArrayList<>();
         for (TweakItem tweak : TWEAKS) {
-            batchCmds.add(tweak.getApplyCommand());
+            batchCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware(tweak.getApplyCommand(), context));
             tweak.setApplied(true);
             if (context != null) {
                 TweakPreferences.saveTweakState(context, tweak.getId(), true);
@@ -1219,34 +1221,45 @@ public class TweakManagerRepository {
                 com.gamebooster.app.booster.GpuTweaksChannel.enableVulkanRenderer();
             }
 
-            // 3. Execute master root performance script for 185Hz
+            // 3. Execute master root performance script for hardware target Hz
+            int targetHz = HardwareDisplayController.resolveSupportedRefreshRate(context, 185);
+            if (targetHz <= 0) {
+                targetHz = Math.round(HardwareDisplayController.getMaxHardwareRefreshRate(context));
+            }
+            if (targetHz <= 0) targetHz = 60;
             try {
-                com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
+                com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
             } catch (Throwable ignored) {}
         });
     }
 
     /**
-     * 🚀 NO LIMIT FPS GAMING MODE (185 FPS + Maximum Clocks + Thermal Defeated)
-     * Applies all performance tweaks, locks 185 FPS pipeline, disables backpressure,
+     * 🚀 NO LIMIT FPS GAMING MODE (Hardware Max FPS + Maximum Clocks + Thermal Defeated)
+     * Applies all performance tweaks, locks hardware-max FPS pipeline, disables backpressure,
      * locks CPU/GPU max clocks, enables Oryon/X4 core pinning, Zero-LTPO, and TCP QuickACK.
      */
     public static int applyNoLimitFpsGamingMode(Context context) {
         int appliedCount = applyAllSupportedTweaks(context);
 
+        int targetHz = HardwareDisplayController.resolveSupportedRefreshRate(context, 185);
+        if (targetHz <= 0) {
+            targetHz = Math.round(HardwareDisplayController.getMaxHardwareRefreshRate(context));
+        }
+        if (targetHz <= 0) targetHz = 60;
+
         List<String> noLimitCmds = new ArrayList<>();
-        // 1. Uncap SurfaceFlinger to 185 FPS
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit 185; setprop persist.sys.NV_FPSLIMIT 185; setprop persist.sys.game.fps 185; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; service call SurfaceFlinger 1035 i32 185 2>/dev/null"));
+        // 1. Uncap SurfaceFlinger to hardware max FPS
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null", context));
         // 2. CPU max burst frequency lock & Oryon/X4 affinity
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; echo 4-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null"));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; echo 4-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null", context));
         // 3. GPU Turbo mode
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.adreno.turbo 1; setprop debug.adreno.perf_level 0; setprop debug.mali.force_gpu_boost 1; setprop vendor.gpu.power_mode 1"));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.adreno.turbo 1; setprop debug.adreno.perf_level 0; setprop debug.mali.force_gpu_boost 1; setprop vendor.gpu.power_mode 1", context));
         // 4. Defeat thermal throttling
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done"));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance", context));
         // 5. Zero-LTPO, 1000Hz touch & UFS 4.0 read-ahead
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.use_content_detection_for_refresh_rate false; setprop persist.vendor.display.vrr.disable 1; setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; for q in /sys/block/sd*/queue/read_ahead_kb; do echo 2048 > \"$q\" 2>/dev/null; done"));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.use_content_detection_for_refresh_rate false; setprop persist.vendor.display.vrr.disable 1; setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; for q in /sys/block/sd*/queue/read_ahead_kb; do echo 2048 > \"$q\" 2>/dev/null; done", context));
         // 6. Network QuickACK & TCP BBR v3
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null"));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null", context));
 
         executePrivilegedBatch(noLimitCmds);
 
@@ -1256,24 +1269,30 @@ public class TweakManagerRepository {
     }
 
     /**
-     * 🛡️ BALANCE HIGH FPS MODE (Smooth 120 FPS + Thermal Guard + Low Heat)
-     * Locks stable 120 FPS target with energy-aware scheduler (EAS/Walt), balanced frequencies,
+     * 🛡️ BALANCE HIGH FPS MODE (Smooth Hardware-Adapted FPS + Thermal Guard + Low Heat)
+     * Locks stable hardware-adapted FPS target with energy-aware scheduler (EAS/Walt), balanced frequencies,
      * active thermal protection, ultra-responsive touch, and low-latency TCP.
      */
     public static int applyBalancedHighFpsMode(Context context) {
+        int targetHz = HardwareDisplayController.resolveSupportedRefreshRate(context, 120);
+        if (targetHz <= 0) {
+            targetHz = Math.min(120, Math.round(HardwareDisplayController.getMaxHardwareRefreshRate(context)));
+        }
+        if (targetHz <= 0) targetHz = 60;
+
         List<String> balancedCmds = new ArrayList<>();
-        // 1. Lock display & SurfaceFlinger to stable 120 FPS
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit 120; setprop persist.sys.NV_FPSLIMIT 120; setprop persist.sys.game.fps 120; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 0; service call SurfaceFlinger 1035 i32 120 2>/dev/null; cmd window set-app-refresh-rate global 120 2>/dev/null; settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0"));
+        // 1. Lock display & SurfaceFlinger to stable hardware-adapted FPS
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 0; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null; cmd window set-app-refresh-rate global " + targetHz + " 2>/dev/null; settings put system peak_refresh_rate " + targetHz + ".0; settings put system min_refresh_rate " + targetHz + ".0", context));
         // 2. CPU balanced schedutil / EAS energy-efficient governors
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 512 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 1 > /proc/sys/kernel/sched_energy_aware 2>/dev/null"));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 512 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 1 > /proc/sys/kernel/sched_energy_aware 2>/dev/null", context));
         // 3. GPU balanced power mode
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.adreno.turbo 0; setprop debug.adreno.perf_level 1; setprop debug.mali.force_gpu_boost 0; setprop vendor.gpu.power_mode 0"));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.adreno.turbo 0; setprop debug.adreno.perf_level 1; setprop debug.mali.force_gpu_boost 0; setprop vendor.gpu.power_mode 0", context));
         // 4. Restore kernel thermal trip points for battery/heat protection
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done"));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done", context));
         // 5. Keep touch sensitivity high (1000Hz) and zero-slop
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; settings put system touch_sensitivity 1"));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; setprop persist.vendor.touch.sampling_rate 1000; settings put system touch_sensitivity 1", context));
         // 6. Network BBR + TCP optimization
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null"));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null; sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null; sysctl -w net.core.default_qdisc=fq_codel 2>/dev/null", context));
 
         executePrivilegedBatch(balancedCmds);
 
@@ -1292,6 +1311,28 @@ public class TweakManagerRepository {
         // Initiate 2026 Autonomous Self-Healing Watchdog
         TweakSelfHealingVerifier.startSelfHealingWatchdog(context, TWEAKS);
         return count;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AUTO LAUNCH SHELL EXECUTOR SUPPORT
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Returns all tweak items that are currently enabled in preferences.
+     * Used by GameLaunchShellExecutor to batch apply on game launch.
+     */
+    public static List<TweakItem> getAllEnabledTweaks(Context context) {
+        List<TweakItem> enabled = new ArrayList<>();
+        for (TweakItem item : TWEAKS) {
+            boolean isApplied = item.isApplied();
+            if (context != null) {
+                isApplied = TweakPreferences.isTweakApplied(context, item.getId());
+            }
+            if (isApplied) {
+                enabled.add(item);
+            }
+        }
+        return enabled;
     }
 }
 

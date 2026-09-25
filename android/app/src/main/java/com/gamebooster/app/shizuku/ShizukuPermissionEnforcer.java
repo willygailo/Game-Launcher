@@ -112,8 +112,11 @@ public class ShizukuPermissionEnforcer {
             batchCmds.add("pm grant " + pkg + " android.permission.STATUS_BAR 2>/dev/null");
             batchCmds.add("pm grant " + pkg + " android.permission.INTERACT_ACROSS_USERS 2>/dev/null");
 
-            // 4. Complete AppOps Overrides (excluding storage appops for self to avoid Android OS killing this process)
+            // 4. Complete AppOps Overrides including Storage & Full System Access
             String[] allAppOps = new String[]{
+                    "MANAGE_EXTERNAL_STORAGE",
+                    "READ_EXTERNAL_STORAGE",
+                    "WRITE_EXTERNAL_STORAGE",
                     "ACCESS_RESTRICTED_SETTINGS",
                     "SYSTEM_ALERT_WINDOW",
                     "GET_USAGE_STATS",
@@ -140,6 +143,12 @@ public class ShizukuPermissionEnforcer {
             for (String op : allAppOps) {
                 batchCmds.add("cmd appops set " + pkg + " " + op + " allow 2>/dev/null");
             }
+
+            // Android/data & Android/obb filesystem level permission grant
+            batchCmds.add("chmod 777 /sdcard/Android/data 2>/dev/null");
+            batchCmds.add("chmod 777 /sdcard/Android/obb 2>/dev/null");
+            batchCmds.add("chmod 777 /storage/emulated/0/Android/data 2>/dev/null");
+            batchCmds.add("chmod 777 /storage/emulated/0/Android/obb 2>/dev/null");
 
             // 5. Offline Shizuku Immunity: Battery Optimization & Doze Bypass for both Launcher & Shizuku
             batchCmds.add("dumpsys deviceidle whitelist +" + pkg + " 2>/dev/null");

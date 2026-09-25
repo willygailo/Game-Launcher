@@ -25,14 +25,41 @@ import java.util.List;
 
 public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.GameViewHolder> {
 
+    public interface OnGameCardActionListener {
+        void onLaunch(GameAppInfo game);
+        void onTune(GameAppInfo game);
+        void onMoreOptions(GameAppInfo game, View anchorView);
+    }
+
     private final Context context;
     private final List<GameAppInfo> games = new ArrayList<>();
+    private OnGameCardActionListener actionListener;
 
     public HomeGamesAdapter(Context context, List<GameAppInfo> initialGames) {
         this.context = context;
         if (initialGames != null) {
             this.games.addAll(initialGames);
         }
+    }
+
+    public void setOnGameCardActionListener(OnGameCardActionListener listener) {
+        this.actionListener = listener;
+    }
+
+    public List<GameAppInfo> getGames() {
+        return new ArrayList<>(games);
+    }
+
+    public boolean removeGame(String packageName) {
+        if (packageName == null) return false;
+        for (int i = 0; i < games.size(); i++) {
+            if (packageName.equalsIgnoreCase(games.get(i).getPackageName())) {
+                games.remove(i);
+                notifyItemRemoved(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void updateList(List<GameAppInfo> newList) {
@@ -108,12 +135,20 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         // Tap anywhere on card = instant game launch
         View.OnClickListener launchListener = v -> {
             Context ctx = (v != null && v.getContext() != null) ? v.getContext() : context;
-            com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(ctx, game);
+            if (actionListener != null) {
+                actionListener.onLaunch(game);
+            } else {
+                com.gamebooster.app.games.GameLauncherHelper.autoLaunchGame(ctx, game);
+            }
         };
         // Long press anywhere on card = Pre-Launch tuning dialog (FPS picker, config)
         View.OnLongClickListener tuneListener = v -> {
             Context ctx = (v != null && v.getContext() != null) ? v.getContext() : context;
-            PreLaunchGameDialog.show(ctx, game);
+            if (actionListener != null) {
+                actionListener.onTune(game);
+            } else {
+                PreLaunchGameDialog.show(ctx, game);
+            }
             return true;
         };
 
@@ -121,13 +156,21 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         holder.btnLaunch.setOnClickListener(launchListener);
         holder.btnLaunch.setOnLongClickListener(tuneListener);
 
+        // Overflow / More Options button (⋮)
+        if (holder.btnMore != null) {
+            holder.btnMore.setOnClickListener(v -> {
+                if (actionListener != null) {
+                    actionListener.onMoreOptions(game, v);
+                } else {
+                    PreLaunchGameDialog.show(context, game);
+                }
+            });
+        }
+
         // Card background: tap = launch, long press = tune dialog
-        // NOTE: We do NOT set onClickListener on holder.itemView separately — that would
-        // cause double-fire since itemView wraps layoutCardBg. One listener per visual area.
         if (holder.layoutCardBg != null) {
             holder.layoutCardBg.setOnClickListener(launchListener);
             holder.layoutCardBg.setOnLongClickListener(tuneListener);
-            // Prevent itemView from intercepting when layoutCardBg handles it
             holder.itemView.setOnClickListener(null);
             holder.itemView.setOnLongClickListener(null);
         } else {
@@ -149,6 +192,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
         TextView tvBadge;
         TextView tvProfile;
         Button btnLaunch;
+        Button btnMore;
 
         public GameViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -159,6 +203,7 @@ public class HomeGamesAdapter extends RecyclerView.Adapter<HomeGamesAdapter.Game
             tvBadge = itemView.findViewById(R.id.tv_game_badge);
             tvProfile = itemView.findViewById(R.id.tv_game_profile);
             btnLaunch = itemView.findViewById(R.id.btn_launch_game);
+            btnMore = itemView.findViewById(R.id.btn_game_more);
         }
     }
 }

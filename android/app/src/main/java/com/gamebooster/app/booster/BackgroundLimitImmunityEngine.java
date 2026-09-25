@@ -185,11 +185,14 @@ public final class BackgroundLimitImmunityEngine {
             if (ShizukuManager.isShizukuRunningAndGranted()) return true;
 
             if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
-                Log.i(TAG, "Attempting root auto-resurrection of Shizuku daemon...");
+                Log.i(TAG, "Attempting root auto-resurrection of Shizuku daemon without wireless debugging...");
                 String[] candidatePaths = {
                         "/sdcard/Android/data/moe.shizuku.privileged.api/start.sh",
+                        "/storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh",
                         "/data/data/moe.shizuku.privileged.api/start.sh",
-                        "/data/user/0/moe.shizuku.privileged.api/start.sh"
+                        "/data/user/0/moe.shizuku.privileged.api/start.sh",
+                        "/data/local/tmp/shizuku/start.sh",
+                        "/data/local/tmp/start.sh"
                 };
 
                 for (String scriptPath : candidatePaths) {
@@ -200,6 +203,10 @@ public final class BackgroundLimitImmunityEngine {
                         return true;
                     }
                 }
+
+                // Fallback direct root daemon spawn via app_process / shizuku apk
+                com.gamebooster.app.engine.ShellExecutor.executeSuCommand(
+                        "nohup sh /data/data/moe.shizuku.privileged.api/start.sh >/dev/null 2>&1 &");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Auto-resurrect Shizuku error: " + t.getMessage());

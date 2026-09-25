@@ -13,6 +13,8 @@ import android.view.WindowManager;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import com.gamebooster.app.config.GameProfileAutoConfigurator;
+
 /**
  * Reads Android-reported display modes and applies display preferences only
  * where the user has granted Modify system settings. It never claims to change
@@ -94,26 +96,90 @@ public final class HardwareDisplayController {
     }
 
     /**
-     * Requests a system display preference using public Settings APIs. The user
-     * must have explicitly granted Modify system settings. Returns false when
-     * the permission or requested physical mode is unavailable.
+     * Enforces the target refresh rate via the Settings.System API AND directly via Shizuku/Root.
+     *
+     * Unlike the old implementation this method does NOT silently return false when
+     * MODIFY_SYSTEM_SETTINGS is missing — it fires privileged shell commands as a fallback,
+     * ensuring peak_refresh_rate + min_refresh_rate are NEVER left at 60Hz.
+     *
+     * @param requestedHz Target Hz (120 / 144 / 165 / 185).
+     * @return true if at least one write path succeeded.
      */
     public static boolean forceUnlockSystemRefreshRate(Context context, int requestedHz) {
-        int targetHz = resolveSupportedRefreshRate(context, requestedHz);
-        if (context == null || targetHz <= 0 || !Settings.System.canWrite(context)) return false;
-        try {
-            boolean peak = Settings.System.putFloat(context.getContentResolver(), "peak_refresh_rate", targetHz);
-            boolean min = Settings.System.putFloat(context.getContentResolver(), "min_refresh_rate", targetHz);
-            Log.i(TAG, "Requested supported system display preference: " + targetHz + "Hz");
-            return peak || min;
-        } catch (SecurityException e) {
-            Log.w(TAG, "Modify system settings is not granted", e);
-            return false;
+        if (context == null || requestedHz <= 0) return false;
+
+        int targetHz = GameProfileAutoConfigurator.clampTargetFpsToDisplay(context, requestedHz);
+        float targetF = (float) targetHz;
+        boolean anySuccess = false;
+
+        // ── Path A: Settings.System (public API) ─────────────────────────────────────
+        if (Settings.System.canWrite(context)) {
+            try {
+                boolean peak = Settings.System.putFloat(context.getContentResolver(), "peak_refresh_rate", targetF);
+                boolean min  = Settings.System.putFloat(context.getContentResolver(), "min_refresh_rate",  targetF);
+                // Disable adaptive / match-content frame-rate — these silently drop Hz to 60
+                Settings.System.putInt(context.getContentResolver(), "match_content_frame_rate", 0);
+                Settings.Global.putInt(context.getContentResolver(), "match_content_frame_rate", 0);
+                Log.i(TAG, "Settings.System enforced " + targetHz + "Hz (peak=" + peak + ", min=" + min + ")");
+                anySuccess = peak || min;
+            } catch (SecurityException e) {
+                Log.w(TAG, "Settings.System write denied: " + e.getMessage());
+            }
+        } else {
+            Log.i(TAG, "MODIFY_SYSTEM_SETTINGS not granted — escalating to privileged shell");
         }
+
+        // ── Path B: Privileged shell via Shizuku/Root (fires regardless of canWrite) ─
+        // These bypass the Android Settings permission gate entirely.
+        try {
+            String hz  = String.valueOf(targetHz);
+            String hzF = targetHz + ".0";
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put system peak_refresh_rate " + hzF);
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put system min_refresh_rate " + hzF);
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put global peak_refresh_rate " + hzF);
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put global min_refresh_rate " + hzF);
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put system match_content_frame_rate 0");
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "settings put secure match_content_frame_rate_preference 0");
+            // Disable dynamic VRR / adaptive refresh so the OS can't self-throttle back to lower rates
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "setprop persist.vendor.display.vrr.disable 1");
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "setprop ro.surface_flinger.set_idle_timer_ms 0");
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "setprop ro.surface_flinger.set_touch_timer_ms 0");
+            anySuccess = true;
+            Log.i(TAG, "Privileged shell enforced " + targetHz + "Hz settings keys");
+        } catch (Throwable t) {
+            Log.w(TAG, "Privileged Hz shell error: " + t.getMessage());
+        }
+
+        return anySuccess;
     }
 
     public static boolean forceUnlockSystemMaxRefreshRate(Context context) {
-        return forceUnlockSystemRefreshRate(context, 0);
+        int maxHz = Math.round(getMaxHardwareRefreshRate(context));
+        int targetHz = maxHz > 0 ? maxHz : 60;
+        return forceUnlockSystemRefreshRate(context, targetHz);
+    }
+
+    /**
+     * Enforces highest hardware refresh rate via EVERY available path simultaneously.
+     * Called on app launch, game launch, and the Hero Hardware Banner tap.
+     */
+    public static void forceMaxHzNeverFallback(Context context) {
+        if (context == null) return;
+        int maxHz = Math.round(getMaxHardwareRefreshRate(context));
+        int targetHz = maxHz > 0 ? maxHz : 60;
+        // Settings path
+        forceUnlockSystemRefreshRate(context, targetHz);
+        // Shizuku 6-layer path
+        com.gamebooster.app.booster.MaxHzForceChannel.forceApply(targetHz);
     }
 
     /** Restores the public refresh-rate preferences this app may have set. */

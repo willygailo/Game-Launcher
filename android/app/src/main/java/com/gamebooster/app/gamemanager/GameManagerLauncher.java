@@ -161,6 +161,12 @@ public final class GameManagerLauncher {
                         }
                     }
 
+                    // STAGE 0: Auto Shell Apply — fires GPU turbo, CPU governor, thermal bypass,
+                    // all enabled tweaks (single Shizuku spawn), per-game asset script, Hz lock.
+                    // Runs fully async so game startActivity() is NEVER blocked.
+                    com.gamebooster.app.tweaks.GameLaunchShellExecutor.applyForGameLaunch(
+                            appContext, pkg, targetHz, null);
+
                     // STAGE 1: Instant full 3-tier master enforcement & initial configs
                     com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
 

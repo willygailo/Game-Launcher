@@ -21,7 +21,9 @@ import java.util.Set;
 public final class GameProfileAutoConfigurator {
 
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
-    public static final int DEFAULT_TARGET_HZ = 0;
+    public static final int DEFAULT_TARGET_HZ = 60;
+    public static final int MIN_ENFORCED_HZ    = 60;
+    public static final int MAX_ENFORCED_HZ    = 185;
 
     private GameProfileAutoConfigurator() {}
 
@@ -29,15 +31,36 @@ public final class GameProfileAutoConfigurator {
         void onAutoConfigCompleted(int gamesConfiguredCount, int targetFpsHz);
     }
 
-    /** Resolves to a physical mode reported by Android or high-tier gaming overdrive (120/144/165/185Hz). */
+    /**
+     * Resolves to the best high-refresh target matching hardware capability.
+     * Supported standard tiers: 60, 90, 120, 144, 165, 185 FPS / Hz.
+     */
     public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
-        if (targetFpsHz >= 185) return 185;
-        if (targetFpsHz >= 165) return 165;
-        if (targetFpsHz >= 144) return 144;
-        if (targetFpsHz >= 120) return 120;
-        if (context == null) return targetFpsHz > 0 ? targetFpsHz : 60;
-        int resolved = DevicePerformanceCapabilities.detect(context).resolveRefreshRate(targetFpsHz);
-        return resolved > 0 ? resolved : 60;
+        int deviceMax = 0;
+        List<Integer> supported = null;
+        if (context != null) {
+            DevicePerformanceCapabilities caps = DevicePerformanceCapabilities.detect(context);
+            deviceMax = caps.getMaxRefreshRate();
+            supported = caps.getSupportedRefreshRates();
+        }
+        if (deviceMax <= 0) {
+            deviceMax = 60;
+        }
+
+        // If target was not specified (<=0), use hardware maximum
+        if (targetFpsHz <= 0) {
+            return deviceMax;
+        }
+
+        // Match exact or nearest supported gaming tier
+        if (targetFpsHz >= 185 && deviceMax >= 185) return 185;
+        if (targetFpsHz >= 165 && deviceMax >= 165) return 165;
+        if (targetFpsHz >= 144 && deviceMax >= 144) return 144;
+        if (targetFpsHz >= 120 && deviceMax >= 120) return 120;
+        if (targetFpsHz >= 90  && deviceMax >= 90)  return 90;
+        if (targetFpsHz >= 60) return Math.min(targetFpsHz, deviceMax);
+
+        return Math.min(targetFpsHz, deviceMax);
     }
 
     public static int setTargetFpsHz(Context context, int targetFpsHz) {
@@ -49,9 +72,9 @@ public final class GameProfileAutoConfigurator {
     }
 
     public static int getTargetFpsHz(Context context) {
-        if (context == null) return 60;
+        if (context == null) return MIN_ENFORCED_HZ;
         int stored = context.getApplicationContext().getSharedPreferences("game_booster_tweak_prefs", Context.MODE_PRIVATE)
-                .getInt(KEY_TARGET_HZ_FPS, DEFAULT_TARGET_HZ);
+                .getInt(KEY_TARGET_HZ_FPS, 0);
         return clampTargetFpsToDisplay(context, stored);
     }
 

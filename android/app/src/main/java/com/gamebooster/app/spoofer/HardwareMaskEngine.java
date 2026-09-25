@@ -128,6 +128,22 @@ public class HardwareMaskEngine {
             batchCommands.add("setprop debug.game.spoofed_oaid \"" + profile.getOaid() + "\"");
             batchCommands.add("setprop debug.game.spoofed_widevine \"" + profile.getWidevineDeviceId() + "\"");
 
+            // Live shell property injection read directly by games & Unity/UE4/Vulkan engines
+            batchCommands.add("setprop persist.sys.device.model \"" + profile.model + "\"");
+            batchCommands.add("setprop persist.sys.device.brand \"" + profile.brand + "\"");
+            batchCommands.add("setprop persist.sys.device.manufacturer \"" + profile.manufacturer + "\"");
+            batchCommands.add("setprop persist.sys.device.hardware \"" + profile.hardware + "\"");
+            batchCommands.add("setprop persist.sys.device.soc \"" + profile.socModel + "\"");
+            batchCommands.add("setprop persist.sys.game.model \"" + profile.model + "\"");
+            batchCommands.add("setprop persist.sys.game.brand \"" + profile.brand + "\"");
+            batchCommands.add("setprop persist.sys.game.device \"" + profile.device + "\"");
+            batchCommands.add("setprop persist.sys.game.manufacturer \"" + profile.manufacturer + "\"");
+            batchCommands.add("setprop persist.sys.game.hardware \"" + profile.hardware + "\"");
+            batchCommands.add("setprop persist.sys.game.gpu \"" + profile.glRenderer + "\"");
+            batchCommands.add("setprop persist.sys.game.soc \"" + profile.socModel + "\"");
+            batchCommands.add("setprop persist.sys.game.vulkan.driver \"" + profile.vulkanDriverVersion + "\"");
+            batchCommands.add("setprop persist.vendor.display.device_name \"" + profile.displayName + "\"");
+
             // ═══════════════════════════════════════════════════════════════════
             //  LAYER 2: DISPLAY REFRESH RATE & SCHEDULER TUNING
             // ═══════════════════════════════════════════════════════════════════
@@ -616,6 +632,20 @@ public class HardwareMaskEngine {
                     NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
+
+            // Guaranteed Shizuku elevated shell write fallback for Free Fire
+            try {
+                byte[] ffBytes = ffProfile.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String ffB64 = android.util.Base64.encodeToString(ffBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                String ffFallbackCmd =
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files 2>/dev/null; " +
+                    "echo '" + ffB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/device_info.json 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/device_info.json 2>/dev/null; " +
+                    "echo '" + ffB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/DeviceHardware.ini 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/DeviceHardware.ini 2>/dev/null";
+                ShizukuExecutor.executeShizukuCommand(ffFallbackCmd);
+            } catch (Throwable ignored) {}
+            GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
         // 6. Honor of Kings / Arena of Valor / Wild Rift
@@ -636,6 +666,18 @@ public class HardwareMaskEngine {
                     NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 }
             }
+
+            // Guaranteed Shizuku elevated shell write fallback for HOK / Wild Rift
+            try {
+                byte[] hokBytes = hokProfile.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                String hokB64 = android.util.Base64.encodeToString(hokBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
+                String hokFallbackCmd =
+                    "mkdir -p /sdcard/Android/data/" + pkg + "/files 2>/dev/null; " +
+                    "echo '" + hokB64 + "' | base64 -d > /sdcard/Android/data/" + pkg + "/files/DeviceHardware.ini 2>/dev/null; " +
+                    "chmod 666 /sdcard/Android/data/" + pkg + "/files/DeviceHardware.ini 2>/dev/null";
+                ShizukuExecutor.executeShizukuCommand(hokFallbackCmd);
+            } catch (Throwable ignored) {}
+            GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
         // 7. Standoff 2

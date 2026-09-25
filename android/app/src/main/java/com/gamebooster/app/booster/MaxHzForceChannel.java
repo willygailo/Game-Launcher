@@ -70,7 +70,7 @@ public final class MaxHzForceChannel {
      * Forces the display to {@code targetHz} via Root or Shizuku — NO capability check, NO fallback.
      * Uses CommandExecutor directly for instant Root / Shizuku execution.
      *
-     * @param targetHz Target refresh rate: 120, 144, 165, or 185
+     * @param targetHz Target refresh rate: 60, 90, 120, 144, 165, or 185
      * @return ForceResult with per-layer success tracking
      */
     public static ForceResult forceApply(int targetHz) {

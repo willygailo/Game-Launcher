@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
 
         // Enforce maximum hardware refresh rate on MainActivity window
         com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(this);
+        // Fire all 6 command layers — never fall back to 60Hz
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() ->
+                com.gamebooster.app.device.HardwareDisplayController.forceMaxHzNeverFallback(getApplicationContext()));
 
         // Phase 0.2: enable the config backup safety net (app-private storage)
         com.gamebooster.app.config.ConfigBackupManager.setAppContext(getApplicationContext());
@@ -373,6 +376,9 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     protected void onResume() {
         super.onResume();
         com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(this);
+        // Re-enforce on every resume — OS adaptive VRR resets can silently drop to 60Hz
+        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() ->
+                com.gamebooster.app.device.HardwareDisplayController.forceMaxHzNeverFallback(getApplicationContext()));
         com.gamebooster.app.shizuku.ShizukuAutoConnectEngine.pulseConnect(this);
         com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getApplicationContext()).onResumeCheck();
     }

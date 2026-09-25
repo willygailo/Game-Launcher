@@ -3,6 +3,8 @@ import com.gamebooster.app.ui.adapters.HomeGamesAdapter;
 import com.gamebooster.app.ui.activities.MainActivity;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.gamebooster.app.R;
 import com.gamebooster.app.games.GameAppInfo;
+import com.gamebooster.app.games.GameLauncherHelper;
 import com.gamebooster.app.games.HomeGameScanner;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
@@ -123,20 +127,27 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             });
         }
 
-        // Hero Hardware Engine Banner Click: Instant Hardware Boost & Max Hz Refresh
+        // Hero Hardware Engine Banner Click: Nuclear 185Hz Enforcement — NO 60Hz fallback
         View cardHeroBanner = view.findViewById(R.id.card_hero_hardware_engine);
         if (cardHeroBanner != null) {
             cardHeroBanner.setOnClickListener(v -> {
                 Context c = getContext();
                 if (c == null) return;
-                Toast.makeText(c, "🚀 Hardware Turbo Active: Maximum 185Hz & Zero Throttling Engaged!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(c, "🚀 ENFORCING 185Hz MAX — Zero Throttling, Zero 60Hz Fallback!", Toast.LENGTH_SHORT).show();
                 com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                     try {
+                        // Window preference for this app
                         com.gamebooster.app.engine.NativeFrameworkBridge.acquireSustainedPerformanceLock(c);
                         if (getActivity() != null) {
                             com.gamebooster.app.device.HardwareDisplayController.applyMaxRefreshRateToWindow(getActivity());
                         }
+                        // Nuclear path: Settings API + 6 Shizuku command layers, target 185Hz
+                        com.gamebooster.app.device.HardwareDisplayController.forceMaxHzNeverFallback(c);
+                        // Explicit 185Hz blast via MaxHzForceChannel (OEM-specific keys)
+                        com.gamebooster.app.booster.MaxHzForceChannel.forceApply(185);
+                        // Clear VM caches for memory headroom
                         com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
+                        // Apply extreme performance profile
                         com.gamebooster.app.booster.PerformanceChannel.applyProfile(c, com.gamebooster.app.booster.PerformanceChannel.Profile.EXTREME_PERFORMANCE);
                     } catch (Throwable t) {
                         android.util.Log.w("HomeFragment", "Hardware turbo error: " + t.getMessage());
@@ -180,6 +191,18 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (btnHomeApkManager != null) btnHomeApkManager.setOnClickListener(openApkManagerAction);
         if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);
 
+        Button btnRestoreDefaults = view.findViewById(R.id.btn_restore_default_games);
+        if (btnRestoreDefaults != null) {
+            btnRestoreDefaults.setOnClickListener(v -> {
+                Context ctx = getContext();
+                if (ctx == null) return;
+                GameLauncherHelper.resetAllExcludedPackages(ctx);
+                GameLauncherHelper.clearAllCustomPackages(ctx);
+                Toast.makeText(ctx, "✅ Game list restored to defaults!", Toast.LENGTH_SHORT).show();
+                loadAndScanGames(true);
+            });
+        }
+
         if (tvGamesHeader != null) {
             tvGamesHeader.setOnClickListener(v -> {
                 if (getContext() != null) {
@@ -195,6 +218,26 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             rvGames.setItemViewCacheSize(25);
             rvGames.setItemAnimator(null);
             adapter = new HomeGamesAdapter(getContext(), gameList);
+            adapter.setOnGameCardActionListener(new HomeGamesAdapter.OnGameCardActionListener() {
+                @Override
+                public void onLaunch(GameAppInfo game) {
+                    Context ctx = getContext();
+                    if (ctx != null) GameLauncherHelper.autoLaunchGame(ctx, game);
+                }
+
+                @Override
+                public void onTune(GameAppInfo game) {
+                    android.app.Activity act = getActivity();
+                    if (act != null && !act.isFinishing()) {
+                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game);
+                    }
+                }
+
+                @Override
+                public void onMoreOptions(GameAppInfo game, View anchorView) {
+                    showGameMoreOptionsMenu(game, anchorView);
+                }
+            });
             rvGames.setAdapter(adapter);
         }
 
@@ -465,11 +508,25 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                     isScanning = false;
                     if (!isAdded() || getContext() == null) return;
 
-                    // Safety guard: if scan returned empty but we previously had games and context was still valid,
-                    // do not clear the list unless verified empty by PackageManager
+                    // Safety guard removed: now we fully trust scanner results.
+                    // Hide-from-Home works by marking packages excluded in prefs;
+                    // HomeGameScanner already filters those out. An empty result is intentional.
                     if ((scannedGames == null || scannedGames.isEmpty()) && !gameList.isEmpty()) {
-                        android.util.Log.w("HomeFragment", "Scanned games was unexpectedly empty, keeping previous cached list (" + gameList.size() + " games)");
-                        return;
+                        // Only skip if PackageManager confirms at least one of our known games is still installed
+                        boolean anyStillInstalled = false;
+                        try {
+                            android.content.pm.PackageManager pm = ctx.getPackageManager();
+                            for (GameAppInfo g : gameList) {
+                                if (g != null && HomeGameScanner.isPackageInstalled(pm, g.getPackageName())) {
+                                    anyStillInstalled = true;
+                                    break;
+                                }
+                            }
+                        } catch (Throwable ignored) {}
+                        if (anyStillInstalled) {
+                            android.util.Log.w("HomeFragment", "Scan empty but packages still installed — keeping cache.");
+                            return;
+                        }
                     }
 
                     gameList.clear();
@@ -594,5 +651,99 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 }
             }
         });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // More Options Popup — the nerve center for game card management
+    // ─────────────────────────────────────────────────────────────────────────
+    private void showGameMoreOptionsMenu(GameAppInfo game, View anchor) {
+        if (game == null || anchor == null || getContext() == null) return;
+        Context ctx = getContext();
+        String pkg = game.getPackageName();
+        String label = game.getLabel() != null ? game.getLabel() : pkg;
+
+        PopupMenu popup = new PopupMenu(ctx, anchor);
+        popup.getMenu().add(0, 1, 0, "🚀  Launch");
+        popup.getMenu().add(0, 2, 1, "⚙️  Tune / Pre-Launch");
+        popup.getMenu().add(0, 3, 2, "👁  Hide from Home");
+        popup.getMenu().add(0, 4, 3, "🗑  Uninstall");
+        popup.getMenu().add(0, 5, 4, "ℹ️  App Info");
+
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case 1: // Launch
+                    GameLauncherHelper.autoLaunchGame(ctx, game);
+                    return true;
+
+                case 2: // Tune
+                    android.app.Activity act = getActivity();
+                    if (act != null && !act.isFinishing()) {
+                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game);
+                    }
+                    return true;
+
+                case 3: // Hide from Home — instant adapter removal + persist
+                    GameLauncherHelper.excludePackage(ctx, pkg);
+                    if (adapter != null) {
+                        adapter.removeGame(pkg);
+                    }
+                    gameList.removeIf(g -> g != null && pkg.equalsIgnoreCase(g.getPackageName()));
+                    if (tvGamesHeader != null) {
+                        tvGamesHeader.setText("INSTALLED GAMES (" + gameList.size() + " DETECTED)");
+                    }
+                    if (gameList.isEmpty()) {
+                        if (rvGames != null) rvGames.setVisibility(View.GONE);
+                        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.VISIBLE);
+                    }
+                    Toast.makeText(ctx, "👁 " + label + " hidden — tap Restore to undo.", Toast.LENGTH_SHORT).show();
+                    return true;
+
+                case 4: // Uninstall — try Shizuku silent first, fallback to OS dialog
+                    if (ShizukuExecutor.hasShizukuPermission()) {
+                        com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                            String result = ShizukuExecutor.executeShizukuCommand("pm uninstall --user 0 " + pkg);
+                            com.gamebooster.app.core.AppExecutors.getInstance().postToMainThread(() -> {
+                                if (!isAdded()) return;
+                                boolean success = result != null && result.contains("Success");
+                                if (success) {
+                                    Toast.makeText(ctx, "✅ " + label + " uninstalled.", Toast.LENGTH_SHORT).show();
+                                    loadAndScanGames(true);
+                                } else {
+                                    // Shizuku failed or didn't respond cleanly — fire OS dialog
+                                    launchOsUninstaller(ctx, pkg);
+                                }
+                            });
+                        });
+                    } else {
+                        launchOsUninstaller(ctx, pkg);
+                    }
+                    return true;
+
+                case 5: // App Info
+                    try {
+                        Intent infoIntent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        infoIntent.setData(Uri.parse("package:" + pkg));
+                        infoIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ctx.startActivity(infoIntent);
+                    } catch (Throwable t) {
+                        Toast.makeText(ctx, "Could not open App Info.", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+
+                default:
+                    return false;
+            }
+        });
+        popup.show();
+    }
+
+    private void launchOsUninstaller(Context ctx, String pkg) {
+        try {
+            Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + pkg));
+            uninstallIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(uninstallIntent);
+        } catch (Throwable t) {
+            Toast.makeText(ctx, "⚠️ Could not launch uninstaller.", Toast.LENGTH_SHORT).show();
+        }
     }
 }
