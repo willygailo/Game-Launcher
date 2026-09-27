@@ -23,7 +23,7 @@ public final class GameProfileAutoConfigurator {
     public static final String KEY_TARGET_HZ_FPS = "user_target_hz_fps";
     public static final int DEFAULT_TARGET_HZ = 60;
     public static final int MIN_ENFORCED_HZ    = 60;
-    public static final int MAX_ENFORCED_HZ    = 185;
+    public static final int MAX_ENFORCED_HZ    = 480;
 
     private GameProfileAutoConfigurator() {}
 
@@ -33,7 +33,7 @@ public final class GameProfileAutoConfigurator {
 
     /**
      * Resolves to the best high-refresh target matching hardware capability.
-     * Supported standard tiers: 60, 90, 120, 144, 165, 185 FPS / Hz.
+     * Supported standard tiers: 60, 90, 120, 144, 165, 185, 240, 300, 360, 480 FPS / Hz.
      */
     public static int clampTargetFpsToDisplay(Context context, int targetFpsHz) {
         int deviceMax = 0;
@@ -52,7 +52,11 @@ public final class GameProfileAutoConfigurator {
             return deviceMax;
         }
 
-        // Match exact or nearest supported gaming tier
+        // Match exact or nearest supported gaming tier (descending order for priority)
+        if (targetFpsHz >= 480 && deviceMax >= 480) return 480;
+        if (targetFpsHz >= 360 && deviceMax >= 360) return 360;
+        if (targetFpsHz >= 300 && deviceMax >= 300) return 300;
+        if (targetFpsHz >= 240 && deviceMax >= 240) return 240;
         if (targetFpsHz >= 185 && deviceMax >= 185) return 185;
         if (targetFpsHz >= 165 && deviceMax >= 165) return 165;
         if (targetFpsHz >= 144 && deviceMax >= 144) return 144;

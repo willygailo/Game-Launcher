@@ -8,11 +8,65 @@ import com.gamebooster.app.games.GamePackageRegistry;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class CpuGovernorChannel {
 
     private static final String TAG = "CpuGovernorChannel";
+
+    /**
+     * Detects CPU cluster topology (big/LITTLE/prime cores) from sysfs.
+     * Returns array of cluster info: [core_start, core_end, cluster_type]
+     * cluster_type: 0=efficiency/LITTLE, 1=big, 2=prime/performance
+     */
+    public static int[][] detectCpuClusterTopology() {
+        int coreCount = detectCpuCoreCount();
+        List<int[]> clusters = new ArrayList<>();
+        int[][] topology = new int[0][3];
+
+        try {
+            // Read related_cpus for each policy to identify clusters
+            File policyDir = new File("/sys/devices/system/cpu/cpufreq/");
+            File[] policies = policyDir.listFiles((dir, name) -> name.startsWith("policy"));
+            if (policies != null && policies.length > 0) {
+                for (File policy : policies) {
+                    File relatedCpus = new File(policy, "related_cpus");
+                    if (relatedCpus.exists()) {
+                        String content = new String(java.nio.file.Files.readAllBytes(relatedCpus.toPath())).trim();
+                        String[] parts = content.split("-");
+                        if (parts.length == 2) {
+                            int start = Integer.parseInt(parts[0]);
+                            int end = Integer.parseInt(parts[1]);
+                            // Determine cluster type by max frequency
+                            File maxFreqFile = new File(policy, "cpuinfo_max_freq");
+                            long maxFreq = 0;
+                            if (maxFreqFile.exists()) {
+                                maxFreq = Long.parseLong(new String(java.nio.file.Files.readAllBytes(maxFreqFile.toPath())).trim());
+                            }
+                            int clusterType = 0; // efficiency
+                            if (maxFreq >= 2800000) clusterType = 2; // prime (2.8GHz+)
+                            else if (maxFreq >= 2000000) clusterType = 1; // big (2.0GHz+)
+                            clusters.add(new int[]{start, end, clusterType});
+                        }
+                    }
+                }
+                // Sort by start core
+                clusters.sort((a, b) -> Integer.compare(a[0], b[0]));
+                topology = clusters.toArray(new int[0][3]);
+            }
+        } catch (Throwable ignored) {
+            // Fallback: simple split
+            int mid = coreCount / 2;
+            topology = new int[][]{
+                {0, mid - 1, 0},           // efficiency
+                {mid, coreCount - 1, 1}    // big
+            };
+        }
+        return topology;
+    }
 
     /**
      * Detects total available CPU cores on the device (8-core, 12-core, 16-core, etc.).
@@ -36,48 +90,107 @@ public class CpuGovernorChannel {
 
     /**
      * Tunes Linux kernel cpuset and CPU topology scheduling based on detected core count (8, 12, 16+ cores).
+     * Applies per-cluster governors: Prime/Performance → "performance", Big → "performance", LITTLE → "powersave"
+     * Pins CPU frequencies (min = max), disables C-states, tunes uclamp for top-app.
      */
     public static void tuneMultiCoreTopology() {
         int coreCount = detectCpuCoreCount();
         int maxCoreIndex = Math.max(7, coreCount - 1);
         String allCores = "0-" + maxCoreIndex;
+        int[][] topology = detectCpuClusterTopology();
 
-        // Determine efficiency cluster vs performance/prime cluster
-        int bgMax = Math.min(3, maxCoreIndex / 2);
-        String bgCores = "0-" + bgMax;
+        // Build per-cluster core lists
+        StringBuilder primeCores = new StringBuilder();
+        StringBuilder bigCores = new StringBuilder();
+        StringBuilder littleCores = new StringBuilder();
+
+        for (int[] cluster : topology) {
+            int start = cluster[0];
+            int end = cluster[1];
+            int type = cluster[2];
+            String range = start + "-" + end;
+            if (type == 2) { // prime
+                if (primeCores.length() > 0) primeCores.append(",");
+                primeCores.append(range);
+            } else if (type == 1) { // big
+                if (bigCores.length() > 0) bigCores.append(",");
+                bigCores.append(range);
+            } else { // little/efficiency
+                if (littleCores.length() > 0) littleCores.append(",");
+                littleCores.append(range);
+            }
+        }
+
+        String perfCores = (primeCores.length() > 0 ? primeCores.toString() : "") +
+                (primeCores.length() > 0 && bigCores.length() > 0 ? "," : "") +
+                (bigCores.length() > 0 ? bigCores.toString() : "");
+        String bgCores = littleCores.length() > 0 ? littleCores.toString() : (bigCores.length() > 0 ? bigCores.toString() : "0-" + Math.min(3, maxCoreIndex / 2));
 
         StringBuilder sb = new StringBuilder();
-        // Top-app & Foreground gets full access to all cores with priority on Big/Prime cores
+
+        // ── Cpuset assignments ──────────────────────────────────────────────────
+        // Top-app & Foreground gets ALL cores (but uclamp will prioritize perf cores)
         sb.append("echo ").append(allCores).append(" > /dev/cpuset/top-app/cpus 2>/dev/null; ");
         sb.append("echo ").append(allCores).append(" > /dev/cpuset/foreground/cpus 2>/dev/null; ");
+        // Background restricted to efficiency cores
         sb.append("echo ").append(bgCores).append(" > /dev/cpuset/background/cpus 2>/dev/null; ");
         sb.append("echo ").append(bgCores).append(" > /dev/cpuset/system-background/cpus 2>/dev/null; ");
         sb.append("echo ").append(allCores).append(" > /dev/cpuset/restricted/cpus 2>/dev/null; ");
 
-        // Linux CFS scheduler & uclamp boost for real-time thread dispatching
-        sb.append("echo 0 > /proc/sys/kernel/sched_energy_aware 2>/dev/null; ");
-        sb.append("echo 0 > /sys/devices/system/cpu/eas/enable 2>/dev/null; ");
-        sb.append("echo 0 > /dev/cpu_dma_latency 2>/dev/null; ");
+        // ── Per-Cluster Governors & Frequency Pinning ───────────────────────────
+        // Prime/Performance cores → performance governor, min_freq = max_freq
+        // Big cores → performance governor, min_freq = max_freq
+        // LITTLE/Efficiency cores → powersave governor (isolate background)
         sb.append("for p in /sys/devices/system/cpu/cpufreq/policy*; do ");
-        sb.append("echo performance > \"$p/scaling_governor\" 2>/dev/null; ");
-        sb.append("if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("  gov=\"performance\"; ");
+        sb.append("  # Check if this policy covers only LITTLE cores ");
+        sb.append("  related=$(cat \"$p/related_cpus\" 2>/dev/null || echo \"\"); ");
+        sb.append("  if [ -n \"$related\" ]; then ");
+        sb.append("    first_core=$(echo \"$related\" | cut -d'-' -f1); ");
+        sb.append("    # Heuristic: core 0-3 typically LITTLE on 8-core, adjust for 12/16-core ");
+        sb.append("    if [ \"$first_core\" -lt 4 ]; then gov=\"powersave\"; fi; ");
+        sb.append("  fi; ");
+        sb.append("  echo \"$gov\" > \"$p/scaling_governor\" 2>/dev/null; ");
+        sb.append("  # Pin frequency: min = max ");
+        sb.append("  if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("  # Also pin cpuinfo_max_freq to scaling_min_freq ");
+        sb.append("  if [ -f \"$p/cpuinfo_max_freq\" ]; then cat \"$p/cpuinfo_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("  # Disable energy_perf_bias (0 = performance) ");
+        sb.append("  echo 0 > \"$p/energy_perf_bias\" 2>/dev/null; ");
         sb.append("done; ");
 
+        // ── Disable C-States / Idle States ──────────────────────────────────────
+        // Prevent deep sleep between frames
+        sb.append("for cpu in /sys/devices/system/cpu/cpu*/cpuidle/state*/disable; do ");
+        sb.append("  echo 1 > \"$cpu\" 2>/dev/null; ");
+        sb.append("done; ");
+        sb.append("echo 1 > /sys/module/cpuidle/parameters/enable 2>/dev/null; "); // 1=disable cpuidle
+        sb.append("echo 0 > /dev/cpu_dma_latency 2>/dev/null; ");
+
+        // ── Linux CFS scheduler & uclamp boost for real-time thread dispatching ─
+        sb.append("echo 0 > /proc/sys/kernel/sched_energy_aware 2>/dev/null; ");
+        sb.append("echo 0 > /sys/devices/system/cpu/eas/enable 2>/dev/null; ");
         sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; ");
+        sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.max 2>/dev/null; ");
         sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null; ");
         sb.append("echo 1024 > /dev/cpuset/foreground/uclamp.min 2>/dev/null; ");
+        sb.append("echo 1024 > /dev/cpuset/foreground/uclamp.max 2>/dev/null; ");
         sb.append("echo 0 > /dev/cpuset/background/uclamp.max 2>/dev/null; ");
         sb.append("setprop sys.games.cpu_affinity 1; ");
         sb.append("setprop sys.perf.sched_uclamp_min 1024; ");
+        sb.append("setprop sys.perf.sched_uclamp_max 1024; ");
         sb.append("setprop sys.perf.sched_uclamp_min_rt 1024; ");
-        sb.append("setprop sys.perf.sched_min_granularity_ns 250000; ");
-        sb.append("setprop sys.perf.sched_latency_ns 1000000; ");
-        sb.append("setprop sys.perf.sched_wakeup_granularity_ns 500000; ");
+        sb.append("setprop sys.perf.sched_min_granularity_ns 100000; ");  // 0.1ms - tighter
+        sb.append("setprop sys.perf.sched_latency_ns 500000; ");         // 0.5ms - tighter
+        sb.append("setprop sys.perf.sched_wakeup_granularity_ns 250000; "); // 0.25ms - tighter
         sb.append("setprop sys.perf.sched_boost 1; ");
         sb.append("cmd power set-fixed-performance-mode-enabled true; ");
 
         CommandExecutor.executeSystemCommand(sb.toString());
-        Log.i(TAG, "Multi-core CPU topology tuned for " + coreCount + "-core processor (" + allCores + ").");
+        Log.i(TAG, "Multi-core CPU topology tuned for " + coreCount + "-core processor (" + allCores + "). "
+                + "Prime: " + (primeCores.length() > 0 ? primeCores : "none")
+                + ", Big: " + (bigCores.length() > 0 ? bigCores : "none")
+                + ", LITTLE: " + (littleCores.length() > 0 ? littleCores : "none"));
     }
 
     /**

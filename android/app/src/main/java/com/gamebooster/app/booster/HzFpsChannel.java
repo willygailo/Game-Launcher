@@ -61,9 +61,9 @@ public final class HzFpsChannel {
 
     /**
      * Enforces {@code requestedHz} via every available layer.
-     * Supported standard tiers: 60, 90, 120, 144, 165, 185 FPS / Hz.
+     * Supported standard tiers: 60, 90, 120, 144, 165, 185, 240, 300, 360, 480 FPS / Hz.
      *
-     * @param requestedHz Target Hz: 60 / 90 / 120 / 144 / 165 / 185.
+     * @param requestedHz Target Hz: 60 / 90 / 120 / 144 / 165 / 185 / 240 / 300 / 360 / 480.
      */
     public static RefreshRateResult setRefreshRate(Context context, int requestedHz) {
         if (context == null) return RefreshRateResult.failed(requestedHz, 0);
@@ -99,5 +99,67 @@ public final class HzFpsChannel {
     /** Third-party apps control their own frame pacing — not mutated by the launcher. */
     public static boolean forceGameFps(Context context, String packageName, int targetFps) {
         return false;
+    }
+
+    /**
+     * Enforces refresh rate for a specific game package via Game Mode API.
+     * Requires Root/Shizuku for cmd game commands.
+     */
+    public static RefreshRateResult setRefreshRatePerPackage(Context context, String packageName, int requestedHz) {
+        if (context == null || packageName == null || packageName.trim().isEmpty()) {
+            return RefreshRateResult.failed(requestedHz, 0);
+        }
+
+        int targetHz = GameProfileAutoConfigurator.clampTargetFpsToDisplay(context, requestedHz);
+        String pkg = packageName.trim();
+
+        // Apply per-package game mode and FPS via privileged commands
+        boolean privilegedOk = false;
+        try {
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "cmd game mode performance " + pkg);
+            com.gamebooster.app.engine.PrivilegeBridgeEngine.executePrivileged(
+                    "cmd game set --fps " + targetHz + " " + pkg);
+            privilegedOk = true;
+        } catch (Throwable ignored) {}
+
+        // Also apply global Hz (display-level) via MaxHzForceChannel
+        MaxHzForceChannel.ForceResult shizukuResult = null;
+        try {
+            shizukuResult = MaxHzForceChannel.forceApply(targetHz);
+        } catch (Throwable ignored) {}
+
+        boolean globalOk = shizukuResult != null && shizukuResult.success;
+
+        if (privilegedOk || globalOk) {
+            int appliedHz = shizukuResult != null ? shizukuResult.appliedHz : targetHz;
+            return RefreshRateResult.success(targetHz, appliedHz > 0 ? appliedHz : targetHz);
+        }
+
+        return RefreshRateResult.failed(targetHz, 0);
+    }
+
+    /**
+     * Verifies the actually applied refresh rate by reading system settings.
+     * Returns the verified Hz or 0 if unable to determine.
+     */
+    public static int verifyAppliedHz(Context context) {
+        if (context == null) return 0;
+        try {
+            // Check Settings.System peak_refresh_rate
+            float peak = android.provider.Settings.System.getFloat(
+                    context.getContentResolver(), "peak_refresh_rate", 0f);
+            if (peak > 0) return Math.round(peak);
+
+            // Check Settings.Global
+            float globalPeak = android.provider.Settings.Global.getFloat(
+                    context.getContentResolver(), "peak_refresh_rate", 0f);
+            if (globalPeak > 0) return Math.round(globalPeak);
+
+            // Fallback: current display mode
+            return Math.round(com.gamebooster.app.device.HardwareDisplayController.getMaxHardwareRefreshRate(context));
+        } catch (Throwable ignored) {
+            return 0;
+        }
     }
 }

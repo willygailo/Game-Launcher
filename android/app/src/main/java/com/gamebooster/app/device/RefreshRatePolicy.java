@@ -15,15 +15,23 @@ import java.util.List;
  */
 public final class RefreshRatePolicy {
 
-    public static final int HZ_60  = 60;
-    public static final int HZ_90  = 90;
-    public static final int HZ_120 = 120;
-    public static final int HZ_144 = 144;
-    public static final int HZ_165 = 165;
-    public static final int HZ_185 = 185;
+    public static final int HZ_60   = 60;
+    public static final int HZ_90   = 90;
+    public static final int HZ_120  = 120;
+    public static final int HZ_144  = 144;
+    public static final int HZ_165  = 165;
+    public static final int HZ_185  = 185;
+    public static final int HZ_240  = 240;
+    public static final int HZ_300  = 300;
+    public static final int HZ_360  = 360;
+    public static final int HZ_480  = 480;
 
     public static final int DEFAULT_MIN_HZ = 60;
-    public static final int DEFAULT_MAX_HZ = 185;
+    public static final int DEFAULT_MAX_HZ = 480;
+
+    public static final int[] SUPPORTED_TIERS = {
+            HZ_60, HZ_90, HZ_120, HZ_144, HZ_165, HZ_185, HZ_240, HZ_300, HZ_360, HZ_480
+    };
 
     private RefreshRatePolicy() {}
 
@@ -46,14 +54,14 @@ public final class RefreshRatePolicy {
 
     /**
      * Resolves to the best available display mode matching the requested rate,
-     * respecting hardware display capabilities across 60, 90, 120, 144, 165, and 185 Hz.
+     * respecting hardware display capabilities across 60, 90, 120, 144, 165, 185, 240, 300, 360, 480 Hz.
      */
     public static int resolveRate(Collection<Integer> reportedRates, int requestedHz) {
         List<Integer> rates = sanitizeReportedRates(reportedRates);
 
-        // No modes reported at all — return requested or default 60Hz baseline
+        // No modes reported at all — return 0 for specific requests, default 60Hz for "use highest"
         if (rates.isEmpty()) {
-            return requestedHz > 0 ? requestedHz : HZ_60;
+            return requestedHz > 0 ? 0 : HZ_60;
         }
 
         // "Use highest available" path (e.g. requestedHz <= 0)

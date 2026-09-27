@@ -87,6 +87,7 @@ public final class WebViewBoosterChannel {
 
     /**
      * Detects device tier based on RAM, SoC hardware, and Android SDK.
+     * Uses a scoring system: GPU score + CPU score + RAM tier + SDK level.
      */
     public static DeviceTier detectDeviceTier(Context context) {
         long ramMb = getTotalRamMb(context);
@@ -94,30 +95,150 @@ public final class WebViewBoosterChannel {
         String hardware = (Build.HARDWARE != null ? Build.HARDWARE : "").toLowerCase();
         String board = (Build.BOARD != null ? Build.BOARD : "").toLowerCase();
         String soc = "";
+        String device = (Build.DEVICE != null ? Build.DEVICE : "").toLowerCase();
+        String model = (Build.MODEL != null ? Build.MODEL : "").toLowerCase();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 soc = (Build.SOC_MODEL != null ? Build.SOC_MODEL : "").toLowerCase();
             } catch (Throwable ignored) {}
         }
 
-        boolean isLowRam = (ramMb > 0 && ramMb < 3800) || sdk < 29;
+        // GPU Score estimation (0-100)
+        int gpuScore = estimateGpuScore(hardware, soc, board, device, model);
+        // CPU Score estimation (0-100) - rough Geekbench 6 single-core proxy
+        int cpuScore = estimateCpuScore(hardware, soc, board, device, model);
+
+        // Tier thresholds
+        // FLAGSHIP: GPU >= 85 && CPU >= 1200 && RAM >= 8GB && SDK >= 33 (Android 13+)
+        // MID_RANGE: GPU >= 55 && CPU >= 800 && RAM >= 4GB && SDK >= 30 (Android 11+)
+        // BUDGET: everything else
+
+        boolean isLowRam = (ramMb > 0 && ramMb < 4096) || sdk < 30;
         if (isLowRam) {
             return DeviceTier.BUDGET_SAFE;
         }
 
-        // Flagship tier: RAM >= 7.5GB and Android 11+ with modern Qualcomm Snapdragon or Dimensity 9xxx or Tensor
-        boolean isHighRam = ramMb >= 7200;
-        boolean isHighEndSoc = hardware.contains("qcom") || hardware.contains("qualcomm")
-                || soc.contains("sm8") || soc.contains("sd8") || soc.contains("dimensity 9")
-                || soc.contains("tensor") || board.contains("taro") || board.contains("kalama")
-                || board.contains("pineapple") || board.contains("cliffs");
+        boolean isHighRam = ramMb >= 8192; // 8GB+
+        boolean isMidRam = ramMb >= 4096;  // 4GB+
 
-        if (isHighRam && isHighEndSoc && sdk >= 31) {
+        if (isHighRam && gpuScore >= 85 && cpuScore >= 1200 && sdk >= 33) {
             return DeviceTier.FLAGSHIP;
         }
 
-        // Mid-Range tier: 4GB - 7GB RAM or modern mid-tier SoC
-        return DeviceTier.MID_RANGE;
+        if (isMidRam && gpuScore >= 55 && cpuScore >= 800 && sdk >= 30) {
+            return DeviceTier.MID_RANGE;
+        }
+
+        return DeviceTier.BUDGET_SAFE;
+    }
+
+    /**
+     * Estimates GPU score (0-100) based on SoC identifiers.
+     * Adreno 750/740=100, Adreno 730/720=90, Adreno 660/650=80, Adreno 640=75
+     * Mali G720/G715=95, Mali G710=85, Mali G78=75, Mali G77=70, Mali G68=65, Mali G57=50
+     * Xclipse 950=90, Xclipse 940=85
+     * Maleoon 910=80
+     * Tiger T820=55
+     */
+    private static int estimateGpuScore(String hardware, String soc, String board, String device, String model) {
+        String combined = hardware + " " + soc + " " + board + " " + device + " " + model;
+
+        // Adreno (Snapdragon)
+        if (combined.contains("sm8650") || combined.contains("sm8550") || combined.contains("sm8475") || combined.contains("sm8450")) return 100; // 8 Gen 3/2/1
+        if (combined.contains("sm8425") || combined.contains("sm8350") || combined.contains("sm8250")) return 95;   // 8+ Gen 1, 888+
+        if (combined.contains("sm7550") || combined.contains("sm7450") || combined.contains("sm7325")) return 85;   // 7+ Gen 3/2/1
+        if (combined.contains("sm7225") || combined.contains("sm7150") || combined.contains("sm7125")) return 75;   // 7 Gen 1, 778G
+        if (combined.contains("sm6375") || combined.contains("sm6225") || combined.contains("sm6150")) return 65;   // 6 Gen 1, 695
+        if (combined.contains("sm8150") || combined.contains("sdm855") || combined.contains("sdm845")) return 80;   // 855/845
+
+        // Mali (MediaTek Dimensity / Exynos / Tensor / Kirin / UNISOC)
+        if (combined.contains("dimensity 9300") || combined.contains("dimensity 9200")) return 95;  // G720
+        if (combined.contains("dimensity 9000") || combined.contains("dimensity 8300") || combined.contains("dimensity 8200")) return 88; // G715/G710
+        if (combined.contains("dimensity 8100") || combined.contains("dimensity 8050") || combined.contains("dimensity 8000")) return 82; // G710/G78
+        if (combined.contains("dimensity 1200") || combined.contains("dimensity 1100") || combined.contains("dimensity 1000")) return 75; // G77
+        if (combined.contains("dimensity 900") || combined.contains("dimensity 800") || combined.contains("dimensity 700")) return 65; // G68/G57
+        if (combined.contains("dimensity 6000") || combined.contains("dimensity 7000")) return 60;
+
+        // Exynos
+        if (combined.contains("exynos 2400") || combined.contains("exynos 2300")) return 90;  // Xclipse 950/940
+        if (combined.contains("exynos 2200") || combined.contains("exynos 2100")) return 85;  // Xclipse 920/910
+        if (combined.contains("exynos 1380") || combined.contains("exynos 1280")) return 70;  // Mali G68
+
+        // Google Tensor
+        if (combined.contains("tensor g3") || combined.contains("tensor g4")) return 88;
+        if (combined.contains("tensor g2") || combined.contains("gs201")) return 82;
+        if (combined.contains("tensor") || combined.contains("gs101")) return 75;
+
+        // Kirin / HiSilicon
+        if (combined.contains("kirin 9010") || combined.contains("kirin 9000s") || combined.contains("kirin 9000")) return 80; // Maleoon 910
+        if (combined.contains("kirin 990") || combined.contains("kirin 980")) return 70;
+
+        // UNISOC
+        if (combined.contains("t820") || combined.contains("t760") || combined.contains("t770")) return 55;
+        if (combined.contains("t619") || combined.contains("t618") || combined.contains("t616") || combined.contains("t612")) return 45;
+
+        // Generic hardware fallback
+        if (hardware.contains("qcom") || hardware.contains("qualcomm")) return 70;
+        if (hardware.contains("mtk") || hardware.contains("mediatek")) return 60;
+        if (hardware.contains("exynos") || hardware.contains("s5e")) return 65;
+        if (hardware.contains("kirin") || hardware.contains("hi36") || hardware.contains("hi11")) return 60;
+        if (hardware.contains("sprd") || hardware.contains("unisoc")) return 40;
+
+        return 50; // Unknown = mid
+    }
+
+    /**
+     * Estimates CPU score (rough Geekbench 6 single-core) based on SoC identifiers.
+     */
+    private static int estimateCpuScore(String hardware, String soc, String board, String device, String model) {
+        String combined = hardware + " " + soc + " " + board + " " + device + " " + model;
+
+        // Snapdragon 8 Gen 3/2/1
+        if (combined.contains("sm8650") || combined.contains("sm8550") || combined.contains("sm8475") || combined.contains("sm8450")) return 2200;
+        if (combined.contains("sm8425") || combined.contains("sm8350")) return 1800;
+        if (combined.contains("sm8250") || combined.contains("sdm855")) return 1400;
+
+        // Snapdragon 7 series
+        if (combined.contains("sm7550") || combined.contains("sm7450")) return 1500;
+        if (combined.contains("sm7325") || combined.contains("sm7225")) return 1200;
+        if (combined.contains("sm7150") || combined.contains("sm7125")) return 1000;
+
+        // Snapdragon 6 series
+        if (combined.contains("sm6375") || combined.contains("sm6225")) return 900;
+
+        // Dimensity 9000 series
+        if (combined.contains("dimensity 9300") || combined.contains("dimensity 9200")) return 2000;
+        if (combined.contains("dimensity 9000") || combined.contains("dimensity 8300") || combined.contains("dimensity 8200")) return 1600;
+        if (combined.contains("dimensity 8100") || combined.contains("dimensity 8050") || combined.contains("dimensity 8000")) return 1300;
+        if (combined.contains("dimensity 1200") || combined.contains("dimensity 1100") || combined.contains("dimensity 1000")) return 1100;
+        if (combined.contains("dimensity 900") || combined.contains("dimensity 800") || combined.contains("dimensity 700")) return 900;
+
+        // Exynos
+        if (combined.contains("exynos 2400") || combined.contains("exynos 2300")) return 1900;
+        if (combined.contains("exynos 2200") || combined.contains("exynos 2100")) return 1400;
+        if (combined.contains("exynos 1380") || combined.contains("exynos 1280")) return 1000;
+
+        // Google Tensor
+        if (combined.contains("tensor g3") || combined.contains("tensor g4")) return 1600;
+        if (combined.contains("tensor g2") || combined.contains("gs201")) return 1300;
+        if (combined.contains("tensor") || combined.contains("gs101")) return 1100;
+
+        // Kirin
+        if (combined.contains("kirin 9010") || combined.contains("kirin 9000s") || combined.contains("kirin 9000")) return 1300;
+        if (combined.contains("kirin 990") || combined.contains("kirin 980")) return 1000;
+
+        // UNISOC
+        if (combined.contains("t820") || combined.contains("t760") || combined.contains("t770")) return 800;
+        if (combined.contains("t619") || combined.contains("t618") || combined.contains("t616") || combined.contains("t612")) return 650;
+
+        // Generic
+        if (hardware.contains("qcom") || hardware.contains("qualcomm")) return 1100;
+        if (hardware.contains("mtk") || hardware.contains("mediatek")) return 900;
+        if (hardware.contains("exynos") || hardware.contains("s5e")) return 1000;
+        if (hardware.contains("kirin") || hardware.contains("hi36") || hardware.contains("hi11")) return 900;
+        if (hardware.contains("sprd") || hardware.contains("unisoc")) return 600;
+
+        return 800; // Unknown = mid
     }
 
     /**
@@ -158,6 +279,9 @@ public final class WebViewBoosterChannel {
                         "--enable-low-latency-webgl " +
                         "--enable-webgl2-compute-context " +
                         "--enable-unsafe-webgpu " +
+                        "--enable-webgpu " +
+                        "--enable-webassembly-threads " +
+                        "--enable-webassembly-simd " +
                         "--enable-gpu-async-worker-context " +
                         "--disable-backgrounding-occluded-windows " +
                         "--disable-renderer-backgrounding " +
@@ -166,7 +290,7 @@ public final class WebViewBoosterChannel {
                         "--enable-quic " +
                         "--enable-tcp-fastopen " +
                         "--enable-fast-unload " +
-                        "--enable-features=Vulkan,UseSkiaRenderer,SkiaGraphite,Canvas2dOOPR,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebAssemblyFastApi,WebGPU,BackForwardCache,Prerender2,UseGpuSchedulerDfs,HighPriorityGpuTaskScheduling,RawDraw,DelegatedCompositing " +
+                        "--enable-features=Vulkan,UseSkiaRenderer,SkiaGraphite,Canvas2dOOPR,CanvasOopRasterization,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyThreads,WebAssemblyLazyCompilation,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,EnableOopRasterizationHighPriorityStrategy,WebRtcHWDecoding,WebRtcHWEncoding,AcceleratedVideoEncoder,AsyncImageDecoding,CanvasColorCache,ServiceWorkerBypassFetchHandler,WebAssemblyBaseline,WebAssemblyTiering,WebAssemblyTurbofan,WebAssemblyFastApi,WebGPU,BackForwardCache,Prerender2,UseGpuSchedulerDfs,HighPriorityGpuTaskScheduling,RawDraw,DelegatedCompositing,CanvasColorCache,WebCodecs " +
                         "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,CalculateNativeWinOcclusion,MediaEngagementBypassAutoplayPolicies " +
                         "--num-raster-threads=" + rasterThreads + " " +
                         "--enable-drdc " +
@@ -174,11 +298,12 @@ public final class WebViewBoosterChannel {
                         "--enable-webgl-developer-extensions " +
                         "--enable-webgl-draft-extensions " +
                         "--enable-webassembly-simd " +
+                        "--enable-webassembly-threads " +
                         "--enable-webassembly-tiering " +
                         "--disable-frame-rate-limit " +
                         "--disable-gpu-vsync " +
-                        "--max-gum-fps=185 " +
-                        "--js-flags=\"--max-semi-space-size=128 --max-old-space-size=2048 --opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-tier-up --expose-wasm --wasm-simd --harmony-simd --predictable-gc-schedule\"";
+                        "--max-gum-fps=480 " +
+                        "--js-flags=\"--max-semi-space-size=256 --max-old-space-size=4096 --opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-tier-up --expose-wasm --wasm-simd --harmony-simd --predictable-gc-schedule --jitless=false\"";
             }
 
             case MID_RANGE: {
@@ -199,15 +324,17 @@ public final class WebViewBoosterChannel {
                         "--enable-quic " +
                         "--enable-tcp-fastopen " +
                         "--enable-fast-unload " +
-                        "--enable-features=CanvasOopRasterization,Canvas2dOOPR,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,WebRtcHWDecoding,WebRtcHWEncoding,AsyncImageDecoding,BackForwardCache,Prerender2,HighPriorityGpuTaskScheduling,RawDraw " +
+                        "--enable-features=CanvasOopRasterization,Canvas2dOOPR,DrDc,GpuRasterization,VaapiVideoDecoder,WebAssemblySimd,WebAssemblyThreads,WebViewSurfaceControl,ThreadedScrollAnimator,ZeroCopyTabSwitch,WebRtcHWDecoding,WebRtcHWEncoding,AsyncImageDecoding,BackForwardCache,Prerender2,HighPriorityGpuTaskScheduling,RawDraw,WebCodecs " +
                         "--disable-features=UseChromeOSDirectVideoDecoder,LazyFrameLoading,DefaultAngleVulkan,VulkanFromANGLE,WebGPU,CalculateNativeWinOcclusion " +
                         "--num-raster-threads=" + rasterThreads + " " +
                         "--enable-drdc " +
                         "--enable-threaded-compositing " +
                         "--enable-webassembly-simd " +
+                        "--enable-webassembly-threads " +
+                        "--enable-webassembly-tiering " +
                         "--disable-frame-rate-limit " +
-                        "--max-gum-fps=120 " +
-                        "--js-flags=\"--max-semi-space-size=64 --max-old-space-size=1024 --opt --turbo-fast-api-calls --turboshaft --wasm-opt\"";
+                        "--max-gum-fps=165 " +
+                        "--js-flags=\"--max-semi-space-size=128 --max-old-space-size=2048 --opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-simd\"";
             }
 
             case BUDGET_SAFE:
@@ -268,20 +395,23 @@ public final class WebViewBoosterChannel {
                 sb.append("device_config put runtime_native_boot webview_skia_vulkan true; ");
                 sb.append("device_config put runtime_native_boot webview_drdc true; ");
                 sb.append("device_config put runtime_native_boot webview_graphite true; ");
-                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context --enable-skia-graphite --enable-raw-draw\"; ");
+                sb.append("device_config put runtime_native_boot webview_webgpu true; ");
+                sb.append("device_config put runtime_native_boot webview_webassembly_threads true; ");
+                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context --enable-skia-graphite --enable-raw-draw --enable-webgpu --enable-webassembly-threads --enable-webassembly-simd\"; ");
                 sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
                 sb.append("setprop debug.hwui.renderer vulkan; ");
                 sb.append("setprop debug.hwui.render_thread_priority -20; ");
                 sb.append("setprop debug.hwui.fps_limit 0; ");
                 sb.append("setprop debug.chromium.prerender 1; ");
-                sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft --predictable-gc-schedule\"; ");
+                sb.append("setprop debug.v8.flags \"--opt --always-opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-simd --wasm-threads --predictable-gc-schedule --jitless=false\"; ");
             } else if (tier == DeviceTier.MID_RANGE) {
                 sb.append("device_config put runtime_native_boot webview_drdc true; ");
-                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-raw-draw\"; ");
+                sb.append("device_config put runtime_native_boot webview_webassembly_threads true; ");
+                sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-raw-draw --enable-webassembly-threads --enable-webassembly-simd\"; ");
                 sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
                 sb.append("setprop debug.hwui.render_thread_priority -20; ");
                 sb.append("setprop debug.hwui.fps_limit 0; ");
-                sb.append("setprop debug.v8.flags \"--opt --turbo-fast-api-calls --turboshaft\"; ");
+                sb.append("setprop debug.v8.flags \"--opt --turbo-fast-api-calls --turboshaft --wasm-opt --wasm-simd\"; ");
             } else {
                 // Budget: Safe properties to avoid OpenGL/Vulkan conflicts
                 sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-oop-rasterization\"; ");

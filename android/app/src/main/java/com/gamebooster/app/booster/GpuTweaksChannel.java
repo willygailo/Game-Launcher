@@ -80,14 +80,33 @@ public class GpuTweaksChannel {
         CommandExecutor.setSystemProperty("vendor.perf.gestureFlingBoost", "1");
         CommandExecutor.setSystemProperty("persist.vendor.qti.games.gt.enable", "1");
         CommandExecutor.setSystemProperty("vendor.gpu.power_mode", "1");
+        CommandExecutor.setSystemProperty("debug.adreno.cframe_hint", "1");
+        CommandExecutor.setSystemProperty("debug.adreno.preemption", "1");
 
         // Sysfs GPU devfreq clock and power rail locks for Adreno (Snapdragon)
-        CommandExecutor.executeSystemCommand(
-                "echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null; " +
-                "echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null; " +
-                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; " +
-                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; " +
-                "echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null"
+        StringBuilder sb = new StringBuilder();
+        sb.append("echo performance > /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null; ");
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null; ");
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null; ");
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on 2>/dev/null; ");
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on 2>/dev/null; ");
+        // Lock GPU clock: min_freq = max_freq
+        sb.append("MAX_GPU_FREQ=$(cat /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 2>/dev/null); ");
+        sb.append("[ -n \"$MAX_GPU_FREQ\" ] && echo $MAX_GPU_FREQ > /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 2>/dev/null; ");
+        // Pin P-state: max_pwrlevel=0, thermal_pwrlevel=0
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/max_pwrlevel 2>/dev/null; ");
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/thermal_pwrlevel 2>/dev/null; ");
+        // Disable DCVS dispatch queue
+        sb.append("echo 0 > /sys/class/kgsl/kgsl-3d0/dispatch_queue_length 2>/dev/null; ");
+        sb.append("echo 1 > /sys/class/kgsl/kgsl-3d0/perfcounter 2>/dev/null; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
+
+        // QTI GPU sustained performance HAL hint via Shizuku
+        com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommands(
+            "setprop vendor.qti.hardware.gpu.perf 1 2>/dev/null",
+            "setprop vendor.display.comp_mask 0 2>/dev/null",
+            "setprop debug.adreno.cframe_hint 1 2>/dev/null",
+            "setprop debug.adreno.preemption 1 2>/dev/null"
         );
         return true;
     }
@@ -99,28 +118,62 @@ public class GpuTweaksChannel {
         CommandExecutor.setSystemProperty("persist.vendor.ged.boost", "1");
         CommandExecutor.setSystemProperty("persist.vendor.dpt.enable", "1");
         CommandExecutor.setSystemProperty("vendor.ppt.boost", "1");
+        CommandExecutor.setSystemProperty("debug.mali.gralloc.shared", "1");
+        CommandExecutor.setSystemProperty("persist.vendor.mtkgpu.use_power_limit", "0");
 
         // MediaTek GPU Engine Driver (GED) kernel game mode & PID boost
-        CommandExecutor.executeSystemCommand(
-                "echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; " +
-                "echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null; " +
-                "echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null; " +
-                "echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null; " +
-                "echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; " +
-                "for g in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$g\" 2>/dev/null; done"
-        );
+        StringBuilder sb = new StringBuilder();
+        sb.append("echo 0 > /sys/class/misc/mali0/device/dvfs_enable 2>/dev/null; ");
+        sb.append("echo 1 > /sys/module/ged/parameters/gx_game_mode 2>/dev/null; ");
+        sb.append("echo 1 > /sys/module/ged/parameters/gx_boost_on 2>/dev/null; ");
+        sb.append("echo 1 > /sys/module/ged/parameters/gx_force_cpu_boost 2>/dev/null; ");
+        sb.append("echo 100 > /sys/module/ged/parameters/gx_top_app_pid_boost 2>/dev/null; ");
+        // Extended GED flags
+        sb.append("echo 0 > /sys/module/ged/parameters/gx_fps_cap_margin 2>/dev/null; ");
+        sb.append("echo 100 > /sys/module/ged/parameters/gx_max_cpu_loading 2>/dev/null; ");
+        sb.append("echo 1 > /sys/module/ged/parameters/gx_is_GED_KPI_enabled 2>/dev/null; ");
+        sb.append("echo 0 > /sys/module/ged/parameters/gx_dvfs_margin_mode 2>/dev/null; ");
+        // GPU devfreq governor + clock lock
+        sb.append("for g in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$g\" 2>/dev/null; done; ");
+        sb.append("MAX_MTK_GPU=$(cat /sys/class/devfreq/*gpu*/max_freq 2>/dev/null | head -1); ");
+        sb.append("[ -n \"$MAX_MTK_GPU\" ] && echo $MAX_MTK_GPU > /sys/class/devfreq/*gpu*/min_freq 2>/dev/null; ");
+        // MTK PPM game scenario
+        sb.append("echo 1 > /proc/ppm/policy/ut_ppm_game_cfg 2>/dev/null; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
         return true;
     }
 
     public static boolean enableTensorBoost() {
         CommandExecutor.setSystemProperty("debug.tensor.gpu.boost", "1");
+        CommandExecutor.setSystemProperty("debug.sf.use_phase_offsets_as_durations", "1");
+        CommandExecutor.setSystemProperty("vendor.perf.perfhal.enable", "1");
+
+        // Tensor Mali GPU devfreq governor + clock lock
+        StringBuilder sb = new StringBuilder();
+        sb.append("for f in /sys/class/devfreq/18000000.mali/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("MAX_TENSOR_GPU=$(cat /sys/class/devfreq/18000000.mali/max_freq 2>/dev/null); ");
+        sb.append("[ -n \"$MAX_TENSOR_GPU\" ] && echo $MAX_TENSOR_GPU > /sys/class/devfreq/18000000.mali/min_freq 2>/dev/null; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/max_freq; do MAX=$(cat \"$f\" 2>/dev/null); [ -n \"$MAX\" ] && echo $MAX > \"${f%max_freq}min_freq\" 2>/dev/null; done; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
         return true;
     }
 
     public static boolean enableExynosXclipseBoost() {
         CommandExecutor.setSystemProperty("debug.exynos.performance.mode", "1");
         CommandExecutor.setSystemProperty("debug.xclipse.gpu.boost", "1");
-        CommandExecutor.executeSystemCommand("echo 1 > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null");
+        CommandExecutor.setSystemProperty("debug.xclipse.driver.mode", "1");
+        CommandExecutor.setSystemProperty("debug.exynos.gos.disable", "1");
+
+        // Exynos GPU devfreq governor + clock lock + power control
+        StringBuilder sb = new StringBuilder();
+        sb.append("for f in /sys/devices/platform/17000000.gpu/devfreq/*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*gpu*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("echo on > /sys/devices/platform/17000000.gpu/power/control 2>/dev/null; ");
+        sb.append("MAX_EXYNOS_GPU=$(cat /sys/class/devfreq/*gpu*/max_freq 2>/dev/null | head -1); ");
+        sb.append("[ -n \"$MAX_EXYNOS_GPU\" ] && echo $MAX_EXYNOS_GPU > /sys/class/devfreq/*gpu*/min_freq 2>/dev/null; ");
+        sb.append("for f in /sys/devices/platform/17000000.gpu/devfreq/*/max_freq; do MAX=$(cat \"$f\" 2>/dev/null); [ -n \"$MAX\" ] && echo $MAX > \"${f%max_freq}min_freq\" 2>/dev/null; done; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
         return true;
     }
 
@@ -261,6 +314,16 @@ public class GpuTweaksChannel {
         CommandExecutor.setSystemProperty("persist.sys.huawei.perf_mode", "1");
         CommandExecutor.setSystemProperty("persist.sys.hisilicon.game_mode", "1");
         CommandExecutor.setSystemProperty("persist.sys.performance", "1");
+
+        // Kirin GPU devfreq governor + clock lock + power control
+        StringBuilder sb = new StringBuilder();
+        sb.append("for f in /sys/class/devfreq/gpufreq/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("echo on > /sys/devices/platform/e82c0000.mali/power/control 2>/dev/null; ");
+        sb.append("MAX_KIRIN_GPU=$(cat /sys/class/devfreq/*gpu*/max_freq 2>/dev/null | head -1); ");
+        sb.append("[ -n \"$MAX_KIRIN_GPU\" ] && echo $MAX_KIRIN_GPU > /sys/class/devfreq/*gpu*/min_freq 2>/dev/null; ");
+        sb.append("for f in /sys/class/devfreq/gpufreq/max_freq; do MAX=$(cat \"$f\" 2>/dev/null); [ -n \"$MAX\" ] && echo $MAX > \"${f%max_freq}min_freq\" 2>/dev/null; done; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
         return true;
     }
 
@@ -287,6 +350,16 @@ public class GpuTweaksChannel {
         CommandExecutor.setSystemProperty("persist.sys.sprd.game_mode", "1");
         CommandExecutor.setSystemProperty("debug.sprd.fps.boost", "1");
         CommandExecutor.setSystemProperty("persist.sys.sprd.highperf", "1");
+
+        // UNISOC GPU devfreq governor + clock lock + scene boost
+        StringBuilder sb = new StringBuilder();
+        sb.append("echo 1 > /sys/class/devfreq/scene-frequency/sprd_governor/scene_boost 2>/dev/null; ");
+        sb.append("for f in /sys/class/devfreq/sprd-mali/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("for f in /sys/class/devfreq/*mali*/governor; do echo performance > \"$f\" 2>/dev/null; done; ");
+        sb.append("echo on > /sys/devices/platform/sprd-mali/power/control 2>/dev/null; ");
+        sb.append("MAX_UNISOC_GPU=$(cat /sys/class/devfreq/*mali*/max_freq 2>/dev/null | head -1); ");
+        sb.append("[ -n \"$MAX_UNISOC_GPU\" ] && echo $MAX_UNISOC_GPU > /sys/class/devfreq/*mali*/min_freq 2>/dev/null; ");
+        CommandExecutor.executeSystemCommand(sb.toString());
         return true;
     }
 
