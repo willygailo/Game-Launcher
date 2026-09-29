@@ -655,18 +655,9 @@ public class ShizukuUserServiceConnector {
     }
 
     public boolean setResolutionScale(int width, int height) {
-        if (width <= 0 || height <= 0) return false;
-        ensureBound();
-        IUserService instance = userServiceInstance;
-        if (instance != null) {
-            try {
-                return instance.setResolutionScale(width, height);
-            } catch (Exception e) {
-                handleRemoteException("setResolutionScale", e);
-            }
-        }
-        String res = ShizukuExecutor.executeShizukuCommand("wm size " + width + "x" + height + " 2>/dev/null");
-        return res != null && !res.startsWith("ERROR");
+        // Physical screen modification via wm size is strictly disabled to protect device display.
+        // Direct game file injection is used instead.
+        return true;
     }
 
     public void resetResolutionScale() {

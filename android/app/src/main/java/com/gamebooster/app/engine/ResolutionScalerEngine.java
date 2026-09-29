@@ -141,30 +141,16 @@ public final class ResolutionScalerEngine {
 
     /**
      * Applies scaled resolution and density.
+     *
+     * PROTECTED: Physical display modification via `wm size` and `wm density` is strictly disabled
+     * to prevent system UI distortion and display corruption.
+     * Guarantees that the physical device screen remains untouched.
      */
     public static boolean applyResolutionScale(Context context, float scaleFactor) {
-        if (scaleFactor >= 0.99f || scaleFactor <= 0.3f) {
-            return resetResolutionSync();
-        }
-
-        probeNativeDisplay(context);
-        if (sNativeWidth <= 0 || sNativeHeight <= 0 || sNativeDensity <= 0) {
-            Log.w(TAG, "Native display metrics unavailable; cannot scale resolution.");
-            return false;
-        }
-
-        int targetW = (int) (sNativeWidth * scaleFactor);
-        int targetH = (int) (sNativeHeight * scaleFactor);
-        int targetDensity = (int) (sNativeDensity * scaleFactor);
-
-        // Ensure even dimensions for video codecs and Vulkan framebuffers
-        if (targetW % 2 != 0) targetW--;
-        if (targetH % 2 != 0) targetH--;
-
-        String cmd = "wm size " + targetW + "x" + targetH + "; wm density " + targetDensity;
-        executePrivileged(cmd);
-        sIsScaled = true;
-        Log.i(TAG, "Applied scaled resolution: " + targetW + "x" + targetH + " @ " + targetDensity + "dpi");
+        // Physical screen scaling via wm size is completely disabled for device safety.
+        // Immediately ensure stock display metrics to fix any previously scaled display.
+        resetResolutionSync();
+        Log.i(TAG, "Screen scaling via wm size is disabled to protect device display. Physical resolution remains stock.");
         return true;
     }
 

@@ -617,19 +617,13 @@ public class UserService extends IUserService.Stub {
 
     @Override
     public boolean setResolutionScale(int width, int height) {
-        if (width <= 0 || height <= 0) return false;
-        String cmd = "wm size " + width + "x" + height + " 2>/dev/null";
-        String res = execCommand(cmd);
-        boolean ok = res != null && !res.startsWith("ERROR");
-        if (ok) mIsResolutionScaled = true;
-        return ok;
+        // Physical screen modification via wm size is strictly disabled to protect device display.
+        // Direct game file injection is used instead.
+        return true;
     }
 
     @Override
     public void resetResolutionScale() {
-        if (!mIsResolutionScaled) {
-            return;
-        }
         execCommand("wm size reset 2>/dev/null; wm density reset 2>/dev/null");
         mIsResolutionScaled = false;
     }

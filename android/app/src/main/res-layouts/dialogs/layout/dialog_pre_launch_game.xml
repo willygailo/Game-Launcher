@@ -238,6 +238,47 @@
             android:textSize="10sp" />
     </LinearLayout>
 
+    <!-- Overpowered God Mode Suite Toggle (10,000+ Damage, Zero Cooldown, God Armor) -->
+    <LinearLayout
+        android:id="@+id/layout_pre_launch_god_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/card_glass_shape"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👑 Overpowered God Mode (10k Dmg / 0s CD / God Armor)"
+                android:textColor="@color/accent_neon_green"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Instant Cooldown, Infinite Energy/Mana, 10,000+ Damage &amp; True Defense"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_pre_launch_god_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true" />
+    </LinearLayout>
+
     <!-- 100% Drone View Panoramic FOV Toggle -->
     <LinearLayout
         android:id="@+id/layout_pre_launch_drone_view"
@@ -267,7 +308,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:text="Hardware aspect ratio scaling (MLBB 21:9 Wide / PUBGM iPad 4:3)"
+                android:text="Direct Game File Injection • Zero Screen Distortion (Safe FOV &amp; Camera Config)"
                 android:textColor="@color/text_muted"
                 android:textSize="10sp" />
         </LinearLayout>

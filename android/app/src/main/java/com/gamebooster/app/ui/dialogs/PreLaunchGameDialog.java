@@ -10,11 +10,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.SwitchCompat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.gamebooster.app.R;
 import com.gamebooster.app.config.GameProfilePreferences;
@@ -116,7 +122,39 @@ public final class PreLaunchGameDialog {
         }
 
         boolean isMlbb = packageName != null && (packageName.contains("mobile.legends") || packageName.contains("mobilelegends"));
-        androidx.appcompat.widget.SwitchCompat switchDrone = view.findViewById(R.id.switch_pre_launch_drone_view);
+        boolean isCompetitiveGame = packageName != null && (
+                isMlbb ||
+                packageName.contains("callofduty") ||
+                packageName.contains("cod") ||
+                packageName.contains("pubg") ||
+                packageName.contains("tencent.ig") ||
+                packageName.contains("freefire") ||
+                packageName.contains("genshin") ||
+                packageName.contains("mihoyo") ||
+                packageName.contains("starrail") ||
+                packageName.contains("bloodstrike") ||
+                packageName.contains("farlight") ||
+                packageName.contains("wildrift")
+        );
+
+        // ── Overpowered God Mode Toggle ──
+        View layoutGodMode = view.findViewById(R.id.layout_pre_launch_god_mode);
+        SwitchCompat switchGodMode = view.findViewById(R.id.switch_pre_launch_god_mode);
+        if (layoutGodMode != null) {
+            if (isCompetitiveGame) {
+                layoutGodMode.setVisibility(View.VISIBLE);
+                boolean savedGodMode = context.getSharedPreferences("game_cheat_prefs", Context.MODE_PRIVATE)
+                        .getBoolean("god_mode_" + packageName, true);
+                if (switchGodMode != null) {
+                    switchGodMode.setChecked(savedGodMode);
+                }
+            } else {
+                layoutGodMode.setVisibility(View.GONE);
+            }
+        }
+
+        // ── Drone View Controls ──
+        SwitchCompat switchDrone = view.findViewById(R.id.switch_pre_launch_drone_view);
         View layoutDrone = view.findViewById(R.id.layout_pre_launch_drone_view);
         View layoutTier = view.findViewById(R.id.layout_pre_launch_drone_tier);
         RadioButton rb15 = view.findViewById(R.id.rb_drone_1_5x);
@@ -146,10 +184,40 @@ public final class PreLaunchGameDialog {
             else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rb40 != null) rb40.setChecked(true);
             else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
             else if (rb20 != null) rb20.setChecked(true);
-
-            View heroSelector = view.findViewById(R.id.layout_pre_launch_hero_selector);
-            if (heroSelector != null) heroSelector.setVisibility(View.GONE);
         } else {
+            if (layoutDrone != null) layoutDrone.setVisibility(View.GONE);
+            if (layoutTier != null) layoutTier.setVisibility(View.GONE);
+        }
+
+        // ── Hero Script Selector (MLBB Only) ──
+        View heroSelector = view.findViewById(R.id.layout_pre_launch_hero_selector);
+        Spinner spinnerHero = view.findViewById(R.id.spinner_pre_launch_hero_script);
+        if (isMlbb && heroSelector != null && spinnerHero != null) {
+            heroSelector.setVisibility(View.VISIBLE);
+            com.gamebooster.app.config.MlbbHeroScriptRegistry.HeroEntry[] metaHeroes =
+                    com.gamebooster.app.config.MlbbHeroScriptRegistry.getMetaHeroes();
+            List<String> heroLabels = new ArrayList<>();
+            heroLabels.add("⚡ All Meta Heroes (Universal 10k Dmg & 0s CD)");
+            for (com.gamebooster.app.config.MlbbHeroScriptRegistry.HeroEntry h : metaHeroes) {
+                if (h != null) {
+                    heroLabels.add(h.name + " (" + h.role + " • 10k Dmg / 0s CD / 2x Spd)");
+                }
+            }
+            ArrayAdapter<String> heroAdapter = new ArrayAdapter<>(context,
+                    android.R.layout.simple_spinner_item, heroLabels);
+            heroAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerHero.setAdapter(heroAdapter);
+
+            int savedHeroIndex = context.getSharedPreferences("mlbb_hero_prefs", Context.MODE_PRIVATE)
+                    .getInt("selected_hero_index", 0);
+            if (savedHeroIndex >= 0 && savedHeroIndex < heroLabels.size()) {
+                spinnerHero.setSelection(savedHeroIndex);
+            }
+        } else if (heroSelector != null) {
+            heroSelector.setVisibility(View.GONE);
+        }
+
+        if (!isMlbb && !isCompetitiveGame) {
             hideUnsupportedControls(view);
         }
 
@@ -160,6 +228,53 @@ public final class PreLaunchGameDialog {
             int requestedRate = selectedRate(rate185, rate165, rate144, rate120);
             if (requestedRate <= 0) requestedRate = 185;
             GameProfilePreferences.setTargetHz(context, packageName, requestedRate);
+
+            if (isCompetitiveGame && switchGodMode != null) {
+                boolean godModeEnabled = switchGodMode.isChecked();
+                context.getSharedPreferences("game_cheat_prefs", Context.MODE_PRIVATE).edit()
+                        .putBoolean("god_mode_" + packageName, godModeEnabled)
+                        .apply();
+
+                if (godModeEnabled) {
+                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                        if (isMlbb) {
+                            com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbGodModeFullOverdrive(packageName);
+                        } else if (packageName.contains("pubg") || packageName.contains("tencent.ig")) {
+                            com.gamebooster.app.config.PubgConfigPatcher.applyPubgmGodModeFullOverdrive(packageName);
+                        } else if (packageName.contains("callofduty") || packageName.contains("cod")) {
+                            com.gamebooster.app.config.CodmConfigPatcher.applyCodmGodModeFullOverdrive(packageName);
+                        } else if (packageName.contains("genshin") || packageName.contains("mihoyo") || packageName.contains("starrail")) {
+                            com.gamebooster.app.config.GenshinConfigPatcher.applyDamage10000ElementalBurstMax(packageName);
+                        } else if (packageName.contains("bloodstrike")) {
+                            com.gamebooster.app.config.BloodStrikeConfigPatcher.applyBloodStrikeMasterSuite(packageName);
+                        } else if (packageName.contains("farlight")) {
+                            com.gamebooster.app.config.FarlightConfigPatcher.applyJetpackZeroCooldown(packageName);
+                        } else if (packageName.contains("freefire")) {
+                            com.gamebooster.app.config.FreeFireConfigPatcher.applyFastCooldownConfig(packageName);
+                        }
+                    });
+                }
+            }
+
+            if (isMlbb && spinnerHero != null) {
+                int selectedIndex = spinnerHero.getSelectedItemPosition();
+                context.getSharedPreferences("mlbb_hero_prefs", Context.MODE_PRIVATE).edit()
+                        .putInt("selected_hero_index", selectedIndex)
+                        .apply();
+
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    if (selectedIndex <= 0) {
+                        com.gamebooster.app.config.MlbbHeroScriptDispatcher.dispatchAllHeroes(context, packageName);
+                    } else {
+                        com.gamebooster.app.config.MlbbHeroScriptRegistry.HeroEntry[] meta =
+                                com.gamebooster.app.config.MlbbHeroScriptRegistry.getMetaHeroes();
+                        int heroIdx = selectedIndex - 1;
+                        if (heroIdx >= 0 && heroIdx < meta.length && meta[heroIdx] != null) {
+                            com.gamebooster.app.config.MlbbHeroScriptDispatcher.dispatch(context, packageName, meta[heroIdx].id);
+                        }
+                    }
+                });
+            }
 
             if (isMlbb) {
                 boolean droneEnabled = (switchDrone == null || switchDrone.isChecked());
@@ -260,6 +375,7 @@ public final class PreLaunchGameDialog {
 
     private static void hideUnsupportedControls(View view) {
         int[] controlIds = {
+                R.id.layout_pre_launch_god_mode,
                 R.id.switch_pre_launch_drone_view,
                 R.id.layout_pre_launch_drone_view,
                 R.id.layout_pre_launch_drone_tier,
