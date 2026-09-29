@@ -238,8 +238,8 @@ public class ShizukuExecutor {
 
     public static String readProcessOutput(Process process, long timeoutMs) {
         if (process == null) return "ERROR: Process is null";
-        final StringBuilder stdout = new StringBuilder();
-        final StringBuilder stderr = new StringBuilder();
+        final StringBuffer stdout = new StringBuffer();
+        final StringBuffer stderr = new StringBuffer();
 
         java.util.concurrent.Future<?> outFuture = PROCESS_IO_POOL.submit(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {

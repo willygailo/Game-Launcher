@@ -707,7 +707,7 @@ public class PubgConfigPatcher {
                 "ArtQuality=" + qualityLevel,
                 "ShadowQuality=" + (enableHdr ? 3 : 1),
                 "MobileHDRMode=" + (enableHdr ? 1 : 0),
-                "HighFPSMode=3",
+                "HighFPSMode=6",
                 "bUseHDRMode=" + (enableHdr ? "True" : "False"),
                 "bUseUltraExtreme=True",
                 "bFramePacingEnabled=True",
@@ -729,7 +729,7 @@ public class PubgConfigPatcher {
                 "FrameRateLevel=" + effectiveLevel,
                 "GraphicQuality=" + qualityLevel,
                 "MobileHDRMode=" + (enableHdr ? 1 : 0),
-                "HighFPSMode=3"
+                "HighFPSMode=6"
             };
             return ConfigFileHelper.patchKeys(path, xmlKeys, "<map>");
         }
@@ -813,7 +813,7 @@ public class PubgConfigPatcher {
             "Ultra144FPS=1",
             "Ultra165FPS=1",
             "Ultra185FPS=1",
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "SuperHighFPS=1",
             "Unlock90Hz=1",
             "Unlock120Hz=1",
@@ -842,6 +842,9 @@ public class PubgConfigPatcher {
             "TouchBoostHz=" + tier.fps,
             "TouchPollingRate=1000"
         };
+        if (path.endsWith("UserCustom.ini") || path.endsWith("ChineseUserCustom.ini") || path.endsWith("BGMIUserCustom.ini")) {
+            return PubgIniEncryptionBridge.safePatch(path, cVarsAndIniKeys, sectionHeader);
+        }
         return ConfigFileHelper.patchKeys(path, cVarsAndIniKeys, sectionHeader);
     }
 

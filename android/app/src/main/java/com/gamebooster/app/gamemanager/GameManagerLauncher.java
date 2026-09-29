@@ -170,6 +170,18 @@ public final class GameManagerLauncher {
                     // STAGE 1: Instant full 3-tier master enforcement & initial configs
                     com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appContext, pkg, targetHz);
 
+                    // STAGE 1.5: User Custom Mod Sync (Automated MT Manager replacement)
+                    try {
+                        int customSynced = com.gamebooster.app.config.GameModAutoSyncEngine.syncModsForPackage(appContext, pkg);
+                        if (customSynced > 0) {
+                            AppExecutors.getInstance().postToMainThread(() -> {
+                                Toast.makeText(appContext, "📁 " + customSynced + " Custom Files Synced (MT-Free)", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    } catch (Throwable modErr) {
+                        Log.w(TAG, "Custom mod sync notice: " + modErr.getMessage());
+                    }
+
                     // STAGE 2: Direct 2026 Overdrive, Zero-Delay Combo & All Hero Script Injection
                     com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg, true);
 

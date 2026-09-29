@@ -690,7 +690,7 @@ public final class CommonConfigTuningInjector {
             "MobileFPSLimit=" + tier.fps,
             "FrameRateLevel=" + tier.level,
             "UnlockFPS=1",
-            "HighFPSMode=3",         // 3 = 185fps on MLBB 2026 (not 1 or 2)
+            "HighFPSMode=6",         // 6 = Ultra Max on MLBB 2026
             "SuperHighFPS=1",
             // ── Refresh Rate Unlocks ──
             "Unlock90Hz=1",

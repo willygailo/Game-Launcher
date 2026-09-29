@@ -38,14 +38,7 @@ import com.gamebooster.app.shizuku.ShizukuManager;
 import com.gamebooster.app.shizuku.ShizukuPermissionEnforcer;
 import com.gamebooster.app.ui.views.LoopingVideoBackgroundView;
 
-import com.gamebooster.app.api.GameApiClient;
-import com.gamebooster.app.api.OnlineGameSearchResult;
-import com.gamebooster.app.ui.adapters.OnlineGamesAdapter;
-import com.gamebooster.app.ui.activities.WebBrowserActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+
 
 public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
 
@@ -53,14 +46,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private LinearLayout layoutEmptyState;
     private RecyclerView rvGames;
     private HomeGamesAdapter adapter;
-    private RecyclerView rvOnlineGames;
-    private OnlineGamesAdapter onlineAdapter;
-    private EditText etHomeSearch;
-    private Button btnHomeSearchClear;
-    private Button btnHomeOpenBrowser;
-    private Button btnFilterInstalled;
-    private Button btnFilterOnline;
-    private boolean isOnlineTab = false;
+
 
     private LoopingVideoBackgroundView videoHomeBg;
     private LoopingVideoBackgroundView videoHeroBanner;
@@ -159,7 +145,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         // Header & Empty State Action Buttons
         Button btnHomeAddGame = view.findViewById(R.id.btn_home_add_game);
         Button btnHomeClearGames = view.findViewById(R.id.btn_home_clear_games);
-        Button btnHomeApkManager = view.findViewById(R.id.btn_home_apk_manager);
         Button btnEmptyAddGame = view.findViewById(R.id.btn_empty_add_game);
         Button btnEmptyScanApks = view.findViewById(R.id.btn_empty_scan_apks);
 
@@ -188,7 +173,6 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (btnHomeAddGame != null) btnHomeAddGame.setOnClickListener(openAddGameAction);
         if (btnHomeClearGames != null) btnHomeClearGames.setOnClickListener(openClearGamesAction);
         if (btnEmptyAddGame != null) btnEmptyAddGame.setOnClickListener(openAddGameAction);
-        if (btnHomeApkManager != null) btnHomeApkManager.setOnClickListener(openApkManagerAction);
         if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);
 
         Button btnRestoreDefaults = view.findViewById(R.id.btn_restore_default_games);
@@ -241,82 +225,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
             rvGames.setAdapter(adapter);
         }
 
-        // Online & Web Games Search Setup
-        rvOnlineGames = view.findViewById(R.id.rv_online_games_list);
-        if (rvOnlineGames != null) {
-            rvOnlineGames.setLayoutManager(new LinearLayoutManager(getContext()));
-            rvOnlineGames.setNestedScrollingEnabled(false);
-            onlineAdapter = new OnlineGamesAdapter(getContext());
-            rvOnlineGames.setAdapter(onlineAdapter);
-        }
 
-        etHomeSearch = view.findViewById(R.id.et_home_search);
-        btnHomeSearchClear = view.findViewById(R.id.btn_home_search_clear);
-        btnHomeOpenBrowser = view.findViewById(R.id.btn_home_open_browser);
-        btnFilterInstalled = view.findViewById(R.id.btn_filter_installed);
-        btnFilterOnline = view.findViewById(R.id.btn_filter_online);
-
-        if (btnHomeOpenBrowser != null) {
-            btnHomeOpenBrowser.setOnClickListener(v -> {
-                String query = etHomeSearch != null ? etHomeSearch.getText().toString().trim() : "";
-                String targetUrl = query.isEmpty() ? "https://html.duckduckgo.com/" : query;
-                WebBrowserActivity.openUrl(getContext(), targetUrl, "Web Game Search");
-            });
-        }
-
-        if (btnHomeSearchClear != null) {
-            btnHomeSearchClear.setOnClickListener(v -> {
-                if (etHomeSearch != null) etHomeSearch.setText("");
-            });
-        }
-
-        if (btnFilterInstalled != null) {
-            btnFilterInstalled.setOnClickListener(v -> selectTabInstalled());
-        }
-
-        if (btnFilterOnline != null) {
-            btnFilterOnline.setOnClickListener(v -> selectTabOnline());
-        }
-
-        if (etHomeSearch != null) {
-            etHomeSearch.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    String query = s != null ? s.toString().trim() : "";
-                    if (btnHomeSearchClear != null) {
-                        btnHomeSearchClear.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
-                    }
-                    if (isOnlineTab) {
-                        searchOnline(query);
-                    } else {
-                        filterInstalledGames(query);
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {}
-            });
-
-            etHomeSearch.setOnEditorActionListener((v, actionId, event) -> {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO) {
-                    String query = etHomeSearch.getText().toString().trim();
-                    if (isOnlineTab) {
-                        searchOnline(query);
-                    } else {
-                        if (!query.isEmpty() && adapter != null && adapter.getItemCount() == 0) {
-                            // If no local games matched, automatically switch to online search
-                            selectTabOnline();
-                            searchOnline(query);
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            });
-        }
 
         androidx.core.widget.NestedScrollView scrollHome = view.findViewById(R.id.scroll_home);
         if (scrollHome != null) {
@@ -559,99 +468,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         });
     }
 
-    private void selectTabInstalled() {
-        isOnlineTab = false;
-        if (btnFilterInstalled != null) {
-            btnFilterInstalled.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            btnFilterInstalled.setTextColor(0xFF080B11);
-        }
-        if (btnFilterOnline != null) {
-            btnFilterOnline.setBackgroundResource(R.drawable.btn_cyber_dark);
-            btnFilterOnline.setTextColor(0xFF00F0FF);
-        }
-        if (rvOnlineGames != null) rvOnlineGames.setVisibility(View.GONE);
-        if (rvGames != null) rvGames.setVisibility(View.VISIBLE);
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("INSTALLED GAMES (" + gameList.size() + " DETECTED)");
-        }
-        String query = etHomeSearch != null ? etHomeSearch.getText().toString().trim() : "";
-        filterInstalledGames(query);
-    }
 
-    private void selectTabOnline() {
-        isOnlineTab = true;
-        if (btnFilterOnline != null) {
-            btnFilterOnline.setBackgroundResource(R.drawable.btn_cyber_cyan);
-            btnFilterOnline.setTextColor(0xFF080B11);
-        }
-        if (btnFilterInstalled != null) {
-            btnFilterInstalled.setBackgroundResource(R.drawable.btn_cyber_dark);
-            btnFilterInstalled.setTextColor(0xFF00F0FF);
-        }
-        if (rvGames != null) rvGames.setVisibility(View.GONE);
-        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
-        if (rvOnlineGames != null) rvOnlineGames.setVisibility(View.VISIBLE);
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("WEB & ONLINE GAMES");
-        }
-        String query = etHomeSearch != null ? etHomeSearch.getText().toString().trim() : "";
-        searchOnline(query);
-    }
-
-    private void filterInstalledGames(String query) {
-        if (adapter == null) return;
-        if (query == null || query.isEmpty()) {
-            adapter.updateList(new ArrayList<>(gameList));
-            if (tvGamesHeader != null) {
-                tvGamesHeader.setText("INSTALLED GAMES (" + gameList.size() + " DETECTED)");
-            }
-            if (layoutEmptyState != null) {
-                layoutEmptyState.setVisibility(gameList.isEmpty() ? View.VISIBLE : View.GONE);
-            }
-            return;
-        }
-
-        String lower = query.toLowerCase();
-        List<GameAppInfo> filtered = new ArrayList<>();
-        for (GameAppInfo game : gameList) {
-            if (game != null) {
-                String label = game.getLabel() != null ? game.getLabel().toLowerCase() : "";
-                String pkg = game.getPackageName() != null ? game.getPackageName().toLowerCase() : "";
-                if (label.contains(lower) || pkg.contains(lower)) {
-                    filtered.add(game);
-                }
-            }
-        }
-        adapter.updateList(filtered);
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("FILTERED GAMES (" + filtered.size() + " FOUND)");
-        }
-    }
-
-    private void searchOnline(String query) {
-        if (onlineAdapter == null) return;
-        if (tvGamesHeader != null) {
-            tvGamesHeader.setText("SEARCHING ONLINE: " + (query.isEmpty() ? "FEATURED" : query) + "...");
-        }
-        GameApiClient.searchOnlineGames(query, new GameApiClient.SearchCallback() {
-            @Override
-            public void onSuccess(List<OnlineGameSearchResult> results) {
-                if (!isAdded()) return;
-                onlineAdapter.updateList(results);
-                if (tvGamesHeader != null) {
-                    tvGamesHeader.setText("ONLINE SEARCH (" + results.size() + " RESULTS)");
-                }
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                if (!isAdded()) return;
-                if (tvGamesHeader != null) {
-                    tvGamesHeader.setText("ONLINE SEARCH: ERROR");
-                }
-            }
-        });
-    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // More Options Popup — the nerve center for game card management

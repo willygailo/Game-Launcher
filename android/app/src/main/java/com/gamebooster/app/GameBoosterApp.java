@@ -139,6 +139,11 @@ public class GameBoosterApp extends Application {
                 Log.w(TAG, "AutoGameMonitorService start error: " + t.getMessage());
             }
 
+            // H. Initialize /storage/emulated/0/GameLauncher/mods/ staging folders for MT-free drop-in
+            try {
+                com.gamebooster.app.config.GameModAutoSyncEngine.initializeStagingDirectory();
+            } catch (Throwable ignored) {}
+
             // G. Pre-warm System Diagnostics Snapshot in memory for instant zero-wait live display
             try {
                 com.gamebooster.app.diagnostics.DiagnosticsExporter.prewarm(appCtx);

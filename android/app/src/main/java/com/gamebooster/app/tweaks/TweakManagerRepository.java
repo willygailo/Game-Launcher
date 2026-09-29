@@ -91,6 +91,26 @@ public class TweakManagerRepository {
         ));
 
         TWEAKS.add(new TweakItem(
+                "sf_zero_latency_queue",
+                "SurfaceFlinger Zero-Backpressure Display Queue",
+                "Bypasses presentation backpressure and latches unsignaled buffers for instant frame-to-screen dispatch",
+                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.early_phase_offset_ns 500000; setprop debug.sf.early_app_phase_offset_ns 500000",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
+                "vulkan_renderengine_prime",
+                "Force Vulkan RenderEngine & Pre-Warm Pipeline",
+                "Forces Vulkan backend for HWUI and Android RenderEngine to eliminate OpenGLES shader stutter",
+                "setprop debug.renderengine.backend vulkan; setprop ro.hwui.use_vulkan true; setprop debug.hwui.renderer skiagl; setprop debug.hwui.pipeline true",
+                "setprop debug.renderengine.backend skiagl; setprop ro.hwui.use_vulkan false",
+                TweakCategory.CPU_GPU,
+                true
+        ));
+
+        TWEAKS.add(new TweakItem(
                 "gpu_buffer_speed",
                 "Triple Buffer Rendering & High-Speed Alpha",
                 "Allocates 3 EGL back-buffers and enables 16-bit alpha channel for smooth frame pacing",

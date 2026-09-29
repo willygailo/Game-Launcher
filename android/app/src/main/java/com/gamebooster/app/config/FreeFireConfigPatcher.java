@@ -172,7 +172,7 @@ public class FreeFireConfigPatcher {
 
         String[] keys = {
             "HighFPS=1",
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "FPSMode=2",
             "FrameRateLevel=8",
             "MaxFPS=144",
@@ -238,7 +238,7 @@ public class FreeFireConfigPatcher {
 
         String[] keys = {
             "HighFPS=1",
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "FPSMode=2",
             "FrameRateLevel=10",
             "MaxFPS=185",

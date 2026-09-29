@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="14dp"
+    android:layout_marginBottom="8dp"
     app:cardBackgroundColor="#00000000"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="0dp">
 
     <LinearLayout
@@ -15,13 +15,13 @@
         android:background="@drawable/home_game_card_bg_ml"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <!-- Game Icon with Rounded Corners -->
         <androidx.cardview.widget.CardView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            app:cardCornerRadius="16dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="14dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#20000000">
 
@@ -40,8 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingStart="14dp"
-            android:paddingEnd="10dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
 
             <!-- Title + Type Badge Row -->
             <LinearLayout
@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:maxLines="1"
                     android:ellipsize="end" />
@@ -66,11 +66,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/badge_neon_cyan"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
+                    android:paddingHorizontal="7dp"
+                    android:paddingVertical="2dp"
                     android:text="MOBA"
                     android:textColor="@color/accent_cyan"
-                    android:textSize="10sp"
+                    android:textSize="9.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -78,20 +78,20 @@
                 android:id="@+id/tv_game_pkg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:textColor="@color/text_muted"
-                android:textSize="11sp" />
+                android:textSize="10.5sp" />
 
             <!-- Profile / FPS Summary Badge -->
             <TextView
                 android:id="@+id/tv_game_profile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="4dp"
                 android:textColor="@color/accent_neon_green"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -108,24 +108,24 @@
             <Button
                 android:id="@+id/btn_launch_game"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="38dp"
                 android:background="@drawable/btn_cyber_green"
-                android:paddingHorizontal="14dp"
+                android:paddingHorizontal="12dp"
                 android:text="⚡ PLAY"
                 android:textColor="#0B0E14"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_game_more"
-                android:layout_width="38dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="6dp"
+                android:layout_width="34dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="5dp"
                 android:background="@drawable/btn_cyber_dark"
                 android:padding="0dp"
                 android:text="⋮"
                 android:textColor="@color/accent_cyan"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

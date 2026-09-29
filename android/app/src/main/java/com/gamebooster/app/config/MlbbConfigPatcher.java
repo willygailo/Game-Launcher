@@ -556,7 +556,7 @@ public class MlbbConfigPatcher {
     public static void applyMlbbPrefsIntAndBootConfig(String packageName, int targetFps) {
         if (packageName == null) return;
         int fps = targetFps > 0 ? targetFps : 185;
-        int highFpsMode = fps >= 120 ? 3 : (fps >= 90 ? 2 : 1);
+        int highFpsMode = 6; // Ultra Max 2026 (was 3)
         int frameRateLevel = fps >= 165 ? 6 : (fps >= 144 ? 5 : (fps >= 120 ? 4 : (fps >= 90 ? 3 : 2)));
 
         // 1. Target prefs_int files
@@ -569,16 +569,19 @@ public class MlbbConfigPatcher {
 
         Map<String, String> prefsMap = new LinkedHashMap<>();
         prefsMap.put("HighFPSMode", String.valueOf(highFpsMode));
+        prefsMap.put("HighFPSEnable", "1");
         prefsMap.put("FrameRateLevel", String.valueOf(frameRateLevel));
-        prefsMap.put("QualitySetting", "3");
-        prefsMap.put("GraphicLevel", "3");
-        prefsMap.put("QualityLevel", "3");
-        prefsMap.put("GraphicsQuality", "5");
-        prefsMap.put("GraphicsPreset", "5");
+        prefsMap.put("QualitySetting", "4");
+        prefsMap.put("GraphicLevel", "4");
+        prefsMap.put("GraphicQuality", "4");
+        prefsMap.put("QualityLevel", "4");
+        prefsMap.put("GraphicsQuality", "4");
+        prefsMap.put("GraphicsPreset", "4");
+        prefsMap.put("ShadowQuality", "0");
         prefsMap.put("UltraExtreme", "1");
         prefsMap.put("UltraExtreme2026", "1");
         prefsMap.put("HDMode", "1");
-        prefsMap.put("Shadow", "1");
+        prefsMap.put("Shadow", "0");
         prefsMap.put("Outline", "1");
         prefsMap.put("FPS", String.valueOf(fps));
         prefsMap.put("MaxFPS", String.valueOf(fps));
@@ -759,7 +762,7 @@ public class MlbbConfigPatcher {
 
         String[] xmlKeys = {
             // ── 144fps / Super FPS Unlock ──
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "FrameRateLevel=4",
             "FPS=144",
             "MaxFPS=144",
@@ -856,7 +859,7 @@ public class MlbbConfigPatcher {
 
         String[] xmlKeys = {
             // ── 185fps Max Unlock ──
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "FrameRateLevel=5",
             "FPS=185",
             "MaxFPS=185",
@@ -953,7 +956,7 @@ public class MlbbConfigPatcher {
 
         String[] keys = {
             // ── 165fps SuperSmooth Unlock ──
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "FrameRateLevel=6",          // MLBB internal: 6 = 165fps tier
             "FPS=165",
             "MaxFPS=165",
@@ -1360,15 +1363,18 @@ public class MlbbConfigPatcher {
         final int forcedFps    = FpsUnlockTier.resolveTargetFps(targetFps);
         // Use FpsUnlockTier helpers for correct per-engine level mapping
         final int frameRateLevel = (forcedFps >= 165) ? 6 : FpsUnlockTier.getMlbbFrameRateLevel(forcedFps);
-        final int highFpsMode    = (forcedFps >= 120) ? 3 : FpsUnlockTier.getMlbbHighFPSMode(forcedFps);
+        final int highFpsMode    = 6; // Ultra Max 2026 (was 3)
         String[] keys = {
             "HighFPSMode=" + highFpsMode,
+            "HighFPSEnable=1",
             "FrameRateLevel=" + frameRateLevel,
-            "QualityLevel=3",
-            "GraphicsQuality=3",
-            "TextureQuality=3",
+            "QualityLevel=4",
+            "GraphicQuality=4",
+            "GraphicsQuality=4",
+            "TextureQuality=4",
+            "ShadowQuality=0",
             "HDMode=1",
-            "Shadow=1",
+            "Shadow=0",
             "Outline=1",
             "CreepHP=1",
             "DamageText=1",

@@ -452,7 +452,7 @@ public class CodmConfigPatcher {
                     + "UnlockFPS=1\n"
                     + "Unlock144FPS=1\n"
                     + "Ultra144FPS=1\n"
-                    + "HighFPSMode=3\n"     // 2026: 3 = 185Hz-capable
+                    + "HighFPSMode=6\n"     // 2026: 6 = Ultra Max Overdrive
                     + "Unlock90Hz=1\n"
                     + "Unlock120Hz=1\n"
                     + "Unlock144Hz=1\n"
@@ -707,7 +707,7 @@ public class CodmConfigPatcher {
                     + "bFramePacingEnabled=True\n"
                     + "Vsync=0\n"
                     + "UnlockFPS=1\n"
-                    + "HighFPSMode=3\n"
+                    + "HighFPSMode=6\n"
                     + "Unlock90Hz=1\n"
                     + "Unlock120Hz=1\n"
                     + "Unlock144Hz=1\n"
@@ -1168,7 +1168,7 @@ public class CodmConfigPatcher {
             "Unlock185FPS=1",
             "Ultra144FPS=1",
             "Ultra165FPS=1",
-            "HighFPSMode=3",
+            "HighFPSMode=6",
             "TouchBoostHz=" + targetFps,
             "TouchPollingRate=1000",
             "TouchZeroDelay=1",

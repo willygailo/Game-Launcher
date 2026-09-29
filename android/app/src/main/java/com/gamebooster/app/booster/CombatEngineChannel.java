@@ -175,10 +175,21 @@ public class CombatEngineChannel {
 
         // ── 5. Visual Frame Pacing: SurfaceFlinger Zero-Delay Buffers ────────
         commands.add("setprop debug.gr.swapinterval 0");
-        commands.add("setprop debug.sf.early_phase_offset_ns 0");
-        commands.add("setprop debug.sf.early_app_phase_offset_ns 0");
-        commands.add("setprop debug.sf.early_gl_phase_offset_ns 0");
+        commands.add("setprop debug.sf.early_phase_offset_ns 500000");
+        commands.add("setprop debug.sf.early_app_phase_offset_ns 500000");
+        commands.add("setprop debug.sf.early_gl_phase_offset_ns 500000");
+        commands.add("setprop debug.sf.latch_unsignaled 1");
+        commands.add("setprop debug.sf.disable_backpressure 1");
         commands.add("setprop debug.sf.hw 1");
+        commands.add("setprop debug.renderengine.backend vulkan");
+        commands.add("setprop ro.hwui.use_vulkan true");
+
+        // ── 6. Process Cgroup & Top-App CPU Affinity Scheduling ────────────────
+        commands.add("cmd activity set-inactive com.google.android.gms true 2>/dev/null");
+        commands.add("cmd appops set com.google.android.gms RUN_IN_BACKGROUND ignore 2>/dev/null");
+        commands.add("sysctl -w kernel.sched_migration_cost_ns=5000000 2>/dev/null");
+        commands.add("sysctl -w kernel.sched_latency_ns=4000000 2>/dev/null");
+        commands.add("sysctl -w kernel.sched_min_granularity_ns=1000000 2>/dev/null");
 
         // Execute batch elevated via PrivilegeBridgeEngine (Root or Shizuku)
         PrivilegeBridgeEngine.executePrivilegedBatch(commands);

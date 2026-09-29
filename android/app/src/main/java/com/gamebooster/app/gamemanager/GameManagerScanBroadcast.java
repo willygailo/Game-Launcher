@@ -29,8 +29,10 @@ public class GameManagerScanBroadcast extends BroadcastReceiver {
                 || Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
             Uri data = intent.getData();
             if (data == null) return;
+            String scheme = data.getScheme();
+            if (!"package".equals(scheme)) return;
             String packageName = data.getSchemeSpecificPart();
-            if (packageName == null || packageName.isEmpty()) return;
+            if (packageName == null || packageName.trim().isEmpty() || packageName.contains("/") || packageName.contains("..")) return;
 
             // Invalidate in-memory game repository cache immediately
             com.gamebooster.app.games.GameManagerRepository.invalidateCache();

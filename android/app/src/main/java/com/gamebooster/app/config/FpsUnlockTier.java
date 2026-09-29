@@ -332,7 +332,7 @@ public enum FpsUnlockTier {
      *   3 = 120fps+
      */
     public static int getMlbbHighFPSMode(int targetFps) {
-        return 3;
+        return 6; // Ultra Max 2026
     }
 
     /**

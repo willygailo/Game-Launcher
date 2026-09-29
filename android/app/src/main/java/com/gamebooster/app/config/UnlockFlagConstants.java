@@ -46,6 +46,7 @@ public final class UnlockFlagConstants {
     public static final String ZERO_INPUT_LAG_1 = "ZeroInputLag=1";
     public static final String UNLOCK_FPS_1 = "UnlockFPS=1";
     public static final String HIGH_FPS_MODE_3 = "HighFPSMode=3";
+    public static final String HIGH_FPS_MODE_6 = "HighFPSMode=6";
     public static final String SUPER_HIGH_FPS_1 = "SuperHighFPS=1";
     public static final String B_FRAME_PACING_ENABLED = "bFramePacingEnabled=True";
     public static final String ALLOW_OCCLUSION_QUERIES_1 = "AllowOcclusionQueries=1";
