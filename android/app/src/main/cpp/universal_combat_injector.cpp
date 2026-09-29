@@ -7,14 +7,23 @@
 #include "native_config_injector.h"
 #include "config_common.h"
 
+static inline std::string fast_float_str(float val) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%.2f", val);
+    std::string result(buf);
+    while (result.length() > 2 && result.back() == '0') result.pop_back();
+    if (!result.empty() && result.back() == '.') result.pop_back();
+    return result;
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectDamageBoost
   (JNIEnv *env, jclass, jstring jPath, jfloat mult, jfloat hsMult, jint crit) {
     if (!jPath) return JNI_FALSE;
     const char *path = env->GetStringUTFChars(jPath, nullptr);
     if (!path) return JNI_FALSE;
     std::string pathStr(path);
-    std::string multStr = std::to_string(mult > 0 ? mult : 10000.0f);
-    std::string hsStr = std::to_string(hsMult > 0 ? hsMult : 5.0f);
+    std::string multStr = fast_float_str(mult > 0 ? mult : 10000.0f);
+    std::string hsStr = fast_float_str(hsMult > 0 ? hsMult : 5.0f);
     std::string critStr = std::to_string(crit > 0 ? crit : 100);
     std::vector<std::pair<std::string, std::string>> keys = {
         {"DamageBoost", "10000"}, {"DamageMultiplier", multStr}, {"DamageLockMax", "10000"},

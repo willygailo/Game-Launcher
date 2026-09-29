@@ -171,11 +171,8 @@ public final class MemoryCleanerPro {
         new Thread(() -> {
             try {
                 applyPreGameBurstClean(context);
-                Thread.sleep(200);
                 applyLmkdGamingTune();
-                Thread.sleep(100);
                 killIdleProcesses(gamePackage);
-                Thread.sleep(300);
                 applyGameProcessImmortalLock(gamePackage);
                 Log.i(TAG, "✅ Full gaming memory profile applied for " + gamePackage);
             } catch (Throwable t) {

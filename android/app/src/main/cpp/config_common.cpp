@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <cstdlib>
+#include <ctime>
+#include <thread>
+#include <atomic>
 
 // ─── Fast Internal CRC32 Implementation ──────────────────────────────────────
 uint32_t calculate_crc32(const uint8_t* data, size_t length) {
@@ -43,15 +47,22 @@ bool make_parent_dirs(const std::string& path) {
         if (segment.empty()) continue;
         current += segment + "/";
         mkdir(current.c_str(), 0777);
-        chmod(current.c_str(), 0777);
     }
     return true;
 }
 
+static bool s_randSeeded = false;
+
 bool write_file_atomic(const std::string& path, const std::string& content, mode_t mode) {
     make_parent_dirs(path);
+
+    if (!s_randSeeded) {
+        srand(static_cast<unsigned>(time(nullptr)) ^ getpid());
+        s_randSeeded = true;
+    }
+
     std::string tmpPath = path + ".tmp." + std::to_string(getpid()) + "_" + std::to_string(rand());
-    
+
     int fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (fd < 0) {
         if (errno == EACCES || errno == EPERM) {
@@ -71,7 +82,6 @@ bool write_file_atomic(const std::string& path, const std::string& content, mode
     }
 
     fchmod(fd, mode);
-    fdatasync(fd);
     close(fd);
 
     if (rename(tmpPath.c_str(), path.c_str()) != 0) {
@@ -117,19 +127,29 @@ bool patch_key_value(std::string& content, const std::string& key, const std::st
         return true;
     }
 
-    // Case-insensitive fallback scan for existing key
     std::string lowerKey = key;
     std::transform(lowerKey.begin(), lowerKey.end(), lowerKey.begin(), ::tolower);
-    std::string lowerContent = content;
-    std::transform(lowerContent.begin(), lowerContent.end(), lowerContent.begin(), ::tolower);
     std::string lowerPattern = lowerKey + "=";
 
-    pos = lowerContent.find(lowerPattern);
-    if (pos != std::string::npos && (pos == 0 || lowerContent[pos - 1] == '\n' || lowerContent[pos - 1] == '\r')) {
-        size_t end_pos = content.find('\n', pos);
-        if (end_pos == std::string::npos) end_pos = content.length();
-        content.replace(pos, end_pos - pos, key + "=" + value);
-        return true;
+    size_t contentLen = content.length();
+    for (size_t i = 0; i < contentLen; ++i) {
+        char c = content[i];
+        if (c >= 'A' && c <= 'Z') c += 32;
+        if (c == lowerPattern[0]) {
+            size_t j = 1;
+            while (j < lowerPattern.length() && i + j < contentLen) {
+                char c2 = content[i + j];
+                if (c2 >= 'A' && c2 <= 'Z') c2 += 32;
+                if (c2 != lowerPattern[j]) break;
+                ++j;
+            }
+            if (j == lowerPattern.length() && (i == 0 || content[i - 1] == '\n' || content[i - 1] == '\r')) {
+                size_t end_pos = content.find('\n', i);
+                if (end_pos == std::string::npos) end_pos = contentLen;
+                content.replace(i, end_pos - i, key + "=" + value);
+                return true;
+            }
+        }
     }
 
     if (!content.empty() && content.back() != '\n') {
@@ -387,7 +407,6 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
     for (const auto& kv : keys) {
         if (isCvar) {
             patch_cvar(content, kv.first, kv.second);
-            patch_key_value(content, kv.first, kv.second);
         } else if (isXml) {
             std::string tag = detect_xml_tag(kv.second);
             patch_xml_node(content, tag, kv.first, kv.second);
@@ -407,6 +426,74 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
     }
     LOGI("%s injected: %s [ok=%d]", logTag, pathStr.c_str(), ok);
     return ok;
+}
+
+// ─── Fast Batch Injection (single-read, multi-key, single-write) ──────────────
+bool fast_batch_inject(const std::string& path,
+                       std::vector<std::pair<std::string, std::string>>&& keys,
+                       const char* logTag) {
+    if (path.empty() || keys.empty()) return false;
+
+    std::string content = read_file_posix(path);
+    struct stat stBefore;
+    bool hasStat = (stat(path.c_str(), &stBefore) == 0);
+
+    bool isXml  = (path.rfind(".xml") != std::string::npos || content.find("<map>") != std::string::npos);
+    bool isJson = (path.rfind(".json") != std::string::npos || (!content.empty() && content.front() == '{'));
+    bool isCvar = (content.find("+CVars=") != std::string::npos
+                   || path.rfind("UserCustom.ini") != std::string::npos
+                   || path.rfind("EnjoyCJZC.ini") != std::string::npos
+                   || path.rfind("EnjoyCJ.ini") != std::string::npos
+                   || path.rfind("GraphicsSettings.ini") != std::string::npos);
+
+    for (const auto& kv : keys) {
+        if (isCvar) {
+            patch_cvar(content, kv.first, kv.second);
+        } else if (isXml) {
+            std::string tag = detect_xml_tag(kv.second);
+            patch_xml_node(content, tag, kv.first, kv.second);
+        } else if (isJson) {
+            patch_json_node(content, kv.first, kv.second, false);
+        } else {
+            patch_key_value(content, kv.first, kv.second);
+        }
+    }
+
+    bool ok = write_file_atomic(path, content);
+    if (ok && hasStat) {
+        struct utimbuf times;
+        times.actime  = stBefore.st_atime;
+        times.modtime = stBefore.st_mtime;
+        utime(path.c_str(), &times);
+    }
+    if (logTag) {
+        LOGI("%s injected: %s [ok=%d]", logTag, path.c_str(), ok);
+    }
+    return ok;
+}
+
+// ─── Multi-File Batch Injection (parallel file processing) ────────────────────
+bool multi_file_batch_inject(const std::vector<std::string>& paths,
+                              std::vector<std::pair<std::string, std::string>>&& keys,
+                              const char* logTag) {
+    if (paths.empty() || keys.empty()) return false;
+
+    std::vector<std::thread> threads;
+    std::atomic<int> successCount{0};
+
+    for (const auto& path : paths) {
+        threads.emplace_back([&path, &keys, logTag, &successCount]() {
+            if (fast_batch_inject(path, std::vector<std::pair<std::string, std::string>>(keys), logTag)) {
+                successCount++;
+            }
+        });
+    }
+
+    for (auto& t : threads) {
+        if (t.joinable()) t.join();
+    }
+
+    return successCount > 0;
 }
 
 // ─── GVAS Binary Property Helper for PUBGM Active.sav ─────────────────────────

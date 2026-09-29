@@ -31,6 +31,10 @@ public class GameConfigPathResolver {
 
     /** In-memory cache of resolved paths per package name */
     private static final Map<String, List<String>> CACHED_PATHS = new ConcurrentHashMap<>();
+    /** Cache timestamps for TTL-based expiration */
+    private static final Map<String, Long> CACHE_TIMESTAMPS = new ConcurrentHashMap<>();
+    /** Cache TTL: 5 minutes */
+    private static final long CACHE_TTL_MS = 5 * 60 * 1000L;
 
     /**
      * Clears all cached config paths or for a specific package so subsequent calls re-discover freshly created game files.
@@ -223,12 +227,18 @@ public class GameConfigPathResolver {
 
         List<String> cached = CACHED_PATHS.get(pkg);
         if (cached != null && !cached.isEmpty()) {
-            ensureConfigFilesExist(cached);
-            return cached;
+            Long timestamp = CACHE_TIMESTAMPS.get(pkg);
+            if (timestamp != null && (System.currentTimeMillis() - timestamp) < CACHE_TTL_MS) {
+                ensureConfigFilesExist(cached);
+                return cached;
+            }
+            CACHED_PATHS.remove(pkg);
+            CACHE_TIMESTAMPS.remove(pkg);
         }
 
         List<String> knownRelativePaths = getKnownRelativePathsForPackage(pkg);
         List<String> resolved = resolveConfigPaths(packageName, knownRelativePaths);
+        CACHE_TIMESTAMPS.put(pkg, System.currentTimeMillis());
         ensureConfigFilesExist(resolved);
         return resolved;
     }

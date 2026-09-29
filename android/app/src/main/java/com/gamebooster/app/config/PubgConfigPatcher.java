@@ -467,12 +467,24 @@ public class PubgConfigPatcher {
         if (pkg == null || pkg.trim().isEmpty()) return false;
 
         String foundSource = null;
-        String pakFileName = "game_patch_4.6.0.21556.pak";
+        String pakFileName = "game_patch_4.6.0.21572.pak";
 
         // 1. Check if bundled in APK assets, extract to app cache for deployment
         try {
             android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
             if (ctx != null) {
+                // Dynamically detect latest pak in assets/paks if available
+                String[] assetPaks = ctx.getAssets().list("paks");
+                if (assetPaks != null && assetPaks.length > 0) {
+                    java.util.Arrays.sort(assetPaks);
+                    for (int i = assetPaks.length - 1; i >= 0; i--) {
+                        if (assetPaks[i].startsWith("game_patch") && assetPaks[i].endsWith(".pak")) {
+                            pakFileName = assetPaks[i];
+                            break;
+                        }
+                    }
+                }
+
                 java.io.File cachePak = new java.io.File(ctx.getCacheDir(), pakFileName);
                 if (!cachePak.exists() || cachePak.length() == 0) {
                     try (java.io.InputStream is = ctx.getAssets().open("paks/" + pakFileName);

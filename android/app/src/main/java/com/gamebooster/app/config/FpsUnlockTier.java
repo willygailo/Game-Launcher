@@ -140,33 +140,33 @@ public enum FpsUnlockTier {
      */
     public String getUltraExtremeFlags() {
         return getUnlockFlags() +
-                "UltraExtreme=1\n" +
-                "UltraExtreme2026=1\n" +
-                "bUseUltraExtreme=True\n" +
-                "GraphicsQuality=5\n" +
-                "GraphicQuality=4\n" +
-                "GraphicLevel=4\n" +
-                "GraphicsPreset=5\n" +
-                "HDRMode=1\n" +
-                "HDR10Plus=1\n" +
-                "UltraHDMode=1\n" +
-                "HDRColorMode=2\n" +
-                "SuperResolution=1\n" +
-                "RenderScale=120\n" +
-                "ShadowQuality=2\n" +
-                "LightingQuality=3\n" +
-                "ParticleQuality=3\n" +
-                "PostProcessing=1\n" +
-                "WaterReflection=1\n" +
-                "AntiAliasingQuality=4\n" +
-                "ResolutionScale=120\n" +
-                "ScreenScale=120\n" +
-                "VulkanEnabled=1\n" +
-                "VulkanPipelineCache=1\n" +
+                UnlockFlagConstants.ULTRA_EXTREME + "\n" +
+                UnlockFlagConstants.ULTRA_EXTREME_2026 + "\n" +
+                UnlockFlagConstants.B_USE_ULTRA_EXTREME + "\n" +
+                UnlockFlagConstants.GRAPHICS_QUALITY_5 + "\n" +
+                UnlockFlagConstants.GRAPHIC_QUALITY_4 + "\n" +
+                UnlockFlagConstants.GRAPHIC_LEVEL_4 + "\n" +
+                UnlockFlagConstants.GRAPHICS_PRESET_5 + "\n" +
+                UnlockFlagConstants.HDR_MODE_1 + "\n" +
+                UnlockFlagConstants.HDR10_PLUS_1 + "\n" +
+                UnlockFlagConstants.ULTRA_HD_MODE_1 + "\n" +
+                UnlockFlagConstants.HDR_COLOR_MODE_2 + "\n" +
+                UnlockFlagConstants.SUPER_RESOLUTION_1 + "\n" +
+                UnlockFlagConstants.RENDER_SCALE_120 + "\n" +
+                UnlockFlagConstants.SHADOW_QUALITY_2 + "\n" +
+                UnlockFlagConstants.LIGHTING_QUALITY_3 + "\n" +
+                UnlockFlagConstants.PARTICLE_QUALITY_3 + "\n" +
+                UnlockFlagConstants.POST_PROCESSING_1 + "\n" +
+                UnlockFlagConstants.WATER_REFLECTION_1 + "\n" +
+                UnlockFlagConstants.ANTI_ALIASING_QUALITY_4 + "\n" +
+                UnlockFlagConstants.RESOLUTION_SCALE_120 + "\n" +
+                UnlockFlagConstants.SCREEN_SCALE_120 + "\n" +
+                UnlockFlagConstants.VULKAN_ENABLED_1 + "\n" +
+                UnlockFlagConstants.VULKAN_PIPELINE_CACHE_1 + "\n" +
                 "FPS=" + fps + "\n" +
                 "MaxFPS=" + fps + "\n" +
                 "TargetFPS=" + fps + "\n" +
-                "UnlockFPS=1\n" +
+                UnlockFlagConstants.UNLOCK_FPS_1 + "\n" +
                 "Unlock" + fps + "FPS=1\n";
     }
 

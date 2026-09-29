@@ -15,5 +15,8 @@
     "java.import.gradle.version": "8.13",
     "java.import.gradle.wrapper.enabled": true,
     "java.import.gradle.user.home": "/home/willygailo/.gradle",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "powerquery.client.additionalSymbolsDirectories": [
+        "/home/willygailo/Downloads/Game-Launcher/.vscode/excel-pq-symbols"
+    ]
 }

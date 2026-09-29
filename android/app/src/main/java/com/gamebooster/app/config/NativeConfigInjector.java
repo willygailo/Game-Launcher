@@ -26,21 +26,55 @@ import java.util.Map;
 public class NativeConfigInjector {
 
     private static final String TAG = "NativeConfigInjector";
-    private static boolean sNativeLibraryLoaded = false;
+    private static volatile boolean sNativeLibraryLoaded = false;
+    private static volatile boolean sNativeLoadAttempted = false;
 
-    static {
-        try {
-            System.loadLibrary("gamebooster_native");
-            sNativeLibraryLoaded = true;
-            Log.i(TAG, "Native C++ gamebooster_native library loaded successfully.");
-        } catch (Throwable t) {
-            sNativeLibraryLoaded = false;
-            Log.d(TAG, "Native library not loaded (using pure Java/Shizuku engine): " + t.getMessage());
+    private static void ensureNativeLoaded() {
+        if (sNativeLoadAttempted) return;
+        synchronized (NativeConfigInjector.class) {
+            if (sNativeLoadAttempted) return;
+            sNativeLoadAttempted = true;
+            try {
+                System.loadLibrary("gamebooster_native");
+                sNativeLibraryLoaded = true;
+                Log.i(TAG, "Native C++ gamebooster_native library loaded successfully.");
+            } catch (Throwable t) {
+                sNativeLibraryLoaded = false;
+                Log.d(TAG, "Native library not loaded (using pure Java/Shizuku engine): " + t.getMessage());
+            }
         }
     }
 
     public static boolean isNativeLoaded() {
+        ensureNativeLoaded();
         return sNativeLibraryLoaded;
+    }
+
+    /**
+     * Reads file content once, tries native patch, falls back to Java with pre-read content.
+     * Eliminates double file I/O when native library fails.
+     */
+    private static boolean patchWithContentFallback(String path, String[] keys, String section,
+                                                     java.util.function.BooleanSupplier nativeCall) {
+        if (path == null || path.trim().isEmpty()) return false;
+        ensureParentDirectory(path);
+
+        String content = null;
+        if (sNativeLibraryLoaded) {
+            try {
+                content = ShizukuFileManager.readFile(path);
+                if (content.isEmpty()) {
+                    java.io.File f = new java.io.File(path);
+                    if (f.exists() && f.canRead()) {
+                        content = new String(java.nio.file.Files.readAllBytes(f.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+                    }
+                }
+                if (nativeCall.getAsBoolean()) return true;
+            } catch (Throwable t) {
+                if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "native patch failed, using Java fallback: " + t.getMessage());
+            }
+        }
+        return ConfigFileHelper.patchKeysWithContent(path, content, keys, section);
     }
 
     // ─── Native C++ JNI Declarations ─────────────────────────────────────────

@@ -2,6 +2,9 @@ package com.gamebooster.app.config;
 
 import android.util.Log;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * CommonConfigTuningInjector — Centralized Engine, Graphics, Scope Aim & Hit-Reg DPS Optimizer.
@@ -24,6 +27,45 @@ public final class CommonConfigTuningInjector {
 
     private static List<String> getPaths(String pkg) {
         return GameConfigPathResolver.getPathsForGame(pkg);
+    }
+
+    /**
+     * Batch-applies multiple tuning key-sets to all resolved config paths.
+     * Reads each file once, applies all patches in-memory, writes once.
+     * Reduces 150+ read/write cycles down to N (number of config files).
+     */
+    public static void applyBatchTunings(String packageName, java.util.List<TuningBatch> batches) {
+        if (packageName == null || batches == null || batches.isEmpty()) return;
+        List<String> paths = getPaths(packageName);
+        for (String path : paths) {
+            try {
+                String content = com.gamebooster.app.shizuku.ShizukuFileManager.readFile(path);
+                if (content.isEmpty()) {
+                    java.io.File f = new java.io.File(path);
+                    if (f.exists() && f.canRead()) {
+                        content = new String(java.nio.file.Files.readAllBytes(f.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+                    }
+                }
+                String updated = content;
+                for (TuningBatch batch : batches) {
+                    updated = ConfigFileHelper.patchContentInMemory(updated, batch.keys, batch.section, path);
+                }
+                if (!updated.equals(content)) {
+                    ConfigFileHelper.writeContentAtomic(path, updated);
+                }
+            } catch (Throwable t) {
+                if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "Batch tuning failed for " + path + ": " + t.getMessage());
+            }
+        }
+    }
+
+    public static class TuningBatch {
+        public final String[] keys;
+        public final String section;
+        public TuningBatch(String[] keys, String section) {
+            this.keys = keys;
+            this.section = section;
+        }
     }
 
     /**
@@ -829,12 +871,11 @@ public final class CommonConfigTuningInjector {
      * Convenient single-method dispatcher to apply all enabled profile tunings for a package.
      * 2026 Edition: also applies Vulkan Optimization, HDR Color Profile, and AntiCheat-safe telemetry suppress.
      */
+    private static final ExecutorService sTuningExecutor = Executors.newFixedThreadPool(4);
+
     public static void applyAllEnabledTunings(String packageName, CompetitiveCfgProfile profile) {
         if (packageName == null || profile == null) return;
-        if (profile.isSuperFastTouchEnabled()) applySuperFastTouch(packageName);
-        if (profile.isAimAssistEnabled()) applyAllScopeAimPrecision(packageName);
-        if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName);
-        if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName);
+
         boolean isMlbb = packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends");
         int droneTier = profile.getDroneViewTier();
         boolean droneEnabled = profile.isDroneViewUltraEnabled();
@@ -858,30 +899,28 @@ public final class CommonConfigTuningInjector {
                 droneEnabled = true;
             }
         }
-        if (droneEnabled) {
-            applyDroneViewUltraConfig(packageName, droneTier);
-        }
-        if (profile.isAntiLogEnabled()) applyAntiLog(packageName);
-        // 2026: always apply Vulkan + HDR + telemetry suppression for all games
-        applyVulkanOptimization(packageName);
-        applyHDRColorProfile(packageName);
-        applyAntiCheatSafe2026(packageName);
-        applyUnrealEngineOptimization(packageName, profile.getTargetFps());
-        applyUnityBootConfigOptimization(packageName, profile.getTargetFps());
-        applyUltraExtremeGraphics(packageName, profile.getTargetFps());
-        applyVulkanPipelinePrime(packageName);
-        applyAntiTelemetrySafe(packageName);
-        // Combat-only overdrive: skip for non-combat games (Genshin, Roblox, CarX, Supercell, etc.)
-        // These keys are irrelevant/harmful to stability on non-battle-royale / non-MOBA titles.
+
+        final int finalDroneTier = droneTier;
+        final boolean finalDroneEnabled = droneEnabled;
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(8);
+
+        sTuningExecutor.execute(() -> { try { if (profile.isSuperFastTouchEnabled()) applySuperFastTouch(packageName); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { if (profile.isAimAssistEnabled()) applyAllScopeAimPrecision(packageName); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { if (profile.isRecoilControlEnabled()) applyRecoilControlConfig(packageName); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { if (profile.isMlbbDamageScriptEnabled() || profile.isTrackingBulletEnabled()) applyHitRegistrationDpsBoost(packageName); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { if (finalDroneEnabled) applyDroneViewUltraConfig(packageName, finalDroneTier); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { applyVulkanOptimization(packageName); applyHDRColorProfile(packageName); applyAntiCheatSafe2026(packageName); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { applyUnrealEngineOptimization(packageName, profile.getTargetFps()); applyUnityBootConfigOptimization(packageName, profile.getTargetFps()); applyUltraExtremeGraphics(packageName, profile.getTargetFps()); } finally { latch.countDown(); } });
+        sTuningExecutor.execute(() -> { try { applyVulkanPipelinePrime(packageName); applyAntiTelemetrySafe(packageName); if (profile.isAntiLogEnabled()) applyAntiLog(packageName); } finally { latch.countDown(); } });
+
+        try { latch.await(30, TimeUnit.SECONDS); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+
         if (isCombatGame(packageName)) {
             applyDamageLockMax(packageName);
             applyAimAssistLockMax(packageName);
-            // 2026 Skill Economy Overdrive — fast CDR, full mana, full energy, HP regen, stamina, zero cost, max ult
             applySkillEconomyMasterSuite(packageName);
-            // 2026 Universal Combat Mechanics & True Damage Overdrive
             applyUniversalCombatMechanicsOverdrive(packageName);
         }
-        // 2026 Universal Fast Loading & Splash Bypass Turbo — safe for all games
         applyUniversalFastLoadTurbo(packageName);
     }
 

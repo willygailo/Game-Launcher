@@ -84,6 +84,7 @@ public final class GameAutoInjectDispatcher {
                 } catch (Throwable ignored) {}
                 if (mlbbDroneEnabled) {
                     MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg, mlbbDroneTier);
+                    MlbbDroneViewPatcher.deployV3FixConfig(ctx, pkg, mlbbDroneTier, false);
                 }
                 MlbbConfigPatcher.applyMlbbAllRolesNoLimitSuite(pkg);
                 MlbbConfigPatcher.applyMlbbAllItemsNoLimitSuite(pkg);

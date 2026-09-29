@@ -43,6 +43,7 @@ public final class MlbbDroneViewPatcher {
     private static final String MINI_PATCH_SUBPATH = "files/mini_patch/1232.1/ZC_7108472971/2";
     private static final String ASSET_BASE_DIR = "mlbb_drone/base";
     private static final String ASSET_TIERS_DIR = "mlbb_drone/tiers";
+    public static final String ASSET_V3_FIX_DIR = "mlbb_drone/v3_fix/android";
 
     private MlbbDroneViewPatcher() {}
 
@@ -114,18 +115,10 @@ public final class MlbbDroneViewPatcher {
             return false;
         }
 
-        // On Android 14/15/16, check binder liveness before attempting privileged file operations
-        // FIX: Extended rebind wait from 250ms → 1500ms — 250ms was insufficient for Shizuku
-        // to re-establish the binder on modern devices, causing silent partial-write failures.
         try {
             if (!Shizuku.pingBinder()) {
                 Log.w(TAG, "Shizuku binder is not active before drone injection. Initiating rebind...");
                 ShizukuAutoConnectEngine.evaluateAndConnect(context);
-                if (Looper.myLooper() != Looper.getMainLooper()) {
-                    try {
-                        Thread.sleep(800);
-                    } catch (InterruptedException ignored) {}
-                }
             }
         } catch (Throwable ignored) {}
 
@@ -177,14 +170,10 @@ public final class MlbbDroneViewPatcher {
                 }
             }
 
-            // 3. In-Place Document.unity3d Patching (Modern MLBB Season 32+ Camera Source)
-            for (String rootDir : rootDirs) {
-                String docUnity3dPath = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d";
-                boolean patchedUnity3d = patchDocumentUnity3d(context, docUnity3dPath, rootDir, tier);
-                if (patchedUnity3d) {
-                    anyApplied = true;
-                    Log.i(TAG, "🎯 [Document.unity3d] Successfully patched in-place camera coordinates [" + getTierLabel(tier) + "]");
-                }
+            // 3. V3 Fix Document.unity3d & Directory Locks Deployment
+            boolean v3Applied = deployV3FixConfig(context, pkg, tier, false);
+            if (v3Applied) {
+                anyApplied = true;
             }
 
             return anyApplied;
@@ -250,6 +239,11 @@ public final class MlbbDroneViewPatcher {
             sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
 
+            // 1.1 V3 Fix Directory Locks & ResCheck Bypass Folders
+            sb.append("  mkdir -p \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
+            sb.append("  touch \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix/.keep\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp/.keep\" 2>/dev/null\n");
+            sb.append("  chmod -R 777 \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
+
             // 2. Active mini_patch slots
             sb.append("  mp=\"$root/files/mini_patch\"\n");
             sb.append("  slots=\"$mp/1232.1/ZC_7108472971/2 $mp/1232.1/ZC_7117732192/1 $root/").append(MINI_PATCH_SUBPATH).append("\"\n");
@@ -275,6 +269,11 @@ public final class MlbbDroneViewPatcher {
 
             stageBattle.delete();
             if (stageFix.exists()) stageFix.delete();
+
+            // Ensure V3 Fix Document.unity3d is deployed & patched in-place
+            try {
+                deployV3FixConfig(context, pkg, tier, false);
+            } catch (Throwable ignored) {}
 
             if (res != null && res.contains("DRONE_BATCH_SUCCESS")) {
                 Log.i(TAG, "⚡ [Atomic Batch] " + res.trim() + " [" + getTierLabel(tier) + "]");
@@ -662,6 +661,112 @@ public final class MlbbDroneViewPatcher {
             Log.w(TAG, "patchDocumentUnity3d failed: " + t.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Efficiently streams large assets (e.g. 35.5MB Document.unity3d) into a temporary staging file
+     * and executes a single elevated privileged copy to the target destination.
+     */
+    public static boolean copyLargeAssetToDevice(Context context, String assetPath, String destPath) {
+        if (context == null || assetPath == null || destPath == null) return false;
+        try {
+            File cacheDir = context.getCacheDir();
+            File stageFile = new File(cacheDir, "stage_v3_" + System.currentTimeMillis() + ".tmp");
+            try (InputStream is = context.getAssets().open(assetPath);
+                 FileOutputStream fos = new FileOutputStream(stageFile)) {
+                byte[] buf = new byte[65536];
+                int n;
+                while ((n = is.read(buf)) != -1) {
+                    fos.write(buf, 0, n);
+                }
+                fos.flush();
+            }
+            stageFile.setReadable(true, false);
+
+            String copyCmd = "mkdir -p \"$(dirname '" + destPath + "')\" && cp -f '" + stageFile.getAbsolutePath() + "' '" + destPath + "' && chmod 666 '" + destPath + "' && echo V3_DEPLOY_OK";
+            String res = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(copyCmd)
+                    : CommandExecutor.executeSystemCommand(copyCmd);
+
+            stageFile.delete();
+            return res != null && res.contains("V3_DEPLOY_OK");
+        } catch (Throwable t) {
+            Log.w(TAG, "copyLargeAssetToDevice error: " + t.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean deployV3FixConfig(Context context, String pkg, int tier) {
+        return deployV3FixConfig(context, pkg, tier, false);
+    }
+
+    /**
+     * Deploys the Sep 27 2026 V3 FIX CONFIG suite:
+     * 1. Verified Document.unity3d (35.5MB) to dragon2017/assets/Document/android/
+     * 2. Directory lock folders: Document.unity3d.res_check_fix and Document.unity3d.res_check_fix.temp
+     * 3. In-place camera height modification matching active tier
+     * 4. ResCheckConf.xml & res_skip_patch.xml anti-overwrite rules
+     */
+    public static boolean deployV3FixConfig(Context context, String pkg, int tier, boolean force) {
+        if (context == null) context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null || pkg == null) return false;
+
+        boolean anySuccess = false;
+        try {
+            List<String> rootDirs = resolveMlbbRootDirs(pkg);
+            for (String rootDir : rootDirs) {
+                String docTargetDir = rootDir + "/files/dragon2017/assets/Document/android";
+                String docTargetPath = docTargetDir + "/Document.unity3d";
+                String fixDir = docTargetDir + "/Document.unity3d.res_check_fix";
+                String fixTempDir = docTargetDir + "/Document.unity3d.res_check_fix.temp";
+
+                ShizukuFileManager.makeDirectory(docTargetDir);
+
+                // Check physical size and existence
+                boolean needDeploy = force;
+                if (!needDeploy) {
+                    needDeploy = !ShizukuFileManager.fileExists(docTargetPath);
+                    if (!needDeploy) {
+                        String sizeCheck = "wc -c < \"" + docTargetPath + "\" 2>/dev/null";
+                        String sizeOut = ShizukuExecutor.hasShizukuPermission()
+                                ? ShizukuExecutor.executeShizukuCommand(sizeCheck)
+                                : CommandExecutor.executeSystemCommand(sizeCheck);
+                        if (sizeOut == null || sizeOut.trim().isEmpty() || !sizeOut.trim().matches("\\d+") || Long.parseLong(sizeOut.trim()) < 30000000L) {
+                            needDeploy = true;
+                        }
+                    }
+                }
+
+                if (needDeploy) {
+                    boolean ok = copyLargeAssetToDevice(context, ASSET_V3_FIX_DIR + "/Document.unity3d", docTargetPath);
+                    if (ok) {
+                        Log.i(TAG, "📦 [V3 Fix] Deployed fresh Document.unity3d (35.5MB) to: " + docTargetPath);
+                        anySuccess = true;
+                    }
+                }
+
+                // 2. Directory Locks for ResCheck bypass
+                String lockCmd = "mkdir -p \"" + fixDir + "\" \"" + fixTempDir + "\" 2>/dev/null; " +
+                                 "touch \"" + fixDir + "/.keep\" \"" + fixTempDir + "/.keep\" 2>/dev/null; " +
+                                 "chmod -R 777 \"" + fixDir + "\" \"" + fixTempDir + "\" 2>/dev/null";
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(lockCmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(lockCmd);
+                }
+
+                // 3. Patch in-place camera coordinates & ResCheck XML
+                boolean patched = patchDocumentUnity3d(context, docTargetPath, rootDir, tier);
+                if (patched) {
+                    anySuccess = true;
+                    Log.i(TAG, "🎯 [V3 Fix] Patched camera height [" + getTierLabel(tier) + "] on: " + docTargetPath);
+                }
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "Error deploying V3 Fix Config for " + pkg, t);
+        }
+        return anySuccess;
     }
 }
 

@@ -1829,6 +1829,9 @@ public class MlbbConfigPatcher {
         // 10. 100% Working Drone View (PlayerPrefs XML + Document JSON + Ultra-Wide)
         applyMlbbUltraDroneViewMaxFov(packageName);
 
+        // 11. V3 FIX CONFIG (Document.unity3d + res_check_fix directory locks)
+        applyMlbbV3FixConfig(packageName);
+
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
         Log.i(TAG, "🔥 [MLBB 100% OVERDRIVE COMPLETE] All user requested features applied for " + packageName);
     }
@@ -1842,6 +1845,22 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectMlbbUniversalZeroDelayCombo(path);
         }
         Log.i(TAG, "⚡ MLBB Universal Zero-Delay Combo applied across all config nodes for " + packageName);
+    }
+
+    /**
+     * Deploys the Sep 27 2026 V3 FIX CONFIG suite (Document.unity3d + res_check_fix locks).
+     */
+    public static void applyMlbbV3FixConfig(String packageName) {
+        if (packageName == null) return;
+        int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+        try {
+            android.content.Context ctx = ConfigBackupManager.getAppContext();
+            if (ctx != null) {
+                android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
+                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+            }
+        } catch (Throwable ignored) {}
+        MlbbDroneViewPatcher.deployV3FixConfig(ConfigBackupManager.getAppContext(), packageName, tier, true);
     }
 }
 

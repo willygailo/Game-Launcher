@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +31,9 @@ import java.util.regex.Pattern;
 public final class ConfigFileHelper {
 
     private static final String TAG = "ConfigFileHelper";
+
+    private static final ConcurrentHashMap<String, Pattern> sJsonPatternCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Pattern> sXmlPatternCache = new ConcurrentHashMap<>();
 
     private ConfigFileHelper() {}
 
@@ -56,7 +60,7 @@ public final class ConfigFileHelper {
                 }
             }
         } catch (Throwable directEx) {
-            Log.d(TAG, "Direct write failed (expected on Android 13-16 scoped storage): " + directEx.getMessage());
+            if (com.gamebooster.app.BuildConfig.DEBUG) Log.d(TAG, "Direct write failed: " + directEx.getMessage());
         }
 
         // Tier 2: Elevated Shizuku / AIDL IUserService / privileged shell for Android 13-16 scoped storage
@@ -68,7 +72,7 @@ public final class ConfigFileHelper {
                 return true;
             }
         } catch (Throwable t) {
-            Log.d(TAG, "ShizukuFileManager write attempt note: " + t.getMessage());
+            if (com.gamebooster.app.BuildConfig.DEBUG) Log.d(TAG, "ShizukuFileManager write attempt note: " + t.getMessage());
         }
 
         return false;
@@ -99,12 +103,12 @@ public final class ConfigFileHelper {
             }
             String updatedContent = patchContentInMemory(existingContent, keyValues, defaultSection, path);
             if (existingContent != null && !existingContent.isEmpty() && existingContent.equals(updatedContent)) {
-                Log.d(TAG, "Content already matches desired config for " + path + " - skipping write (no-op).");
+                if (com.gamebooster.app.BuildConfig.DEBUG) Log.d(TAG, "Content already matches desired config for " + path + " - skipping write (no-op).");
                 return true;
             }
             return writeContentAtomic(path, updatedContent);
         } catch (Throwable t) {
-            Log.w(TAG, "patchKeys failed for " + path + ": " + t.getMessage(), t);
+            if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "patchKeys failed for " + path + ": " + t.getMessage(), t);
             return false;
         }
     }
@@ -123,6 +127,25 @@ public final class ConfigFileHelper {
             arr[idx++] = entry.getKey() + "=" + entry.getValue();
         }
         return patchKeys(path, arr, defaultSection);
+    }
+
+    /**
+     * Patches keys using pre-read content to avoid double file I/O when native fallback fails.
+     */
+    public static boolean patchKeysWithContent(String path, String existingContent, String[] keyValues, String defaultSection) {
+        if (path == null || path.trim().isEmpty() || keyValues == null || keyValues.length == 0) {
+            return false;
+        }
+        try {
+            String updatedContent = patchContentInMemory(existingContent, keyValues, defaultSection, path);
+            if (existingContent != null && !existingContent.isEmpty() && existingContent.equals(updatedContent)) {
+                return true;
+            }
+            return writeContentAtomic(path, updatedContent);
+        } catch (Throwable t) {
+            if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "patchKeysWithContent failed for " + path + ": " + t.getMessage(), t);
+            return false;
+        }
     }
 
     /**
@@ -159,7 +182,7 @@ public final class ConfigFileHelper {
                     }
                 }
             } catch (Throwable t) {
-                Log.d(TAG, "Native in-memory patcher note: " + t.getMessage());
+                if (com.gamebooster.app.BuildConfig.DEBUG) Log.d(TAG, "Native in-memory patcher note: " + t.getMessage());
             }
         }
 
@@ -249,8 +272,7 @@ public final class ConfigFileHelper {
                         resultLines.add(replacement);
                     }
                 } else {
-                    // Duplicate key in file — discard to eliminate conflicts
-                    Log.d(TAG, "Discarded duplicate INI key: " + lineKey);
+                    if (com.gamebooster.app.BuildConfig.DEBUG) Log.d(TAG, "Discarded duplicate INI key: " + lineKey);
                 }
             } else {
                 resultLines.add(line);
@@ -310,8 +332,9 @@ public final class ConfigFileHelper {
             String v = kv.substring(eq + 1).trim();
             String jsonVal = formatJsonValue(v);
 
-            // Match key in the JSON, replacing the first occurrence and stripping any duplicates
-            Pattern keyPattern = Pattern.compile("(\"" + Pattern.quote(k) + "\"\\s*:\\s*)(\"[^\"]*\"|[^,\\n}\\]]+)(,?)");
+            String patternKey = "json:" + k;
+            Pattern keyPattern = sJsonPatternCache.computeIfAbsent(patternKey,
+                    pk -> Pattern.compile("(\"" + Pattern.quote(k) + "\"\\s*:\\s*)(\"[^\"]*\"|[^,\\n}\\]]+)(,?)"));
             Matcher matcher = keyPattern.matcher(updated);
             if (matcher.find()) {
                 StringBuffer jsonSb = new StringBuffer();
@@ -380,7 +403,7 @@ public final class ConfigFileHelper {
         // CRITICAL PROTECTION: If content exists and does NOT contain <map>, it is NOT an Android SharedPreferences XML!
         // Never overwrite unknown XML schemas (e.g. game engine manifests, SplitLibMD5.xml, etc.) - leave untouched!
         if (content != null && !content.trim().isEmpty() && !content.contains("<map>")) {
-            Log.w(TAG, "Refusing to patch XML without <map> root tag (schema mismatch / asset protection) - leaving untouched.");
+            if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "Refusing to patch XML without <map> root tag (schema mismatch / asset protection).");
             return content;
         }
 
@@ -412,7 +435,9 @@ public final class ConfigFileHelper {
             String v = kv.substring(eq + 1).trim();
             String replacementTag = formatXmlEntry(k, v);
 
-            Pattern keyPattern = Pattern.compile("<(int|string|float|boolean|long)\\s+name=\"" + Pattern.quote(k) + "\"[^>]*>(.*?</\\1>)?");
+            String patternKey = "xml:" + k;
+            Pattern keyPattern = sXmlPatternCache.computeIfAbsent(patternKey,
+                    pk -> Pattern.compile("<(int|string|float|boolean|long)\\s+name=\"" + Pattern.quote(k) + "\"[^>]*>(.*?</\\1>)?"));
             Matcher matcher = keyPattern.matcher(updated);
             if (matcher.find()) {
                 // Replace the first occurrence, strip any subsequent duplicate occurrences

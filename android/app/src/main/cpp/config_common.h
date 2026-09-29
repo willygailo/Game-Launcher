@@ -102,6 +102,16 @@ bool apply_keys_to_file(const std::string& pathStr, const char* path,
                         const std::vector<std::pair<std::string, std::string>>& keys,
                         const char* logTag);
 
+// ─── Fast Batch Injection (single-read, multi-key, single-write) ──────────────
+bool fast_batch_inject(const std::string& path,
+                       std::vector<std::pair<std::string, std::string>>&& keys,
+                       const char* logTag);
+
+// ─── Multi-File Batch Injection (parallel file processing) ────────────────────
+bool multi_file_batch_inject(const std::vector<std::string>& paths,
+                              std::vector<std::pair<std::string, std::string>>&& keys,
+                              const char* logTag);
+
 // ─── Direct Batch Injection from JNI Helper Macro ────────────────────────────
 #define JNI_INJECT_KEY_SET(env, jPath, keysVector, logTag) \
     do { \

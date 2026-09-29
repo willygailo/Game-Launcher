@@ -238,39 +238,51 @@ public final class TweakSelfHealingVerifier {
     /**
      * Starts the background Self-Healing Watchdog during gaming sessions.
      */
-    public static synchronized void startSelfHealingWatchdog(Context context, List<TweakItem> activeTweaks) {
-        if (sWatchdogRunning) return;
-        sWatchdogRunning = true;
-        sWatchdogExecutor = Executors.newSingleThreadScheduledExecutor();
-        sWatchdogExecutor.scheduleWithFixedDelay(() -> {
-            try {
-                if (activeTweaks == null || activeTweaks.isEmpty()) return;
-                int healedCount = 0;
-                for (TweakItem item : activeTweaks) {
-                    if (item.isApplied() && verifyAndHeal(item, context)) {
-                        healedCount++;
+    private static final java.util.concurrent.locks.ReentrantLock sWatchdogLock = new java.util.concurrent.locks.ReentrantLock();
+
+    public static void startSelfHealingWatchdog(Context context, List<TweakItem> activeTweaks) {
+        sWatchdogLock.lock();
+        try {
+            if (sWatchdogRunning) return;
+            sWatchdogRunning = true;
+            sWatchdogExecutor = Executors.newSingleThreadScheduledExecutor();
+            sWatchdogExecutor.scheduleWithFixedDelay(() -> {
+                try {
+                    if (activeTweaks == null || activeTweaks.isEmpty()) return;
+                    int healedCount = 0;
+                    for (TweakItem item : activeTweaks) {
+                        if (item.isApplied() && verifyAndHeal(item, context)) {
+                            healedCount++;
+                        }
                     }
-                }
-                if (healedCount > 0) {
-                    Log.i(TAG, "⚡ [Self-Healing Watchdog] Autonomously restored " + healedCount + " reverted tweaks.");
-                }
-            } catch (Throwable ignored) {}
-        }, 15, 30, TimeUnit.SECONDS);
-        Log.i(TAG, "🚀 [Self-Healing Watchdog] Engine started (30s interval).");
+                    if (healedCount > 0) {
+                        Log.i(TAG, "⚡ [Self-Healing Watchdog] Autonomously restored " + healedCount + " reverted tweaks.");
+                    }
+                } catch (Throwable ignored) {}
+            }, 15, 30, TimeUnit.SECONDS);
+            Log.i(TAG, "🚀 [Self-Healing Watchdog] Engine started (30s interval).");
+        } finally {
+            sWatchdogLock.unlock();
+        }
     }
 
     /**
      * Stops the background Self-Healing Watchdog.
      */
-    public static synchronized void stopSelfHealingWatchdog() {
-        sWatchdogRunning = false;
-        if (sWatchdogExecutor != null) {
-            try {
-                sWatchdogExecutor.shutdownNow();
-            } catch (Throwable ignored) {}
-            sWatchdogExecutor = null;
+    public static void stopSelfHealingWatchdog() {
+        sWatchdogLock.lock();
+        try {
+            sWatchdogRunning = false;
+            if (sWatchdogExecutor != null) {
+                try {
+                    sWatchdogExecutor.shutdownNow();
+                } catch (Throwable ignored) {}
+                sWatchdogExecutor = null;
+            }
+            Log.i(TAG, "🛑 [Self-Healing Watchdog] Engine stopped.");
+        } finally {
+            sWatchdogLock.unlock();
         }
-        Log.i(TAG, "🛑 [Self-Healing Watchdog] Engine stopped.");
     }
 }
 
