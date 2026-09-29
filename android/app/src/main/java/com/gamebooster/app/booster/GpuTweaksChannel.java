@@ -10,6 +10,80 @@ import java.util.Set;
 public class GpuTweaksChannel {
 
     /**
+     * §9.1 read-back verification: for every GPU devfreq node read
+     * governor/cur_freq/max_freq and check the floor is locked at max.
+     */
+    public static VerifyResult verifyGpuLocked() {
+        String out;
+        try {
+            out = CommandExecutor.executeSystemCommand(
+                    "for d in /sys/class/devfreq/*; do "
+                            + "n=$(basename \"$d\"); "
+                            + "case \"$n\" in *gpu*|*kgsl*|*mali*|*adreno*|*img*) ;; *) continue;; esac; "
+                            + "g=$(cat \"$d/governor\" 2>/dev/null); "
+                            + "c=$(cat \"$d/cur_freq\" 2>/dev/null); "
+                            + "m=$(cat \"$d/max_freq\" 2>/dev/null); "
+                            + "[ -n \"$g\" ] && [ -n \"$m\" ] && echo \"$n=$g,$c,$m\"; done");
+        } catch (Throwable t) {
+            return VerifyResult.unavailable("gpu_freq", "privileged read failed: " + t.getMessage());
+        }
+        java.util.List<String[]> nodes = parseGpuNodes(out);
+        if (nodes.isEmpty()) {
+            return VerifyResult.unavailable("gpu_freq", "no GPU devfreq nodes readable");
+        }
+        String locked = gpusLocked(nodes);
+        if (locked == null) {
+            StringBuilder detail = new StringBuilder();
+            for (String[] n : nodes) {
+                if (detail.length() > 0) detail.append("; ");
+                detail.append(n[0]).append(" gov=").append(n[1])
+                        .append(" cur=").append(n[2]).append(" max=").append(n[3]);
+            }
+            return VerifyResult.mismatch("gpu_freq", "performance @ max_freq", detail.toString());
+        }
+        return VerifyResult.pass("gpu_freq", "locked at max on " + nodes.size() + " GPU node(s)");
+    }
+
+    /**
+     * Parses "name=governor,cur,max" lines. Each entry: [name, gov, cur, max].
+     */
+    static java.util.List<String[]> parseGpuNodes(String shellOutput) {
+        java.util.List<String[]> nodes = new java.util.ArrayList<>();
+        if (shellOutput == null) return nodes;
+        for (String line : shellOutput.split("\n")) {
+            int eq = line.indexOf('=');
+            int comma1 = line.indexOf(',', eq + 1);
+            int comma2 = line.indexOf(',', comma1 + 1);
+            if (eq <= 0 || comma1 <= eq || comma2 <= comma1 + 1) continue;
+            String name = line.substring(0, eq).trim();
+            String gov = line.substring(eq + 1, comma1).trim();
+            String cur = line.substring(comma1 + 1, comma2).trim();
+            String max = line.substring(comma2 + 1).trim();
+            if (!name.isEmpty() && !gov.isEmpty() && !max.isEmpty()) {
+                nodes.add(new String[]{name, gov, cur, max});
+            }
+        }
+        return nodes;
+    }
+
+    /**
+     * Returns null when every node runs governor=performance at cur==max;
+     * otherwise a human-readable reason for the mismatch.
+     */
+    static String gpusLocked(java.util.List<String[]> nodes) {
+        if (nodes == null || nodes.isEmpty()) return "no GPU nodes";
+        for (String[] n : nodes) {
+            if (!"performance".equals(n[1])) {
+                return n[0] + " governor is " + n[1];
+            }
+            if (!n[2].equals(n[3])) {
+                return n[0] + " cur " + n[2] + " != max " + n[3];
+            }
+        }
+        return null;
+    }
+
+    /**
      * Dedicated packages eligible for Game Driver opt-in.
      * Exclusively includes:
      * - Mobile Legends: Bang Bang (MLBB) & Regional / Store Editions

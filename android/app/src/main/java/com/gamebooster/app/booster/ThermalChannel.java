@@ -28,6 +28,16 @@ public class ThermalChannel {
     private static final String TAG = "ThermalChannel";
 
     public static boolean setThermalOverride(boolean bypass) {
+        if (bypass) {
+            // §8.1/§8.3: never raise trip points or kill thermald without an
+            // armed SafetyGuard (snapshot + 50/55C watchdog + device blocklist).
+            android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (!SafetyGuard.ensureArmed(ctx)) {
+                Log.w(TAG, "Thermal bypass refused: SafetyGuard could not arm");
+                return false;
+            }
+        }
+
         String status = bypass ? "0" : "-1";
         String disableProp = bypass ? "1" : "0";
         String enableProp = bypass ? "0" : "1";
@@ -137,6 +147,12 @@ public class ThermalChannel {
         CommandExecutor.setSystemProperty("vendor.thermal.mode", bypass ? "performance" : "normal");
         CommandExecutor.setSystemProperty("debug.thermal.suppress_throttle", disableProp);
         CommandExecutor.setSystemProperty("persist.sys.thermal.mitigation", enableProp);
+
+        if (!bypass) {
+            // Re-enable alone does not put trip points back — replay the
+            // thermal subset of the pre-boost snapshot (§8.1).
+            SnapshotSystem.restoreThermal(com.gamebooster.app.GameBoosterApp.getInstance());
+        }
 
         return ok;
     }

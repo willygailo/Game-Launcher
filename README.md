@@ -33,6 +33,11 @@ launcher intent — with **deep system-level performance tuning** via Root/Shizu
 | `MemoryCleanerPro` / `RamZramChannel` | ZRAM tuning, swappiness=10, mlockall framebuffers, OOM protection |
 | `NetworkTweaksChannel` / `AdvancedNetworkQosEngine` | Wi-Fi power save off, TCP BBR, DSCP EF QoS, DNS DoH |
 | `ThermalChannel` | Thermal headroom monitoring, auto-throttle at 50°C, hard disable at 55°C |
+| `SafetyGuard` | 2s thermal monitor, device compatibility blocklist (§8.2), boost arming/restore |
+| `SnapshotSystem` | Pre-change snapshot of sysfs/settings/props with JSON serialize + rollback |
+| `VerifyResult` verifiers | Read-back checks per channel (applied Hz, CPU governors, GPU lock, WebView flags) |
+| `FrameMetricsCollector` | Frame time avg/stddev/p99, jank + big-jank counts from gfxinfo framestats (§7.1) |
+| `BatteryEstimator` | Per-profile drain estimate, e.g. Extreme "+15-25% per hour" (§8.4) |
 
 ## Requirements
 
@@ -98,6 +103,32 @@ adb shell getevent -l /dev/input/event* | grep -i touch
 # Frame pacing metrics
 adb shell dumpsys gfxinfo <package_name> framestats
 ```
+
+### Automated Device Validation
+
+`tools/validate_boost.py` runs the same read-back checks over adb (device-farm
+ready: `--json` output, exit codes 0 pass / 1 fail / 2 unavailable):
+
+```bash
+# Single check
+tools/validate_boost.py hz --hz 165
+tools/validate_boost.py cpu-gov --governor performance
+
+# Per-game FPS unlock read-back (Game Mode API / device_config)
+tools/validate_boost.py game-overlay --package com.mobile.legends --hz 120
+
+# Everything (keep touching the screen during the touch check)
+tools/validate_boost.py all --hz 120 --package com.mobile.legends --tier flagship
+
+# Machine-readable
+tools/validate_boost.py all --hz 120 --json --serial <device-serial>
+
+# Device-free unit tests for the script's parsers
+python3 -m unittest discover tools
+```
+
+Known device caveats are tracked in `docs/device-compatibility-matrix.json`
+(mirrors the in-app `SafetyGuard` blocklist).
 
 ## Supported Hz Tiers
 

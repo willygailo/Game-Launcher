@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "description": "Device compatibility matrix: device family → tier guidance → known issues. Mirrors the in-code blocklist (SafetyGuard.findBlock) and tier detection (WebViewBoosterChannel.detectDeviceTier); runtime behavior is authoritative in code.",
+  "sources": [
+    "IMPROVEMENT_PLAN.md §8.2 (known problematic devices)",
+    "SafetyGuard.java findBlock()",
+    "WebViewBoosterChannel.java detectDeviceTier()",
+    "IMPROVEMENT_PLAN.md §9.3 (reference device farm)"
+  ],
+  "tier_rules": {
+    "FLAGSHIP": "GPU score >= 85 && CPU score >= 1200 && RAM >= 8GB && SDK >= 33",
+    "MID_RANGE": "GPU score >= 55 && CPU score >= 800 && RAM >= 4GB && SDK >= 30",
+    "BUDGET_SAFE": "RAM < 4GB or SDK < 30, or scores below MID_RANGE thresholds"
+  },
+  "known_issues": [
+    {
+      "code": "webview_vulkan_graphite_black_screen",
+      "severity": "WARN",
+      "match": {
+        "manufacturer": "google",
+        "model_prefixes": ["pixel 7", "pixel 8"]
+      },
+      "impact": "WebView Vulkan + Skia Graphite flags can cause black screens in some WebViews",
+      "mitigation": "SafetyGuard arms with compatibility warning; use BUDGET_SAFE WebView tier (disables Vulkan/WebGPU in --disable-features)",
+      "code_ref": "SafetyGuard.java findBlock()"
+    },
+    {
+      "code": "exynos_s22_vrr_disable_flicker",
+      "severity": "WARN",
+      "match": {
+        "manufacturer": "samsung",
+        "model_prefixes": ["sm-s901b", "sm-s906b", "sm-s908b"]
+      },
+      "impact": "VRR disable causes display flicker on Exynos 2200 S22 variants",
+      "mitigation": "SafetyGuard arms with warning; refresh-rate overrides disabled on these models",
+      "code_ref": "SafetyGuard.java findBlock()"
+    },
+    {
+      "code": "xiaomi_hyperos_refresh_pair_bootloop_guard",
+      "severity": "WARN",
+      "match": {
+        "manufacturer": ["xiaomi", "redmi", "poco"]
+      },
+      "impact": "min_refresh_rate > peak_refresh_rate can bootloop on HyperOS",
+      "mitigation": "Refresh pairs validated strictly (peak >= min) before apply and before snapshot restore via SnapshotSystem.refreshPairSafe()",
+      "code_ref": "SafetyGuard.java findBlock(), SnapshotSystem.refreshPairSafe()"
+    }
+  ],
+  "reference_devices": [
+    {
+      "vendor": "Google",
+      "model": "Pixel 8",
+      "expected_tier": "FLAGSHIP",
+      "issues": ["webview_vulkan_graphite_black_screen"],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "frame"]
+    },
+    {
+      "vendor": "Samsung",
+      "model": "Galaxy S24",
+      "expected_tier": "FLAGSHIP",
+      "issues": [],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "frame"]
+    },
+    {
+      "vendor": "Samsung",
+      "model": "Galaxy S22 (Exynos, SM-S901B)",
+      "expected_tier": "FLAGSHIP",
+      "issues": ["exynos_s22_vrr_disable_flicker"],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "frame"]
+    },
+    {
+      "vendor": "Xiaomi",
+      "model": "Xiaomi 14",
+      "expected_tier": "FLAGSHIP",
+      "issues": ["xiaomi_hyperos_refresh_pair_bootloop_guard"],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "frame"]
+    },
+    {
+      "vendor": "OnePlus",
+      "model": "OnePlus 12",
+      "expected_tier": "FLAGSHIP",
+      "issues": [],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "frame"]
+    },
+    {
+      "vendor": "ASUS",
+      "model": "ROG Phone 8",
+      "expected_tier": "FLAGSHIP",
+      "issues": [],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "touch", "frame"]
+    },
+    {
+      "vendor": "Samsung",
+      "model": "Galaxy A55",
+      "expected_tier": "MID_RANGE",
+      "issues": [],
+      "checks": ["hz", "cpu-gov", "gpu-freq", "webview", "frame"]
+    },
+    {
+      "vendor": "Xiaomi",
+      "model": "Redmi Note 12",
+      "expected_tier": "BUDGET_SAFE",
+      "issues": ["xiaomi_hyperos_refresh_pair_bootloop_guard"],
+      "checks": ["hz", "cpu-gov", "frame"]
+    }
+  ],
+  "validation": {
+    "script": "tools/validate_boost.py",
+    "unit_tests": "tools/test_validate_boost.py",
+    "in_app_equivalents": {
+      "hz": "HzFpsChannel.verify(context, requestedHz)",
+      "cpu-gov": "CpuGovernorChannel.verifyGovernors(expected)",
+      "gpu-freq": "GpuTweaksChannel.verifyGpuLocked()",
+      "webview": "WebViewBoosterChannel.verifyFlags(context)",
+      "frame": "FrameMetricsCollector.collect(packageName, hz)",
+      "touch": "getevent -l rate sampling (device farm only)"
+    },
+    "exit_codes": {
+      "0": "all checks passed",
+      "1": "at least one check failed",
+      "2": "unavailable / no device / error"
+    }
+  }
+}

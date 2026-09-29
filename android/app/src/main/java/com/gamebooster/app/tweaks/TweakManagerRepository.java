@@ -944,6 +944,11 @@ public class TweakManagerRepository {
     public static int applyAllSupportedTweaks(Context context) {
         int appliedCount = 0;
 
+        // §8.1: snapshot pre-boost state and arm the thermal watchdog before
+        // the first privileged batch leaves the device.
+        com.gamebooster.app.booster.SafetyGuard.ensureArmed(
+                context != null ? context : com.gamebooster.app.GameBoosterApp.getInstance());
+
         List<String> batchCmds = new ArrayList<>();
         for (TweakItem tweak : TWEAKS) {
             batchCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware(tweak.getApplyCommand(), context));

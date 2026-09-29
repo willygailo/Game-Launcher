@@ -490,4 +490,67 @@ public final class WebViewBoosterChannel {
             // Shizuku execution is the primary path
         }
     }
+
+    /**
+     * §9.1 read-back verification: reads the command-line flag file and the
+     * debug.chromium.flags prop back and checks the tier's marker flag.
+     */
+    public static VerifyResult verifyFlags(Context context) {
+        DeviceTier tier = detectDeviceTier(context);
+        String required = requiredMarkerFlag(tier);
+        String forbidden = tier == DeviceTier.FLAGSHIP ? null : "--enable-webgpu";
+        String content = readBackFlags();
+        String problem = evaluateFlags(content, required, forbidden);
+        if (problem != null) {
+            if (content == null || content.trim().isEmpty()) {
+                return VerifyResult.unavailable("webview_flags",
+                        "flag file and debug.chromium.flags both unreadable");
+            }
+            return VerifyResult.fail("webview_flags", problem);
+        }
+        return VerifyResult.pass("webview_flags", tier.name() + " marker flag present");
+    }
+
+    /** Marker flag each tier must have present in the read-back content. */
+    static String requiredMarkerFlag(DeviceTier tier) {
+        switch (tier) {
+            case FLAGSHIP:
+                return "--enable-webgpu";
+            case MID_RANGE:
+                return "--enable-drdc";
+            case BUDGET_SAFE:
+            default:
+                return "--enable-gpu-rasterization";
+        }
+    }
+
+    /**
+     * Returns null when read-back flags are correct for the tier,
+     * otherwise a human-readable failure reason.
+     */
+    static String evaluateFlags(String content, String required, String forbidden) {
+        if (content == null || content.trim().isEmpty()) return "empty flag content";
+        if (required != null && !content.contains(required)) return "missing " + required;
+        if (forbidden != null && content.contains(forbidden)) {
+            return "tier must not enable " + forbidden;
+        }
+        return null;
+    }
+
+    private static String readBackFlags() {
+        StringBuilder sb = new StringBuilder();
+        try {
+            String out = CommandExecutor.executeSystemCommand(
+                    "cat /data/local/tmp/webview-command-line /data/local/tmp/chrome-command-line"
+                            + " /data/local/tmp/android-webview-command-line 2>/dev/null");
+            if (out != null) sb.append(out);
+        } catch (Throwable ignored) {
+        }
+        try {
+            String prop = CommandExecutor.getSystemProperty("debug.chromium.flags");
+            if (prop != null) sb.append(' ').append(prop);
+        } catch (Throwable ignored) {
+        }
+        return sb.toString();
+    }
 }

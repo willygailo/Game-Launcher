@@ -392,4 +392,54 @@ public class CpuGovernorChannel {
     public static boolean setPerformanceLock() {
         return setGovernor("extreme");
     }
+
+    /**
+     * §9.1 read-back verification: reads scaling_governor for every cpufreq
+     * policy and checks they all match {@code expected}.
+     */
+    public static VerifyResult verifyGovernors(String expected) {
+        String out;
+        try {
+            out = CommandExecutor.executeSystemCommand(
+                    "for p in /sys/devices/system/cpu/cpufreq/policy*; do "
+                            + "n=$(basename \"$p\"); "
+                            + "g=$(cat \"$p/scaling_governor\" 2>/dev/null); "
+                            + "[ -n \"$g\" ] && echo \"$n=$g\"; done");
+        } catch (Throwable t) {
+            return VerifyResult.unavailable("cpu_governor", "privileged read failed: " + t.getMessage());
+        }
+        java.util.Map<String, String> governors = parseGovernorMap(out);
+        if (governors.isEmpty()) {
+            return VerifyResult.unavailable("cpu_governor", "no cpufreq policies readable");
+        }
+        if (governorsMatch(governors, expected)) {
+            return VerifyResult.pass("cpu_governor",
+                    expected + " on all " + governors.size() + " policies");
+        }
+        return VerifyResult.mismatch("cpu_governor", expected, governors.toString());
+    }
+
+    /** Parses "policy0=performance" lines into a policy→governor map. */
+    static java.util.Map<String, String> parseGovernorMap(String shellOutput) {
+        java.util.LinkedHashMap<String, String> map = new java.util.LinkedHashMap<>();
+        if (shellOutput == null) return map;
+        for (String line : shellOutput.split("\n")) {
+            int eq = line.indexOf('=');
+            if (eq <= 0) continue;
+            String policy = line.substring(0, eq).trim();
+            String gov = line.substring(eq + 1).trim();
+            if (!policy.isEmpty() && !gov.isEmpty()) {
+                map.put(policy, gov);
+            }
+        }
+        return map;
+    }
+
+    static boolean governorsMatch(java.util.Map<String, String> governors, String expected) {
+        if (governors == null || governors.isEmpty() || expected == null) return false;
+        for (String gov : governors.values()) {
+            if (!expected.equals(gov)) return false;
+        }
+        return true;
+    }
 }

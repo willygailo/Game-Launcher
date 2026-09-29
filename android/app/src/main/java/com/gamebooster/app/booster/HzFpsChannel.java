@@ -162,4 +162,46 @@ public final class HzFpsChannel {
             return 0;
         }
     }
+
+    /**
+     * §9.1 read-back verification: reads peak_refresh_rate back through the
+     * privileged path (settings shell) first, falls back to Settings API.
+     */
+    public static VerifyResult verify(Context context, int requestedHz) {
+        int actual = -1;
+        try {
+            String raw = com.gamebooster.app.engine.CommandExecutor.getSystemSetting(
+                    "system", "peak_refresh_rate");
+            actual = parseHzSetting(raw);
+        } catch (Throwable ignored) {
+        }
+        if (actual <= 0 && context != null) {
+            actual = verifyAppliedHz(context);
+        }
+        if (actual <= 0) {
+            return VerifyResult.unavailable("refresh_rate",
+                    "peak_refresh_rate unreadable and no display API fallback");
+        }
+        if (actual == requestedHz) {
+            return VerifyResult.pass("refresh_rate", actual + " Hz");
+        }
+        return VerifyResult.mismatch("refresh_rate", requestedHz + " Hz", actual + " Hz");
+    }
+
+    /**
+     * Parses a settings refresh-rate value ("165", "165.0", "0", "null").
+     * Returns the integer Hz, or -1 when unset/invalid.
+     */
+    static int parseHzSetting(String raw) {
+        if (raw == null) return -1;
+        String t = raw.trim();
+        if (t.isEmpty() || t.equalsIgnoreCase("null") || t.equalsIgnoreCase("undefined")) return -1;
+        try {
+            float v = Float.parseFloat(t);
+            if (v <= 0f) return -1;
+            return Math.round(v);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 }

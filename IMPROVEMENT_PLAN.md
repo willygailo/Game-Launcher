@@ -426,5 +426,32 @@ if (!PrivilegeBridgeEngine.isPrivilegedActive()) {
 
 ---
 
+## 15. Implementation Status (updated)
+
+Status of this plan as implemented in the repo. Test suite: 47 JVM unit tests
+(`./gradlew testDebugUnitTest`) + 10 device-farm script tests
+(`python3 -m unittest discover tools`); lint + assemble green in CI.
+
+| Plan item | Status | Where |
+|-----------|--------|-------|
+| §1.5 Validation & feedback (read-back verify) | ✅ Done | `VerifyResult.java`, `HzFpsChannel.verify`, `CpuGovernorChannel.verifyGovernors`, `GpuTweaksChannel.verifyGpuLocked`, `WebViewBoosterChannel.verifyFlags`; wired into enforcement report (`MasterOptimizationEnforcer`) |
+| §7.1 Frame pacing metrics | ✅ Done | `FrameMetricsCollector.java` (avg/stddev/p99/jank/bigJank, CSV export) |
+| §8.1 Per-change rollback / snapshot | ✅ Done | `SnapshotSystem.java` (JSON snapshot of sysfs/settings/props + restore, `refreshPairSafe`) |
+| §8.2 Compatibility guardrails | ✅ Done | `SafetyGuard.findBlock()` (Pixel 7/8, Exynos S22, Xiaomi/HyperOS) + `docs/device-compatibility-matrix.json` |
+| §8.3 Thermal guard | ✅ Done | `SafetyGuard.java` (2s monitor, WARN ≥50 °C, restore+disarm ≥55 °C, GPU floor −10% at WARN) |
+| §8.4 Battery impact estimator | ✅ Done | `BatteryEstimator.java` (Balanced 6-12%, Performance 10-18%, Extreme 15-25% per hour) |
+| §9.1 Automated device farm tests | ✅ Done | `tools/validate_boost.py` (hz, cpu-gov, gpu-freq, webview, touch, frame; `--json`; exit 0/1/2) |
+| §9.3 Regression testing (CI) | ✅ Done | `.github/workflows/ci.yml` (unit tests + lint + release assemble on every PR) |
+| §12.4 Automated test suite (Python + adb) | ✅ Done | `tools/validate_boost.py` + `tools/test_validate_boost.py` |
+| §12.3 Device compatibility matrix | ✅ Done | `docs/device-compatibility-matrix.json` |
+| §1 Hz deepening, §2 CPU/GPU, §4 WebView tiers, §6 touch, §7.2 | ✅ Pre-existing | Implemented before this plan; already green |
+
+Not yet implemented (future work): §5 new channels (dedicated `MemoryZramChannel`
+/ `NetworkQosChannel` files — functionality exists in `RamZramChannel` /
+`NetworkTweaksChannel`), §7.2 predictive frame scheduling, §12.5 profile
+selector UI, §12.6 telemetry dashboard.
+
+---
+
 *Generated for Game Launcher project — Android 14-16 target*
 *Last updated: 2026*

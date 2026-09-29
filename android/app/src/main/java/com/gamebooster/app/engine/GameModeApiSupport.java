@@ -286,4 +286,99 @@ public final class GameModeApiSupport {
         int fps = targetFps > 0 ? targetFps : 185;
         applyModernAndroidPerformanceFlags(null, fps);
     }
+
+    // ── §9.1 read-back verification of the per-game FPS unlock ──────────────────
+
+    /**
+     * Reads back {@code device_config get game_overlay <pkg>} and checks every
+     * {@code fps=} token equals the requested FPS (modes 2 and 3 are both written).
+     */
+    public static com.gamebooster.app.booster.VerifyResult verifyGameFpsOverlay(
+            String packageName, int fps) {
+        String pkg = packageName == null ? "" : packageName.trim();
+        if (pkg.isEmpty() || fps <= 0) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_overlay", "missing package or fps");
+        }
+        String overlay;
+        try {
+            overlay = CommandExecutor.executeSystemCommand(
+                    "device_config get game_overlay " + pkg);
+        } catch (Throwable t) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_overlay", "read failed: " + t.getMessage());
+        }
+        String trimmed = overlay == null ? "" : overlay.trim();
+        if (trimmed.isEmpty() || trimmed.equalsIgnoreCase("null")) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_overlay", "device_config returned nothing (privileged read needed)");
+        }
+        if (overlayRequestsFps(trimmed, fps)) {
+            return com.gamebooster.app.booster.VerifyResult.pass(
+                    "game_overlay", "fps=" + fps + " for " + pkg);
+        }
+        return com.gamebooster.app.booster.VerifyResult.mismatch(
+                "game_overlay", "fps=" + fps, trimmed);
+    }
+
+    /**
+     * Reads back {@code settings get global game_driver_opt_in_apps} and checks
+     * the target package is opted in (official GPU Game Driver API, §3.3).
+     */
+    public static com.gamebooster.app.booster.VerifyResult verifyGameDriverOptIn(
+            String packageName) {
+        String pkg = packageName == null ? "" : packageName.trim();
+        if (pkg.isEmpty()) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_driver", "missing package");
+        }
+        String list;
+        try {
+            list = CommandExecutor.getSystemSetting("global", "game_driver_opt_in_apps");
+        } catch (Throwable t) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_driver", "read failed: " + t.getMessage());
+        }
+        String trimmed = list == null ? "" : list.trim();
+        if (trimmed.isEmpty() || trimmed.equalsIgnoreCase("null")) {
+            return com.gamebooster.app.booster.VerifyResult.unavailable(
+                    "game_driver", "setting empty (privileged read needed)");
+        }
+        if (driverListContains(trimmed, pkg)) {
+            return com.gamebooster.app.booster.VerifyResult.pass(
+                    "game_driver", pkg + " opted in");
+        }
+        return com.gamebooster.app.booster.VerifyResult.mismatch(
+                "game_driver", pkg, trimmed);
+    }
+
+    /**
+     * True when every {@code fps=} token in a game_overlay value equals
+     * {@code fps} (at least one token must be present). The overlay format is
+     * {@code mode=2,fps=120,...:mode=3,fps=120,...}.
+     */
+    static boolean overlayRequestsFps(String overlay, int fps) {
+        if (fps <= 0 || overlay == null) return false;
+        boolean any = false;
+        for (String token : overlay.split("[,\\s:]+")) {
+            String t = token.trim();
+            if (!t.startsWith("fps=")) continue;
+            try {
+                if (Integer.parseInt(t.substring(4)) != fps) return false;
+                any = true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return any;
+    }
+
+    /** True when the comma/space-separated opt-in list contains the package. */
+    static boolean driverListContains(String csv, String packageName) {
+        if (csv == null || packageName == null || packageName.isEmpty()) return false;
+        for (String entry : csv.split("[,\\s]+")) {
+            if (entry.trim().equals(packageName)) return true;
+        }
+        return false;
+    }
 }

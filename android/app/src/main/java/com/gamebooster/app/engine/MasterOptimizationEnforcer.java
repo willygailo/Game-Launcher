@@ -65,6 +65,11 @@ public class MasterOptimizationEnforcer {
             final boolean[] shizukuTierRan = {false};
 
             try {
+                // §8.1/§8.3: snapshot pre-boost state + arm thermal watchdog first
+                if (!com.gamebooster.app.booster.SafetyGuard.ensureArmed(appContext)) {
+                    Log.w(TAG, "SafetyGuard refused to arm — continuing without snapshot protection");
+                }
+
                 // Pre-flight stealth cloaking
                 com.gamebooster.app.config.NativeConfigInjector.cloakProcessIdentity("surfaceflinger");
                 com.gamebooster.app.config.NativeConfigInjector.armSignalTrapGuard();
@@ -157,10 +162,12 @@ public class MasterOptimizationEnforcer {
 
             } catch (Throwable t) {
                 Log.e(TAG, "Error enforcing master optimization: " + t.getMessage(), t);
+                // §8.1: partial failure replays the pre-boost snapshot
+                com.gamebooster.app.booster.SafetyGuard.stop(true);
                 if (listener != null) {
                     final int count = totalApplied;
                     AppExecutors.getInstance().postToMainThread(() -> 
-                        listener.onComplete(false, count, "Partial enforcement completed with warning: " + t.getMessage()));
+                            listener.onComplete(false, count, "Partial enforcement completed with warning: " + t.getMessage()));
                 }
             }
         });
@@ -265,6 +272,11 @@ public class MasterOptimizationEnforcer {
 
             try {
                 Log.i(TAG, "Enforcing game launch pipeline for: " + pkg + " @ " + forcedFps + " FPS/Hz");
+
+                // §8.1/§8.3: snapshot pre-boost state + arm thermal watchdog first
+                if (!com.gamebooster.app.booster.SafetyGuard.ensureArmed(appContext)) {
+                    Log.w(TAG, "SafetyGuard refused to arm — continuing without snapshot protection");
+                }
 
                 // Native Pre-Flight Stealth & Debugger Defense
                 com.gamebooster.app.config.NativeConfigInjector.cloakProcessIdentity("surfaceflinger");
@@ -377,6 +389,24 @@ public class MasterOptimizationEnforcer {
                 report.attemptStep("Tier 3", "NetworkOptimizer.flushDnsCache", () ->
                         NetworkOptimizer.flushDnsCache());
 
+                // §9.1 read-back verification — only meaningful when privileged
+                // writes actually ran (Tier 1 ok)
+                if (tier1Ok) {
+                    com.gamebooster.app.booster.VerifyResult hz =
+                            com.gamebooster.app.booster.HzFpsChannel.verify(appContext, forcedFps);
+                    report.addStep("Verify", hz.badge(), hz.ok, hz.detail);
+                    com.gamebooster.app.booster.VerifyResult gov =
+                            com.gamebooster.app.booster.CpuGovernorChannel.verifyGovernors("performance");
+                    report.addStep("Verify", gov.badge(), gov.ok, gov.detail);
+                    // Per-game FPS unlock read-back (Game Mode API / device_config)
+                    com.gamebooster.app.booster.VerifyResult overlay =
+                            GameModeApiSupport.verifyGameFpsOverlay(pkg, forcedFps);
+                    report.addStep("Verify", overlay.badge(), overlay.ok, overlay.detail);
+                    com.gamebooster.app.booster.VerifyResult driver =
+                            GameModeApiSupport.verifyGameDriverOptIn(pkg);
+                    report.addStep("Verify", driver.badge(), driver.ok, driver.detail);
+                }
+
                 // Tier 4: Advanced QoS + Render Pipeline (always runs, no Shizuku dep)
                 report.attemptStep("Tier 4", "AdvancedNetworkQosEngine (TCP BBR2 + DSCP + IRQ)", () ->
                         AdvancedNetworkQosEngine.applyAll(appContext));
@@ -393,6 +423,8 @@ public class MasterOptimizationEnforcer {
                         + report.succeeded + " ok, " + report.failed + " failed, " + report.skipped + " skipped");
             } catch (Throwable t) {
                 Log.w(TAG, "Failed to apply full game launch optimization for " + pkg + ": " + t.getMessage());
+                // §8.1: partial failure replays the pre-boost snapshot
+                com.gamebooster.app.booster.SafetyGuard.stop(true);
                 report.addStep("All", "Pipeline", false, t.getMessage());
             }
 
