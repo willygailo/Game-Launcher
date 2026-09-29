@@ -358,6 +358,10 @@ public class GameCfgDialog {
                     GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
                     com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
                     com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
+                    // NEW MAP UPDATE: always sync new map on Apply for MLBB (Season 42+)
+                    if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+                        com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
+                    }
                     if (profile.isHardwareMaskEnabled()) {
                         com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkg);
                     }

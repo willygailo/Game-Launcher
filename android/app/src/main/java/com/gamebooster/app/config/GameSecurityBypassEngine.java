@@ -471,7 +471,32 @@ public final class GameSecurityBypassEngine {
         // 8. Clean up any corrupted asset folders that cause crashes
         purgeCorruptedAssetCaches(pkg);
 
-        Log.i(TAG, "✅ [SecurityBypass] 8-tier security bypass successfully enforced for " + pkg);
+        // 9. MLBB-specific: Re-lock ResCheckConf.xml & res_skip_patch.xml after every post-injection bypass.
+        //    Without this step, Moonton's bg integrity thread overwrites these files between sessions.
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            try {
+                String[] resDirs = {
+                    "/sdcard/Android/data/" + pkg + "/files/dragon2017/res",
+                    "/sdcard/Android/data/" + pkg + "/files/Dragon2017/res",
+                    "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/res",
+                    "/data/data/" + pkg + "/files/dragon2017/res"
+                };
+                StringBuilder resLock = new StringBuilder();
+                for (String d : resDirs) {
+                    resLock.append("test -f '" + d + "/ResCheckConf.xml' && chmod 444 '" + d + "/ResCheckConf.xml' 2>/dev/null; ");
+                    resLock.append("test -f '" + d + "/res_skip_patch.xml' && chmod 444 '" + d + "/res_skip_patch.xml' 2>/dev/null; ");
+                }
+                String lockCmd = resLock.toString();
+                if (!lockCmd.trim().isEmpty()) {
+                    executePrivileged(lockCmd);
+                    Log.i(TAG, "[Step 9] ResCheckConf.xml & res_skip_patch.xml re-locked (444) for " + pkg);
+                }
+            } catch (Throwable resErr) {
+                Log.w(TAG, "[Step 9] ResCheckConf re-lock warning: " + resErr.getMessage());
+            }
+        }
+
+        Log.i(TAG, "✅ [SecurityBypass] 9-tier security bypass successfully enforced for " + pkg);
         return true;
     }
 

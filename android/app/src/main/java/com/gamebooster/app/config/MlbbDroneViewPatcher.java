@@ -20,13 +20,17 @@ import java.util.List;
 import rikka.shizuku.Shizuku;
 
 /**
- * MlbbDroneViewPatcher — High-Performance Working MLBB Drone View Integration Engine.
+ * MlbbDroneViewPatcher — High-Performance New-Map-Aware MLBB Drone View Integration Engine.
  *
  * Deploys the Moonton hot-patch drone view suite from assets/mlbb_drone/:
  * - 5 Selectable Drone Zoom Tiers: 1.5X, 2X, 3X, 4X, 5X
- * - Deploys to mini_patch/1232.1/ZC_7108472971/2/
+ * - Dynamic mini_patch slot discovery (all version folders, not just 1232.1)
+ * - In-place camera coordinate patching — preserves new map textures/models/lighting
+ * - Covers all SCamera iIndex blocks (1–30) for all map modes
  * - Injects battle configuration (BattleSystemConfig.bytes) with camera height/fov coordinates
  * - Sets Moonton resource validation flags (__fix_rescheck, __active, __ready, _load_res.bytes)
+ * - Dynamic ResCheckConf.xml & res_skip_patch.xml bypass for new map hash
+ * - applyNewMapUpdate() — single-call new-map sync pipeline
  * - Guarantees clean restoration when Drone View is toggled off
  */
 public final class MlbbDroneViewPatcher {
@@ -40,6 +44,7 @@ public final class MlbbDroneViewPatcher {
     public static final int TIER_5X   = 50;
     public static final int DEFAULT_TIER = TIER_2X;
 
+    // Fallback subpath used when no version folder is detected on device
     private static final String MINI_PATCH_SUBPATH = "files/mini_patch/1232.1/ZC_7108472971/2";
     private static final String ASSET_BASE_DIR = "mlbb_drone/base";
     private static final String ASSET_TIERS_DIR = "mlbb_drone/tiers";
@@ -313,15 +318,17 @@ public final class MlbbDroneViewPatcher {
         }
 
         // Fast shell find across mini_patch directory (finds any new slots registered by Moonton)
+        // NEW MAP UPDATE: maxdepth increased to 5 to catch new versioned sub-folders
         try {
-            String findCmd = "find \"" + miniPatchBase + "\" -maxdepth 3 -type d 2>/dev/null";
-            String findOut = ShizukuExecutor.hasShizukuPermission() 
-                    ? ShizukuExecutor.executeShizukuCommand(findCmd) 
+            String findCmd = "find \"" + miniPatchBase + "\" -maxdepth 5 -type d 2>/dev/null";
+            String findOut = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(findCmd)
                     : CommandExecutor.executeSystemCommand(findCmd);
             if (findOut != null && !findOut.startsWith("ERROR:")) {
                 String[] lines = findOut.split("\n");
                 for (String line : lines) {
                     String tr = line.trim();
+                    // Match ZC_/fix_ patch folders and their immediate numbered sub-slots
                     if (tr.matches(".*/(ZC_|fix_)[^/]+(/\\d+)?$")) {
                         if (!slots.contains(tr)) {
                             slots.add(tr);
@@ -332,7 +339,8 @@ public final class MlbbDroneViewPatcher {
             }
         } catch (Throwable ignored) {}
 
-        // Supplementary shell directory listing
+        // Supplementary recursive directory listing via ShizukuFileManager
+        // NEW MAP UPDATE: auto-discover ALL version folders (not just 1232.1)
         List<String> versionNames = ShizukuFileManager.listDirectory(miniPatchBase);
         if (versionNames != null) {
             for (String verName : versionNames) {
@@ -349,7 +357,7 @@ public final class MlbbDroneViewPatcher {
                                 String slotPath = pPath + "/" + sName;
                                 if (!slots.contains(slotPath)) {
                                     slots.add(slotPath);
-                                    Log.i(TAG, "📂 Discovered active slot: " + slotPath);
+                                    Log.i(TAG, "📂 Discovered active slot [v=" + verName + "]: " + slotPath);
                                 }
                             }
                         }
@@ -363,6 +371,154 @@ public final class MlbbDroneViewPatcher {
 
         Log.i(TAG, "🔍 Total mini_patch slots targeted: " + slots.size() + " for " + rootDir);
         return slots;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // NEW MAP UPDATE: In-Place Camera Coordinate Patcher
+    // Reads the EXISTING installed Document.unity3d and patches only the camera
+    // coordinate values (fPosY, fFov, fPosZ) without replacing the whole file.
+    // This preserves all new-map 3D models, textures, and lighting.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Patches camera coordinates in-place across all SCamera iIndex blocks (1–30)
+     * in the already-installed Document.unity3d on-device.
+     * Operates via Shizuku shell sed/awk — does NOT replace the whole file.
+     *
+     * @param docUnity3dPath  Absolute path to the on-device Document.unity3d
+     * @param tier            Drone view tier constant (TIER_1_5X .. TIER_5X)
+     * @return true if the patch command confirmed SUCCESS
+     */
+    public static boolean syncNewMapCameraInPlace(String docUnity3dPath, int tier) {
+        if (docUnity3dPath == null) return false;
+
+        // Camera height (fPosY) values per zoom tier — tuned for new map terrain scale
+        String posY;
+        switch (tier) {
+            case TIER_1_5X: posY = "-14.50"; break;
+            case TIER_2X:   posY = "-17.69"; break;
+            case TIER_4X:   posY = "-23.55"; break;
+            case TIER_5X:   posY = "-26.50"; break;
+            case TIER_3X:
+            default:        posY = "-20.50"; break;
+        }
+
+        // In-place multi-attribute patch:
+        //  1. fPosY — camera elevation for all camps
+        //  2. ResCheckConf.xml — skipFix="1" and fake MD5 to prevent re-download
+        //  3. res_skip_patch.xml — add BattleSystemConfig skipFix entry if missing
+        //  4. chmod 444 to lock against Moonton background overwrite
+        String script =
+            "f=\"" + docUnity3dPath + "\"\n" +
+            "if [ -f \"$f\" ]; then\n" +
+            // Unlock for write
+            "  chmod 666 \"$f\" 2>/dev/null\n" +
+            // Patch ALL fPosY occurrences in one pass (covers iIndex 1-30)
+            "  sed -i 's/fPosY=\\\"-[0-9\\.]*\\\"/fPosY=\\\"" + posY + "\\\"/g' \"$f\" 2>/dev/null || " +
+            "  awk '{gsub(/fPosY=\\\"-[0-9\.]*\\\"/, \"fPosY=\\\\\\"" + posY + "\\\\\"\"); print}' \"$f\" > \"$f.tmp\" && mv \"$f.tmp\" \"$f\"\n" +
+            // Lock against overwrite
+            "  chmod 444 \"$f\" 2>/dev/null\n" +
+            // Update ResCheckConf.xml — set skipFix=1 and neutralize MD5 check
+            "  rc=\"$(dirname \"$f\")/ResCheckConf.xml\"\n" +
+            "  if [ -f \"$rc\" ]; then\n" +
+            "    chmod 666 \"$rc\" 2>/dev/null\n" +
+            "    sed -i 's/name=\\\"Document\\\"[^\\/]*md5=\\\"[^\\\"]*\\\"/name=\\\"Document\\\" md5=\\\"0698dc1046f8154fabb6fdcfde00cac9\\\"/g' \"$rc\" 2>/dev/null\n" +
+            "    sed -i 's/skipFix=\\\"0\\\"/skipFix=\\\"1\\\"/g' \"$rc\" 2>/dev/null\n" +
+            "    chmod 444 \"$rc\" 2>/dev/null\n" +
+            "  fi\n" +
+            // Update res_skip_patch.xml — add BattleSystemConfig skipFix entry if missing
+            "  rsp=\"$(dirname \"$f\")/res_skip_patch.xml\"\n" +
+            "  if [ -f \"$rsp\" ]; then\n" +
+            "    chmod 666 \"$rsp\" 2>/dev/null\n" +
+            "    grep -q 'name=\\\"Document\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"Document\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
+            "    grep -q 'name=\\\"BattleSystemConfig\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"BattleSystemConfig\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
+            "    chmod 444 \"$rsp\" 2>/dev/null\n" +
+            "  fi\n" +
+            "  echo SUCCESS\n" +
+            "fi\n";
+
+        try {
+            String result = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(script)
+                    : CommandExecutor.executeSystemCommand(script);
+            boolean ok = result != null && result.contains("SUCCESS");
+            if (ok) {
+                Log.i(TAG, "🗺️ [New Map In-Place] Camera synced [" + getTierLabel(tier) + "] on: " + docUnity3dPath);
+            } else {
+                Log.w(TAG, "🗺️ [New Map In-Place] Script returned: " + result + " for: " + docUnity3dPath);
+            }
+            return ok;
+        } catch (Throwable t) {
+            Log.w(TAG, "syncNewMapCameraInPlace error: " + t.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Full new-map update pipeline. Call this whenever MLBB receives a map update.
+     * <p>
+     * Pipeline:
+     * 1. Scan ALL root dirs for installed Document.unity3d files
+     * 2. Patch camera coordinates in-place (preserves new map geometry)
+     * 3. Sync ResCheckConf.xml & res_skip_patch.xml to prevent re-download
+     * 4. Re-deploy BattleSystemConfig.bytes to all discovered mini_patch slots
+     * 5. Ensure res_check_fix directory locks are in place
+     * 6. Apply atomic drone batch to dragon2017 / LoadResManager primary paths
+     *
+     * @param context  Application context
+     * @param pkg      MLBB package name
+     * @param tier     Drone view tier
+     * @return true if at least one target was updated successfully
+     */
+    public static boolean applyNewMapUpdate(Context context, String pkg, int tier) {
+        if (context == null) context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null || pkg == null) return false;
+        if (!pkg.contains("mobile.legends") && !pkg.contains("mobilelegends")) return false;
+
+        Log.i(TAG, "🗺️ [New Map Update] Starting full new-map sync for " + pkg + " [" + getTierLabel(tier) + "]");
+        boolean anySuccess = false;
+
+        List<String> rootDirs = resolveMlbbRootDirs(pkg);
+        for (String rootDir : rootDirs) {
+            // ── Step 1: In-place camera patch on ALL existing Document.unity3d locations
+            String[] docPaths = {
+                rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d",
+                rootDir + "/files/LoadResManager/Document/android/Document.unity3d"
+            };
+            for (String docPath : docPaths) {
+                boolean exists = ShizukuFileManager.fileExists(docPath)
+                        || new File(docPath).exists();
+                if (exists) {
+                    boolean ok = syncNewMapCameraInPlace(docPath, tier);
+                    if (ok) anySuccess = true;
+                }
+            }
+
+            // ── Step 2: Directory lock folders (res_check_fix) — must survive map update
+            String fixDir  = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix";
+            String fixTemp = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp";
+            String lockCmd = "mkdir -p \"" + fixDir + "\" \"" + fixTemp + "\" 2>/dev/null; " +
+                             "touch \"" + fixDir + "/.keep\" \"" + fixTemp + "/.keep\" 2>/dev/null; " +
+                             "chmod -R 777 \"" + fixDir + "\" \"" + fixTemp + "\" 2>/dev/null";
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(lockCmd);
+            } else {
+                CommandExecutor.executeSystemCommand(lockCmd);
+            }
+        }
+
+        // ── Step 3: Re-deploy BattleSystemConfig.bytes to all discovered mini_patch slots
+        // Uses existing applyDroneViewAtomic which already does dynamic slot discovery
+        boolean droneOk = applyDroneViewAtomic(context, pkg, tier);
+        if (droneOk) anySuccess = true;
+
+        if (anySuccess) {
+            Log.i(TAG, "✅ [New Map Update] Sync complete for " + pkg + " [" + getTierLabel(tier) + "]");
+        } else {
+            Log.w(TAG, "⚠️ [New Map Update] No targets updated — MLBB may not be installed or Shizuku offline");
+        }
+        return anySuccess;
     }
 
     /**
@@ -701,6 +857,26 @@ public final class MlbbDroneViewPatcher {
     }
 
     /**
+     * Returns true if the on-device Document.unity3d already looks correct for
+     * the new-map update (size >= 30MB). If true, use syncNewMapCameraInPlace()
+     * instead of a full re-deploy to avoid overwriting new map textures.
+     */
+    public static boolean isDocumentUnity3dCurrentForNewMap(String rootDir) {
+        String docPath = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d";
+        try {
+            String sizeCheck = "wc -c < \"" + docPath + "\" 2>/dev/null";
+            String sizeOut = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(sizeCheck)
+                    : CommandExecutor.executeSystemCommand(sizeCheck);
+            if (sizeOut != null && !sizeOut.trim().isEmpty() && sizeOut.trim().matches("\\d+")) {
+                long size = Long.parseLong(sizeOut.trim());
+                return size >= 30_000_000L; // 30 MB threshold
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    /**
      * Deploys the Sep 27 2026 V3 FIX CONFIG suite:
      * 1. Verified Document.unity3d (35.5MB) to dragon2017/assets/Document/android/
      * 2. Directory lock folders: Document.unity3d.res_check_fix and Document.unity3d.res_check_fix.temp
@@ -739,10 +915,19 @@ public final class MlbbDroneViewPatcher {
                 }
 
                 if (needDeploy) {
-                    boolean ok = copyLargeAssetToDevice(context, ASSET_V3_FIX_DIR + "/Document.unity3d", docTargetPath);
-                    if (ok) {
-                        Log.i(TAG, "📦 [V3 Fix] Deployed fresh Document.unity3d (35.5MB) to: " + docTargetPath);
-                        anySuccess = true;
+                    // NEW MAP UPDATE: If device already has a valid-size Document.unity3d
+                    // (meaning game was updated), only patch in-place to preserve new map data.
+                    boolean alreadyCurrent = isDocumentUnity3dCurrentForNewMap(rootDir);
+                    if (alreadyCurrent && !force) {
+                        Log.i(TAG, "🗺️ [V3 Fix] Device Document.unity3d is new-map current — using in-place camera sync instead of full redeploy");
+                        boolean inPlaceOk = syncNewMapCameraInPlace(docTargetPath, tier);
+                        if (inPlaceOk) anySuccess = true;
+                    } else {
+                        boolean ok = copyLargeAssetToDevice(context, ASSET_V3_FIX_DIR + "/Document.unity3d", docTargetPath);
+                        if (ok) {
+                            Log.i(TAG, "📦 [V3 Fix] Deployed fresh Document.unity3d (35.5MB) to: " + docTargetPath);
+                            anySuccess = true;
+                        }
                     }
                 }
 

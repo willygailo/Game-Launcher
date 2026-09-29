@@ -465,6 +465,56 @@ public class FloatingOverlayService extends Service {
                 switchHudMode(HudMode.HIDDEN_EDGE);
             });
         }
+
+        // 8. Re-Sync Map Button (MLBB New Map Season 42+ Drone & Radar Fixer)
+        //    Detects foreground MLBB package and re-applies new-map camera + ResCheck bypass
+        //    without the user needing to leave the game.
+        Button btnResyncMap = overlayView.findViewById(R.id.btn_hud_resync_map);
+        if (btnResyncMap != null) {
+            btnResyncMap.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                Toast.makeText(getApplicationContext(), "🗺️ Syncing New Map Drone & Radar...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        // Detect foreground MLBB package
+                        String fgPkg = com.gamebooster.app.games.ForegroundGameDetector
+                                .detectActiveGame(getApplicationContext());
+                        if (fgPkg == null || fgPkg.isEmpty()) {
+                            fgPkg = com.gamebooster.app.config.LobbyInjectionEngine.getActiveGamePackage();
+                        }
+                        final boolean isMlbb = fgPkg != null
+                                && (fgPkg.contains("mobile.legends") || fgPkg.contains("mobilelegends"));
+                        final String pkg = fgPkg;
+
+                        if (isMlbb) {
+                            // Re-apply new-map camera, radar, and anti-redownload keys
+                            com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
+                            // Re-apply drone view lock at current tier
+                            int tier = com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER;
+                            try {
+                                tier = getSharedPreferences("mlbb_drone_prefs", MODE_PRIVATE)
+                                        .getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER);
+                            } catch (Throwable ignored) {}
+                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(
+                                    getApplicationContext(), pkg, tier);
+                            AppExecutors.getInstance().postToMainThread(() ->
+                                    Toast.makeText(getApplicationContext(),
+                                            "✅ MLBB New Map Drone & Radar Synced!", Toast.LENGTH_SHORT).show());
+                        } else {
+                            AppExecutors.getInstance().postToMainThread(() ->
+                                    Toast.makeText(getApplicationContext(),
+                                            "⚠️ Open MLBB first, then tap Re-Sync", Toast.LENGTH_SHORT).show());
+                        }
+                    } catch (Throwable t) {
+                        android.util.Log.w("FloatingHUD", "Re-sync map error: " + t.getMessage());
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                Toast.makeText(getApplicationContext(),
+                                        "⚠️ Re-sync error — check Shizuku", Toast.LENGTH_SHORT).show());
+                    }
+                });
+            });
+        }
     }
 
     private void setupDragListeners() {

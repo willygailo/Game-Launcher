@@ -141,6 +141,54 @@ public class PostGameReportDialog {
         activeDialog = dialog;
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
+
+        // ── NEW MAP SYNC BUTTON (MLBB Season 42+ post-match re-patch) ──────────
+        // After every MLBB match, Moonton's integrity checker may have reset camera/radar
+        // config files mid-session. This button re-applies all new-map patches and clears
+        // the Vulkan pipeline cache so the next session launches with correct map settings.
+        Button btnSyncMap = view.findViewById(R.id.btn_sync_new_map);
+        boolean isMlbbSession = report.packageName != null
+                && (report.packageName.contains("mobile.legends")
+                    || report.packageName.contains("mobilelegends"));
+        if (btnSyncMap != null) {
+            btnSyncMap.setVisibility(isMlbbSession ? View.VISIBLE : View.GONE);
+            btnSyncMap.setOnClickListener(v -> {
+                btnSyncMap.setEnabled(false);
+                btnSyncMap.setText("⏳ SYNCING...");
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        String pkg = report.packageName;
+                        // 1. Re-apply new-map camera + radar + ResCheck bypass
+                        com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
+                        // 2. Clear stale Vulkan pipeline cache for new map terrain shaders
+                        com.gamebooster.app.engine.VulkanRayTracingEngine.clearVulkanPipelineCacheForNewMap(pkg);
+                        // 3. Re-apply drone view at saved tier
+                        try {
+                            int tier = context.getSharedPreferences("mlbb_drone_prefs",
+                                    android.content.Context.MODE_PRIVATE)
+                                    .getInt("drone_tier",
+                                            com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER);
+                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(
+                                    context.getApplicationContext(), pkg, tier);
+                        } catch (Throwable ignored) {}
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            btnSyncMap.setEnabled(true);
+                            btnSyncMap.setText("✅ MAP SYNCED");
+                            Toast.makeText(context.getApplicationContext(),
+                                    "✅ MLBB New Map Drone & Radar synced for next session!",
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Post-game new map sync error: " + t.getMessage(), t);
+                        AppExecutors.getInstance().postToMainThread(() -> {
+                            btnSyncMap.setEnabled(true);
+                            btnSyncMap.setText("⚠️ SYNC FAILED");
+                        });
+                    }
+                });
+            });
+        }
+
         dialog.show();
     }
 

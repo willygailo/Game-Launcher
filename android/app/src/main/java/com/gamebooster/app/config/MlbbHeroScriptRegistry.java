@@ -12,7 +12,7 @@ import java.util.Map;
  * Maps MLBB hero IDs and names → per-hero Lua script asset paths under
  * assets/lua/mlbb_heroes/<heroId>_<heroName>_script.lua
  *
- * Top 20 Season 42 "Starward Decade" meta heroes have active script files.
+ * Top 24 Season 42 "Starward Decade" meta heroes have active script files.
  * All other hero IDs return the generic fallback script path.
  *
  * 2026 New Patch Method: dispatches individual hero modifier commands covering
@@ -155,10 +155,12 @@ public final class MlbbHeroScriptRegistry {
         register(new HeroEntry(194, "Novaria",   null, "Mage",     false));
         register(new HeroEntry(195, "Udal",      null, "Tank",     false));
         register(new HeroEntry(197, "Chip",      null, "Support",  false));
-        register(new HeroEntry(200, "Lukas",     null, "Fighter",  false));
-        register(new HeroEntry(201, "Cici",      null, "Fighter",  false));
-        register(new HeroEntry(202, "Kalea",     null, "Tank",     false));
-        register(new HeroEntry(203, "Taara",     null, "Fighter",  false));
+        // ── Season 42 New Map Meta: Lukas, Cici, Kalea, Taara (upgraded to active scripts) ──
+        register(new HeroEntry(200, "Lukas",     "200_lukas_script.lua",     "Fighter",   true));
+        register(new HeroEntry(201, "Cici",      "201_cici_script.lua",      "Fighter",   true));
+        register(new HeroEntry(202, "Kalea",     "202_kalea_script.lua",     "Tank",      true));
+        register(new HeroEntry(203, "Taara",     "203_taara_script.lua",     "Fighter",   true));
+        // ── S42 Expansion: Suyou & Zhuxin already active above ──
     }
 
     private static void register(HeroEntry e) {
@@ -191,10 +193,14 @@ public final class MlbbHeroScriptRegistry {
         return e.assetPath();
     }
 
-    /** Returns all top-20 Season 42 meta hero entries with active scripts. */
+    /** Returns all top-24 Season 42 meta hero entries with active scripts. */
     public static HeroEntry[] getMetaHeroes() {
-        int[] metaIds = {103,107,108,111,114,120,128,130,142,154,
-                         155,160,167,175,193,196,198,199,204,205};
+        int[] metaIds = {
+            103,107,108,111,114,120,128,130,142,154,
+            155,160,167,175,193,196,198,199,204,205,
+            // S42 New Map additions
+            200,201,202,203
+        };
         HeroEntry[] result = new HeroEntry[metaIds.length];
         for (int i = 0; i < metaIds.length; i++) result[i] = sById.get(metaIds[i]);
         return result;

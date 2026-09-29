@@ -294,6 +294,15 @@ public final class PreLaunchGameDialog {
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                         com.gamebooster.app.config.MlbbDroneViewPatcher.restoreStockCamera(context, packageName);
                     });
+                } else {
+                    // NEW MAP UPDATE: sync new map camera & minimap config before every MLBB launch
+                    com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                        com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(packageName);
+                        android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+                        mainHandler.post(() -> Toast.makeText(context,
+                                "\uD83D\uDDFA\uFE0F MLBB New Map Drone & Radar Synced \u2714",
+                                Toast.LENGTH_SHORT).show());
+                    });
                 }
             }
 

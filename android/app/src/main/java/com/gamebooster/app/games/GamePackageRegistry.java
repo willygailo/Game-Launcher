@@ -135,6 +135,27 @@ public class GamePackageRegistry {
         KNOWN_GAMES.put("com.rockstargames.gtavc", new GameInfoSpec("GTA: Vice City", "Action", 120));
         KNOWN_GAMES.put("com.rockstargames.gta3", new GameInfoSpec("GTA III", "Action", 120));
         KNOWN_GAMES.put("com.sega.sonicdash", new GameInfoSpec("Sonic Dash", "Runner", 185));
+
+        // ── 2026 New Titles (Sep 2026 additions) ─────────────────────────────
+        KNOWN_GAMES.put("com.netease.mrevolution",         new GameInfoSpec("Marvel Rivals Mobile",         "Hero Shooter",    185));
+        KNOWN_GAMES.put("com.proximabeta.mf.uamo.kr",      new GameInfoSpec("Arena Breakout KR",             "Tactical FPS",    185));
+        KNOWN_GAMES.put("com.activision.callofduty.warzone2", new GameInfoSpec("Warzone Mobile 2.0",         "Battle Royale",   185));
+        KNOWN_GAMES.put("com.ea.game.apexlegendsmobile",   new GameInfoSpec("Apex Legends Mobile",           "Battle Royale",   185));
+        KNOWN_GAMES.put("com.ea.game.apexlegends",         new GameInfoSpec("Apex Legends Mobile (Global)",  "Battle Royale",   185));
+        KNOWN_GAMES.put("com.netmarble.mheroesgb",         new GameInfoSpec("Marvel Contest of Champions",   "Action",          185));
+        KNOWN_GAMES.put("com.pokemongo.niantic",           new GameInfoSpec("Pokémon GO",                    "AR",              120));
+        KNOWN_GAMES.put("com.tencent.tmgp.pokemon",        new GameInfoSpec("Pokémon UNITE",                 "MOBA",            185));
+        KNOWN_GAMES.put("com.garena.game.lbsg",            new GameInfoSpec("LIfe After (Garena)",           "Survival",        185));
+        KNOWN_GAMES.put("com.netease.lifeafter",           new GameInfoSpec("LifeAfter",                     "Survival",        185));
+        KNOWN_GAMES.put("com.tencent.tmgp.speedmobile",    new GameInfoSpec("Need for Speed: Mobile",        "Racing",          185));
+        KNOWN_GAMES.put("com.ea.games.nfs.wp",             new GameInfoSpec("Need for Speed: No Limits",     "Racing",          185));
+        KNOWN_GAMES.put("com.proxima.nightingale",         new GameInfoSpec("Nightingale Mobile",            "Survival RPG",    185));
+        KNOWN_GAMES.put("com.levelinfinite.ikun",          new GameInfoSpec("Monster Hunter NOW",            "Action RPG",      185));
+        KNOWN_GAMES.put("com.capcom.monhunmobile",         new GameInfoSpec("Monster Hunter Mobile",         "Action RPG",      185));
+        KNOWN_GAMES.put("com.garena.game.rox2",            new GameInfoSpec("Ragnarok Origin 2",             "MMORPG",          185));
+        KNOWN_GAMES.put("com.square_enix.android.ffviiec", new GameInfoSpec("FINAL FANTASY VII: EC",         "RPG",             185));
+        KNOWN_GAMES.put("com.squareenix.ffbe",             new GameInfoSpec("FINAL FANTASY Brave Exvius",    "RPG",             120));
+        KNOWN_GAMES.put("com.nhnent.HANGAME.soccer2",      new GameInfoSpec("Football Strike 2026",          "Sports",          185));
     }
 
     public static boolean isSupportedGame(String packageName) {

@@ -167,6 +167,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectPubgmSovereignOverdriveBypass(String path);
     public static native boolean nativeInjectCodmSovereignOverdriveBypass(String path);
     public static native boolean nativeInjectMlbbUniversalZeroDelayCombo(String path);
+    // 2026 New Map Update Sync (Season 42+ / Sep 2026 Map Refresh)
+    public static native boolean nativeInjectMlbbNewMapUpdate(String path);
 
     /**
      * 2026 New Patch Method: Injects per-hero script modifiers (damage, cooldown, range, speed, etc.)
@@ -4928,6 +4930,66 @@ public class NativeConfigInjector {
             "TouchPollingRate=1000", "HitRegSyncRate=1000"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[CodmS8FullSweep]");
+    }
+
+    /**
+     * Injects all new-map update config keys into every writable MLBB config path.
+     * Call this from MlbbConfigPatcher.applyMlbbNewMapUpdateConfig() on new map patch.
+     *
+     * @param pkg  MLBB package name
+     * @return true if at least one path was successfully patched
+     */
+    public static boolean injectMlbbNewMapUpdate(String pkg) {
+        if (pkg == null || pkg.trim().isEmpty()) return false;
+        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
+        if (paths == null || paths.isEmpty()) return false;
+        boolean anySuccess = false;
+        for (String path : paths) {
+            if (path == null) continue;
+            String lower = path.toLowerCase().replace('\\', '/');
+            // Skip read-only / integrity-checked paths
+            if (lower.contains("/assets/version") || lower.contains("/assets/comlibs")
+                    || lower.contains("md5.xml") || lower.contains("realversion")
+                    || lower.contains("splitlib") || lower.contains("mola_config")) {
+                continue;
+            }
+            if (lower.endsWith(".xml") && lower.contains("/assets/")) continue;
+            if (!isWritableModifierTarget(lower)) continue;
+            try {
+                ensureNativeLoaded();
+                if (sNativeLibraryLoaded && nativeInjectMlbbNewMapUpdate(path)) {
+                    anySuccess = true;
+                    continue;
+                }
+            } catch (Throwable ignored) {}
+            // Java fallback: inject keys directly via ConfigFileHelper
+            String[] keys = {
+                "DefaultBattleMapId=10", "BattleMapIdOverride=10", "EnableNewMapTerrain=1",
+                "NewMapTerrainSync=1", "NewMapLightingSync=1", "CameraHeight=4",
+                "DroneView=1", "DroneViewEnabled=1", "FOVBoost=1.75", "PanoramicFOV=1.75",
+                "DroneFOV=180", "MaxFOV=180", "FieldOfView=180", "CameraDistance=180",
+                "WideCameraAngle=1", "CameraTerrainClipBypass=1", "NewMapCameraSync=1",
+                "BushOcclusionCulling=0", "RiverBushVision=1", "RiverExpanseVision=1",
+                "WesternExpanseVision=1", "CelestialPalaceVision=1", "SanctumIslandVision=1",
+                "JungleCampVisionRadius=1.5", "NewMapFogOfWarBypass=1", "NewMapBushCullingBypass=1",
+                "GrassCoverBypass=1", "AutoMapGlitch3s=1", "MapPulseInterval=3",
+                "EnemyPositionSyncPulse=3000", "FowMicroPulseDuration=250", "FowProgressiveReveal=1",
+                "VisionPulseRadiusBoost=1.5", "VisionRangeBoost=1.4", "MinimapEnemyIconRetention=3000",
+                "MinimapGhostTracking=1", "MinimapEnemyPriority=1", "IconFadeDuration=3000",
+                "MapScale=1.35", "MapVisibilityRange=2.0", "TurtleSpawnMapSync=1",
+                "LordSpawnMapSync=1", "ObjectiveVisionRange=9999", "ObjectiveTrackingSync=1",
+                "JungleObjectiveGhostTrack=3000", "MageCampVisionSync=1", "CreepCampVisionRadius=1.5",
+                "NewMapCreepSync=1", "SkipMapResCheck=1", "MapResCheckBypass=1",
+                "NewMapResSkipFix=1", "TouchPollingRate=1000", "TouchZeroDelay=1",
+                "ZeroInputLag=1", "InputBufferRate=1000", "HitRegSyncRate=1000",
+                "FrameSyncDamage=1", "bFramePacingEnabled=True", "AllowOcclusionQueries=1",
+                "NewMapGPUTerrainSync=1", "VulkanNewMapPipelineCache=1"
+            };
+            if (ConfigFileHelper.patchKeys(path, keys, "[MlbbNewMapUpdate]")) {
+                anySuccess = true;
+            }
+        }
+        return anySuccess;
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

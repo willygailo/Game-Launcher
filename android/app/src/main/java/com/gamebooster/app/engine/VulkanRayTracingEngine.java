@@ -77,4 +77,62 @@ public final class VulkanRayTracingEngine {
             }
         });
     }
+
+    /**
+     * Clears the Vulkan pipeline cache for the specified game package.
+     *
+     * MLBB's new map update ships new terrain shaders. If the old pipeline cache is reused,
+     * the game renders with mismatched shader state → graphical glitches (z-fighting, black
+     * terrain patches) on the new map. Clearing the cache forces a fresh shader compilation
+     * on next launch, which eliminates these artifacts.
+     *
+     * Should be called immediately after applyMlbbNewMapUpdateConfig() or from
+     * GameUpdateMonitorService when ACTION_PACKAGE_REPLACED is received for MLBB.
+     */
+    public static void clearVulkanPipelineCacheForNewMap(String packageName) {
+        if (packageName == null || packageName.isEmpty()) return;
+        final String pkg = packageName.trim().toLowerCase(java.util.Locale.ROOT);
+
+        AppExecutors.getInstance().executeCommand(() -> {
+            try {
+                // Known Vulkan pipeline cache directories used by MLBB & Unity engine on Android 13-16
+                String[] cacheDirs = {
+                    "/data/data/" + pkg + "/cache/vulkan_pipeline",
+                    "/data/data/" + pkg + "/cache/shaders",
+                    "/data/data/" + pkg + "/cache/vk_pipeline",
+                    "/data/user/0/" + pkg + "/cache/vulkan_pipeline",
+                    "/data/user/0/" + pkg + "/cache/shaders",
+                    "/sdcard/Android/data/" + pkg + "/cache/vulkan_pipeline",
+                    "/sdcard/Android/data/" + pkg + "/cache/shaders",
+                    // Unity-specific: il2cpp shader cache
+                    "/data/data/" + pkg + "/files/il2cpp/cache",
+                    "/data/data/" + pkg + "/files/il2cpp/metadata/global-metadata.dat.tmp"
+                };
+
+                StringBuilder sb = new StringBuilder();
+                for (String d : cacheDirs) {
+                    sb.append("rm -rf '").append(d).append("' 2>/dev/null; ");
+                }
+
+                String cmd = sb.toString();
+                if (!cmd.trim().isEmpty()) {
+                    if (ShizukuExecutor.hasShizukuPermission()) {
+                        ShizukuExecutor.executeShizukuCommand(cmd);
+                    } else {
+                        CommandExecutor.executeSystemCommand(cmd);
+                    }
+                    Log.i(TAG, "[VulkanCache] Pipeline cache cleared for new-map update: " + pkg);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "[VulkanCache] Pipeline cache clear warning: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Generic pipeline cache invalidation for any package (called from GameUpdateMonitorService).
+     */
+    public static void invalidatePipelineCacheForPackage(String packageName) {
+        clearVulkanPipelineCacheForNewMap(packageName);
+    }
 }

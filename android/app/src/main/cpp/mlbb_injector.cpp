@@ -3207,3 +3207,94 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUniversalZe
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbUniversalZeroDelayCombo");
 }
+
+// =============================================================================
+// ─── MLBB: New Map Update Sync (Season 42+ / Sep 2026 Map Refresh) ────────────
+// Covers new map terrain IDs 10-15 (RiverExpanse, WesternExpanse,
+// CelestialPalace, SanctumIsland expansion zones), updated bush/jungle
+// vision radii, 3-second ghost minimap pulse, SCamera iIndex 1-30 drone
+// coords, and new BattleSystemConfig camera sync keys.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbNewMapUpdate(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── New Map Terrain & Mode ID Coverage (iMapId 1-15) ──
+        {"DefaultBattleMapId",              "10"},
+        {"BattleMapIdOverride",             "10"},
+        {"EnableNewMapTerrain",             "1"},
+        {"NewMapTerrainSync",               "1"},
+        {"NewMapLightingSync",              "1"},
+
+        // ── Camera Elevation Sync for New Map (all SCamera iIndex 1-30) ──
+        {"CameraHeight",                    "4"},
+        {"DroneView",                       "1"},
+        {"DroneViewEnabled",                "1"},
+        {"FOVBoost",                        "1.75"},
+        {"PanoramicFOV",                    "1.75"},
+        {"DroneFOV",                        "180"},
+        {"MaxFOV",                          "180"},
+        {"FieldOfView",                     "180"},
+        {"CameraDistance",                  "180"},
+        {"WideCameraAngle",                 "1"},
+        {"CameraTerrainClipBypass",         "1"},
+        {"NewMapCameraSync",                "1"},
+
+        // ── New Map Bush / River Vision Override ──
+        {"BushOcclusionCulling",            "0"},
+        {"RiverBushVision",                 "1"},
+        {"RiverExpanseVision",              "1"},
+        {"WesternExpanseVision",            "1"},
+        {"CelestialPalaceVision",           "1"},
+        {"SanctumIslandVision",             "1"},
+        {"JungleCampVisionRadius",          "1.5"},
+        {"NewMapFogOfWarBypass",            "1"},
+        {"NewMapBushCullingBypass",         "1"},
+        {"GrassCoverBypass",                "1"},
+
+        // ── 3-Second Ghost Minimap Pulse (new map zone markers) ──
+        {"AutoMapGlitch3s",                 "1"},
+        {"MapPulseInterval",                "3"},
+        {"EnemyPositionSyncPulse",          "3000"},
+        {"FowMicroPulseDuration",           "250"},
+        {"FowProgressiveReveal",            "1"},
+        {"VisionPulseRadiusBoost",          "1.5"},
+        {"VisionRangeBoost",                "1.4"},
+        {"MinimapEnemyIconRetention",       "3000"},
+        {"MinimapGhostTracking",            "1"},
+        {"MinimapEnemyPriority",            "1"},
+        {"IconFadeDuration",                "3000"},
+        {"MapScale",                        "1.35"},
+        {"MapVisibilityRange",              "2.0"},
+
+        // ── New Map Objective Spawn Coords (Turtle/Lord pit relocated) ──
+        {"TurtleSpawnMapSync",              "1"},
+        {"LordSpawnMapSync",                "1"},
+        {"ObjectiveVisionRange",            "9999"},
+        {"ObjectiveTrackingSync",           "1"},
+        {"JungleObjectiveGhostTrack",       "3000"},
+
+        // ── New Mage & Creep Camp Locations (Season 42 map expansion) ──
+        {"MageCampVisionSync",              "1"},
+        {"CreepCampVisionRadius",           "1.5"},
+        {"NewMapCreepSync",                 "1"},
+
+        // ── Anti-Redownload / Map Hash Bypass ──
+        {"SkipMapResCheck",                 "1"},
+        {"MapResCheckBypass",               "1"},
+        {"NewMapResSkipFix",                "1"},
+
+        // ── Frame Timing & Input (new map render pipeline) ──
+        {"TouchPollingRate",                "1000"},
+        {"TouchZeroDelay",                  "1"},
+        {"ZeroInputLag",                    "1"},
+        {"InputBufferRate",                 "1000"},
+        {"HitRegSyncRate",                  "1000"},
+        {"FrameSyncDamage",                 "1"},
+        {"bFramePacingEnabled",             "True"},
+        {"AllowOcclusionQueries",           "1"},
+        {"NewMapGPUTerrainSync",            "1"},
+        {"VulkanNewMapPipelineCache",       "1"},
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbNewMapUpdate");
+}

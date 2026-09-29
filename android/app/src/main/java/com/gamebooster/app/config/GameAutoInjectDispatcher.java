@@ -71,6 +71,8 @@ public final class GameAutoInjectDispatcher {
                 MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg);
                 MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg);
                 MlbbConfigPatcher.applyMlbbUniversalZeroDelayCombo(pkg);
+                // NEW MAP UPDATE (Season 42+): sync camera, radar, and anti-redownload keys
+                MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
                 int mlbbDroneTier = MlbbDroneViewPatcher.DEFAULT_TIER;
                 boolean mlbbDroneEnabled = true;
                 try {

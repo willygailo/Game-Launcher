@@ -208,6 +208,14 @@ public final class LobbyInjectionEngine {
                                     ? "🎯 [Stage 2 In-Lobby] MLBB Drone View [" + MlbbDroneViewPatcher.getTierLabel(tier) + "] locked successfully"
                                     : "⚠️ [Stage 2 In-Lobby] MLBB Drone View lock returned false");
                         }
+
+                        // NEW MAP UPDATE: also re-sync new map camera & radar in lobby (Season 42+)
+                        try {
+                            MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
+                            Log.i(TAG, "🗺️ [Stage 2 In-Lobby] MLBB new-map camera+radar synced for " + pkg);
+                        } catch (Throwable mapErr) {
+                            Log.w(TAG, "Stage 2 new-map sync warning: " + mapErr.getMessage());
+                        }
                     } catch (Throwable droneErr) {
                         Log.w(TAG, "Stage 2 MLBB Drone View reinject warning: " + droneErr.getMessage());
                     }

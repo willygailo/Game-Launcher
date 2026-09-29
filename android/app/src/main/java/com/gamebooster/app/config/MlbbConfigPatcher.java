@@ -144,6 +144,8 @@ public class MlbbConfigPatcher {
         applyAllHeroGodSuite2026(packageName);
         applyMlbbAllRolesNoLimitSuite(packageName);
         applyMlbbAllItemsNoLimitSuite(packageName);
+        // NEW MAP UPDATE: always sync new map camera & minimap keys on full overdrive launch
+        applyMlbbNewMapUpdateConfig(packageName);
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbGodModeFullOverdrive(path);
         }
@@ -1868,5 +1870,28 @@ public class MlbbConfigPatcher {
         } catch (Throwable ignored) {}
         MlbbDroneViewPatcher.deployV3FixConfig(ConfigBackupManager.getAppContext(), packageName, tier, true);
     }
-}
 
+    /**
+     * MLBB New Map Update Config Sync (Season 42+ / Sep 2026 Map Refresh).
+     * Injects all new-map camera, minimap radar, vision, objective, and
+     * anti-redownload keys into every writable MLBB config path.
+     * Also triggers in-place camera sync on any installed Document.unity3d.
+     */
+    public static void applyMlbbNewMapUpdateConfig(String packageName) {
+        if (packageName == null) return;
+        // 1. Native/Java config key injection (PlayerPrefs XML + config files)
+        boolean configOk = NativeConfigInjector.injectMlbbNewMapUpdate(packageName);
+        // 2. In-place camera coordinate sync on installed Document.unity3d
+        int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
+        try {
+            android.content.Context ctx = ConfigBackupManager.getAppContext();
+            if (ctx != null) {
+                android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
+                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+            }
+        } catch (Throwable ignored) {}
+        boolean droneOk = MlbbDroneViewPatcher.applyNewMapUpdate(
+                ConfigBackupManager.getAppContext(), packageName, tier);
+        Log.i(TAG, "🗺️ [MLBB New Map Update] configKeys=" + configOk + " droneSync=" + droneOk + " for " + packageName);
+    }
+}

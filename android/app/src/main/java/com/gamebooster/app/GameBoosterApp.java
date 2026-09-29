@@ -139,6 +139,15 @@ public class GameBoosterApp extends Application {
                 Log.w(TAG, "AutoGameMonitorService start error: " + t.getMessage());
             }
 
+            // G2. Start GameUpdateMonitorService — auto-patch when Play Store updates games.
+            // This is critical: without it, every game update silently breaks all patches.
+            try {
+                com.gamebooster.app.services.GameUpdateMonitorService.startIfNeeded(appCtx);
+                Log.i(TAG, "✅ GameUpdateMonitorService started — auto-patch on game update active");
+            } catch (Throwable t) {
+                Log.w(TAG, "GameUpdateMonitorService start error: " + t.getMessage());
+            }
+
             // H. Initialize /storage/emulated/0/GameLauncher/mods/ staging folders for MT-free drop-in
             try {
                 com.gamebooster.app.config.GameModAutoSyncEngine.initializeStagingDirectory();
