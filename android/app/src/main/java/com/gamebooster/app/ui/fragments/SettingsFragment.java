@@ -80,7 +80,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 public class SettingsFragment extends Fragment implements ShizukuManager.ShizukuStateListener {
+
+    // Activity Result API launcher — replaces deprecated startActivityForResult for SAF tree picker
+    private ActivityResultLauncher<Intent> safTreeLauncher;
 
     private LoopingVideoBackgroundView videoSettingsBg;
 
@@ -221,6 +227,29 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         return true;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Register SAF tree launcher — MUST happen before onStart per Activity Result API contract
+        safTreeLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == android.app.Activity.RESULT_OK
+                        && result.getData() != null) {
+                    android.net.Uri treeUri = result.getData().getData();
+                    if (treeUri != null && getContext() != null) {
+                        boolean ok = com.gamebooster.app.saf.SafStorageManager
+                            .saveAndPersistUri(getContext(), "com.mobile.legends", treeUri);
+                        refreshSafStatus();
+                        Toast.makeText(getContext(),
+                            ok ? "SAF access granted!" : "Failed to persist SAF URI",
+                            Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        );
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -303,7 +332,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (getActivity() != null) {
                     Intent intent = com.gamebooster.app.saf.SafStorageManager.createOpenDocumentTreeIntent("com.mobile.legends");
                     try {
-                        getActivity().startActivityForResult(intent, com.gamebooster.app.saf.SafStorageManager.REQUEST_CODE_SAF_TREE);
+                        safTreeLauncher.launch(intent);
                         Toast.makeText(getContext(), "Piliin ang 'Use this folder' sa Mobile Legends folder", Toast.LENGTH_LONG).show();
                     } catch (Throwable t) {
                         Toast.makeText(getContext(), "Hindi mabuksan ang system folder picker: " + t.getMessage(), Toast.LENGTH_SHORT).show();
