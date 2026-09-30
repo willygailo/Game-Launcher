@@ -36,8 +36,7 @@ public final class SafStorageManager {
     private static final String KEY_SAF_URI_PREFIX = "saf_tree_uri_";
     private static final String KEY_GLOBAL_DATA_URI = "saf_global_data_uri";
 
-    /** @deprecated No longer needed externally — SAF picker now uses Activity Result API launcher. */
-    @Deprecated
+    /** Request code for legacy Activity Result SAF tree picker fallback. */
     public static final int REQUEST_CODE_SAF_TREE = 8842;
 
 

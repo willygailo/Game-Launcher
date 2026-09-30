@@ -222,7 +222,7 @@ public class GameUpdateMonitorService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("GameBooster — Update Monitor")
                 .setContentText(text)
-                .setSmallIcon(R.drawable.ic_notification)
+                .setSmallIcon(android.R.drawable.stat_sys_warning)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
                 .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_DEFERRED)
@@ -236,7 +236,7 @@ public class GameUpdateMonitorService extends Service {
             nm.notify(NOTIF_ID + 1, new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notification)
+                    .setSmallIcon(android.R.drawable.stat_sys_warning)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .build());

@@ -1,7 +1,8 @@
 #!/system/bin/sh
 # ─────────────────────────────────────────────────────────────────────────────
 # base_perf.sh — Universal Game Booster (auto-loaded on every game launch)
-# Replaces {TARGET_HZ} at runtime with per-game Hz from GameProfilePreferences
+# 185fps force unlock — multi-vendor kernel + SurfaceFlinger + SwappyGL
+# Updated: Sep 30 2026 — fixed {TARGET_HZ} placeholder → hardcoded 185
 # ─────────────────────────────────────────────────────────────────────────────
 
 # CPU — performance governor on ALL cpufreq policies
@@ -42,13 +43,42 @@ stop vendor.thermal-engine 2>/dev/null
 setprop persist.sys.thermal.ignore 1
 setprop vendor.thermal.config "" 2>/dev/null
 
-# Hz enforcement — hardware adaptive
-settings put system peak_refresh_rate {TARGET_HZ}.0 2>/dev/null
-settings put system min_refresh_rate {TARGET_HZ}.0 2>/dev/null
+# ── 185fps Force Unlock — Layer 1: System Settings ───────────────────────────
+settings put system peak_refresh_rate 185.0 2>/dev/null
+settings put system min_refresh_rate 185.0 2>/dev/null
 settings put system match_content_frame_rate 0 2>/dev/null
-setprop debug.sf.fps_limit {TARGET_HZ}
-setprop persist.sys.NV_FPSLIMIT {TARGET_HZ}
-service call SurfaceFlinger 1035 i32 {TARGET_HZ} 2>/dev/null
+settings put global game_mode_config 0 2>/dev/null
+
+# ── 185fps Force Unlock — Layer 2: SurfaceFlinger props + binder calls ───────
+setprop debug.sf.fps_limit 185
+setprop persist.sys.NV_FPSLIMIT 185
+setprop persist.game_mode.performance.fps 185
+# SurfaceFlinger binder: 1034=setDesiredDisplayModeSpecs, 1035=setFrameRate
+service call SurfaceFlinger 1034 i32 185 2>/dev/null
+service call SurfaceFlinger 1035 i32 185 2>/dev/null
+# 1008=setActiveConfig (older Qualcomm BSP), 1029=setDisplayMode (Samsung BSP)
+service call SurfaceFlinger 1008 i32 185 2>/dev/null
+service call SurfaceFlinger 1029 i32 185 2>/dev/null
+
+# ── 185fps Force Unlock — Layer 3: SwappyGL / EGL swap disable ───────────────
+setprop swappy.disable 1
+setprop debug.swappy.swap_interval 0
+setprop debug.egl.swapinterval 0
+setprop debug.sf.disable_backpressure 1
+setprop debug.sf.latch_unsignaled 1
+
+# ── 185fps Force Unlock — Layer 4: Kernel sysfs nodes (all chipset vendors) ──
+# MediaTek (MTK)
+echo 185 > /sys/devices/platform/mtk_disp_mgr.0/refresh_rate 2>/dev/null
+echo 185 > /proc/mtk_display/fps 2>/dev/null
+echo 185 > /sys/devices/virtual/graphics/fb0/dynamic_fps 2>/dev/null
+# Qualcomm (Snapdragon)
+echo 185 > /sys/class/graphics/fb0/dynamic_fps 2>/dev/null
+echo 185 > /sys/devices/platform/soc/soc:qcom,dsi-display-primary/max_fps 2>/dev/null
+# Samsung Exynos
+echo 185 > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev/null
+# Generic DRM
+echo 185 > /sys/class/drm/card0-DSI-1/max_fps 2>/dev/null
 
 # SurfaceFlinger — HW composition, disable idle timer
 setprop debug.sf.hw 1
@@ -78,3 +108,8 @@ sysctl -w net.ipv4.tcp_low_latency=1 2>/dev/null
 # Scheduler tweaks
 setprop debug.binder.slow_dispatch_threshold 0
 setprop debug.binder.slow_delivery_threshold 0
+
+# Android GameMode API clamp removal (API 33+)
+cmd game set --mode 2 --user 0 com.mobile.legends 2>/dev/null
+cmd game set --mode 2 --user 0 com.activision.callofduty.shooter 2>/dev/null
+cmd game set --mode 2 --user 0 com.tencent.ig 2>/dev/null

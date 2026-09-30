@@ -284,6 +284,27 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- ── 2026 AC Bypass Status Summary Card ── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="#1A00FF88"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/tv_bypass_status_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:lineSpacingMultiplier="1.3"
+            android:text="🛡️ 2026 AC Bypass Status — loading..."
+            android:textColor="#00FF88"
+            android:textSize="9.5sp" />
+
+    </LinearLayout>
+
     <!-- Footer Branding -->
     <TextView
         android:layout_width="match_parent"
@@ -293,6 +314,19 @@
         android:text="⚡ GAME LAUNCHER PRO • ULTRA-HIGH REFRESH SUITE"
         android:textColor="@color/text_muted"
         android:textSize="9sp" />
+
+    <!-- MLBB Season 42+: New Map Post-Match Re-Sync Button -->
+    <Button
+        android:id="@+id/btn_sync_new_map"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/btn_cyber_dark"
+        android:text="🗺️ SYNC NEW MAP (MLBB)"
+        android:textColor="@color/accent_neon_green"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <!-- Action Buttons Row -->
     <LinearLayout

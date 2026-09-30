@@ -469,7 +469,7 @@
                     android:padding="0dp" />
             </LinearLayout>
 
-            <!-- Row 3: Shadow Boost + Screenshot -->
+            <!-- Row 3: Shadow Boost + Map Re-Sync (MLBB new map) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -489,14 +489,34 @@
                     android:textStyle="bold"
                     android:padding="0dp" />
 
+                <!-- MLBB Season 42+: Re-sync new map camera/radar without leaving match -->
                 <Button
-                    android:id="@+id/btn_hud_screenshot"
+                    android:id="@+id/btn_hud_resync_map"
                     android:layout_width="0dp"
                     android:layout_height="27dp"
                     android:layout_weight="1"
                     android:layout_marginStart="3dp"
                     android:background="@drawable/hud_btn_cyber_dark"
-                    android:text="📸 Screen"
+                    android:text="🗺️ Re-Sync Map"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:padding="0dp" />
+            </LinearLayout>
+
+            <!-- Row 4: Screenshot -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_hud_screenshot"
+                    android:layout_width="match_parent"
+                    android:layout_height="27dp"
+                    android:background="@drawable/hud_btn_cyber_dark"
+                    android:text="📸 Screenshot"
                     android:textColor="@color/text_primary"
                     android:textSize="9sp"
                     android:textStyle="bold"

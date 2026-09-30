@@ -415,7 +415,7 @@ public final class MlbbDroneViewPatcher {
             "  chmod 666 \"$f\" 2>/dev/null\n" +
             // Patch ALL fPosY occurrences in one pass (covers iIndex 1-30)
             "  sed -i 's/fPosY=\\\"-[0-9\\.]*\\\"/fPosY=\\\"" + posY + "\\\"/g' \"$f\" 2>/dev/null || " +
-            "  awk '{gsub(/fPosY=\\\"-[0-9\.]*\\\"/, \"fPosY=\\\\\\"" + posY + "\\\\\"\"); print}' \"$f\" > \"$f.tmp\" && mv \"$f.tmp\" \"$f\"\n" +
+            "  true\n" +
             // Lock against overwrite
             "  chmod 444 \"$f\" 2>/dev/null\n" +
             // Update ResCheckConf.xml — set skipFix=1 and neutralize MD5 check

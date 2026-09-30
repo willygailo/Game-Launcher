@@ -3,6 +3,10 @@ package com.gamebooster.app.config;
 import android.content.Context;
 import android.util.Log;
 
+import com.gamebooster.app.engine.FpsForceUnlockEngine;
+import com.gamebooster.app.engine.PlayIntegrityBypassEngine;
+import com.gamebooster.app.engine.AceContainerEvasionEngine;
+
 /**
  * Compatibility bridge for older callers. Game data is never changed by the
  * launcher; callers can retain this API without mutating another app's files,
@@ -46,6 +50,32 @@ public final class GameAutoInjectDispatcher {
         String pkg = packageName.trim().toLowerCase();
         try {
             Context ctx = context != null ? context : ConfigBackupManager.getAppContext();
+
+            // ── 2026: FPS 185 Force Unlock (all layers — before game-specific patchers) ──
+            try {
+                FpsForceUnlockEngine.applyFps185ForceUnlock(ctx, pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "FpsForceUnlockEngine note for " + pkg + ": " + t.getMessage());
+            }
+
+            // ── 2026: Play Integrity Bypass + DenyList enforcement ──
+            try {
+                PlayIntegrityBypassEngine.applyFullBypassSuite(ctx, pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "PlayIntegrityBypassEngine note for " + pkg + ": " + t.getMessage());
+            }
+
+            // ── 2026: Container Evasion (warn if running in VirtualAPP/container) ──
+            try {
+                AceContainerEvasionEngine.ContainerStatus containerStatus =
+                    AceContainerEvasionEngine.applyContainerEvasion(pkg);
+                if (containerStatus == AceContainerEvasionEngine.ContainerStatus.CONTAINER_DETECTED) {
+                    Log.w(TAG, "[ContainerWarning] Game running in container — ACE may flag this device!");
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "AceContainerEvasionEngine note for " + pkg + ": " + t.getMessage());
+            }
+
             try {
                 com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(ctx, pkg);
             } catch (Throwable t) {
@@ -155,6 +185,14 @@ public final class GameAutoInjectDispatcher {
             // Universal Native Combat & Security Lock
             NativeConfigInjector.injectAllConfigsForPackage(pkg, 185);
             GameSecurityBypassEngine.postInjectionBypassAndLock(pkg);
+
+            // ── 2026: Deferred FPS re-apply at T+3s (prevents OEM reverting mid-launch) ──
+            try {
+                FpsForceUnlockEngine.applyFps185ForceUnlockDeferred(ctx, pkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "FpsForceUnlock deferred note: " + t.getMessage());
+            }
+
             Log.i(TAG, "✅ [Full Inject Complete] All overrides injected & locked for " + pkg);
 
         } catch (Throwable t) {

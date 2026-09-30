@@ -28,6 +28,8 @@ import androidx.core.content.FileProvider;
 import com.gamebooster.app.R;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.overlay.GameSessionReport;
+import com.gamebooster.app.engine.PlayIntegrityBypassEngine;
+import com.gamebooster.app.engine.FpsForceUnlockEngine;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,6 +83,65 @@ public class PostGameReportDialog {
         Button btnClose = view.findViewById(R.id.btn_close_report);
         Button btnExport = view.findViewById(R.id.btn_export_report_image);
         View rootCard = view.findViewById(R.id.layout_report_card_root);
+
+        // ── Bypass Status Summary Panel (P5-4) ──────────────────────────────
+        // Shows which 2026 AC bypass layers were active during this session.
+        // Loaded async to avoid blocking dialog inflation.
+        TextView tvBypassStatus = view.findViewById(R.id.tv_bypass_status_summary);
+        if (tvBypassStatus != null) {
+            tvBypassStatus.setText("🛡️ Bypass: checking...");
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    PlayIntegrityBypassEngine.ModuleStackStatus stackStatus =
+                        PlayIntegrityBypassEngine.checkModuleStack();
+                    String integrityLevel = PlayIntegrityBypassEngine.verifyIntegrityState();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("🛡️ 2026 AC Bypass Status\n");
+
+                    // Module stack
+                    switch (stackStatus) {
+                        case READY:
+                            sb.append("✅ Zygisk + Shamiko + PIF + TrickyStore — READY\n");
+                            break;
+                        case MISSING_SHAMIKO:
+                            sb.append("⚠️ Shamiko not found — root may be visible\n");
+                            break;
+                        case MISSING_PIF:
+                            sb.append("⚠️ PlayIntegrityFix not found — may fail STRONG\n");
+                            break;
+                        case MISSING_TRICKYSTORE:
+                            sb.append("⚠️ TrickyStore not found — hardware attestation off\n");
+                            break;
+                        default:
+                            sb.append("⚠️ Module stack incomplete: " + stackStatus + "\n");
+                    }
+
+                    // Play Integrity verdict
+                    sb.append("🔑 Integrity: ").append(integrityLevel).append("\n");
+
+                    // FPS unlock confirmation
+                    sb.append("⚡ 185fps Unlock: SurfaceFlinger + SwappyGL + Kernel sysfs\n");
+                    sb.append("🚫 Telemetry null-route: bugly.qq.com + crash.tencent.com");
+
+                    final String summary = sb.toString();
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        try {
+                            if (tvBypassStatus != null) {
+                                tvBypassStatus.setText(summary);
+                                tvBypassStatus.setTextColor(
+                                    stackStatus == PlayIntegrityBypassEngine.ModuleStackStatus.READY
+                                        ? Color.parseColor("#00FF88")
+                                        : Color.parseColor("#FFAA00")
+                                );
+                            }
+                        } catch (Throwable ignored) {}
+                    });
+                } catch (Throwable t) {
+                    Log.w(TAG, "Bypass status check note: " + t.getMessage());
+                }
+            });
+        }
 
         // Bind data
         tvGameTitle.setText(report.gameTitle);

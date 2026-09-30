@@ -4,6 +4,8 @@ import com.gamebooster.app.ui.adapters.SpoofProfileAdapter;
 
 import com.gamebooster.app.config.*;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.engine.FpsForceUnlockEngine;
+import com.gamebooster.app.engine.PlayIntegrityBypassEngine;
 
 import android.content.Context;
 import android.content.Intent;
@@ -628,7 +630,39 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         AppExecutors.getInstance().executeCommand(GpuTweaksChannel::purgeAngleDriver);
 
         if (btn185 != null) {
-            btn185.setOnClickListener(v -> applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185, "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile"));
+            btn185.setOnClickListener(v -> {
+                // Step 1: Apply PerformanceChannel preset (existing behavior)
+                applyPresetProfile(btn185, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 185,
+                        "⚡ Executed: 185Hz / 185 FPS Ultra-Extreme Profile");
+                // Step 2: Apply FpsForceUnlockEngine 4-layer 185fps unlock
+                // Runs for the currently selected game package (or all 3 global targets)
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        Context ctx = getContext();
+                        if (ctx != null) {
+                            // Apply to all 3 global target games
+                            for (String pkg : new String[]{
+                                    "com.mobile.legends",
+                                    "com.activision.callofduty.shooter",
+                                    "com.tencent.ig"}) {
+                                FpsForceUnlockEngine.applyFps185ForceUnlock(ctx, pkg);
+                            }
+                        }
+                    } catch (Throwable t) {
+                        android.util.Log.w("Settings185", "FpsForceUnlockEngine note: " + t.getMessage());
+                    }
+                });
+                // Step 3: Apply Play Integrity bypass stack check
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        PlayIntegrityBypassEngine.ModuleStackStatus status =
+                                PlayIntegrityBypassEngine.checkModuleStack();
+                        android.util.Log.i("Settings185", "[PlayIntegrity] Module stack: " + status);
+                    } catch (Throwable t) {
+                        android.util.Log.w("Settings185", "PlayIntegrityCheck note: " + t.getMessage());
+                    }
+                });
+            });
         }
         if (btnExtreme != null) {
             btnExtreme.setOnClickListener(v -> applyPresetProfile(btnExtreme, PerformanceChannel.Profile.EXTREME_PERFORMANCE, 165, "🔥 Executed: 165Hz Lock & eSports Max Profile"));

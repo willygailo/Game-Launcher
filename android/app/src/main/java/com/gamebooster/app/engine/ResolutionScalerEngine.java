@@ -244,18 +244,12 @@ public final class ResolutionScalerEngine {
         if (packageName == null || packageName.trim().isEmpty()) return false;
         boolean isMlbb = packageName.contains("mobile.legends") || packageName.contains("mobilelegends");
         if (!isMlbb) return false;
-
         try {
-            // Query device native density from WindowManager
+            // Query device native density
             int density = sNativeDensity;
-            if (density <= 0 && context != null) {
-                WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                if (wm != null) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    wm.getDefaultDisplay().getRealMetrics(dm);
-                    density = dm.densityDpi;
-                    sNativeDensity = density;
-                }
+            if (density <= 0 && context != null && context.getResources() != null) {
+                density = context.getResources().getConfiguration().densityDpi;
+                sNativeDensity = density;
             }
 
             // Auto-select scale based on device tier

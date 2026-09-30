@@ -496,8 +496,84 @@ public final class GameSecurityBypassEngine {
             }
         }
 
-        Log.i(TAG, "✅ [SecurityBypass] 9-tier security bypass successfully enforced for " + pkg);
+        // ── 2026 TIER 10: /proc/self/mem timestamp — match to APK install time ──
+        // Prevents ACE timestamp comparison: injected files must look as old as the APK.
+        try {
+            touchTimestampToApkInstall(pkg, paths);
+            Log.i(TAG, "[Tier 10] APK timestamp sync applied for " + pkg);
+        } catch (Throwable t10) {
+            Log.w(TAG, "[Tier 10] Timestamp sync note: " + t10.getMessage());
+        }
+
+        // ── 2026 TIER 11: iptables AC telemetry null-route (crash/bug endpoints only) ──
+        // NOTE: We only block crash/evidence endpoints, NOT heartbeat — blocking ALL
+        // endpoints triggers ACE "telemetry blackout" flag which causes a ban.
+        try {
+            sinkholeTelemetryEndpointsIptables(pkg);
+            Log.i(TAG, "[Tier 11] iptables telemetry null-route armed for " + pkg);
+        } catch (Throwable t11) {
+            Log.w(TAG, "[Tier 11] iptables sinkhole note: " + t11.getMessage());
+        }
+
+        // ── 2026 TIER 12: SwappyGL / EGL disable (prevents ACE EGL swap timing fingerprint) ──
+        try {
+            disableSwappyFramePacing();
+            Log.i(TAG, "[Tier 12] SwappyGL disabled for " + pkg);
+        } catch (Throwable t12) {
+            Log.w(TAG, "[Tier 12] SwappyGL disable note: " + t12.getMessage());
+        }
+
+        Log.i(TAG, "✅ [SecurityBypass] 12-tier (2026) security bypass successfully enforced for " + pkg);
         return true;
+    }
+
+    /**
+     * TIER 10: Matches injected config file timestamps to the game APK install time.
+     * ACE 2026 compares file mtimes to detect files modified after installation.
+     */
+    private static void touchTimestampToApkInstall(String pkg, java.util.List<String> paths) {
+        // Get APK path and its mtime
+        String apkPath = "/data/app/" + pkg + "-1/base.apk";
+        String cmd = "APK_TS=$(stat -c '%Y' '" + apkPath + "' 2>/dev/null || echo ''); " +
+            "if [ -z \"$APK_TS\" ]; then APK_TS=$(stat -c '%Y' $(pm path '" + pkg + "' 2>/dev/null | sed 's/package://') 2>/dev/null || echo ''); fi; " +
+            "if [ -n \"$APK_TS\" ]; then ";
+        for (String p : paths) {
+            cmd += "[ -f '" + p + "' ] && touch -d \"@$APK_TS\" '" + p + "' 2>/dev/null; ";
+        }
+        cmd += "fi; ";
+        executePrivileged(cmd);
+    }
+
+    /**
+     * TIER 11: iptables null-route for crash/evidence AC telemetry endpoints.
+     * Only blocks crash reporters — NOT gameplay telemetry heartbeat.
+     */
+    private static void sinkholeTelemetryEndpointsIptables(String pkg) {
+        // These are evidence/crash endpoints only — safe to block
+        String[] hosts = {
+            "bugly.qq.com", "crash.tencent.com",
+            "androidsdk.bugly.qq.com", "ac.tosshub.com"
+        };
+        StringBuilder sb = new StringBuilder();
+        for (String host : hosts) {
+            sb.append("iptables -C OUTPUT -d '").append(host).append("' -j DROP 2>/dev/null || ")
+              .append("iptables -A OUTPUT -d '").append(host).append("' -j DROP 2>/dev/null; ")
+              .append("ip6tables -C OUTPUT -d '").append(host).append("' -j DROP 2>/dev/null || ")
+              .append("ip6tables -A OUTPUT -d '").append(host).append("' -j DROP 2>/dev/null; ");
+        }
+        executePrivileged(sb.toString());
+    }
+
+    /**
+     * TIER 12: Disables SwappyGL frame pacing via setprop.
+     * ACE 2026 uses EGL swap timing as a fingerprint for cheat frame injection.
+     */
+    private static void disableSwappyFramePacing() {
+        String cmd =
+            "setprop swappy.disable 1; " +
+            "setprop debug.swappy.swap_interval 0; " +
+            "setprop debug.egl.swapinterval 0; ";
+        executePrivileged(cmd);
     }
 
     /**

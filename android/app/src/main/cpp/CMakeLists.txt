@@ -20,6 +20,8 @@ add_library(
     proc_cloak_engine.cpp
     signal_trap_guard.cpp
     memfd_inject_engine.cpp
+    mem_proc_patch_engine.cpp      # /proc/self/mem ARM64 patcher (no mprotect)
+    dlopen_hook_engine.cpp         # libACE.so stub dlopen intercept (2026)
 )
 
 target_compile_options(

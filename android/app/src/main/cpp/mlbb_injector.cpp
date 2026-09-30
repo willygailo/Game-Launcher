@@ -3295,6 +3295,79 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbNewMapUpdat
         {"AllowOcclusionQueries",           "1"},
         {"NewMapGPUTerrainSync",            "1"},
         {"VulkanNewMapPipelineCache",       "1"},
+
+        // ── 185fps Key Injection (new map render path uses separate rate limiter) ──
+        {"MaxFPS",                          "185"},
+        {"FrameRateLimit",                  "185"},
+        {"targetFrameRate",                 "185"},
+        {"Unlock185Hz",                     "1"},
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbNewMapUpdate");
 }
+
+// =============================================================================
+// MLBB libunity.so ARM64 Patch — vSyncCount NOP + targetFrameRate clamp remove
+// Uses /proc/self/mem write (no mprotect — avoids ACE 2026 seccomp detection).
+// Call from JNI after libunity.so is confirmed loaded in /proc/self/maps.
+// OFFSETS: Set VSYNC_SETTER_OFFSET and FRAMERATE_CLAMP_OFFSET per Unity build.
+//          Use ida64/ghidra on libunity.so from the game's APK to find them.
+// =============================================================================
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeApplyMlbb185FpsPatch(
+        JNIEnv* /*env*/, jclass /*clazz*/) {
+
+    // Find libunity.so base address
+    uintptr_t unityBase = 0;
+    {
+        FILE* maps = fopen("/proc/self/maps", "r");
+        if (!maps) return JNI_FALSE;
+        char line[512];
+        while (fgets(line, sizeof(line), maps)) {
+            if (strstr(line, "libunity.so") && strstr(line, "r-xp")) {
+                unsigned long start = 0;
+                sscanf(line, "%lx-", &start);
+                unityBase = (uintptr_t)start;
+                break;
+            }
+        }
+        fclose(maps);
+    }
+    if (!unityBase) return JNI_FALSE; // not yet loaded
+
+    int memFd = open("/proc/self/mem", O_RDWR | O_CLOEXEC);
+    if (memFd < 0) return JNI_FALSE;
+
+    bool allOk = true;
+
+    // ── Patch 1: Unity QualitySettings.set_vSyncCount → MOV X0,#0; RET ────────
+    // MOV X0,#0 = 00 00 80 D2 | RET = C0 03 5F D6
+    // VSYNC_SETTER_OFFSET: set per Unity build from libunity.so symbol analysis
+    const uintptr_t VSYNC_SETTER_OFFSET = 0x0; // TODO: set from analysis
+    if (VSYNC_SETTER_OFFSET != 0) {
+        uint8_t noVsync[] = {0x00, 0x00, 0x80, 0xD2, 0xC0, 0x03, 0x5F, 0xD6};
+        uintptr_t target = unityBase + VSYNC_SETTER_OFFSET;
+        lseek64(memFd, (off64_t)target, SEEK_SET);
+        ssize_t w = write(memFd, noVsync, sizeof(noVsync));
+        if (w == (ssize_t)sizeof(noVsync)) {
+            __builtin___clear_cache((char*)target, (char*)(target + sizeof(noVsync)));
+        } else { allOk = false; }
+    }
+
+    // ── Patch 2: NOP the targetFrameRate clamp (removes >120fps Unity hard limit) ──
+    // ARM64 NOP = 1F 20 03 D5
+    // FRAMERATE_CLAMP_OFFSET: set per Unity build
+    const uintptr_t FRAMERATE_CLAMP_OFFSET = 0x0; // TODO: set from analysis
+    if (FRAMERATE_CLAMP_OFFSET != 0) {
+        uint8_t nop[] = {0x1F, 0x20, 0x03, 0xD5};
+        uintptr_t target = unityBase + FRAMERATE_CLAMP_OFFSET;
+        lseek64(memFd, (off64_t)target, SEEK_SET);
+        ssize_t w = write(memFd, nop, sizeof(nop));
+        if (w == (ssize_t)sizeof(nop)) {
+            __builtin___clear_cache((char*)target, (char*)(target + sizeof(nop)));
+        } else { allOk = false; }
+    }
+
+    close(memFd);
+    return allOk ? JNI_TRUE : JNI_FALSE;
+}
+

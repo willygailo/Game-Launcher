@@ -310,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == com.gamebooster.app.saf.SafStorageManager.REQUEST_CODE_SAF_TREE) {
