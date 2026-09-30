@@ -80,8 +80,8 @@ public final class NoLimitExtremeOverdriveEngine {
                 // 8. HWUI Render Pipeline: SkiaVK, ART JIT warmup, Choreographer tuning
                 com.gamebooster.app.booster.HwuiRenderAccelerator.applyAll(packageName);
 
-                // 9. Battery Bypass Charging Shield (if plugged into charger)
-                if (BypassChargingController.isChargerConnected(context)) {
+                // 9. Battery Bypass Charging Shield (ONLY if explicitly enabled by user AND plugged into charger)
+                if (BypassChargingController.isBypassConfiguredEnabled(context) && BypassChargingController.isChargerConnected(context)) {
                     BypassChargingController.enableBypassCharging(context);
                 }
 
@@ -225,6 +225,12 @@ public final class NoLimitExtremeOverdriveEngine {
             revertCmds.add("setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_phase_offset_ns 1000000");
 
             CommandExecutor.executeBatchCommands(revertCmds);
+
+            // Restore normal battery charging state
+            if (context != null) {
+                BypassChargingController.restoreNormalCharging(context);
+            }
+
             Log.i(TAG, "No-Limit Extreme Overdrive disengaged — system baseline restored.");
         } catch (Throwable t) {
             Log.w(TAG, "disengageNoLimitOverdrive note: " + t.getMessage());

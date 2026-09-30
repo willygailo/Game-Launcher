@@ -897,6 +897,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         tvLiveNetworkTelemetry = view.findViewById(R.id.tv_live_network_telemetry);
         switchDisableDataSaver = view.findViewById(R.id.switch_disable_data_saver);
         switchDisableBatterySaver = view.findViewById(R.id.switch_disable_battery_saver);
+        Button btnFixBatteryCharging = view.findViewById(R.id.btn_fix_battery_charging);
         switchDisableWifiSaver = view.findViewById(R.id.switch_disable_wifi_saver);
         switchTcpBbrBuffers = view.findViewById(R.id.switch_tcp_bbr_buffers);
         switch5g6gData = view.findViewById(R.id.switch_5g_6g_data);
@@ -972,6 +973,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         if (isAdded() && getContext() != null) {
                             updateLiveTelemetryUi();
                             Toast.makeText(getContext(), isChecked ? "⚡ Battery Saver / Throttling Disabled (Peak Mode)" : "Battery Saver Normal Mode Restored", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
+        if (btnFixBatteryCharging != null) {
+            btnFixBatteryCharging.setOnClickListener(v -> {
+                if (getContext() == null) return;
+                btnFixBatteryCharging.setEnabled(false);
+                btnFixBatteryCharging.setText("⏳ RESTORING CHARGING...");
+                AppExecutors.getInstance().executeCommand(() -> {
+                    com.gamebooster.app.booster.BypassChargingController.resetBatterySafety(getContext());
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            btnFixBatteryCharging.setEnabled(true);
+                            btnFixBatteryCharging.setText("🔋 RESET / FIX BATTERY CHARGING (RESTORE CHARGER)");
+                            updateLiveTelemetryUi();
+                            Toast.makeText(getContext(), "✅ Battery charging restored to normal! Plug in charger to verify.", Toast.LENGTH_LONG).show();
                         }
                     });
                 });

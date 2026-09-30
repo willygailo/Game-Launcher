@@ -203,6 +203,9 @@ public class AutoGameMonitorService extends Service {
                 if (com.gamebooster.app.engine.ResolutionScalerEngine.isResolutionScaled()) {
                     com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
                 }
+                // Unconditionally restore normal battery charging & disengage overdrive upon game exit
+                com.gamebooster.app.booster.BypassChargingController.restoreNormalCharging(getApplicationContext());
+                com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.disengageNoLimitOverdrive(getApplicationContext());
 
                 final com.gamebooster.app.overlay.GameSessionReport report =
                         com.gamebooster.app.overlay.GameSessionRecorder.getInstance().endSession(getApplicationContext());
@@ -315,6 +318,9 @@ public class AutoGameMonitorService extends Service {
     public void onDestroy() {
         super.onDestroy();
         isRunning = false;
+        try {
+            com.gamebooster.app.booster.BypassChargingController.restoreNormalCharging(getApplicationContext());
+        } catch (Throwable ignored) {}
         if (screenReceiver != null) {
             try {
                 unregisterReceiver(screenReceiver);

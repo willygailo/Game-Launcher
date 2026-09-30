@@ -555,6 +555,18 @@
                     android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
+                <Button
+                    android:id="@+id/btn_fix_battery_charging"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/btn_cyber_dark"
+                    android:text="🔋 RESET / FIX BATTERY CHARGING (RESTORE CHARGER)"
+                    android:textColor="@color/accent_neon_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
                 <Switch
                     android:id="@+id/switch_disable_wifi_saver"
                     android:layout_width="match_parent"

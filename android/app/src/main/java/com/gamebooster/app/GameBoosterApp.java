@@ -83,6 +83,13 @@ public class GameBoosterApp extends Application {
         // 3. Pre-warm background engines on dedicated worker thread (Zero Main-Thread Block)
         final Context appCtx = getApplicationContext();
         AppExecutors.getInstance().executeCommand(() -> {
+            // Emergency Battery Safety Baseline: ensure device is NOT stuck in mocked unplugged state
+            try {
+                com.gamebooster.app.booster.BypassChargingController.restoreNormalCharging(appCtx);
+            } catch (Throwable t) {
+                Log.w(TAG, "Battery charging baseline restore note: " + t.getMessage());
+            }
+
             // A. Pre-warm Terminal Scripts & Folder structure
             try {
                 TerminalFolderManager.getInstance(appCtx).initTerminalFolder();

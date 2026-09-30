@@ -27,12 +27,16 @@ public final class BypassChargingController {
 
     private static volatile boolean sIsBypassActive = false;
 
-    private static final String[] SYSFS_DISABLE_NODES = {
+    private static final String[] SYSFS_CHARGING_NODES = {
             "/sys/class/power_supply/battery/charging_enabled",
-            "/sys/class/power_supply/battery/input_suspend",
             "/sys/devices/platform/charger/charging_enabled",
             "/sys/devices/platform/battery/charging_enabled",
-            "/sys/class/power_supply/battery/mmi_charging_enable"
+            "/sys/class/power_supply/battery/mmi_charging_enable",
+            "/sys/class/power_supply/battery/battery_charging_enabled"
+    };
+
+    private static final String[] SYSFS_INPUT_SUSPEND_NODES = {
+            "/sys/class/power_supply/battery/input_suspend"
     };
 
     private BypassChargingController() {}
@@ -84,13 +88,19 @@ public final class BypassChargingController {
                 CommandExecutor.executeSystemCommand("cmd battery unplug");
                 CommandExecutor.executeSystemCommand("dumpsys battery unplug");
 
-                // Tier 2: Kernel Sysfs Direct Charging Disabler
-                for (String node : SYSFS_DISABLE_NODES) {
+                // Tier 2: Kernel Sysfs Direct Charging Disabler (0 = disable charging)
+                for (String node : SYSFS_CHARGING_NODES) {
                     String cmd = "if [ -f " + node + " ]; then echo 0 > " + node + "; fi";
                     CommandExecutor.executeSystemCommand(cmd);
                 }
 
-                // Tier 3: MediaTek Fast Charging suspend
+                // Tier 3: Suspend input power into cells (1 = suspend)
+                for (String node : SYSFS_INPUT_SUSPEND_NODES) {
+                    String cmd = "if [ -f " + node + " ]; then echo 1 > " + node + "; fi";
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+
+                // Tier 4: MediaTek Fast Charging suspend
                 String mtkCmd = "if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi";
                 CommandExecutor.executeSystemCommand(mtkCmd);
 
@@ -103,19 +113,31 @@ public final class BypassChargingController {
     }
 
     /**
-     * Restores normal charging behavior upon game exit.
+     * Restores normal charging behavior upon game exit or emergency reset.
      */
     public static void restoreNormalCharging(Context context) {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 Log.d(TAG, "Restoring normal battery charging...");
+                // Tier 1: Reset Android Battery Framework
                 CommandExecutor.executeSystemCommand("cmd battery reset");
                 CommandExecutor.executeSystemCommand("dumpsys battery reset");
 
-                for (String node : SYSFS_DISABLE_NODES) {
+                // Tier 2: Enable Charging in Kernel (1 = enable charging)
+                for (String node : SYSFS_CHARGING_NODES) {
                     String cmd = "if [ -f " + node + " ]; then echo 1 > " + node + "; fi";
                     CommandExecutor.executeSystemCommand(cmd);
                 }
+
+                // Tier 3: Un-suspend input power (0 = normal charging)
+                for (String node : SYSFS_INPUT_SUSPEND_NODES) {
+                    String cmd = "if [ -f " + node + " ]; then echo 0 > " + node + "; fi";
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+
+                // Tier 4: Restore MTK charger
+                String mtkCmd = "if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi";
+                CommandExecutor.executeSystemCommand(mtkCmd);
 
                 sIsBypassActive = false;
                 Log.i(TAG, "Bypass Charging RESTORED: Normal charging resumed.");
@@ -123,6 +145,20 @@ public final class BypassChargingController {
                 Log.e(TAG, "Error restoring normal charging", t);
             }
         });
+    }
+
+    /**
+     * Universal Emergency Battery Reset: Unconditionally forces Android framework and
+     * Linux kernel charging circuits to normal charging mode. Safe to call anytime.
+     */
+    public static void resetBatterySafety(Context context) {
+        restoreNormalCharging(context);
+        if (context != null) {
+            setBypassConfiguredEnabled(context, false);
+            try {
+                com.gamebooster.app.config.TweakPreferences.saveTweakState(context, "bypass_charging_shield", false);
+            } catch (Throwable ignored) {}
+        }
     }
 
     public static void onGameStarted(Context context) {
@@ -133,8 +169,6 @@ public final class BypassChargingController {
     }
 
     public static void onGameStopped(Context context) {
-        if (sIsBypassActive) {
-            restoreNormalCharging(context);
-        }
+        restoreNormalCharging(context);
     }
 }

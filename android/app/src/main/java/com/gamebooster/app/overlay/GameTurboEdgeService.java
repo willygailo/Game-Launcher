@@ -390,6 +390,9 @@ public class GameTurboEdgeService extends Service {
             rootEdgeView = null;
         }
         sIsRunning = false;
+        try {
+            BypassChargingController.restoreNormalCharging(getApplicationContext());
+        } catch (Throwable ignored) {}
     }
 
     @Nullable

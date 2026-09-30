@@ -713,8 +713,8 @@ public class TweakManagerRepository {
                 "bypass_charging_shield",
                 "Direct Motherboard Power & Battery Thermal Shield",
                 "Bypasses battery charging circuit during matches (cmd battery unplug & sysfs) to eliminate battery heat and thermal throttling",
-                "cmd battery unplug; dumpsys battery unplug; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 0 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi",
-                "cmd battery reset; dumpsys battery reset; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 1 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi",
+                "cmd battery unplug; dumpsys battery unplug; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 0 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/class/power_supply/battery/input_suspend ]; then echo 1 > /sys/class/power_supply/battery/input_suspend; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi",
+                "cmd battery reset; dumpsys battery reset; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 1 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/class/power_supply/battery/input_suspend ]; then echo 0 > /sys/class/power_supply/battery/input_suspend; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
         ));
@@ -971,6 +971,10 @@ public class TweakManagerRepository {
 
         List<String> batchCmds = new ArrayList<>();
         for (TweakItem tweak : TWEAKS) {
+            // Bypass Charging stops physical battery charging — must NEVER be auto-applied in bulk
+            if ("bypass_charging_shield".equals(tweak.getId())) {
+                continue;
+            }
             batchCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware(tweak.getApplyCommand(), context));
             tweak.setApplied(true);
             if (context != null) {
@@ -1015,6 +1019,9 @@ public class TweakManagerRepository {
             List<String> batchCmds = new ArrayList<>();
 
             for (TweakItem tweak : TWEAKS) {
+                if ("bypass_charging_shield".equals(tweak.getId())) {
+                    continue;
+                }
                 current++;
                 if (progressListener != null) {
                     final int c = current;
@@ -1063,6 +1070,9 @@ public class TweakManagerRepository {
 
             if (list != null) {
                 for (TweakItem tweak : list) {
+                    if ("bypass_charging_shield".equals(tweak.getId())) {
+                        continue;
+                    }
                     current++;
                     if (progressListener != null) {
                         final int c = current;
@@ -1169,6 +1179,12 @@ public class TweakManagerRepository {
             // 1. Re-apply all enabled Shizuku ADB system tweaks
             List<String> savedCmds = new ArrayList<>();
             for (TweakItem tweak : TWEAKS) {
+                // Never auto-reapply bypass charging on boot/app launch
+                if ("bypass_charging_shield".equals(tweak.getId())) {
+                    tweak.setApplied(false);
+                    TweakPreferences.saveTweakState(context, tweak.getId(), false);
+                    continue;
+                }
                 boolean wasSavedApplied = TweakPreferences.isTweakApplied(context, tweak.getId());
                 if (wasSavedApplied) {
                     tweak.setApplied(true);
