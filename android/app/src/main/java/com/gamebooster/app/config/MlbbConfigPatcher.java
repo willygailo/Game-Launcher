@@ -1894,4 +1894,46 @@ public class MlbbConfigPatcher {
                 ConfigBackupManager.getAppContext(), packageName, tier);
         Log.i(TAG, "🗺️ [MLBB New Map Update] configKeys=" + configOk + " droneSync=" + droneOk + " for " + packageName);
     }
+
+    /**
+     * MLBB Patch 2.2.16 (Season 42+) Anti-Redownload & 185 FPS Hotfix.
+     * Prevents Moonton CDN from restoring modified assets while locking
+     * PlayerPrefs frame rate and graphic quality settings.
+     */
+    public static void applyMlbb2216PatchFix(String packageName) {
+        if (packageName == null) return;
+        applyMlbbNewMapUpdateConfig(packageName);
+
+        String resDir = "/sdcard/Android/data/" + packageName + "/files/dragon2017/res/";
+        String prefsXml = "/data/data/" + packageName + "/shared_prefs/" + packageName + ".v2.playerprefs.xml";
+        String legacyPrefs = "/data/data/" + packageName + "/shared_prefs/" + packageName + ".xml";
+
+        String fixCmds = String.join("; ",
+            "mkdir -p '" + resDir + "' 2>/dev/null",
+            "if [ -f '" + resDir + "ResCheckConf.xml' ]; then "
+                + "chmod 666 '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
+                + "sed -i 's/skipFix=\"0\"/skipFix=\"1\"/g' '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
+                + "chmod 444 '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
+                + "fi",
+            "echo '<patch skip=\"1\" version=\"2.2.16\" />' > '" + resDir + "res_skip_patch.xml' 2>/dev/null",
+            "chmod 444 '" + resDir + "res_skip_patch.xml' 2>/dev/null",
+            "for PREF in '" + prefsXml + "' '" + legacyPrefs + "'; do "
+                + "if [ -f \"$PREF\" ]; then "
+                + "chmod 666 \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"MaxFPS\" value=\"[0-9]*\"/name=\"MaxFPS\" value=\"185\"/' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"HighFpsMode\" value=\"[0-9]*\"/name=\"HighFpsMode\" value=\"4\"/' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"GraphicLevel\" value=\"[0-9]*\"/name=\"GraphicLevel\" value=\"5\"/' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"TargetFrameRate\" value=\"[0-9]*\"/name=\"TargetFrameRate\" value=\"185\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'TargetFrameRate' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"TargetFrameRate\" value=\"185\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "chmod 666 \"$PREF\" 2>/dev/null; "
+                + "restorecon \"$PREF\" 2>/dev/null; "
+                + "fi; "
+                + "done",
+            "rm -rf /data/data/" + packageName + "/cache/vulkan_pipeline/* 2>/dev/null",
+            "rm -rf /data/data/" + packageName + "/code_cache/* 2>/dev/null"
+        );
+
+        ShizukuExecutor.executeShizukuCommand(fixCmds);
+        Log.i(TAG, "⚡ [MLBB Patch 2.2.16 Hotfix Applied] ResCheck locked & 185 FPS active for " + packageName);
+    }
 }

@@ -529,6 +529,12 @@ public class GameConfigPathResolver {
             rel.add("files/il2cpp/boot.config");
             rel.add("files/Unity/boot.config");
 
+            // CODM preferences directory (GraphicsSetting.xml, UserCustom.ini, GameConfig.xml)
+            rel.add("files/prefs/GraphicsSetting.xml");
+            rel.add("files/prefs/UserCustom.ini");
+            rel.add("files/prefs/GameConfig.xml");
+            rel.add("files/prefs/UserProfile.xml");
+
             // JSON and INI configuration profiles
             rel.add("files/Config/UserSetting.json");
             rel.add("files/Config/HardwareProfile.json");
