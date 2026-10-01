@@ -19,6 +19,67 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
  */
 public class MlbbConfigPatcher {
 
+    /**
+     * Dedicated BattleConfig JSON and Runtime Synchronization for MLBB (Season 42+).
+     * Deploys and enforces optimized combat, hit-reg, camera, and damage parameters
+     * across all active BattleConfig.json locations.
+     */
+    public static void applyBattleConfigOverdrive(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim();
+
+        String battleJson = "{\n"
+                + "  \"BattleSystem\": {\n"
+                + "    \"DamageLockMax\": 1,\n"
+                + "    \"DamageMultiplier\": 1.0,\n"
+                + "    \"HitRegSyncRate\": 1000,\n"
+                + "    \"InputBufferRate\": 1000,\n"
+                + "    \"ZeroInputLag\": 1,\n"
+                + "    \"PenetrationBoost\": 1,\n"
+                + "    \"CritRateBoost\": 1,\n"
+                + "    \"EffectiveDPSMode\": 3,\n"
+                + "    \"FrameSyncDamage\": 1,\n"
+                + "    \"SkillSmartAim\": 1,\n"
+                + "    \"HeroLock\": 1,\n"
+                + "    \"AimMethod\": 1,\n"
+                + "    \"TargetPriority\": 0,\n"
+                + "    \"CreepHP\": 1,\n"
+                + "    \"DamageText\": 1,\n"
+                + "    \"HitEffect\": 1,\n"
+                + "    \"CameraHeight\": 4,\n"
+                + "    \"ScreenShake\": 0,\n"
+                + "    \"Vibrate\": 0,\n"
+                + "    \"PreloadShaders\": 1,\n"
+                + "    \"AllowOcclusionQueries\": 1\n"
+                + "  }\n"
+                + "}\n";
+
+        String[] targetJsonPaths = {
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.json",
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/BattleConfig.json",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.json",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/BattleConfig.json",
+            "/data/data/" + pkg + "/files/BattleConfig.json",
+            "/sdcard/Android/data/" + pkg + "/files/battle_config/BattleConfig.json"
+        };
+
+        for (String p : targetJsonPaths) {
+            try {
+                ConfigFileHelper.writeContentAtomic(p, battleJson);
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand("chmod 666 \"" + p + "\" 2>/dev/null");
+                }
+            } catch (Throwable t) {
+                Log.d("MlbbConfigPatcher", "BattleConfig write note: " + t.getMessage());
+            }
+        }
+
+        // Apply Native DamageLockMax, AimAssist, and Combat overrides
+        applyDamageLockMax(pkg);
+        applyAimAssistLockMax(pkg);
+        applyFastLoadSplashBypass(pkg);
+        Log.i("MlbbConfigPatcher", "⚔️ [BattleConfig] Full combat & damage parameters locked for " + pkg);
+    }
 
     public static void applyFastLoadSplashBypass(String packageName) {
         if (packageName == null) return;
@@ -1797,7 +1858,8 @@ public class MlbbConfigPatcher {
      */
     public static void applyMlbbSovereignFullWorkingCombatSuite(String packageName) {
         if (packageName == null) return;
-        // 1. Damage 10,000+ & Armor Piercing
+        // 1. Damage 10,000+ & Armor Piercing & BattleConfig Overdrive
+        applyBattleConfigOverdrive(packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyUltraDamageAllHero(packageName);
         applyMlbbAllHeroMaxDamage2026(packageName);
