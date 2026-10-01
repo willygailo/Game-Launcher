@@ -100,14 +100,6 @@ public final class NoLimitExtremeOverdriveEngine {
         MaxHzForceChannel.forceApply(hz);
 
         List<String> sfCmds = new ArrayList<>();
-        // Zero backpressure & latch immediately
-        sfCmds.add("setprop debug.sf.disable_backpressure 1");
-        sfCmds.add("setprop debug.sf.latch_unsignaled 1");
-        sfCmds.add("setprop debug.sf.early_phase_offset_ns 0");
-        sfCmds.add("setprop debug.sf.early_app_phase_offset_ns 0");
-        sfCmds.add("setprop debug.sf.early_gl_phase_offset_ns 0");
-        sfCmds.add("setprop debug.gr.swapinterval 0");
-        sfCmds.add("setprop debug.egl.swapinterval 0");
         sfCmds.add("setprop debug.sf.fps_limit " + hz);
         sfCmds.add("setprop persist.sys.NV_FPSLIMIT " + hz);
         sfCmds.add("setprop persist.sys.game.fps " + hz);

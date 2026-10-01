@@ -38,7 +38,8 @@ public final class FpsForceUnlockEngine {
      */
     public static void applyFps185ForceUnlock(Context context, String packageName) {
         if (packageName == null || packageName.trim().isEmpty()) return;
-        Log.i(TAG, "▶ [FPS185] Starting 185fps force unlock for: " + packageName);
+        int resolvedHz = com.gamebooster.app.config.GameProfileAutoConfigurator.clampTargetFpsToDisplay(context, TARGET_FPS);
+        Log.i(TAG, "▶ [FPS" + resolvedHz + "] Starting " + resolvedHz + "fps force unlock for: " + packageName);
 
         applySystemLevelUnlock();
         applySurfaceFlingerForce();
@@ -47,7 +48,7 @@ public final class FpsForceUnlockEngine {
         applyGameModeClampRemoval(packageName);
         applyPerGamePatch(packageName);
 
-        Log.i(TAG, "✅ [FPS185] All 4 layers applied for: " + packageName);
+        Log.i(TAG, "✅ [FPS" + resolvedHz + "] All 4 layers applied for: " + packageName);
     }
 
     /**
@@ -83,35 +84,22 @@ public final class FpsForceUnlockEngine {
             "setprop persist.sys.NV_FPSLIMIT " + TARGET_FPS + "; " +
             "setprop persist.game_mode.performance.fps " + TARGET_FPS + "; " +
             "setprop debug.sf.hw 1; " +
-            "setprop debug.sf.disable_backpressure 1; " +
-            "setprop debug.sf.latch_unsignaled 1; " +
-            // Binder: 1034=setDesiredDisplayModeSpecs (Android 12+)
-            "service call SurfaceFlinger 1034 i32 " + TARGET_FPS + " 2>/dev/null; " +
-            // Binder: 1035=setFrameRate
-            "service call SurfaceFlinger 1035 i32 " + TARGET_FPS + " 2>/dev/null; " +
-            // 1008=setActiveConfig (older Qualcomm BSP)
-            "service call SurfaceFlinger 1008 i32 " + TARGET_FPS + " 2>/dev/null; " +
-            // 1029=setDisplayMode (Samsung BSP)
-            "service call SurfaceFlinger 1029 i32 " + TARGET_FPS + " 2>/dev/null; ";
+            "service call SurfaceFlinger 1035 i32 " + TARGET_FPS + " 2>/dev/null; ";
         executePrivileged(cmd);
         Log.d(TAG, "[Layer2] SurfaceFlinger force applied");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // LAYER 3 — SwappyGL / EGL swap disable
+    // LAYER 3 — SwappyGL / EGL frame pacing
     // ─────────────────────────────────────────────────────────────────────────
 
     public static void applySwappyDisable() {
-        // SwappyGL (Android Game SDK) caps frame rate to display Hz by default.
-        // Setting swappy.disable=1 forces the engine to render at whatever rate it can.
+        // Keep EGL/Swappy defaults untouched to prevent UE4 loading deadlock
         String cmd =
-            "setprop swappy.disable 1; " +
-            "setprop debug.swappy.swap_interval 0; " +
-            "setprop debug.egl.swapinterval 0; " +
             "setprop debug.egl.buffcount 3; " +
             "setprop debug.egl.hw 1; ";
         executePrivileged(cmd);
-        Log.d(TAG, "[Layer3] SwappyGL/EGL disabled");
+        Log.d(TAG, "[Layer3] EGL hardware acceleration configured");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

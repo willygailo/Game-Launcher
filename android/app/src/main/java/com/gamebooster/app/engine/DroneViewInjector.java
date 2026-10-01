@@ -211,12 +211,28 @@ public final class DroneViewInjector {
     }
 
     /**
+     * Resolves the active mini_patch version directory.
+     * Checks newer live version trees first (e.g. 1232.2) before falling back to 1232.1.
+     */
+    private static String resolveActiveVersionDir(String miniPatchBase) {
+        String[] candidateVersions = {"1232.2", "1232.1", PATCH_VERSION};
+        for (String ver : candidateVersions) {
+            String dir = miniPatchBase + "/" + ver;
+            if (ShizukuFileManager.isDirectory(dir)) {
+                return dir;
+            }
+        }
+        String fallback = miniPatchBase + "/" + PATCH_VERSION;
+        ShizukuFileManager.makeDirectory(fallback);
+        return fallback;
+    }
+
+    /**
      * Finds or creates the ZC_* versioned bundle directory.
      * Layer 1: scans the live mini_patch tree so we always use the active ZC ID.
      */
     private static String resolveZcDirectory(String miniPatchBase) {
-        String versionDir = miniPatchBase + "/" + PATCH_VERSION;
-        ShizukuFileManager.makeDirectory(versionDir);
+        String versionDir = resolveActiveVersionDir(miniPatchBase);
 
         for (String entry : ShizukuFileManager.listDirectory(versionDir)) {
             if (entry.startsWith("ZC_")) {

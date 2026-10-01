@@ -553,11 +553,8 @@ public class ManualSettingsPreferences {
                 executeCmd("settings put global force_gnss_raw_measurements 1");
             }
 
-            // 7. Ultra Extreme Graphics & Max FPS System Props (120/144/165/185 FPS)
             // Disable Android Default Frame Rate & Disable 120Hz/60Hz Game Limiting
             executeCmd("setprop debug.egl.force_msaa 1");
-            executeCmd("setprop debug.egl.swapinterval 0");
-            executeCmd("setprop debug.gr.swapinterval 0");
             executeCmd("setprop debug.hwui.fps_divisor 1");
             executeCmd("setprop debug.graphics.game_default_frame_rate.disabled 1");
             executeCmd("setprop ro.vendor.dfps.enable 0");

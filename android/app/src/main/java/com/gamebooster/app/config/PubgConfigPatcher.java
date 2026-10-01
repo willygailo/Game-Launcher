@@ -467,9 +467,28 @@ public class PubgConfigPatcher {
         if (pkg == null || pkg.trim().isEmpty()) return false;
 
         String foundSource = null;
-        String pakFileName = "game_patch_4.6.0.21572.pak";
+        String pakFileName = "game_patch_4.6.1.21588.pak";
 
-        // 1. Check if bundled in APK assets, extract to app cache for deployment
+        // 1. Dynamic check: inspect device's live Saved/Paks to discover installed build stream (e.g. 4.6.1.21588)
+        try {
+            String paksDir = "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Paks";
+            String highestPakCmd = "ls -1 \"" + paksDir + "\"/game_patch_*.pak 2>/dev/null | sort -V | tail -n 1";
+            String highestRes = ShizukuExecutor.hasShizukuPermission()
+                    ? ShizukuExecutor.executeShizukuCommand(highestPakCmd)
+                    : CommandExecutor.executeSystemCommand(highestPakCmd);
+            if (highestRes != null && !highestRes.trim().isEmpty() && !highestRes.startsWith("ERROR:")) {
+                String liveHighest = highestRes.trim();
+                int slash = liveHighest.lastIndexOf('/');
+                if (slash >= 0) {
+                    pakFileName = liveHighest.substring(slash + 1);
+                    Log.i(TAG, "🔍 Detected live PUBGM game_patch on device: " + pakFileName);
+                }
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "Live pak detection note: " + t.getMessage());
+        }
+
+        // 2. Check if bundled in APK assets, extract to app cache for deployment
         try {
             android.content.Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
             if (ctx != null) {
@@ -506,7 +525,7 @@ public class PubgConfigPatcher {
             Log.d(TAG, "Asset pak extraction note: " + t.getMessage());
         }
 
-        // 2. Check local directories and downloads
+        // 3. Check local directories and downloads
         if (foundSource == null) {
             String[] candidateDirs = {
                 "/home/willygailo/Downloads/Game-Launcher/android",
@@ -521,7 +540,7 @@ public class PubgConfigPatcher {
 
             for (String dir : candidateDirs) {
                 if (!ShizukuFileManager.fileExists(dir)) continue;
-                String checkCmd = "ls -1 \"" + dir + "\"/game_patch*.pak 2>/dev/null | head -n 1";
+                String checkCmd = "ls -1 \"" + dir + "\"/game_patch*.pak 2>/dev/null | sort -V | tail -n 1";
                 String res = ShizukuExecutor.hasShizukuPermission()
                         ? ShizukuExecutor.executeShizukuCommand(checkCmd)
                         : CommandExecutor.executeSystemCommand(checkCmd);

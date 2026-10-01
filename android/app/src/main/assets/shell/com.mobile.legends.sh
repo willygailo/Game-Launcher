@@ -51,11 +51,13 @@ echo 185 > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev
 echo 1 > /proc/sys/vm/drop_caches 2>/dev/null
 
 # ── MLBB bind-mount ResCheckConf as read-only (prevents Moonton bg integrity overwrite) ──
-RES_DIR="/sdcard/Android/data/com.mobile.legends/files/dragon2017/res"
-if [ -d "$RES_DIR" ]; then
-    test -f "$RES_DIR/ResCheckConf.xml" && mount --bind "$RES_DIR/ResCheckConf.xml" "$RES_DIR/ResCheckConf.xml" 2>/dev/null && mount -o remount,ro "$RES_DIR/ResCheckConf.xml" 2>/dev/null
-    test -f "$RES_DIR/res_skip_patch.xml" && chmod 444 "$RES_DIR/res_skip_patch.xml" 2>/dev/null
-fi
+for RDIR in "/sdcard/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android" "/sdcard/Android/data/com.mobile.legends/files/dragon2017/res"; do
+    if [ -d "$RDIR" ]; then
+        test -f "$RDIR/ResCheckConf.xml" && mount --bind "$RDIR/ResCheckConf.xml" "$RDIR/ResCheckConf.xml" 2>/dev/null && mount -o remount,ro "$RDIR/ResCheckConf.xml" 2>/dev/null
+        test -f "$RDIR/ResCheckConf.xml" && chmod 444 "$RDIR/ResCheckConf.xml" 2>/dev/null
+        test -f "$RDIR/res_skip_patch.xml" && chmod 444 "$RDIR/res_skip_patch.xml" 2>/dev/null
+    fi
+done
 
 # ── AC Telemetry Null-Route (crash/bug reports only — NOT heartbeat to avoid blackout flag) ──
 for HOST in bugly.qq.com androidsdk.bugly.qq.com ac.tosshub.com; do

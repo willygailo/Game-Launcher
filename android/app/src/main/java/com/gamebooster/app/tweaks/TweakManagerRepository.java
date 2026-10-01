@@ -709,15 +709,6 @@ public class TweakManagerRepository {
                 true
         ));
 
-        TWEAKS.add(new TweakItem(
-                "bypass_charging_shield",
-                "Direct Motherboard Power & Battery Thermal Shield",
-                "Bypasses battery charging circuit during matches (cmd battery unplug & sysfs) to eliminate battery heat and thermal throttling",
-                "cmd battery unplug; dumpsys battery unplug; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 0 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/class/power_supply/battery/input_suspend ]; then echo 1 > /sys/class/power_supply/battery/input_suspend; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi",
-                "cmd battery reset; dumpsys battery reset; if [ -f /sys/class/power_supply/battery/charging_enabled ]; then echo 1 > /sys/class/power_supply/battery/charging_enabled; fi; if [ -f /sys/class/power_supply/battery/input_suspend ]; then echo 0 > /sys/class/power_supply/battery/input_suspend; fi; if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi",
-                TweakCategory.SHIZUKU_SYSTEM,
-                true
-        ));
 
 
         TWEAKS.add(new TweakItem(

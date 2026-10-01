@@ -1379,19 +1379,99 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (getContext() == null) return;
                 if (!requireShizukuForAction("Batch Apply Tweaks")) return;
                 btnSettingsTweaksApplyAll.setEnabled(false);
-                btnSettingsTweaksApplyAll.setText("⏳ APPLYING TWEAKS...");
-                Toast.makeText(getContext(), "⚡ Applying tweaks in batch...", Toast.LENGTH_SHORT).show();
+                btnSettingsTweaksApplyAll.setText("⏳ APPLYING ALL TWEAKS & ENGINES...");
+                Toast.makeText(getContext(), "⚡ Applying all tweaks, hardware engines & network optimizations...", Toast.LENGTH_SHORT).show();
+                final Context ctx = getContext().getApplicationContext();
                 AppExecutors.getInstance().executeCommand(() -> {
+                    // 1. Apply all system & kernel tweaks from TweakManagerRepository
                     int applied = com.gamebooster.app.tweaks.TweakManagerRepository.applyAllSupportedTweaks(getContext());
+
+                    // 2. Apply all Hardware Engines & Performance Toggles via ManualSettingsPreferences
+                    try {
+                        GpuTweaksChannel.setGameDriverMode(true);
+                        PerformanceChannel.setGpuRenderMode(true);
+                        com.gamebooster.app.booster.CpuGovernorChannel.setGovernor("extreme");
+                        com.gamebooster.app.booster.ThermalChannel.setThermalOverride(true);
+
+                        if (ctx != null) {
+                            ManualSettingsPreferences.setGameDriverEnabled(ctx, true);
+                            ManualSettingsPreferences.setGpuMode(ctx, "vulkan");
+                            ManualSettingsPreferences.setCpuMode(ctx, "performance");
+                            ManualSettingsPreferences.setThermalBypassEnabled(ctx, true);
+                            ManualSettingsPreferences.setAdpfEngineEnabled(ctx, true);
+                            ManualSettingsPreferences.setUclampBoostEnabled(ctx, true);
+                            ManualSettingsPreferences.setTouch1000HzLockEnabled(ctx, true);
+                            ManualSettingsPreferences.setPhantomFreezerKillEnabled(ctx, true);
+                            ManualSettingsPreferences.setVulkanSkiaVkEnabled(ctx, true);
+                            ManualSettingsPreferences.setMemory16kbShieldEnabled(ctx, true);
+                            ManualSettingsPreferences.setWebViewBoostEnabled(ctx, true);
+                            ManualSettingsPreferences.setAntiLogEnabled(ctx, true);
+                            ManualSettingsPreferences.applyManualSettings(ctx);
+                        }
+                    } catch (Throwable ignored) {}
+
+                    // 3. Apply all Network Optimizations
+                    try {
+                        NetworkOptimizer.disableDataSaver();
+                        NetworkOptimizer.disableBatterySaver();
+                        NetworkOptimizer.disableWifiPowerSaver();
+                        NetworkOptimizer.optimizeTcpBuffers();
+                        NetworkOptimizer.optimize5gAnd6gDataNetwork(true);
+                        NetworkOptimizer.optimizeWifi6and7LowLatency(true);
+                        NetworkOptimizer.setDualDataAndWifiAcceleration(true);
+                        NetworkOptimizer.enableRankedLowLatencySocketTuning(ctx);
+                        NetworkOptimizer.flushDnsCache();
+                        if (ctx != null) {
+                            ManualSettingsPreferences.setDisableDataSaverEnabled(ctx, true);
+                            ManualSettingsPreferences.setDisableBatterySaverEnabled(ctx, true);
+                            ManualSettingsPreferences.setDisableWifiSaverEnabled(ctx, true);
+                            ManualSettingsPreferences.setTcpBbrBuffersEnabled(ctx, true);
+                            ManualSettingsPreferences.set5g6gDataEnabled(ctx, true);
+                            ManualSettingsPreferences.setWifiLowLatencyEnabled(ctx, true);
+                            ManualSettingsPreferences.setDualDataWifiEnabled(ctx, true);
+                        }
+                    } catch (Throwable ignored) {}
+
                     AppExecutors.getInstance().postToMainThread(() -> {
                         if (isAdded() && getContext() != null) {
                             btnSettingsTweaksApplyAll.setEnabled(true);
                             btnSettingsTweaksApplyAll.setText("⚡ 1-TAP APPLY ALL");
+
+                            // Programmatically update all UI switches to ON state
+                            isProgrammaticToggle = true;
+                            if (switchGameDriver != null) switchGameDriver.setChecked(true);
+                            if (switchGpuMode != null) switchGpuMode.setChecked(true);
+                            if (switchCpuMode != null) switchCpuMode.setChecked(true);
+                            if (switchThermalBypass != null) switchThermalBypass.setChecked(true);
+                            if (switchAdpfEngine != null) switchAdpfEngine.setChecked(true);
+                            if (switchUclampBoost != null) switchUclampBoost.setChecked(true);
+                            if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(true);
+                            if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(true);
+                            if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(true);
+                            if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(true);
+                            if (switchWebviewBoost != null) switchWebviewBoost.setChecked(true);
+                            if (switchPrecisionInputTuner != null) switchPrecisionInputTuner.setChecked(true);
+                            if (switchAntiLog != null) switchAntiLog.setChecked(true);
+                            if (switchAutoPurgeLogs != null) switchAutoPurgeLogs.setChecked(true);
+                            if (switchEsportsAudio != null) switchEsportsAudio.setChecked(true);
+                            if (switchSpeakerBypassBoost != null) switchSpeakerBypassBoost.setChecked(true);
+                            if (switchGamingDnd != null) switchGamingDnd.setChecked(true);
+                            if (switchAutoGameBoost != null) switchAutoGameBoost.setChecked(true);
+
+                            if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(true);
+                            if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(true);
+                            if (switchDisableWifiSaver != null) switchDisableWifiSaver.setChecked(true);
+                            if (switchTcpBbrBuffers != null) switchTcpBbrBuffers.setChecked(true);
+                            if (switch5g6gData != null) switch5g6gData.setChecked(true);
+                            if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
+                            if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                            isProgrammaticToggle = false;
+
                             if (settingsTweaksAdapter != null) {
                                 settingsTweaksAdapter.notifyAllStatesChanged();
                             }
                             updateTweaksBadgeCount();
-                            Toast.makeText(getContext(), "✅ " + applied + " Tweaks Applied & Locked!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "✅ ALL " + applied + " TWEAKS & HARDWARE ENGINES APPLIED!", Toast.LENGTH_LONG).show();
                         }
                     });
                 });

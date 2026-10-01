@@ -294,13 +294,8 @@ public class GameConfigPathResolver {
                         } else {
                             template = "{\n}\n";
                         }
-                    } else if (lower.endsWith(".ini") || lower.endsWith(".cfg") || lower.endsWith("boot.config")) {
-                        if (lower.contains("usercustom")) {
-                            template = "[UserCustom]\n";
-                        } else {
-                            template = "# GameBooster 2026 Config File\n";
-                        }
                     }
+                    // NEVER write dummy # GameBooster 2026 header to UE4 INI/CFG files to prevent game initialization corruption
                     if (!template.isEmpty()) {
                         ConfigFileHelper.writeContentAtomic(path, template);
                         if (ShizukuExecutor.hasShizukuPermission()) {
@@ -322,6 +317,7 @@ public class GameConfigPathResolver {
         List<String> roots = new ArrayList<>();
         // 1. Primary User 0 standard storage locations (highest priority)
         roots.add("/storage/emulated/0/Android/data/" + pkg);
+        roots.add("/sdcard/Android/data/" + pkg);
         roots.add("/data/user/0/" + pkg);
         roots.add("/data/data/" + pkg);
         roots.add("/storage/emulated/0/Android/media/" + pkg);
@@ -330,7 +326,7 @@ public class GameConfigPathResolver {
         int[] secondaryUserIds = {10, 11, 12, 13, 14, 15, 999};
         for (int u : secondaryUserIds) {
             File userRoot = new File("/storage/emulated/" + u);
-            if (userRoot.exists()) {
+            if (userRoot.exists() || ShizukuFileManager.isDirectory("/storage/emulated/" + u)) {
                 roots.add("/storage/emulated/" + u + "/Android/data/" + pkg);
                 roots.add("/data/user/" + u + "/" + pkg);
                 roots.add("/storage/emulated/" + u + "/Android/media/" + pkg);

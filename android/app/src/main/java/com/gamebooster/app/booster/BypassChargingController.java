@@ -32,11 +32,17 @@ public final class BypassChargingController {
             "/sys/devices/platform/charger/charging_enabled",
             "/sys/devices/platform/battery/charging_enabled",
             "/sys/class/power_supply/battery/mmi_charging_enable",
-            "/sys/class/power_supply/battery/battery_charging_enabled"
+            "/sys/class/power_supply/battery/battery_charging_enabled",
+            "/sys/class/power_supply/bms/charging_enabled"
     };
 
     private static final String[] SYSFS_INPUT_SUSPEND_NODES = {
             "/sys/class/power_supply/battery/input_suspend"
+    };
+
+    private static final String[] SYSFS_LIMIT_MAX_NODES = {
+            "/sys/class/power_supply/battery/charge_control_limit_max",
+            "/sys/class/power_supply/bms/charge_control_limit_max"
     };
 
     private BypassChargingController() {}
@@ -81,35 +87,9 @@ public final class BypassChargingController {
      * Activates charge separation / bypass charging.
      */
     public static void enableBypassCharging(Context context) {
-        AppExecutors.getInstance().executeCommand(() -> {
-            try {
-                Log.d(TAG, "Activating Bypass Charging (Direct Motherboard Power)...");
-                // Tier 1: Android Shell Battery Service Unplug (Device stays awake via AC)
-                CommandExecutor.executeSystemCommand("cmd battery unplug");
-                CommandExecutor.executeSystemCommand("dumpsys battery unplug");
-
-                // Tier 2: Kernel Sysfs Direct Charging Disabler (0 = disable charging)
-                for (String node : SYSFS_CHARGING_NODES) {
-                    String cmd = "if [ -f " + node + " ]; then echo 0 > " + node + "; fi";
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
-
-                // Tier 3: Suspend input power into cells (1 = suspend)
-                for (String node : SYSFS_INPUT_SUSPEND_NODES) {
-                    String cmd = "if [ -f " + node + " ]; then echo 1 > " + node + "; fi";
-                    CommandExecutor.executeSystemCommand(cmd);
-                }
-
-                // Tier 4: MediaTek Fast Charging suspend
-                String mtkCmd = "if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 0 > /sys/devices/platform/charger/charging_enabled; fi";
-                CommandExecutor.executeSystemCommand(mtkCmd);
-
-                sIsBypassActive = true;
-                Log.i(TAG, "Bypass Charging ACTIVE: Power routed directly to SoC.");
-            } catch (Throwable t) {
-                Log.e(TAG, "Error enabling bypass charging", t);
-            }
-        });
+        // Disabled per user request to avoid battery charging issues / stuck percentage.
+        // Always enforce normal physical charging.
+        restoreNormalCharging(context);
     }
 
     /**
@@ -138,6 +118,14 @@ public final class BypassChargingController {
                 // Tier 4: Restore MTK charger
                 String mtkCmd = "if [ -f /sys/devices/platform/charger/charging_enabled ]; then echo 1 > /sys/devices/platform/charger/charging_enabled; fi";
                 CommandExecutor.executeSystemCommand(mtkCmd);
+
+                // Tier 5: Reset charge control limit to 100% and clear protect_battery limits
+                for (String node : SYSFS_LIMIT_MAX_NODES) {
+                    String cmd = "if [ -f " + node + " ]; then echo 100 > " + node + "; fi";
+                    CommandExecutor.executeSystemCommand(cmd);
+                }
+                CommandExecutor.executeSystemCommand("settings put global protect_battery 0 2>/dev/null");
+                CommandExecutor.executeSystemCommand("settings put global charge_control_limit 100 2>/dev/null");
 
                 sIsBypassActive = false;
                 Log.i(TAG, "Bypass Charging RESTORED: Normal charging resumed.");

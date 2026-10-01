@@ -251,8 +251,8 @@ public final class MlbbDroneViewPatcher {
 
             // 2. Active mini_patch slots
             sb.append("  mp=\"$root/files/mini_patch\"\n");
-            sb.append("  slots=\"$mp/1232.1/ZC_7108472971/2 $mp/1232.1/ZC_7117732192/1 $root/").append(MINI_PATCH_SUBPATH).append("\"\n");
-            sb.append("  found=$(find \"$mp\" -maxdepth 3 -type d 2>/dev/null | grep -E '/(ZC_|fix_)[^/]+(/[0-9]+)?$')\n");
+            sb.append("  slots=\"$mp/1232.1/ZC_7108472971/2 $mp/1232.1/ZC_7117732192/1 $mp/1232.1/ZC_7117732192/3 $mp/1232.2/ZC_7117732192/1 $root/").append(MINI_PATCH_SUBPATH).append("\"\n");
+            sb.append("  found=$(find \"$mp\" -maxdepth 5 -type d 2>/dev/null | grep -E '/(ZC_|fix_)[^/]+(/[0-9]+)?$')\n");
             sb.append("  for s in $slots $found; do\n");
             sb.append("    [ -n \"$s\" ] || continue\n");
             sb.append("    mkdir -p \"$s/Document/android\" \"$s/Document\" 2>/dev/null\n");
@@ -302,25 +302,39 @@ public final class MlbbDroneViewPatcher {
         String miniPatchBase = rootDir + "/files/mini_patch";
 
         // Always include known active slots so deployment never misses live patch folders
+        // Updated with active phone slots for both 1232.1 and 1232.2 trees
         String[] knownSlots = {
             rootDir + "/" + MINI_PATCH_SUBPATH,
             miniPatchBase + "/1232.1/ZC_7108472971/2",
             miniPatchBase + "/1232.1/ZC_7117732192/1",
+            miniPatchBase + "/1232.1/ZC_7117732192/3",
+            miniPatchBase + "/1232.1/ZC_7125100180/1",
             miniPatchBase + "/1232.1/fix_1788688104/1",
+            miniPatchBase + "/1232.1/fix_1788688455/1",
             miniPatchBase + "/1232.1/fix_1788790164/1",
+            miniPatchBase + "/1232.1/fix_1789023716/1",
             miniPatchBase + "/1232.1/fix_1789548222/1",
             miniPatchBase + "/1232.1/fix_1789550581/2",
             miniPatchBase + "/1232.1/fix_1789616705/1",
-            miniPatchBase + "/1232.1/fix_1789890026/1"
+            miniPatchBase + "/1232.1/fix_1789890026/1",
+            miniPatchBase + "/1232.1/fix_1789972624/1",
+            miniPatchBase + "/1232.1/fix_1790076887/1",
+            miniPatchBase + "/1232.2/ZC_7117732192/1",
+            miniPatchBase + "/1232.2/fix_1789023716/1",
+            miniPatchBase + "/1232.2/fix_1789548222/1",
+            miniPatchBase + "/1232.2/fix_1789616705/1",
+            miniPatchBase + "/1232.2/fix_1789890026/1",
+            miniPatchBase + "/1232.2/fix_1790085128/1",
+            miniPatchBase + "/1232.2/fix_1790147373/1"
         };
         for (String ks : knownSlots) {
             if (!slots.contains(ks)) slots.add(ks);
         }
 
         // Fast shell find across mini_patch directory (finds any new slots registered by Moonton)
-        // NEW MAP UPDATE: maxdepth increased to 5 to catch new versioned sub-folders
+        // Scans depth up to 6 to catch any version/slot/sub-slot variations
         try {
-            String findCmd = "find \"" + miniPatchBase + "\" -maxdepth 5 -type d 2>/dev/null";
+            String findCmd = "find \"" + miniPatchBase + "\" -maxdepth 6 -type d 2>/dev/null";
             String findOut = ShizukuExecutor.hasShizukuPermission()
                     ? ShizukuExecutor.executeShizukuCommand(findCmd)
                     : CommandExecutor.executeSystemCommand(findCmd);
@@ -340,7 +354,7 @@ public final class MlbbDroneViewPatcher {
         } catch (Throwable ignored) {}
 
         // Supplementary recursive directory listing via ShizukuFileManager
-        // NEW MAP UPDATE: auto-discover ALL version folders (not just 1232.1)
+        // Auto-discover ALL version folders (1232.1, 1232.2, etc.)
         List<String> versionNames = ShizukuFileManager.listDirectory(miniPatchBase);
         if (versionNames != null) {
             for (String verName : versionNames) {

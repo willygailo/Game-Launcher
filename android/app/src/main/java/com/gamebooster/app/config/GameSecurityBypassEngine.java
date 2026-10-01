@@ -249,6 +249,18 @@ public final class GameSecurityBypassEngine {
                 "/storage/emulated/0/Android/data/" + pkg + "/files/Saved/Crashes",
                 "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Logs",
                 "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Crashes",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Gamelet/logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Gamelet/reportcache",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/Logs",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/StatsResend",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Gamelet/logs",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Gamelet/reportcache",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/Logs",
+                "/sdcard/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/ShadowTrackerExtra/Saved/Pandora/StatsResend",
+                "/sdcard/Android/data/" + pkg + "/files/centauri_log",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/centauri_log",
+                "/sdcard/Android/data/" + pkg + "/files/TGPA",
+                "/storage/emulated/0/Android/data/" + pkg + "/files/TGPA",
                 "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/Saved/Logs",
                 "/storage/emulated/0/Android/data/" + pkg + "/files/UE4Game/ShadowTrackerExtra/Saved/Crashes",
                 "/data/data/" + pkg + "/files/tlog",
@@ -476,6 +488,9 @@ public final class GameSecurityBypassEngine {
         if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
             try {
                 String[] resDirs = {
+                    "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android",
+                    "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android",
+                    "/data/data/" + pkg + "/files/dragon2017/assets/Document/android",
                     "/sdcard/Android/data/" + pkg + "/files/dragon2017/res",
                     "/sdcard/Android/data/" + pkg + "/files/Dragon2017/res",
                     "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/res",
@@ -569,10 +584,8 @@ public final class GameSecurityBypassEngine {
      * ACE 2026 uses EGL swap timing as a fingerprint for cheat frame injection.
      */
     private static void disableSwappyFramePacing() {
-        String cmd =
-            "setprop swappy.disable 1; " +
-            "setprop debug.swappy.swap_interval 0; " +
-            "setprop debug.egl.swapinterval 0; ";
+        // Keep EGL and Swappy defaults untouched to prevent UE4 loading deadlock
+        String cmd = "setprop debug.egl.buffcount 3; ";
         executePrivileged(cmd);
     }
 
