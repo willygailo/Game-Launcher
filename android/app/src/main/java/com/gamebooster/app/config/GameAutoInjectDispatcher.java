@@ -77,7 +77,9 @@ public final class GameAutoInjectDispatcher {
             }
 
             try {
-                com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(ctx, pkg);
+                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(ctx)) {
+                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(ctx, pkg);
+                }
             } catch (Throwable t) {
                 Log.w(TAG, "Device spoof injection note for " + pkg + ": " + t.getMessage());
             }
@@ -125,8 +127,24 @@ public final class GameAutoInjectDispatcher {
                     MlbbHeroScriptDispatcher.dispatchAllHeroes(context, pkg);
                 }
             } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
-                PubgConfigPatcher.patchUltraExtreme185(pkg);
-                PubgConfigPatcher.patch(pkg, 185);
+                // Read user's preferred FPS for this game — honors 165fps selection properly
+                int pubgmTargetFps = 185;
+                try {
+                    int storedFps = GameProfilePreferences.getTargetHz(ctx, pkg);
+                    if (storedFps >= 120) pubgmTargetFps = storedFps;
+                } catch (Throwable ignored) {}
+
+                if (pubgmTargetFps == 165) {
+                    // Dedicated 165fps SuperSmooth + HDR path
+                    PubgConfigPatcher.patchUltraExtreme165(pkg);
+                    PubgConfigPatcher.patchSuperSmooth165(pkg);
+                    PubgConfigPatcher.apply165FpsHdrUnlock(pkg);
+                } else {
+                    // Default: 185fps Ultra Extreme
+                    PubgConfigPatcher.patchUltraExtreme185(pkg);
+                }
+                PubgConfigPatcher.patch(pkg, pubgmTargetFps);
+
                 PubgConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 PubgConfigPatcher.applyPubgmGodModeFullOverdrive(pkg);
                 PubgConfigPatcher.applyPubgmMasterSuite(pkg);
@@ -146,6 +164,8 @@ public final class GameAutoInjectDispatcher {
                 CodmConfigPatcher.applyCodmSlideCancelMobility(pkg);
                 CodmConfigPatcher.applyCodmUltraDroneViewMaxFov(pkg);
             } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
+                FreeFireConfigPatcher.patchUltraExtreme185(pkg);
+                FreeFireConfigPatcher.patch(pkg, 185);
                 FreeFireConfigPatcher.applyFreeFireDamage10000AttackSpeedMax(pkg);
                 FreeFireConfigPatcher.applyFreeFireMasterSuite(pkg);
                 FreeFireConfigPatcher.applyFreeFireAutoHeadshot(pkg);
@@ -154,6 +174,40 @@ public final class GameAutoInjectDispatcher {
                 FreeFireConfigPatcher.applyFreeFireFastGlooWall(pkg);
                 FreeFireConfigPatcher.applyDamageLockMax(pkg);
                 FreeFireConfigPatcher.applyAimAssistLockMax(pkg);
+                FreeFireConfigPatcher.applyVulkanPipelinePrime(pkg);
+            } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("hkrpg") || pkg.contains("honkai") || pkg.contains("zenless") || pkg.contains("nap")) {
+                GenshinConfigPatcher.patchUltraExtreme185(pkg);
+                GenshinConfigPatcher.patch(pkg, 185);
+                GenshinConfigPatcher.applyDamage10000ElementalBurstMax(pkg);
+                GenshinConfigPatcher.applyDamageLockMax(pkg);
+                GenshinConfigPatcher.applyAimAssistLockMax(pkg);
+                GenshinConfigPatcher.applyVulkanPipelinePrime(pkg);
+                GenshinConfigPatcher.applySuperFastTouch(pkg);
+            } else if (pkg.contains("hok") || pkg.contains("honorofkings") || pkg.contains("arenaofvalor") || pkg.contains("ngame.allstar")) {
+                HokConfigPatcher.patchUltraExtreme185(pkg);
+                HokConfigPatcher.patch(pkg, 185);
+                HokConfigPatcher.applyAutoSmiteObjective(pkg);
+                HokConfigPatcher.applyDamageLockMax(pkg);
+                HokConfigPatcher.applyAimAssistLockMax(pkg);
+                HokConfigPatcher.applyVulkanPipelinePrime(pkg);
+            } else if (pkg.contains("wildrift") || pkg.contains("leagueoflegends")) {
+                WildRiftConfigPatcher.patchUltraExtreme185(pkg);
+                WildRiftConfigPatcher.patch(pkg, 185);
+                WildRiftConfigPatcher.applyDamageLockMax(pkg);
+                WildRiftConfigPatcher.applyAimAssistLockMax(pkg);
+                WildRiftConfigPatcher.applySuperFastTouch(pkg);
+            } else if (pkg.contains("deltaforce")) {
+                DeltaForceConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
+                DeltaForceConfigPatcher.applyDeltaForceMasterSuite(pkg);
+                DeltaForceConfigPatcher.applyDamageLockMax(pkg);
+                DeltaForceConfigPatcher.applyAimAssistLockMax(pkg);
+                DeltaForceConfigPatcher.applyVulkanPipelinePrime(pkg);
+            } else if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashofclans") || pkg.contains("clashroyale") || pkg.contains("squad")) {
+                SupercellConfigPatcher.patchUltraExtreme185(pkg);
+                SupercellConfigPatcher.patch(pkg, 185);
+                SupercellConfigPatcher.applyDamageLockMax(pkg);
+                SupercellConfigPatcher.applyAimAssistLockMax(pkg);
+                SupercellConfigPatcher.applyVulkanPipelinePrime(pkg);
             } else if (pkg.contains("farlight") || pkg.contains("farlight84")) {
                 FarlightConfigPatcher.applyJetpackZeroCooldown(pkg);
                 FarlightConfigPatcher.applyDamage10000AttackSpeedMax(pkg);

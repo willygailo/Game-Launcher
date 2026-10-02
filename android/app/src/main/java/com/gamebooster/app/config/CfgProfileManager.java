@@ -221,7 +221,7 @@ public class CfgProfileManager {
         boolean drone    = prefs.getBoolean(key + KEY_DRONE_SUFFIX, true);
         int droneTier    = prefs.getInt(key + KEY_DRONE_TIER_SUFFIX, MlbbDroneViewPatcher.DEFAULT_TIER);
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
-        boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, true);
+        boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, false);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);
         CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, fps, touch, forceHz, aim, dmg, recoil, tracking, fastCd, shield, drone, armor, mask, antiLog);
         p.setDroneViewTier(droneTier);

@@ -162,6 +162,9 @@ public class AutoGameMonitorService extends Service {
                     // Stage 1 (Instant): Display Hz, CPU/GPU Turbo, Graphics Cfg, Drone View & Hardware Spoof
                     com.gamebooster.app.engine.MasterOptimizationEnforcer.enforceGameLaunchOptimizations(appCtx, currentPackage, targetHz);
 
+                    // Stage 1.5 (Extreme Overdrive): Uncap SurfaceFlinger pipeline, lock CPU/GPU clocks max, 1000Hz touch
+                    com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(appCtx, currentPackage, targetHz);
+
                     // Stage 2 (10s Lobby-Safe): In-Lobby Stealth Overdrive & Multi-Slot Drone View Re-injection
                     com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appCtx, currentPackage, targetHz, 10);
 

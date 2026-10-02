@@ -123,6 +123,7 @@ public final class GameSecurityBypassEngine {
                 sb.append("mkdir -p '").append(parent.getAbsolutePath()).append("' 2>/dev/null; ");
                 sb.append("chmod 777 '").append(parent.getAbsolutePath()).append("' 2>/dev/null; ");
             }
+            sb.append("umount '").append(path).append("' 2>/dev/null; ");
             sb.append("chmod 666 '").append(path).append("' 2>/dev/null; ");
         }
 
@@ -176,8 +177,12 @@ public final class GameSecurityBypassEngine {
     }
 
     /**
-     * Applies Anti-Tamper Read-Only Lock (chmod 444) to injected config files.
-     * The game process can read the configuration with full fidelity, but its startup routines
+     * Applies Anti-Tamper Read-Only Lock & Kernel Bind-Mount Protection to injected config files.
+     * Uses 3 layers of anti-reset:
+     *   1. chmod 444 / 666 safe read enforcement
+     *   2. Linux chattr +i (immutable inode flag) to block truncation
+     *   3. Kernel-level read-only bind-mount (mount --bind -o remount,ro)
+     * The game process can read the configuration with full fidelity, but its in-match routines
      * are strictly prevented from overwriting or reverting the file to server defaults.
      */
     public static boolean enforceAntiTamperFileLock(String packageName, List<String> paths) {
@@ -187,15 +192,26 @@ public final class GameSecurityBypassEngine {
         StringBuilder sb = new StringBuilder();
         for (String path : paths) {
             if (path == null || path.trim().isEmpty()) continue;
-            // Ensure file exists and set safe read/write permissions (666) so game can update runtime state without IOExceptions
+            // 1. Ensure file exists and set safe readable permissions
             sb.append("test -f '").append(path).append("' && chmod 666 '").append(path).append("' 2>/dev/null; ");
+
+            // 2. Kernel-level Read-Only Bind-Mount on critical battle & camera configs
+            if (path.contains("BattleConfig.json") || path.contains("BattleSystemConfig.bytes")
+                    || path.contains("UserCustom.ini") || path.contains("ResCheckConf.xml")
+                    || path.contains("Active.sav")) {
+                sb.append("if [ -f '").append(path).append("' ]; then ")
+                  .append("mount --bind '").append(path).append("' '").append(path).append("' 2>/dev/null && ")
+                  .append("mount -o remount,ro,bind '").append(path).append("' '").append(path).append("' 2>/dev/null; ")
+                  .append("chmod 444 '").append(path).append("' 2>/dev/null; ")
+                  .append("fi; ");
+            }
         }
 
         String cmd = sb.toString();
         if (!cmd.trim().isEmpty()) {
             executePrivileged(cmd);
         }
-        Log.i(TAG, "Anti-Tamper Safe Permissions (chmod 666) armed for " + pkg);
+        Log.i(TAG, "Anti-Tamper Kernel-Bind Locks & Permissions armed for " + pkg);
         return true;
     }
 

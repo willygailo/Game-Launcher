@@ -147,23 +147,25 @@ public class DeviceSpooferEngine {
      */
     public static boolean applySpoofing(Context context, String packageName) {
         if (context == null) return false;
-        // Check per-package override first, fall back to global active profile, or recommended flagship profile
-        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
-        SpoofProfile profile = null;
-        if (activeId != null && !activeId.trim().isEmpty()) {
-            profile = getProfileById(activeId);
-        }
-        if (profile == null) {
-            profile = getRecommendedProfile(packageName);
-            if (profile != null) {
-                activeId = profile.id;
-                SpoofPreferences.setActiveProfileId(context, activeId);
-            }
-        }
-        if (profile == null) {
+        // Strictly respect user permission: if user did not explicitly turn on Device Spoofing,
+        // NEVER automatically activate or force any spoof profile.
+        if (!SpoofPreferences.isSpoofEnabled(context)) {
+            Log.d(TAG, "Device spoofing is not enabled by user — will not automatically activate for: " + packageName);
             return false;
         }
-        SpoofPreferences.setSpoofEnabled(context, true);
+
+        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
+        if (activeId == null || activeId.trim().isEmpty()) {
+            Log.d(TAG, "No active spoof profile configured by user — skipping spoofing for: " + packageName);
+            return false;
+        }
+
+        SpoofProfile profile = getProfileById(activeId);
+        if (profile == null) {
+            Log.w(TAG, "Configured spoof profile not found: " + activeId);
+            return false;
+        }
+
         return applyProfile(context, profile, packageName);
     }
 
@@ -324,18 +326,15 @@ public class DeviceSpooferEngine {
      * and injects the tailored engine configs.
      */
     public static boolean applyWorkingSpoofForGame(Context context, String packageName) {
-        if (packageName == null || packageName.trim().isEmpty()) return false;
-        if (context != null) {
-            SpoofPreferences.setSpoofEnabled(context, true);
+        if (context == null || packageName == null || packageName.trim().isEmpty()) return false;
+        if (!SpoofPreferences.isSpoofEnabled(context)) {
+            Log.d(TAG, "Device spoofing is not enabled by user — skipping auto working spoof for " + packageName);
+            return false;
         }
         SpoofProfile profile = getEffectiveProfile(context, packageName);
         if (profile == null) {
-            profile = getRecommendedProfile(packageName);
-        }
-        if (profile == null) return false;
-        if (context != null) {
-            SpoofPreferences.setProfileIdForPackage(context, packageName.trim(), profile.id);
-            SpoofPreferences.setActiveProfileId(context, profile.id);
+            Log.d(TAG, "No effective spoof profile configured for " + packageName);
+            return false;
         }
         return applyProfile(context, profile, packageName.trim());
     }

@@ -28,38 +28,45 @@ public class SpoofPreferences {
     // ── Global Spoof Toggle ──
 
     public static boolean isSpoofEnabled(Context context) {
-        return getPrefs(context).getBoolean(KEY_SPOOF_ENABLED, true);
+        if (context == null) return false;
+        return getPrefs(context).getBoolean(KEY_SPOOF_ENABLED, false);
     }
 
     public static void setSpoofEnabled(Context context, boolean enabled) {
+        if (context == null) return;
         getPrefs(context).edit().putBoolean(KEY_SPOOF_ENABLED, enabled).apply();
     }
 
     // ── Spoof All Apps Toggle ──
 
     public static boolean isSpoofAllApps(Context context) {
+        if (context == null) return false;
         return getPrefs(context).getBoolean(KEY_SPOOF_ALL_APPS, false);
     }
 
     public static void setSpoofAllApps(Context context, boolean enabled) {
+        if (context == null) return;
         getPrefs(context).edit().putBoolean(KEY_SPOOF_ALL_APPS, enabled).apply();
     }
 
     // ── Global Active Profile ──
 
     public static String getActiveProfileId(Context context) {
+        if (context == null) return null;
         String id = getPrefs(context).getString(KEY_ACTIVE_PROFILE_ID, null);
         if (id == null || id.trim().isEmpty()) {
-            return "asus_rog9_pro";
+            return null;
         }
         return id;
     }
 
     public static void setActiveProfileId(Context context, String profileId) {
+        if (context == null) return;
         getPrefs(context).edit().putString(KEY_ACTIVE_PROFILE_ID, profileId).apply();
     }
 
     public static void clearActiveProfile(Context context) {
+        if (context == null) return;
         getPrefs(context).edit().remove(KEY_ACTIVE_PROFILE_ID).apply();
     }
 

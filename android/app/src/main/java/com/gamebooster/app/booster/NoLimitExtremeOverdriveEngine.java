@@ -73,6 +73,9 @@ public final class NoLimitExtremeOverdriveEngine {
 
                 // 6. 1000Hz Ultra Touch & Combat Engine
                 CombatEngineChannel.enableCombatMode(context);
+                try {
+                    TouchLatencyChannel.enableUltraTouchResponse();
+                } catch (Throwable ignored) {}
 
                 // 7. Advanced Network QoS: BBR2, DSCP socket priority, IRQ affinity
                 com.gamebooster.app.booster.AdvancedNetworkQosEngine.applyAll(context);
@@ -84,6 +87,13 @@ public final class NoLimitExtremeOverdriveEngine {
                 if (BypassChargingController.isBypassConfiguredEnabled(context) && BypassChargingController.isChargerConnected(context)) {
                     BypassChargingController.enableBypassCharging(context);
                 }
+
+                // 10. Native Android OS Framework Performance Lock (Game Mode API + Sustained Perf)
+                try {
+                    com.gamebooster.app.engine.NativeFrameworkBridge.setGameModePerformance(context, packageName);
+                    com.gamebooster.app.engine.NativeFrameworkBridge.startAdpfSession(context, finalFps);
+                    com.gamebooster.app.engine.NativeFrameworkBridge.acquireSustainedPerformanceLock(context);
+                } catch (Throwable ignored) {}
 
                 Log.i(TAG, "═══ NO-LIMIT EXTREME OVERDRIVE ACTIVE ═══");
             } catch (Throwable t) {
@@ -104,6 +114,11 @@ public final class NoLimitExtremeOverdriveEngine {
         sfCmds.add("setprop persist.sys.NV_FPSLIMIT " + hz);
         sfCmds.add("setprop persist.sys.game.fps " + hz);
         sfCmds.add("setprop persist.sys.game.rate " + hz);
+        sfCmds.add("setprop debug.sf.latch_unsignaled 1");
+        sfCmds.add("setprop debug.sf.disable_backpressure 1");
+        sfCmds.add("setprop debug.sf.early_phase_offset_ns 0");
+        sfCmds.add("setprop debug.sf.early_app_phase_offset_ns 0");
+        sfCmds.add("setprop debug.sf.early_gl_phase_offset_ns 0");
 
         // Direct SurfaceFlinger binder overrides
         sfCmds.add("service call SurfaceFlinger 1035 i32 " + hz);
@@ -118,6 +133,12 @@ public final class NoLimitExtremeOverdriveEngine {
      * Prevents clock frequency drops even when scene load drops.
      */
     public static void lockCpuFrequenciesMax() {
+        // Run deep multi-core cluster topology tuning and scheduler/RT flags
+        try {
+            CpuGovernorChannel.tuneMultiCoreTopology();
+            CpuGovernorChannel.applyIoPipelineAndRtFlags();
+        } catch (Throwable ignored) {}
+
         StringBuilder sb = new StringBuilder();
 
         // 1. Enforce performance governor and pin min_freq = max_freq
@@ -133,8 +154,6 @@ public final class NoLimitExtremeOverdriveEngine {
         sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; ");
         sb.append("echo 1024 > /dev/cpuset/top-app/uclamp.boosted 2>/dev/null; ");
         sb.append("echo 1024 > /dev/cpuset/foreground/uclamp.min 2>/dev/null; ");
-        sb.append("echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; ");
-        sb.append("echo 0-7 > /dev/cpuset/foreground/cpus 2>/dev/null; ");
 
         // 4. Disable energy aware scheduling (EAS downscaling)
         sb.append("echo 0 > /proc/sys/kernel/sched_energy_aware 2>/dev/null; ");
@@ -145,12 +164,12 @@ public final class NoLimitExtremeOverdriveEngine {
     }
 
     /**
-     * Locks GPU frequencies to maximum clock speeds across Qualcomm & MediaTek chipsets.
+     * Locks GPU frequencies to maximum clock speeds across Qualcomm, MediaTek, Exynos, and Tensor chipsets.
      */
     public static void lockGpuFrequenciesMax() {
         List<String> gpuCmds = new ArrayList<>();
 
-        // Qualcomm Adreno GPU Turbo Lock
+        // 1. Qualcomm Adreno GPU Turbo Lock
         gpuCmds.add("echo 0 > /sys/class/kgsl/kgsl-3d0/thermal_pwrlevel 2>/dev/null");
         gpuCmds.add("echo 0 > /sys/class/kgsl/kgsl-3d0/throttling 2>/dev/null");
         gpuCmds.add("echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on 2>/dev/null");
@@ -159,7 +178,7 @@ public final class NoLimitExtremeOverdriveEngine {
         gpuCmds.add("setprop debug.adreno.turbo 1");
         gpuCmds.add("setprop debug.adreno.perf_level 0");
 
-        // ARM Mali / MediaTek MT6878 GPU Boost
+        // 2. ARM Mali / MediaTek MT6878 GPU Boost
         gpuCmds.add("setprop debug.mali.sched.priority -20");
         gpuCmds.add("setprop debug.mali.force_gpu_boost 1");
         gpuCmds.add("setprop vendor.gpu.power_mode 1");
@@ -167,8 +186,26 @@ public final class NoLimitExtremeOverdriveEngine {
         gpuCmds.add("echo always_on > /sys/class/misc/mali0/device/power_policy 2>/dev/null");
         gpuCmds.add("echo performance > /sys/devices/platform/13040000.mali/devfreq/13040000.mali/governor 2>/dev/null");
 
+        // 3. Universal devfreq GPU governor & frequency locking (Qualcomm, MediaTek, Tensor, Exynos, Unisoc)
+        gpuCmds.add("for g in /sys/class/devfreq/*gpu*/governor /sys/class/devfreq/*mali*/governor /sys/class/devfreq/*kgsl*/governor; do echo performance > \"$g\" 2>/dev/null; done");
+        gpuCmds.add("for m in /sys/class/devfreq/*gpu*/max_freq /sys/class/devfreq/*mali*/max_freq /sys/class/devfreq/*kgsl*/max_freq; do MAX=$(cat \"$m\" 2>/dev/null); [ -n \"$MAX\" ] && echo $MAX > \"${m%max_freq}min_freq\" 2>/dev/null; done");
+
         CommandExecutor.executeBatchCommands(gpuCmds);
-        Log.i(TAG, "GPU turbo clocks locked.");
+
+        // 4. Chipset vendor-targeted boost channels
+        try {
+            com.gamebooster.app.device.DeviceDetector.ChipsetVendor vendor =
+                    com.gamebooster.app.device.DeviceDetector.detectChipsetVendor();
+            if (vendor == com.gamebooster.app.device.DeviceDetector.ChipsetVendor.QUALCOMM) {
+                GpuTweaksChannel.enableAdrenoTurbo();
+            } else if (vendor == com.gamebooster.app.device.DeviceDetector.ChipsetVendor.MEDIATEK) {
+                GpuTweaksChannel.enableMediaTekGedBoost();
+            } else if (vendor == com.gamebooster.app.device.DeviceDetector.ChipsetVendor.TENSOR || vendor == com.gamebooster.app.device.DeviceDetector.ChipsetVendor.EXYNOS) {
+                GpuTweaksChannel.enableTensorBoost();
+            }
+        } catch (Throwable ignored) {}
+
+        Log.i(TAG, "GPU turbo clocks locked across all GPU devfreq & vendor paths.");
     }
 
     /**

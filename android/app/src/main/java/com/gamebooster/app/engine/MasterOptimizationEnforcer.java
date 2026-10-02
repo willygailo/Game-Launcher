@@ -141,13 +141,16 @@ public class MasterOptimizationEnforcer {
                 com.gamebooster.app.config.GameConfigStorageAccessEngine.grantGlobalStorageAccess(appContext);
                 ShizukuPermissionEnforcer.enforceAndroid16CompatibilityFlags(appContext);
 
-                // 3F. Global Hardware Masking across all apps
-                int maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(appContext);
+                // 3F. Global Hardware Masking across all apps (ONLY IF enabled by user)
+                int maskedCount = 0;
+                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(appContext)) {
+                    maskedCount = com.gamebooster.app.spoofer.HardwareMaskEngine.maskAllInstalledApplications(appContext);
+                }
 
                 final int finalCount = totalApplied;
                 final boolean tier1Ran = shizukuTierRan[0];
                 final String summary = tier1Ran
-                        ? "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED (" + maskedCount + " apps masked)!"
+                        ? "All 3 Tiers (Shizuku Root + Android OS API + APK Engines) successfully ENFORCED" + (maskedCount > 0 ? " (" + maskedCount + " apps masked)!" : "!")
                         : "Optimizations applied WITHOUT Shizuku — system-level tiers skipped (grant Shizuku permission for full effect).";
 
                 com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().recordApply(finalCount, summary);
@@ -365,8 +368,13 @@ public class MasterOptimizationEnforcer {
                     com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(appContext, pkg, true);
                 });
 
-                report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->
-                        DeviceSpooferEngine.applySpoofing(appContext, pkg));
+                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(appContext)) {
+                    report.attemptStep("Tier 3", "DeviceSpooferEngine.applySpoofing", () ->
+                            DeviceSpooferEngine.applySpoofing(appContext, pkg));
+                } else {
+                    report.addStep("Tier 3", "DeviceSpooferEngine.applySpoofing", false,
+                            "SKIPPED — Device Spoofing disabled by user in Settings");
+                }
 
                 // Root / Shizuku dependent system-level overrides
                 if (tier1Ok) {

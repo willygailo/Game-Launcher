@@ -786,17 +786,18 @@ public class HardwareMaskEngine {
      * Masks a single game or application package using the currently active spoof profile.
      */
     public static boolean maskPackage(Context context, String packageName) {
-        if (packageName == null || packageName.trim().isEmpty()) return false;
-        String activeId = context != null ? SpoofPreferences.resolveProfileId(context, packageName) : null;
-        SpoofProfile profile = null;
-        if (activeId != null && !activeId.trim().isEmpty()) {
-            profile = SpoofProfileRegistry.getById(activeId);
+        if (context == null || packageName == null || packageName.trim().isEmpty()) return false;
+        if (!SpoofPreferences.isSpoofEnabled(context)) {
+            Log.d(TAG, "Device spoofing is not enabled by user — skipping maskPackage for: " + packageName);
+            return false;
         }
-        if (profile == null) {
-            profile = DeviceSpooferEngine.getRecommendedProfile(packageName);
+        String activeId = SpoofPreferences.resolveProfileId(context, packageName);
+        if (activeId == null || activeId.trim().isEmpty()) {
+            return false;
         }
+        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
         if (profile == null) {
-            Log.d(TAG, "No spoof profile available for " + packageName + ". Skipping maskPackage.");
+            Log.d(TAG, "Configured spoof profile not found: " + activeId + ". Skipping maskPackage.");
             return false;
         }
         return applyFullHardwareMask(context, profile, packageName.trim());
@@ -967,14 +968,16 @@ public class HardwareMaskEngine {
      */
     public static int maskAllInstalledApplications(Context context) {
         if (context == null) return 0;
+        if (!SpoofPreferences.isSpoofEnabled(context)) {
+            Log.d(TAG, "Device spoofing is not enabled by user — skipping maskAllInstalledApplications.");
+            return 0;
+        }
         String activeId = SpoofPreferences.getActiveProfileId(context);
-        SpoofProfile profile = null;
-        if (activeId != null && !activeId.trim().isEmpty()) {
-            profile = SpoofProfileRegistry.getById(activeId);
+        if (activeId == null || activeId.trim().isEmpty()) {
+            Log.d(TAG, "No active spoof profile set by user — skipping maskAllInstalledApplications.");
+            return 0;
         }
-        if (profile == null) {
-            profile = SpoofProfileRegistry.getDefaultProfile();
-        }
+        SpoofProfile profile = SpoofProfileRegistry.getById(activeId);
         if (profile == null) return 0;
         return maskAllInstalledApplications(context, profile);
     }

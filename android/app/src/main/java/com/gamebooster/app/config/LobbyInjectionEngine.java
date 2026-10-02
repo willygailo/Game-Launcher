@@ -223,10 +223,56 @@ public final class LobbyInjectionEngine {
                     scheduleDroneViewWave2(context, pkg);
                 }
 
+                // ── IN-MATCH CONTINUOUS ANTI-RESET SENTINEL (WAVE 4 & WAVE 5) ──
+                scheduleInMatchAntiResetSentinel(context, pkg, targetFps);
+
             } catch (Throwable t) {
                 Log.e(TAG, "❌ In-lobby injection error for " + pkg + ": " + t.getMessage(), t);
             }
         });
+    }
+
+    /**
+     * Schedules in-match anti-reset reinforcement (Wave 4 at +60s, Wave 5 at +90s).
+     * This neutralizes game-engine triggers (Unity PlayerPrefs.Save() and Unreal Engine 4 engine flushes)
+     * that execute when transitioning from matchmaking to active combat loading screen.
+     */
+    private static void scheduleInMatchAntiResetSentinel(Context context, String pkg, int targetFps) {
+        final Context appCtx = (context != null) ? context.getApplicationContext() : null;
+        final String finalPkg = pkg;
+
+        // Wave 4: 60 seconds (Match loading screen transition)
+        Runnable wave4 = () -> sWorkerExecutor.execute(() -> {
+            try {
+                Log.i(TAG, "⚔️ [Wave-4 In-Match Sentinel] Re-asserting config & anti-reset lock at +60s for " + finalPkg);
+                // Re-enforce BattleConfig overdrive without resetting player settings
+                if (finalPkg.contains("mobile.legends") || finalPkg.contains("mobilelegends")) {
+                    MlbbConfigPatcher.applyBattleConfigOverdrive(finalPkg);
+                } else if (finalPkg.contains("tencent.ig") || finalPkg.contains("pubg")) {
+                    PubgConfigPatcher.applyPubgmBattleConfigOverdrive(finalPkg);
+                }
+                GameSecurityBypassEngine.postInjectionBypassAndLock(finalPkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "[Wave-4 In-Match] Reinforcement warning: " + t.getMessage());
+            }
+        });
+        sMainHandler.postDelayed(wave4, 60_000L);
+
+        // Wave 5: 90 seconds (Live combat match ongoing)
+        Runnable wave5 = () -> sWorkerExecutor.execute(() -> {
+            try {
+                Log.i(TAG, "⚔️ [Wave-5 In-Match Sentinel] Final battle config anchor at +90s for " + finalPkg);
+                if (finalPkg.contains("mobile.legends") || finalPkg.contains("mobilelegends")) {
+                    MlbbConfigPatcher.applyBattleConfigOverdrive(finalPkg);
+                } else if (finalPkg.contains("tencent.ig") || finalPkg.contains("pubg")) {
+                    PubgConfigPatcher.applyPubgmBattleConfigOverdrive(finalPkg);
+                }
+                GameSecurityBypassEngine.postInjectionBypassAndLock(finalPkg);
+            } catch (Throwable t) {
+                Log.w(TAG, "[Wave-5 In-Match] Reinforcement warning: " + t.getMessage());
+            }
+        });
+        sMainHandler.postDelayed(wave5, 90_000L);
     }
 
     /**

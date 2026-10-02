@@ -16,6 +16,14 @@
         android:textColor="#FFFFFF" />
 
     <Button
+        android:id="@+id/btn_hud_165fps_hdr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎯 PUBGM 165 FPS + HDR"
+        android:textSize="12sp"
+        android:textColor="#FFD700" />
+
+    <Button
         android:id="@+id/btn_hud_force_185"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

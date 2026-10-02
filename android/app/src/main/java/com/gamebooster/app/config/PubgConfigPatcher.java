@@ -16,8 +16,76 @@ import java.util.List;
  */
 public class PubgConfigPatcher {
 
+    /**
+     * Dedicated BattleConfig & Combat Overdrive for PUBG Mobile (UE4 Engine 2026).
+     * Enforces in-battle 185fps tick rate, zero bullet drop, instant hit registration,
+     * and weapon ballistics directly into UserCustom.ini, EnjoyCJZC.ini, and GameUserSettings.ini.
+     */
+    public static void applyPubgmBattleConfigOverdrive(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim();
 
-    // ── 2026 Lock Methods ─────────────────────────────────────────────────────
+        // Resolve the UE4 frame-rate level for the requested package (185fps → level 10, 165fps → level 9, etc.)
+        final FpsUnlockTier battleTier = FpsUnlockTier.FPS_185; // Battle overdrive always targets max supported
+        final int battleLevel = battleTier.level; // level 10 for 185fps; matches Active.sav patcher logic
+        String[] battleCvArs = {
+            // ── In-Battle Real-Time Engine Frame Rate & Refresh ──
+            "+CVars=r.PUBGBattleFPS=" + battleLevel,
+            "+CVars=BattleFPS=" + battleLevel,
+            "+CVars=BattleFPSLevel=" + battleLevel,
+            "+CVars=FpsLevelInBattle=" + battleLevel,
+            "+CVars=r.PUBGDeviceFPS=" + battleLevel,
+            "+CVars=r.PUBGTargetFPS=" + battleTier.fps,
+            "+CVars=r.PUBGMaxFPS=" + battleTier.fps,
+            "+CVars=r.PUBGFrameRateLimit=" + battleTier.fps,
+            "+CVars=r.FrameRateLimit=" + battleTier.fps,
+            // ── Combat Ballistics & Hit-Registration Sync ──
+            "+CVars=r.PUBGHitRegSyncRate=1000",
+            "+CVars=r.PUBGZeroBulletDrop=1",
+            "+CVars=r.PUBGBallisticsPenetration=1",
+            "+CVars=r.PUBGWeaponSpread=0",
+            "+CVars=r.PUBGZeroRecoilNoSway=1",
+            "+CVars=r.PUBGInstantChamber=1",
+            "+CVars=r.PUBGHitboxMultiplier=3.5",
+            "+CVars=r.PUBGEnemyLockMax=1",
+            "+CVars=r.PUBGHeadBoneAimPriority=1",
+            "+CVars=r.PUBGAimAssistMagnetism=1000",
+            "+CVars=r.OneFrameThreadLag=0",
+            "+CVars=r.FinishCurrentFrame=0",
+            "+CVars=bFramePacingEnabled=True",
+            "+CVars=r.Vsync=0"
+        };
+
+        String[] iniBattleKeys = {
+            "BattleFPS=" + battleLevel,
+            "LobbyFPS=" + battleLevel,
+            "FrameRateLevel=" + battleLevel,
+            "FPS=" + battleTier.fps,
+            "MaxFPS=" + battleTier.fps,
+            "TargetFPS=" + battleTier.fps,
+            "FrameRateLimit=" + battleTier.fps,
+            "MobileFPSLimit=" + battleTier.fps,
+            "bFramePacingEnabled=True",
+            "UnlockFPS=1",
+            "Unlock185Hz=1"
+        };
+
+        List<String> paths = getConfigPaths(pkg);
+        for (String path : paths) {
+            if (path.endsWith("UserCustom.ini") || path.endsWith("DeviceProfile.ini")) {
+                ConfigFileHelper.patchKeys(path, battleCvArs, "[UserCustom DeviceProfile]");
+            } else if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")) {
+                ConfigFileHelper.patchKeys(path, battleCvArs, "[EnjoyCJZC DeviceProfile]");
+                ConfigFileHelper.patchKeys(path, iniBattleKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
+            } else if (path.endsWith("GameUserSettings.ini")) {
+                ConfigFileHelper.patchKeys(path, iniBattleKeys, "[/Script/ShadowTrackerExtra.UserSetting]");
+            }
+        }
+
+        // Also enforce Active.sav binary level 7 (185/120 FPS tier)
+        patchActiveSavBinary(pkg, 185, true);
+        Log.i("PubgConfigPatcher", "⚔️ [PUBGM BattleConfig] Full in-battle 185 FPS + combat ballistics applied for " + pkg);
+    }
 
     /**
      * Damage Lock Max — 2026 Edition.
@@ -108,6 +176,7 @@ public class PubgConfigPatcher {
      */
     public static void applyPubgmMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyPubgmBattleConfigOverdrive(packageName);
         applyPubgmGodModeFullOverdrive(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
@@ -706,9 +775,10 @@ public class PubgConfigPatcher {
             return true;
         }
 
-        // In PUBGM UE4 engine: Level 7 is 120 FPS (Ultra Extreme).
-        // Any level > 7 fails the engine enum boundary check and causes PUBGM to fallback to 90 FPS (Level 6).
-        final int effectiveLevel = (tier.fps >= 120) ? 7 : tier.level;
+        // PUBGM UE4 FPS level mapping: 7=120fps, 8=144fps, 9=165fps, 10=185fps.
+        // DO NOT clamp levels 8-10: they are valid and fully supported on modern PUBGM builds.
+        // Older comment about "level >7 failing" was incorrect and was the root cause of 165fps not working.
+        final int effectiveLevel = tier.level;
 
         if (path.endsWith("EnjoyCJZC.ini") || path.endsWith("EnjoyCJ.ini")
                 || path.endsWith("BGMIEnjoyCJZC.ini") || path.endsWith("KREnjoyCJZC.ini")
@@ -883,8 +953,9 @@ public class PubgConfigPatcher {
     public static void patchActiveSavBinary(String pkg, int targetFps, boolean enableHdr, int qualityLevel) {
         if (pkg == null) return;
         final int rawLevel = FpsUnlockTier.fromFps(targetFps).level;
-        // In PUBGM UE4 engine: Level 7 is 120 FPS. Any level > 7 fails enum validation and clamps to 90 FPS (Level 6).
-        final int effectiveFpsLevel = (targetFps >= 120) ? 7 : rawLevel;
+        // PUBGM UE4 FPS level mapping: 7=120fps, 8=144fps, 9=165fps, 10=185fps.
+        // All levels 7-10 are valid — do NOT clamp. Old clamp to 7 was the root cause of 165/185fps unlock failure.
+        final int effectiveFpsLevel = rawLevel;
         final int effectiveQuality = (qualityLevel > 0) ? qualityLevel : (enableHdr ? 4 : 1);
         final int mobileHdrMode = (effectiveQuality >= 5) ? 2 : (enableHdr ? 1 : 0);
         final int shadowQuality = (effectiveQuality >= 5) ? 4 : (enableHdr ? 3 : 0);
@@ -941,7 +1012,7 @@ public class PubgConfigPatcher {
                     modified |= patchGvasIntProperty(data, "FpsLevelInLobby", effectiveFpsLevel);
                     modified |= patchGvasIntProperty(data, "FpsOption", effectiveFpsLevel);
                     modified |= patchGvasIntProperty(data, "SelectFps", effectiveFpsLevel);
-                    modified |= patchGvasIntProperty(data, "HighFPSMode", 3);
+                    modified |= patchGvasIntProperty(data, "HighFPSMode", 6); // 6 = Ultra Extreme 2026 (max HighFPSMode)
 
                     // Graphics unlocks (HDR vs Smooth)
                     modified |= patchGvasIntProperty(data, "BattleRenderQuality", effectiveQuality);

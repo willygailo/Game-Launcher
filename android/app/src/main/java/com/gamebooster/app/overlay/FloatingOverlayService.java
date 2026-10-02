@@ -515,6 +515,105 @@ public class FloatingOverlayService extends Service {
                 });
             });
         }
+
+        // 9. PUBGM 165 FPS + HDR Dedicated Unlock Button
+        Button btn165FpsHdr = overlayView.findViewById(R.id.btn_hud_165fps_hdr);
+        if (btn165FpsHdr != null) {
+            btn165FpsHdr.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                Toast.makeText(getApplicationContext(), "🎯 Applying PUBGM 165 FPS + HDR...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        String fgPkg = com.gamebooster.app.games.ForegroundGameDetector
+                                .detectActiveGame(getApplicationContext());
+                        if (fgPkg == null || fgPkg.isEmpty()) {
+                            fgPkg = com.gamebooster.app.config.LobbyInjectionEngine.getActiveGamePackage();
+                        }
+                        final boolean isPubgm = fgPkg != null
+                                && (fgPkg.contains("tencent.ig") || fgPkg.contains("pubg"));
+                        final String fpsPkg = fgPkg;
+
+                        if (isPubgm) {
+                            // Persist 165fps as the preferred target for this game
+                            com.gamebooster.app.config.GameProfilePreferences.setTargetHz(
+                                    getApplicationContext(), fpsPkg, 165);
+                            // Apply dedicated 165fps SuperSmooth + HDR unlock
+                            com.gamebooster.app.config.PubgConfigPatcher.apply165FpsHdrUnlock(fpsPkg);
+                            // Trigger in-lobby re-injection immediately
+                            com.gamebooster.app.config.LobbyInjectionEngine
+                                    .triggerManualLobbyInject(getApplicationContext(), fpsPkg);
+                            AppExecutors.getInstance().postToMainThread(() ->
+                                    Toast.makeText(getApplicationContext(),
+                                            "✅ PUBGM 165 FPS + HDR Locked!", Toast.LENGTH_SHORT).show());
+                        } else {
+                            AppExecutors.getInstance().postToMainThread(() ->
+                                    Toast.makeText(getApplicationContext(),
+                                            "⚠️ Open PUBGM first, then tap 165 FPS", Toast.LENGTH_SHORT).show());
+                        }
+                    } catch (Throwable t) {
+                        android.util.Log.w("FloatingHUD", "165fps HDR inject error: " + t.getMessage());
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                Toast.makeText(getApplicationContext(),
+                                        "⚠️ 165fps error — check Shizuku", Toast.LENGTH_SHORT).show());
+                    }
+                });
+            });
+        }
+
+        // 10. Force 185 FPS Master Overdrive Button
+        Button btnForce185 = overlayView.findViewById(R.id.btn_hud_force_185);
+        if (btnForce185 != null) {
+            btnForce185.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                Toast.makeText(getApplicationContext(), "🚀 Locking 185 FPS Overdrive...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        String fgPkg = com.gamebooster.app.games.ForegroundGameDetector
+                                .detectActiveGame(getApplicationContext());
+                        if (fgPkg == null || fgPkg.isEmpty()) {
+                            fgPkg = com.gamebooster.app.config.LobbyInjectionEngine.getActiveGamePackage();
+                        }
+                        com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine
+                                .engageNoLimitOverdrive(getApplicationContext(), fgPkg, 185);
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                Toast.makeText(getApplicationContext(),
+                                        "⚡ 185 FPS Extreme Overdrive LOCKED!", Toast.LENGTH_SHORT).show());
+                    } catch (Throwable t) {
+                        android.util.Log.w("FloatingHUD", "185 FPS overdrive error: " + t.getMessage());
+                    }
+                });
+            });
+        }
+
+        // 11. Flush Vulkan Pipeline Shaders Button
+        Button btnFlushVulkan = overlayView.findViewById(R.id.btn_hud_flush_vulkan);
+        if (btnFlushVulkan != null) {
+            btnFlushVulkan.setOnClickListener(v -> {
+                performHaptic();
+                scheduleAutoCollapse();
+                Toast.makeText(getApplicationContext(), "🧹 Purging Vulkan Cache...", Toast.LENGTH_SHORT).show();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        String fgPkg = com.gamebooster.app.games.ForegroundGameDetector
+                                .detectActiveGame(getApplicationContext());
+                        if (fgPkg == null || fgPkg.isEmpty()) {
+                            fgPkg = com.gamebooster.app.config.LobbyInjectionEngine.getActiveGamePackage();
+                        }
+                        if (fgPkg != null && !fgPkg.isEmpty()) {
+                            com.gamebooster.app.engine.VulkanRayTracingEngine.clearVulkanPipelineCacheForNewMap(fgPkg);
+                            com.gamebooster.app.engine.VulkanRayTracingEngine.applyVulkanOptimizations(fgPkg);
+                        }
+                        AppExecutors.getInstance().postToMainThread(() ->
+                                Toast.makeText(getApplicationContext(),
+                                        "✨ Vulkan Shaders Flushed & Re-Primed!", Toast.LENGTH_SHORT).show());
+                    } catch (Throwable t) {
+                        android.util.Log.w("FloatingHUD", "Vulkan flush error: " + t.getMessage());
+                    }
+                });
+            });
+        }
     }
 
     private void setupDragListeners() {

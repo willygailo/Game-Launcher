@@ -59,7 +59,7 @@ public class CompetitiveCfgProfile {
     public CompetitiveCfgProfile(String gameKey, int targetFps,
                                  boolean superFastTouchEnabled,
                                  boolean forceWriteSystemHz) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true, true, true, true, true, true, true, true, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, true, true, true, true, true, true, true, true, true, true, false, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -68,7 +68,7 @@ public class CompetitiveCfgProfile {
                                  boolean aimAssistEnabled,
                                  boolean mlbbDamageScriptEnabled,
                                  boolean recoilControlEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, true, true, true, true, true, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, true, true, true, true, true, true, false, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -79,7 +79,7 @@ public class CompetitiveCfgProfile {
                                  boolean recoilControlEnabled,
                                  boolean gyroTuningEnabled,
                                  boolean touchNoDelayEnabled) {
-        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true, true, true, true);
+        this(gameKey, targetFps, superFastTouchEnabled, forceWriteSystemHz, aimAssistEnabled, mlbbDamageScriptEnabled, recoilControlEnabled, true, gyroTuningEnabled, touchNoDelayEnabled, true, true, true, true, false, true);
     }
 
     public CompetitiveCfgProfile(String gameKey, int targetFps,
@@ -214,7 +214,7 @@ public class CompetitiveCfgProfile {
             /* fastCooldownEnabled    */ true,
             /* shield1500Enabled      */ true,
             /* droneViewUltraEnabled  */ true,
-            /* hardwareMaskEnabled    */ true,
+            /* hardwareMaskEnabled    */ false,
             /* antiLogEnabled         */ true
         );
     }
