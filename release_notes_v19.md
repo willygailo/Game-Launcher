@@ -1,6 +1,6 @@
-## ⚡ Game Space PRO v19.4.0-PRO — Universal Android Extreme Overdrive & PUBGM 165/185 FPS
+## ⚡ Game Space PRO v19.5.0-PRO — Universal Android Extreme Overdrive & Stabilization Suite
 
-### 🚀 What's New in v19.4.0-PRO:
+### 🚀 What's New in v19.5.0-PRO:
 
 - **Universal Android Extreme Overdrive Architecture**:
   - **165 Hz & 185 Hz Display Refresh Rate Enforcement**: Unlocked LTPO 1–185 Hz display modes on Snapdragon 8 Gen 3+ and Dimensity 9300+ platforms through `SurfaceFlinger 1034`, DRM modesetting, and `Settings.System` peak refresh rate synchronization.
