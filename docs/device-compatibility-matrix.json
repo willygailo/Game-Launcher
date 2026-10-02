@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-10-02",
+  "description": "Device compatibility blocklist and known caveats for Game Space PRO performance tuning.",
+  "devices": [
+    {
+      "manufacturer": "Google",
+      "model_patterns": ["pixel 7.*", "pixel 8.*"],
+      "soc": "Tensor G2 / Tensor G3",
+      "severity": "WARN",
+      "action": "Downgrade WebView tuning to Budget tier",
+      "reason": "Known WebView Vulkan/Graphite black-screen risk on Pixel 7/8. Avoid WebGPU/Graphite flags."
+    },
+    {
+      "manufacturer": "Samsung",
+      "model_patterns": ["sm-s901b.*", "sm-s906b.*", "sm-s908b.*"],
+      "soc": "Exynos 2200 (Xclipse 920)",
+      "severity": "WARN",
+      "action": "Disable VRR panel bypass",
+      "reason": "Known VRR-disable display flicker on European Exynos S22 variants."
+    },
+    {
+      "manufacturer": "Xiaomi / Redmi / POCO",
+      "model_patterns": [".*"],
+      "soc": "Various (Snapdragon / Dimensity)",
+      "severity": "WARN",
+      "action": "Enforce strict peak/min refresh rate pair validation",
+      "reason": "HyperOS / MIUI security framework requires matching peak_refresh_rate and user_refresh_rate to prevent bootloops."
+    }
+  ]
+}

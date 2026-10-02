@@ -95,7 +95,7 @@ public final class PubgIniEncryptionBridge {
 
         // Scheme 2: Base64 enveloped INI
         try {
-            byte[] b64Decoded = Base64.decode(data, Base64.DEFAULT);
+            byte[] b64Decoded = decodeBase64(data);
             if (isPlaintextIni(b64Decoded)) {
                 Log.d(TAG, "Decrypted UserCustom.ini via Base64 envelope");
                 return new String(b64Decoded, StandardCharsets.UTF_8);
@@ -122,7 +122,7 @@ public final class PubgIniEncryptionBridge {
             case XOR:
                 return xorTransform(raw, PUBGM_XOR_KEY);
             case BASE64:
-                return Base64.encode(raw, Base64.NO_WRAP);
+                return encodeBase64(raw);
             default:
                 return raw;
         }
@@ -148,13 +148,29 @@ public final class PubgIniEncryptionBridge {
         }
 
         try {
-            byte[] b64Decoded = Base64.decode(data, Base64.DEFAULT);
+            byte[] b64Decoded = decodeBase64(data);
             if (isPlaintextIni(b64Decoded)) {
                 return EncryptionType.BASE64;
             }
         } catch (Throwable ignored) {}
 
         return EncryptionType.NONE;
+    }
+
+    private static byte[] decodeBase64(byte[] data) {
+        try {
+            return java.util.Base64.getDecoder().decode(data);
+        } catch (Throwable t) {
+            return Base64.decode(data, Base64.DEFAULT);
+        }
+    }
+
+    private static byte[] encodeBase64(byte[] data) {
+        try {
+            return java.util.Base64.getEncoder().encode(data);
+        } catch (Throwable t) {
+            return Base64.encode(data, Base64.NO_WRAP);
+        }
     }
 
     /**
