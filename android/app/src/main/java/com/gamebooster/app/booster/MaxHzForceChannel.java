@@ -107,8 +107,13 @@ public final class MaxHzForceChannel {
                 + "mode=2,fps=" + targetHz + ":mode=3,fps=" + targetHz);             total++;
 
         // ── Layer 4: SurfaceFlinger Direct Binder ────────────────────────────────────
-        ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);               total++;
-        ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);               total++;
+        if (com.gamebooster.app.core.SurfaceFlingerDirectBinder.setRefreshRate(targetHz)) {
+            ok += 2;
+        } else {
+            ok += run("service call SurfaceFlinger 1035 i32 " + targetHz);
+            ok += run("service call SurfaceFlinger 1036 i32 " + targetHz);
+        }
+        total += 2;
 
         // ── Layer 5: setprop Runtime Overrides, Ultra Extreme Graphics & Latency Eliminators ────────────────
         ok += run("setprop debug.sf.fps_limit "                + hz);                total++;

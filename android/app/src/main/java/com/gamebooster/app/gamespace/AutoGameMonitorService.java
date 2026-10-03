@@ -165,6 +165,10 @@ public class AutoGameMonitorService extends Service {
                     // Stage 1.5 (Extreme Overdrive): Uncap SurfaceFlinger pipeline, lock CPU/GPU clocks max, 1000Hz touch
                     com.gamebooster.app.booster.NoLimitExtremeOverdriveEngine.engageNoLimitOverdrive(appCtx, currentPackage, targetHz);
 
+                    // Stage 1.7 (Kernel Isolation): Shield PID from LMK & isolate to top-app CPU cluster
+                    com.gamebooster.app.core.NativeKernelBridge.isolateProcessToPrimeCores(appCtx, currentPackage);
+                    com.gamebooster.app.core.NativeKernelBridge.tuneSchedulerPacing();
+
                     // Stage 2 (10s Lobby-Safe): In-Lobby Stealth Overdrive & Multi-Slot Drone View Re-injection
                     com.gamebooster.app.config.LobbyInjectionEngine.scheduleLobbyInjection(appCtx, currentPackage, targetHz, 10);
 
