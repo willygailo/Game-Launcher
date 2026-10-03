@@ -125,7 +125,7 @@ public class AutoGameMonitorService extends Service {
                 if (!isScreenOn) return;
                 checkForegroundApp();
                 if (handler != null && isRunning && isScreenOn) {
-                    long delay = (lastActiveGamePackage != null) ? 2000L : 4000L;
+                    long delay = (lastActiveGamePackage != null) ? 3500L : 4000L;
                     handler.postDelayed(this, delay);
                 }
             }
@@ -276,22 +276,7 @@ public class AutoGameMonitorService extends Service {
 
     private boolean isProcessAlive(String packageName) {
         if (packageName == null || packageName.isEmpty()) return false;
-        try {
-            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
-                String pgrep = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(
-                        "pgrep -f \"" + packageName + "\" 2>/dev/null || pidof " + packageName + " 2>/dev/null");
-                if (pgrep != null && !pgrep.trim().isEmpty() && !pgrep.startsWith("ERROR")) {
-                    return true;
-                }
-            }
-        } catch (Exception ignored) {}
-        try {
-            String procCheck = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
-                    "pgrep -f \"" + packageName + "\" 2>/dev/null");
-            if (procCheck != null && !procCheck.trim().isEmpty() && !procCheck.startsWith("ERROR")) {
-                return true;
-            }
-        } catch (Exception ignored) {}
+        // 1. Fast zero-fork Framework check first
         try {
             android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             if (am != null) {
@@ -305,6 +290,27 @@ public class AutoGameMonitorService extends Service {
                 }
             }
         } catch (Exception ignored) {}
+
+        // 2. Fallback to Shizuku shell check if permitted
+        try {
+            if (com.gamebooster.app.shizuku.ShizukuExecutor.hasShizukuPermission()) {
+                String pgrep = com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand(
+                        "pgrep -f \"" + packageName + "\" 2>/dev/null || pidof " + packageName + " 2>/dev/null");
+                if (pgrep != null && !pgrep.trim().isEmpty() && !pgrep.startsWith("ERROR")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // 3. Fallback to system shell check
+        try {
+            String procCheck = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
+                    "pgrep -f \"" + packageName + "\" 2>/dev/null");
+            if (procCheck != null && !procCheck.trim().isEmpty() && !procCheck.startsWith("ERROR")) {
+                return true;
+            }
+        } catch (Exception ignored) {}
+
         return false;
     }
 

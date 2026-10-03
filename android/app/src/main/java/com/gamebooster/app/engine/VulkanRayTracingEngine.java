@@ -50,8 +50,9 @@ public final class VulkanRayTracingEngine {
                         "setprop debug.hwui.renderer skiagl",
                         "setprop debug.renderengine.backend skiagl",
 
-                        // 2. Enable Vulkan Ray Tracing & low-latency unsignaled latching
-                        "setprop debug.sf.latch_unsignaled 1",
+                        // 2. Enable Vulkan Ray Tracing & tear-free synchronized buffer latching
+                        "setprop debug.sf.latch_unsignaled 0",
+                        "setprop debug.sf.auto_latch_unsignaled 0",
                         "setprop debug.sf.disable_backpressure 1",
                         "setprop debug.vulkan.layers \"\"",
 

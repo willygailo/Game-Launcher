@@ -11,12 +11,49 @@ public class RamZramChannel {
     private static final String TAG = "RamZramChannel";
 
     public static boolean trimMemoryAndCleanCache(Context context) {
-        boolean ok = true;
-        // Trim memory and reclaim page cache safely without killing the running game
-        CommandExecutor.executeSystemCommand("cmd activity trim-memory --mode COMPLETE");
-        CommandExecutor.executeSystemCommand("cmd activity compact full");
-        CommandExecutor.executeSystemCommand("sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true");
-        return ok;
+        boolean isGameActive = false;
+        String activeGame = null;
+        if (context != null) {
+            try {
+                activeGame = com.gamebooster.app.games.ForegroundGameDetector.detectActiveGame(context);
+                isGameActive = (activeGame != null && !activeGame.isEmpty());
+            } catch (Throwable ignored) {}
+        }
+
+        if (isGameActive) {
+            return trimMemoryInGame(context, activeGame);
+        } else {
+            return executePreLaunchClean(context);
+        }
+    }
+
+    /**
+     * Full pre-launch clean: safe to execute BEFORE game starts to maximize free RAM.
+     */
+    public static boolean executePreLaunchClean(Context context) {
+        CommandExecutor.executeSystemCommand("cmd activity trim-memory --mode COMPLETE 2>/dev/null; "
+                + "cmd activity compact full 2>/dev/null; "
+                + "sync; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; "
+                + "echo 10 > /proc/sys/vm/swappiness 2>/dev/null");
+        Log.i(TAG, "Full pre-launch memory clean & pagecache drop executed.");
+        return true;
+    }
+
+    /**
+     * In-game memory optimization: compacts background processes and sets OOM priority
+     * WITHOUT purging pagecache (preserves active game textures and shaders in RAM).
+     */
+    public static boolean trimMemoryInGame(Context context, String activeGamePkg) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("cmd activity trim-memory --mode RUNNING_CRITICAL 2>/dev/null; ");
+        sb.append("cmd activity compact background 2>/dev/null; ");
+        sb.append("echo 10 > /proc/sys/vm/swappiness 2>/dev/null; ");
+        if (activeGamePkg != null && !activeGamePkg.isEmpty()) {
+            sb.append("pgrep -f \"").append(activeGamePkg).append("\" | head -1 | while read p; do [ -n \"$p\" ] && echo -1000 > /proc/$p/oom_score_adj 2>/dev/null; done; ");
+        }
+        CommandExecutor.executeSystemCommand(sb.toString());
+        Log.i(TAG, "In-game RAM compaction applied (pagecache preserved for " + activeGamePkg + ").");
+        return true;
     }
 
     /**

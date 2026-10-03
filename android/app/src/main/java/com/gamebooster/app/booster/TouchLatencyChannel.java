@@ -45,11 +45,12 @@ public class TouchLatencyChannel {
         ok &= CommandExecutor.setSystemProperty("debug.hwui.input_latency_timeout", "0");
         ok &= CommandExecutor.setSystemProperty("persist.sys.input.latency", "0");
 
-        // 3. SurfaceFlinger & Touch-to-Photon Display Synchronization
+        // 3. SurfaceFlinger & Touch-to-Photon Display Synchronization (GPU-Fence Synchronized, Zero Tearing)
         ok &= CommandExecutor.setSystemProperty("ro.surface_flinger.set_touch_timer_ms", "0");
         ok &= CommandExecutor.setSystemProperty("ro.surface_flinger.set_idle_timer_ms", "0");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
-        ok &= CommandExecutor.setSystemProperty("debug.sf.auto_latch_unsignaled", "1");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "0");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.auto_latch_unsignaled", "0");
+        ok &= CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
         ok &= CommandExecutor.setSystemProperty("debug.sf.early_phase_offset_ns", "0");
         ok &= CommandExecutor.setSystemProperty("debug.sf.early_app_phase_offset_ns", "0");
         ok &= CommandExecutor.setSystemProperty("debug.sf.early_gl_phase_offset_ns", "0");
@@ -181,8 +182,9 @@ public class TouchLatencyChannel {
         // SurfaceFlinger Presentation
         commands.add("setprop ro.surface_flinger.set_touch_timer_ms 0");
         commands.add("setprop ro.surface_flinger.set_idle_timer_ms 0");
-        commands.add("setprop debug.sf.latch_unsignaled 1");
-        commands.add("setprop debug.sf.auto_latch_unsignaled 1");
+        commands.add("setprop debug.sf.latch_unsignaled 0");
+        commands.add("setprop debug.sf.auto_latch_unsignaled 0");
+        commands.add("setprop debug.sf.disable_backpressure 1");
         commands.add("setprop debug.sf.early_phase_offset_ns 0");
         commands.add("setprop debug.sf.early_app_phase_offset_ns 0");
         commands.add("setprop debug.sf.early_gl_phase_offset_ns 0");

@@ -26,7 +26,7 @@ public class AppExecutors {
                 new java.util.concurrent.LinkedBlockingQueue<>(),
                 r -> {
                     Thread t = new Thread(() -> {
-                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                         r.run();
                     }, "GameBooster-CommandIO");
                     t.setDaemon(true);
@@ -35,7 +35,7 @@ public class AppExecutors {
         );
         this.settingsIO = Executors.newFixedThreadPool(4, r -> {
             Thread t = new Thread(() -> {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                 r.run();
             }, "GameBooster-SettingsIO");
             t.setDaemon(true);
@@ -51,7 +51,7 @@ public class AppExecutors {
         });
         this.scheduledIO = Executors.newScheduledThreadPool(2, r -> {
             Thread t = new Thread(() -> {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND);
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                 r.run();
             }, "GameBooster-ScheduledIO");
             t.setDaemon(true);

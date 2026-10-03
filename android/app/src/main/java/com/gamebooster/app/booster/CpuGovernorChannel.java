@@ -140,7 +140,7 @@ public class CpuGovernorChannel {
         // ── Per-Cluster Governors & Frequency Pinning ───────────────────────────
         // Prime/Performance cores → performance governor, min_freq = max_freq
         // Big cores → performance governor, min_freq = max_freq
-        // LITTLE/Efficiency cores → powersave governor (isolate background)
+        // LITTLE/Efficiency cores → schedutil with zero up-delay (prevents touch/audio latency stalls)
         sb.append("for p in /sys/devices/system/cpu/cpufreq/policy*; do ");
         sb.append("  gov=\"performance\"; ");
         sb.append("  # Check if this policy covers only LITTLE cores ");
@@ -148,13 +148,19 @@ public class CpuGovernorChannel {
         sb.append("  if [ -n \"$related\" ]; then ");
         sb.append("    first_core=$(echo \"$related\" | cut -d'-' -f1); ");
         sb.append("    # Heuristic: core 0-3 typically LITTLE on 8-core, adjust for 12/16-core ");
-        sb.append("    if [ \"$first_core\" -lt 4 ]; then gov=\"powersave\"; fi; ");
+        sb.append("    if [ \"$first_core\" -lt 4 ]; then gov=\"schedutil\"; fi; ");
         sb.append("  fi; ");
-        sb.append("  echo \"$gov\" > \"$p/scaling_governor\" 2>/dev/null; ");
-        sb.append("  # Pin frequency: min = max ");
-        sb.append("  if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
-        sb.append("  # Also pin cpuinfo_max_freq to scaling_min_freq ");
-        sb.append("  if [ -f \"$p/cpuinfo_max_freq\" ]; then cat \"$p/cpuinfo_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("  echo \"$gov\" > \"$p/scaling_governor\" 2>/dev/null || echo \"performance\" > \"$p/scaling_governor\" 2>/dev/null; ");
+        sb.append("  if [ \"$gov\" = \"schedutil\" ]; then ");
+        sb.append("    echo 0 > \"$p/schedutil/up_rate_limit_us\" 2>/dev/null; ");
+        sb.append("    echo 500 > \"$p/schedutil/down_rate_limit_us\" 2>/dev/null; ");
+        sb.append("    avail=$(cat \"$p/scaling_available_frequencies\" 2>/dev/null); ");
+        sb.append("    [ -n \"$avail\" ] && echo $(echo \"$avail\" | awk '{print $2}') > \"$p/scaling_min_freq\" 2>/dev/null; ");
+        sb.append("  else ");
+        sb.append("    # Pin frequency: min = max ");
+        sb.append("    if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("    if [ -f \"$p/cpuinfo_max_freq\" ]; then cat \"$p/cpuinfo_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; ");
+        sb.append("  fi; ");
         sb.append("  # Disable energy_perf_bias (0 = performance) ");
         sb.append("  echo 0 > \"$p/energy_perf_bias\" 2>/dev/null; ");
         sb.append("done; ");
@@ -438,7 +444,11 @@ public class CpuGovernorChannel {
     static boolean governorsMatch(java.util.Map<String, String> governors, String expected) {
         if (governors == null || governors.isEmpty() || expected == null) return false;
         for (String gov : governors.values()) {
-            if (!expected.equals(gov)) return false;
+            if ("performance".equals(expected)) {
+                if (!"performance".equals(gov) && !"schedutil".equals(gov)) return false;
+            } else if (!expected.equals(gov)) {
+                return false;
+            }
         }
         return true;
     }

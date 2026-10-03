@@ -626,9 +626,9 @@ public class ManualSettingsPreferences {
         try {
             if (isHiddenPerfPipelineEnabled(context)) {
                 // Low-latency SurfaceFlinger & HWUI Realtime RenderThread
-                executeCmd("setprop debug.sf.latch_unsignaled 1");
+                executeCmd("setprop debug.sf.latch_unsignaled 0");
                 executeCmd("setprop debug.sf.disable_backpressure 1");
-                executeCmd("setprop debug.sf.auto_latch_unsignaled 1");
+                executeCmd("setprop debug.sf.auto_latch_unsignaled 0");
                 executeCmd("setprop debug.sf.predict_hwc_composition_strategy 1");
                 executeCmd("setprop debug.sf.enable_gl_backpressure 0");
                 executeCmd("setprop debug.sf.early_phase_offset_ns 500000");

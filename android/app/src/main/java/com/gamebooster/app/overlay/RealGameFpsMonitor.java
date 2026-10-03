@@ -30,7 +30,7 @@ import java.util.List;
 public class RealGameFpsMonitor {
 
     private static final String TAG = "RealGameFpsMonitor";
-    private static final long SAMPLE_INTERVAL_MS = 650;
+    private static final long SAMPLE_INTERVAL_MS = 1000;
 
     public interface FpsUpdateListener {
         void onFpsUpdated(int currentFps, int onePercentLowFps, boolean isRealGameSurface);
@@ -232,25 +232,31 @@ public class RealGameFpsMonitor {
      */
     private String resolveActiveGameLayer(String targetPkg) {
         long now = System.currentTimeMillis();
-        if (targetPkg != null && targetPkg.equals(lastResolvedPkg) && cachedLayerName != null && (now - lastLayerResolveTime < 2500L)) {
+        if (targetPkg != null && targetPkg.equals(lastResolvedPkg) && cachedLayerName != null && (now - lastLayerResolveTime < 10000L)) {
             return cachedLayerName;
         }
 
         String pkg = (targetPkg != null && !targetPkg.trim().isEmpty()) ? targetPkg.trim() : null;
 
-        // Auto-detect foreground package if not set
+        // Auto-detect foreground package if not set using zero-overhead in-memory session
         if (pkg == null) {
-            String focusDump = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
-            if (focusDump != null && !focusDump.isEmpty()) {
-                for (String line : focusDump.split("\n")) {
-                    int slash = line.indexOf('/');
-                    if (slash > 0) {
-                        int space = line.lastIndexOf(' ', slash);
-                        if (space >= 0 && slash > space) {
-                            String p = line.substring(space + 1, slash).trim();
-                            if (!p.isEmpty() && !p.contains(" ") && p.contains(".") && !p.contains("com.gamebooster.app")) {
-                                pkg = p;
-                                break;
+            pkg = com.gamebooster.app.gamemanager.GameManagerStatus.getInstance().getActiveGamePackage();
+            if (pkg == null || pkg.isEmpty()) {
+                pkg = com.gamebooster.app.config.LobbyInjectionEngine.getActiveGamePackage();
+            }
+            if (pkg == null || pkg.isEmpty()) {
+                String focusDump = com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
+                if (focusDump != null && !focusDump.isEmpty()) {
+                    for (String line : focusDump.split("\n")) {
+                        int slash = line.indexOf('/');
+                        if (slash > 0) {
+                            int space = line.lastIndexOf(' ', slash);
+                            if (space >= 0 && slash > space) {
+                                String p = line.substring(space + 1, slash).trim();
+                                if (!p.isEmpty() && !p.contains(" ") && p.contains(".") && !p.contains("com.gamebooster.app")) {
+                                    pkg = p;
+                                    break;
+                                }
                             }
                         }
                     }

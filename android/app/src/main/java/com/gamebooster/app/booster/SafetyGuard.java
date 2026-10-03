@@ -107,6 +107,33 @@ public final class SafetyGuard {
         return armed;
     }
 
+    private static volatile android.os.PowerManager.OnThermalStatusChangedListener thermalStatusListener = null;
+
+    static int readMaxMilliCDirect() {
+        int max = -1;
+        try {
+            java.io.File thermalDir = new java.io.File("/sys/class/thermal");
+            if (thermalDir.exists() && thermalDir.isDirectory()) {
+                java.io.File[] files = thermalDir.listFiles((dir, name) -> name.startsWith("thermal_zone"));
+                if (files != null) {
+                    for (java.io.File zone : files) {
+                        java.io.File tempFile = new java.io.File(zone, "temp");
+                        if (tempFile.exists() && tempFile.canRead()) {
+                            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(tempFile))) {
+                                String line = br.readLine();
+                                if (line != null) {
+                                    int v = Integer.parseInt(line.trim());
+                                    if (v > max) max = v;
+                                }
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return max;
+    }
+
     public static boolean ensureArmed(Context context) {
         synchronized (LOCK) {
             if (armed) return true;
@@ -138,6 +165,28 @@ public final class SafetyGuard {
                 return false;
             }
 
+            // Register Android Framework native thermal status callback (API 29+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && thermalStatusListener == null) {
+                try {
+                    android.os.PowerManager pm = (android.os.PowerManager) appContext.getSystemService(Context.POWER_SERVICE);
+                    if (pm != null) {
+                        thermalStatusListener = status -> {
+                            if (!armed) return;
+                            if (status >= android.os.PowerManager.THERMAL_STATUS_CRITICAL) {
+                                Log.w(TAG, "Native ThermalStatus CRITICAL/EMERGENCY -> Disarming boost to protect hardware");
+                                stop(true);
+                                notifyListener(STAGE_CRITICAL, 55000, "Native PowerManager status CRITICAL: boost disabled, snapshot restored");
+                            } else if (status >= android.os.PowerManager.THERMAL_STATUS_SEVERE) {
+                                reduceGpuFloorPercent(90);
+                                Log.w(TAG, "Native ThermalStatus SEVERE -> GPU floor reduced 10%");
+                                notifyListener(STAGE_WARN, 50000, "Native PowerManager status SEVERE: GPU floor reduced 10%");
+                            }
+                        };
+                        pm.addThermalStatusListener(thermalStatusListener);
+                    }
+                } catch (Throwable ignored) {}
+            }
+
             armed = true;
             Thread t = new Thread(() -> monitorLoop(), "safety-guard");
             t.setDaemon(true);
@@ -157,6 +206,15 @@ public final class SafetyGuard {
             monitor = null;
             if (t != null) t.interrupt();
         }
+        if (thermalStatusListener != null && appContext != null) {
+            try {
+                android.os.PowerManager pm = (android.os.PowerManager) appContext.getSystemService(Context.POWER_SERVICE);
+                if (pm != null) {
+                    pm.removeThermalStatusListener(thermalStatusListener);
+                }
+            } catch (Throwable ignored) {}
+            thermalStatusListener = null;
+        }
         if (restoreSnapshot && appContext != null) {
             SnapshotSystem.restoreLatest(appContext);
             notifyListener(STAGE_OK, 0, "Pre-boost snapshot restored");
@@ -175,9 +233,14 @@ public final class SafetyGuard {
             if (!armed) return;
 
             try {
-                String out = CommandExecutor.executeSystemCommand(
-                        "cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null");
-                int milli = parseMaxMilliC(out);
+                // Tier 1: Direct sysfs file reading (0ms, 0 process forks, 0 context-switch lag)
+                int milli = readMaxMilliCDirect();
+                // Tier 2: Shell fallback only if direct sysfs read was unreadable
+                if (milli < 0) {
+                    String out = CommandExecutor.executeSystemCommand(
+                            "cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null");
+                    milli = parseMaxMilliC(out);
+                }
                 if (milli < 0) continue;
 
                 int stage = evaluateStage(milli);

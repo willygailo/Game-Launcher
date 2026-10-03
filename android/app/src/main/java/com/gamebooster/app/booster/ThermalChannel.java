@@ -111,8 +111,8 @@ public class ThermalChannel {
             batchCommands.add("stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop thermal 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null");
             batchCommands.add("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done");
             batchCommands.add("for z in /sys/devices/virtual/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done");
-            batchCommands.add("for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done");
-            batchCommands.add("for t in /sys/devices/virtual/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done");
+            batchCommands.add("for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 75000 > \"$t\" 2>/dev/null; done");
+            batchCommands.add("for t in /sys/devices/virtual/thermal/thermal_zone*/trip_point_*_temp; do echo 75000 > \"$t\" 2>/dev/null; done");
             batchCommands.add("for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done");
             batchCommands.add("echo 0 > /sys/kernel/debug/thermal/throttle 2>/dev/null");
             batchCommands.add("setprop persist.sys.thermal.disabled 1");

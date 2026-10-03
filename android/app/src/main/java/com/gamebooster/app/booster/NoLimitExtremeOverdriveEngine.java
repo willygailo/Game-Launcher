@@ -114,7 +114,8 @@ public final class NoLimitExtremeOverdriveEngine {
         sfCmds.add("setprop persist.sys.NV_FPSLIMIT " + hz);
         sfCmds.add("setprop persist.sys.game.fps " + hz);
         sfCmds.add("setprop persist.sys.game.rate " + hz);
-        sfCmds.add("setprop debug.sf.latch_unsignaled 1");
+        sfCmds.add("setprop debug.sf.latch_unsignaled 0");
+        sfCmds.add("setprop debug.sf.auto_latch_unsignaled 0");
         sfCmds.add("setprop debug.sf.disable_backpressure 1");
         sfCmds.add("setprop debug.sf.early_phase_offset_ns 0");
         sfCmds.add("setprop debug.sf.early_app_phase_offset_ns 0");
@@ -218,8 +219,8 @@ public final class NoLimitExtremeOverdriveEngine {
         StringBuilder sb = new StringBuilder();
         // Disable Linux kernel thermal zones
         sb.append("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; ");
-        // Elevate thermal trip points to 120C
-        sb.append("for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done; ");
+        // Elevate thermal trip points to safe 75C threshold to prevent runaway throttling without triggering PMIC reset
+        sb.append("for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 75000 > \"$t\" 2>/dev/null; done; ");
 
         CommandExecutor.executeSystemCommand(sb.toString());
         Log.i(TAG, "Thermal limits defeated.");
@@ -251,7 +252,7 @@ public final class NoLimitExtremeOverdriveEngine {
             // Restore GPU power mode
             revertCmds.add("setprop debug.adreno.turbo 0; setprop debug.adreno.perf_level 1; setprop debug.mali.force_gpu_boost 0; setprop vendor.gpu.power_mode 0");
             // Reset SurfaceFlinger latency overrides
-            revertCmds.add("setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_phase_offset_ns 1000000");
+            revertCmds.add("setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 1000000; setprop debug.sf.early_app_phase_offset_ns 1000000; setprop debug.sf.early_gl_phase_offset_ns 1000000");
 
             CommandExecutor.executeBatchCommands(revertCmds);
 

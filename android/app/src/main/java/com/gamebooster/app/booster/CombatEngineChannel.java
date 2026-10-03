@@ -177,8 +177,8 @@ public class CombatEngineChannel {
         commands.add("setprop debug.gr.swapinterval 0");
         commands.add("setprop debug.sf.early_phase_offset_ns 500000");
         commands.add("setprop debug.sf.early_app_phase_offset_ns 500000");
-        commands.add("setprop debug.sf.early_gl_phase_offset_ns 500000");
-        commands.add("setprop debug.sf.latch_unsignaled 1");
+        commands.add("setprop debug.sf.latch_unsignaled 0");
+        commands.add("setprop debug.sf.auto_latch_unsignaled 0");
         commands.add("setprop debug.sf.disable_backpressure 1");
         commands.add("setprop debug.sf.hw 1");
         commands.add("setprop debug.renderengine.backend vulkan");
@@ -238,6 +238,9 @@ public class CombatEngineChannel {
         restoreCmds.add("setprop persist.vendor.touch.edge_reject 1");
         restoreCmds.add("cmd wifi force-low-latency-mode disabled 2>/dev/null");
         restoreCmds.add("cmd wifi force-hi-perf-mode disabled 2>/dev/null");
+        restoreCmds.add("setprop debug.sf.latch_unsignaled 0");
+        restoreCmds.add("setprop debug.sf.auto_latch_unsignaled 0");
+        restoreCmds.add("setprop debug.sf.disable_backpressure 0");
 
         PrivilegeBridgeEngine.executePrivilegedBatch(restoreCmds);
         Log.i(TAG, "Combat Engine restored to system defaults.");

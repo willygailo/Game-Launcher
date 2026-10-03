@@ -193,8 +193,8 @@ public final class HwuiRenderAccelerator {
         // Triple buffer allocation
         CommandExecutor.setSystemProperty("debug.sf.enable_gl_backpressure", "0");
         CommandExecutor.setSystemProperty("debug.sf.disable_backpressure", "1");
-        CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "1");
-        CommandExecutor.setSystemProperty("debug.sf.auto_latch_unsignaled", "1");
+        CommandExecutor.setSystemProperty("debug.sf.latch_unsignaled", "0");
+        CommandExecutor.setSystemProperty("debug.sf.auto_latch_unsignaled", "0");
 
         // No idle timeout — SF stays awake waiting for next vsync instead of sleeping
         CommandExecutor.setSystemProperty("ro.surface_flinger.set_idle_timer_ms", "0");
@@ -225,32 +225,28 @@ public final class HwuiRenderAccelerator {
     public static void applyArtJitWarmup(String gamePackage) {
         if (gamePackage == null || gamePackage.trim().isEmpty()) return;
 
-        List<String> cmds = new ArrayList<>();
+        // 1. Immediately apply runtime properties (non-blocking)
+        CommandExecutor.setSystemProperty("debug.art.jit.code_cache_reserved_capacity", "33554432");
+        CommandExecutor.setSystemProperty("debug.art.jit.gc_pause_time_limit", "0");
+        CommandExecutor.setSystemProperty("pm.dexopt.bg-dexopt", "speed-profile");
+        CommandExecutor.setSystemProperty("pm.dexopt.install", "speed-profile");
 
-        // Profile-guided AOT compilation for the game
-        cmds.add("cmd package compile -m speed-profile " + gamePackage + " 2>/dev/null");
-
-        // Optimize dex layout for the game (groups hot code near hot data)
-        cmds.add("cmd package optimize " + gamePackage + " 2>/dev/null");
-
-        // Enable JIT compilation for ALL app processes (not just debuggable)
-        cmds.add("setprop debug.art.jit.code_cache_reserved_capacity 33554432");
-
-        // Disable JIT GC to prevent mid-match GC pauses from stopping compilation work
-        cmds.add("setprop debug.art.jit.gc_pause_time_limit 0");
-
-        // ART background dex-opt: run at high priority for faster warmup
-        cmds.add("setprop pm.dexopt.bg-dexopt speed-profile");
-        cmds.add("setprop pm.dexopt.install speed-profile");
-
-        if (ShizukuExecutor.hasShizukuPermission()) {
-            ShizukuExecutor.executeShizukuCommands(cmds.toArray(new String[0]));
-        } else {
-            for (String cmd : cmds) {
-                CommandExecutor.executeSystemCommand(cmd);
+        // 2. Dispatch heavy dex2oat AOT compilation asynchronously so it NEVER blocks game startup!
+        com.gamebooster.app.core.AppExecutors.getInstance().getScanIO().execute(() -> {
+            try {
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommands(
+                            "cmd package compile -m speed-profile " + gamePackage + " 2>/dev/null",
+                            "cmd package optimize " + gamePackage + " 2>/dev/null"
+                    );
+                } else {
+                    CommandExecutor.executeSystemCommand("cmd package compile -m speed-profile " + gamePackage + " 2>/dev/null; cmd package optimize " + gamePackage + " 2>/dev/null");
+                }
+                Log.d(TAG, "Asynchronous ART JIT / AOT speed-profile compilation completed for " + gamePackage);
+            } catch (Throwable t) {
+                Log.w(TAG, "Background ART compile note: " + t.getMessage());
             }
-        }
-        Log.d(TAG, "ART JIT warmup / AOT speed-profile compilation triggered for " + gamePackage);
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════

@@ -39,45 +39,39 @@ public final class ForegroundGameDetector {
      * @return Package name of the active game, or null if no game is running in the foreground
      */
     public static String detectActiveGame(Context context) {
-        // Tier 1: Fast Shizuku/Root Window Manager dumpsys
-        String pkg = detectViaShizukuWindow();
-        if (isRecognizedGame(context, pkg)) {
-            Log.i(TAG, "🎯 [Tier 1 Shizuku Window] Active Game Detected: " + pkg);
-            return pkg;
-        }
-
-        // Tier 2: Shizuku Activity Manager topResumedActivity
-        pkg = detectViaShizukuActivity();
-        if (isRecognizedGame(context, pkg)) {
-            Log.i(TAG, "🎯 [Tier 2 Shizuku Activity] Active Game Detected: " + pkg);
-            return pkg;
-        }
-
-        // Tier 3: UsageStatsManager (Events & Recent Usage)
-        pkg = detectViaUsageStats(context);
-        if (isRecognizedGame(context, pkg)) {
-            Log.i(TAG, "🎯 [Tier 3 UsageStats] Active Game Detected: " + pkg);
-            return pkg;
-        }
-
-        // Tier 4: ActivityManager running processes
-        pkg = detectViaRunningProcesses(context);
-        if (isRecognizedGame(context, pkg)) {
-            Log.i(TAG, "🎯 [Tier 4 RunningProcs] Active Game Detected: " + pkg);
-            return pkg;
-        }
-
-        // Tier 5: Fallback to registered active session
+        // Tier 1 (0ms, 0 IPC): Fast registered active session check
         String sessionPkg = GameManagerStatus.getInstance().getActiveGamePackage();
-        if (isRecognizedGame(context, sessionPkg)) {
-            Log.i(TAG, "🎯 [Tier 5 SessionState] Using Active Session Game: " + sessionPkg);
+        if (sessionPkg != null && isRecognizedGame(context, sessionPkg) && isProcessRunning(context, sessionPkg)) {
             return sessionPkg;
         }
 
         String lobbyPkg = LobbyInjectionEngine.getActiveGamePackage();
-        if (isRecognizedGame(context, lobbyPkg)) {
-            Log.i(TAG, "🎯 [Tier 5 LobbyEngine] Using Lobby Cached Game: " + lobbyPkg);
+        if (lobbyPkg != null && isRecognizedGame(context, lobbyPkg) && isProcessRunning(context, lobbyPkg)) {
             return lobbyPkg;
+        }
+
+        // Tier 2 (1-2ms, native Android OS API): UsageStatsManager events
+        String pkg = detectViaUsageStats(context);
+        if (isRecognizedGame(context, pkg)) {
+            return pkg;
+        }
+
+        // Tier 3 (<1ms, native ActivityManager): Running foreground processes
+        pkg = detectViaRunningProcesses(context);
+        if (isRecognizedGame(context, pkg)) {
+            return pkg;
+        }
+
+        // Tier 4 (Fallback only): Shizuku Window Manager dumpsys
+        pkg = detectViaShizukuWindow();
+        if (isRecognizedGame(context, pkg)) {
+            return pkg;
+        }
+
+        // Tier 5 (Fallback only): Shizuku Activity Manager dumpsys
+        pkg = detectViaShizukuActivity();
+        if (isRecognizedGame(context, pkg)) {
+            return pkg;
         }
 
         return null;
@@ -87,23 +81,41 @@ public final class ForegroundGameDetector {
      * Detects the raw foreground package currently active on screen (game or non-game).
      */
     public static String detectForegroundPackage(Context context) {
-        // 1. Shizuku Window
-        String pkg = detectViaShizukuWindow();
+        // 1. Native UsageStats (Fast, 0 process forks, no system_server lock contention)
+        String pkg = detectViaUsageStats(context);
         if (isValidForegroundPackage(context, pkg)) return pkg;
 
-        // 2. Shizuku Activity
-        pkg = detectViaShizukuActivity();
-        if (isValidForegroundPackage(context, pkg)) return pkg;
-
-        // 3. UsageStats
-        pkg = detectViaUsageStats(context);
-        if (isValidForegroundPackage(context, pkg)) return pkg;
-
-        // 4. Running Procs
+        // 2. Running Procs (Native ActivityManager)
         pkg = detectViaRunningProcesses(context);
         if (isValidForegroundPackage(context, pkg)) return pkg;
 
+        // 3. Fallback: Shizuku Window
+        pkg = detectViaShizukuWindow();
+        if (isValidForegroundPackage(context, pkg)) return pkg;
+
+        // 4. Fallback: Shizuku Activity
+        pkg = detectViaShizukuActivity();
+        if (isValidForegroundPackage(context, pkg)) return pkg;
+
         return null;
+    }
+
+    private static boolean isProcessRunning(Context context, String pkg) {
+        if (pkg == null || context == null) return false;
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                List<ActivityManager.RunningAppProcessInfo> procs = am.getRunningAppProcesses();
+                if (procs != null) {
+                    for (ActivityManager.RunningAppProcessInfo info : procs) {
+                        if (pkg.equals(info.processName) || (info.pkgList != null && java.util.Arrays.asList(info.pkgList).contains(pkg))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return true;
     }
 
     private static final java.util.Map<String, Boolean> sRecognizedGameCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -213,8 +225,8 @@ public final class ForegroundGameDetector {
             if (usm == null) return null;
 
             long time = System.currentTimeMillis();
-            // 1. Check UsageEvents stream for most recent ACTIVITY_RESUMED
-            UsageEvents events = usm.queryEvents(time - 30000, time);
+            // 1. Check UsageEvents stream for most recent ACTIVITY_RESUMED within last 8 seconds
+            UsageEvents events = usm.queryEvents(time - 8000, time);
             if (events != null) {
                 UsageEvents.Event event = new UsageEvents.Event();
                 String lastPkg = null;
