@@ -158,6 +158,14 @@ public final class MlbbDroneViewPatcher {
             byte[] droneCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/DroneViewConfig.json");
             byte[] binaryMd5Bytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BinaryPatchMD5.xml");
             byte[] resCheckBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/ResCheckConf.xml");
+            byte[] battleJsonBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BattleConfig.json");
+            byte[] cameraJsonBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/CameraConfig.json");
+            byte[] battleUnityBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BattleConfig.unity3d");
+            byte[] splitLibBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/SplitLibMD5.xml");
+            byte[] modeVerBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/mode_versions_build.xml");
+            byte[] molaCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/mola_config.xml");
+            byte[] resSkipBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/res_skip_patch.xml");
+            byte[] realVerBytes = readAssetBytes(am, ASSET_BASE_DIR + "/version/android/realversion.xml");
             byte[] uiBattleCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/UI_BattleCamera.unity3d");
             byte[] atlasCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/Atlas_BattleCamera_add.unity3d");
 
@@ -187,6 +195,34 @@ public final class MlbbDroneViewPatcher {
                     if (resCheckBytes != null && resCheckBytes.length > 0) {
                         writeWithFallback(context, docDir + "/ResCheckConf.xml", resCheckBytes, "666");
                     }
+                    if (battleJsonBytes != null && battleJsonBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/BattleConfig.json", battleJsonBytes, "666");
+                    }
+                    if (cameraJsonBytes != null && cameraJsonBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/CameraConfig.json", cameraJsonBytes, "666");
+                    }
+                    if (battleUnityBytes != null && battleUnityBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/BattleConfig.unity3d", battleUnityBytes, "666");
+                    }
+                    if (splitLibBytes != null && splitLibBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/SplitLibMD5.xml", splitLibBytes, "666");
+                    }
+                    if (modeVerBytes != null && modeVerBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/mode_versions_build.xml", modeVerBytes, "666");
+                    }
+                    if (molaCfgBytes != null && molaCfgBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/mola_config.xml", molaCfgBytes, "666");
+                    }
+                    if (resSkipBytes != null && resSkipBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/res_skip_patch.xml", resSkipBytes, "666");
+                    }
+                }
+
+                // Deploy Version files
+                String verDir = rootDir + "/files/dragon2017/assets/version/android";
+                ShizukuFileManager.makeDirectory(verDir);
+                if (realVerBytes != null && realVerBytes.length > 0) {
+                    writeWithFallback(context, verDir + "/realversion.xml", realVerBytes, "666");
                 }
 
                 // Deploy UI Camera bundles
@@ -253,12 +289,28 @@ public final class MlbbDroneViewPatcher {
             byte[] droneCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/DroneViewConfig.json");
             byte[] binaryMd5Bytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BinaryPatchMD5.xml");
             byte[] resCheckBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/ResCheckConf.xml");
+            byte[] battleJsonBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BattleConfig.json");
+            byte[] cameraJsonBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/CameraConfig.json");
+            byte[] battleUnityBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BattleConfig.unity3d");
+            byte[] splitLibBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/SplitLibMD5.xml");
+            byte[] modeVerBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/mode_versions_build.xml");
+            byte[] molaCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/mola_config.xml");
+            byte[] resSkipBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/res_skip_patch.xml");
+            byte[] realVerBytes = readAssetBytes(am, ASSET_BASE_DIR + "/version/android/realversion.xml");
             byte[] uiBattleCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/UI_BattleCamera.unity3d");
             byte[] atlasCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/Atlas_BattleCamera_add.unity3d");
 
             File stageDroneCfg = new File(cacheDir, "stage_drone_cfg.json");
             File stageBinaryMd5 = new File(cacheDir, "stage_binary_md5.xml");
             File stageResCheck = new File(cacheDir, "stage_res_check.xml");
+            File stageBattleJson = new File(cacheDir, "stage_battle_config.json");
+            File stageCameraJson = new File(cacheDir, "stage_camera_config.json");
+            File stageBattleUnity = new File(cacheDir, "stage_battle_config.unity3d");
+            File stageSplitLib = new File(cacheDir, "stage_split_lib_md5.xml");
+            File stageModeVer = new File(cacheDir, "stage_mode_versions_build.xml");
+            File stageMolaCfg = new File(cacheDir, "stage_mola_config.xml");
+            File stageResSkip = new File(cacheDir, "stage_res_skip_patch.xml");
+            File stageRealVer = new File(cacheDir, "stage_realversion.xml");
             File stageUiBattleCam = new File(cacheDir, "stage_ui_battle_cam.unity3d");
             File stageAtlasCam = new File(cacheDir, "stage_atlas_cam.unity3d");
 
@@ -274,6 +326,38 @@ public final class MlbbDroneViewPatcher {
                 try (FileOutputStream fos = new FileOutputStream(stageResCheck)) { fos.write(resCheckBytes); fos.flush(); }
                 stageResCheck.setReadable(true, false);
             }
+            if (battleJsonBytes != null && battleJsonBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageBattleJson)) { fos.write(battleJsonBytes); fos.flush(); }
+                stageBattleJson.setReadable(true, false);
+            }
+            if (cameraJsonBytes != null && cameraJsonBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageCameraJson)) { fos.write(cameraJsonBytes); fos.flush(); }
+                stageCameraJson.setReadable(true, false);
+            }
+            if (battleUnityBytes != null && battleUnityBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageBattleUnity)) { fos.write(battleUnityBytes); fos.flush(); }
+                stageBattleUnity.setReadable(true, false);
+            }
+            if (splitLibBytes != null && splitLibBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageSplitLib)) { fos.write(splitLibBytes); fos.flush(); }
+                stageSplitLib.setReadable(true, false);
+            }
+            if (modeVerBytes != null && modeVerBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageModeVer)) { fos.write(modeVerBytes); fos.flush(); }
+                stageModeVer.setReadable(true, false);
+            }
+            if (molaCfgBytes != null && molaCfgBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageMolaCfg)) { fos.write(molaCfgBytes); fos.flush(); }
+                stageMolaCfg.setReadable(true, false);
+            }
+            if (resSkipBytes != null && resSkipBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageResSkip)) { fos.write(resSkipBytes); fos.flush(); }
+                stageResSkip.setReadable(true, false);
+            }
+            if (realVerBytes != null && realVerBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageRealVer)) { fos.write(realVerBytes); fos.flush(); }
+                stageRealVer.setReadable(true, false);
+            }
             if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageUiBattleCam)) { fos.write(uiBattleCamBytes); fos.flush(); }
                 stageUiBattleCam.setReadable(true, false);
@@ -288,6 +372,14 @@ public final class MlbbDroneViewPatcher {
             String stageDroneCfgPath = stageDroneCfg.exists() ? stageDroneCfg.getAbsolutePath() : "";
             String stageBinaryMd5Path = stageBinaryMd5.exists() ? stageBinaryMd5.getAbsolutePath() : "";
             String stageResCheckPath = stageResCheck.exists() ? stageResCheck.getAbsolutePath() : "";
+            String stageBattleJsonPath = stageBattleJson.exists() ? stageBattleJson.getAbsolutePath() : "";
+            String stageCameraJsonPath = stageCameraJson.exists() ? stageCameraJson.getAbsolutePath() : "";
+            String stageBattleUnityPath = stageBattleUnity.exists() ? stageBattleUnity.getAbsolutePath() : "";
+            String stageSplitLibPath = stageSplitLib.exists() ? stageSplitLib.getAbsolutePath() : "";
+            String stageModeVerPath = stageModeVer.exists() ? stageModeVer.getAbsolutePath() : "";
+            String stageMolaCfgPath = stageMolaCfg.exists() ? stageMolaCfg.getAbsolutePath() : "";
+            String stageResSkipPath = stageResSkip.exists() ? stageResSkip.getAbsolutePath() : "";
+            String stageRealVerPath = stageRealVer.exists() ? stageRealVer.getAbsolutePath() : "";
             String stageUiBattleCamPath = stageUiBattleCam.exists() ? stageUiBattleCam.getAbsolutePath() : "";
             String stageAtlasCamPath = stageAtlasCam.exists() ? stageAtlasCam.getAbsolutePath() : "";
 
@@ -298,6 +390,14 @@ public final class MlbbDroneViewPatcher {
             sb.append("sdcfg=\"").append(stageDroneCfgPath).append("\"\n");
             sb.append("smd5=\"").append(stageBinaryMd5Path).append("\"\n");
             sb.append("src=\"").append(stageResCheckPath).append("\"\n");
+            sb.append("sbjson=\"").append(stageBattleJsonPath).append("\"\n");
+            sb.append("scjson=\"").append(stageCameraJsonPath).append("\"\n");
+            sb.append("sbunity=\"").append(stageBattleUnityPath).append("\"\n");
+            sb.append("ssplit=\"").append(stageSplitLibPath).append("\"\n");
+            sb.append("smode=\"").append(stageModeVerPath).append("\"\n");
+            sb.append("smola=\"").append(stageMolaCfgPath).append("\"\n");
+            sb.append("sskip=\"").append(stageResSkipPath).append("\"\n");
+            sb.append("sreal=\"").append(stageRealVerPath).append("\"\n");
             sb.append("subc=\"").append(stageUiBattleCamPath).append("\"\n");
             sb.append("satl=\"").append(stageAtlasCamPath).append("\"\n");
             sb.append("APPLIED=0\n");
@@ -311,9 +411,21 @@ public final class MlbbDroneViewPatcher {
             sb.append("    [ -n \"$sdcfg\" ] && cp -f \"$sdcfg\" \"$d/DroneViewConfig.json\" 2>/dev/null\n");
             sb.append("    [ -n \"$smd5\" ] && cp -f \"$smd5\" \"$d/BinaryPatchMD5.xml\" 2>/dev/null\n");
             sb.append("    [ -n \"$src\" ] && cp -f \"$src\" \"$d/ResCheckConf.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sbjson\" ] && cp -f \"$sbjson\" \"$d/BattleConfig.json\" 2>/dev/null\n");
+            sb.append("    [ -n \"$scjson\" ] && cp -f \"$scjson\" \"$d/CameraConfig.json\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sbunity\" ] && cp -f \"$sbunity\" \"$d/BattleConfig.unity3d\" 2>/dev/null\n");
+            sb.append("    [ -n \"$ssplit\" ] && cp -f \"$ssplit\" \"$d/SplitLibMD5.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$smode\" ] && cp -f \"$smode\" \"$d/mode_versions_build.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$smola\" ] && cp -f \"$smola\" \"$d/mola_config.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sskip\" ] && cp -f \"$sskip\" \"$d/res_skip_patch.xml\" 2>/dev/null\n");
             sb.append("    chmod 666 \"$d\"/* 2>/dev/null\n");
             sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
+
+            // 1.0 Version path
+            sb.append("  mkdir -p \"$root/files/dragon2017/assets/version/android\" 2>/dev/null\n");
+            sb.append("  [ -n \"$sreal\" ] && cp -f \"$sreal\" \"$root/files/dragon2017/assets/version/android/realversion.xml\" 2>/dev/null\n");
+            sb.append("  chmod 666 \"$root/files/dragon2017/assets/version/android\"/* 2>/dev/null\n");
 
             // 1.1 UI Camera extension bundles
             sb.append("  for u in \"$root/files/dragon2017/assets/UI/android\" \"$root/files/LoadResManager/UI/android\"; do\n");

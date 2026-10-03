@@ -1,0 +1,17 @@
+{
+  "Version": 2026,
+  "JoystickDeadZone": 0.0,
+  "JoystickInnerDeadZone": 0.0,
+  "JoystickOuterDeadZone": 1.0,
+  "SlideCancelSpeedMultiplier": 12.0,
+  "SlideSpeedMultiplier": 12.0,
+  "SlideDelayMs": 0,
+  "SprintSpeedMultiplier": 12.0,
+  "InstantSprint": 1,
+  "FastMovementBoost": 1,
+  "GyroSampleRate": 1000,
+  "GyroSensitivityRatio": 2.5,
+  "GyroZeroDelay": 1,
+  "GyroStabilization": 1,
+  "GyroLatencyMode": 0
+}

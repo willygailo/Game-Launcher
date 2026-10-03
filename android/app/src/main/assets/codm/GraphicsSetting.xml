@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="GraphicQuality" value="4" />
+    <int name="FrameRateLevel" value="9" />
+    <int name="MaxFrameRate" value="144" />
+    <int name="TargetFPS" value="144" />
+    <int name="Unlock144FPS" value="1" />
+    <int name="AntiAliasingQuality" value="4" />
+    <int name="ShadowQuality" value="2" />
+    <int name="RealtimeShadow" value="1" />
+    <int name="BloomQuality" value="5" />
+    <int name="DepthOfField" value="0" />
+    <int name="Ragdoll" value="1" />
+    <int name="Vulkan" value="1" />
+    <int name="PreloadShaders" value="1" />
+</map>

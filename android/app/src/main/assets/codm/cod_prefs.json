@@ -1,0 +1,15 @@
+{
+  "Version": "2026.4",
+  "TargetEngine": "IW8_Mobile",
+  "MaxFps": 144,
+  "TouchHz": 144,
+  "TouchPollingRate": 1000,
+  "GyroPollingRate": 1000,
+  "InputLagSuppression": true,
+  "ZeroRecoilEnabled": true,
+  "AimMagnetismTier": 3,
+  "DroneViewFov": 120,
+  "DroneCameraHeight": 4,
+  "VulkanPipelineCacheEnabled": true,
+  "HitRegSyncRate": 1000
+}

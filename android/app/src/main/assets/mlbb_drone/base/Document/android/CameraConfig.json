@@ -1,2 +1,13 @@
 {
+  "Version": 2026,
+  "CameraHeight": 4,
+  "CameraDistance": 180.0,
+  "FieldOfView": 130.0,
+  "DroneView": 1,
+  "WideAngle": 1,
+  "MaxCameraDistance": 220.0,
+  "MinCameraDistance": 100.0,
+  "CameraFollowSmooth": 0.05,
+  "MapVisionMultiplier": 2.5,
+  "HighCameraEnabled": 1
 }

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+  <int name="MaxFrameRate" value="144" />
+  <int name="TargetFPS" value="144" />
+  <int name="FPSLimit" value="144" />
+  <int name="FrameRateLimit" value="144" />
+  <int name="MobileFPSLimit" value="144" />
+  <int name="GraphicQuality" value="4" />
+  <int name="TextureQuality" value="4" />
+  <int name="ShadowQuality" value="2" />
+  <int name="ShadowResolution" value="2048" />
+  <int name="AntiAliasingQuality" value="4" />
+  <int name="BloomQuality" value="5" />
+  <int name="MaxAnisotropy" value="16" />
+  <int name="HDRMode" value="1" />
+  <int name="UltraHDMode" value="1" />
+  <int name="SuperResolution" value="1" />
+  <int name="ResolutionScale" value="120" />
+  <int name="UltraExtreme" value="1" />
+  <int name="Vsync" value="0" />
+  <int name="Unlock120Hz" value="1" />
+  <int name="Unlock144Hz" value="1" />
+  <int name="Unlock165Hz" value="1" />
+  <int name="Unlock185Hz" value="1" />
+  <int name="Unlock144FPS" value="1" />
+  <int name="Ultra144FPS" value="1" />
+  <int name="TouchBoostHz" value="144" />
+  <int name="TouchPollingRate" value="1000" />
+  <int name="GyroSampleRate" value="1000" />
+  <float name="GyroSensitivityRatio" value="2.5" />
+  <int name="GyroZeroDelay" value="1" />
+  <int name="PreloadShaders" value="1" />
+</map>

@@ -161,6 +161,7 @@ public class CodmConfigPatcher {
      */
     public static void applyCodmGodModeFullOverdrive(String packageName) {
         if (packageName == null) return;
+        deployCodmAssets(null, packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyFastAttackSpeed(packageName);
         applyFastReloadQuickSwap(packageName);
@@ -178,6 +179,156 @@ public class CodmConfigPatcher {
             NativeConfigInjector.injectCodmGodModeFullOverdrive(path);
         }
         Log.i(TAG, "⚡ CODM God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
+    }
+
+    /**
+     * Deploys complete CODM asset template suite from assets/codm/ into target game paths.
+     */
+    public static boolean deployCodmAssets(android.content.Context context, String packageName) {
+        if (packageName == null) return false;
+        if (context == null) context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null) return false;
+
+        android.content.res.AssetManager am = context.getAssets();
+        List<String> roots = resolveRootDirs(packageName);
+        boolean anyDeployed = false;
+
+        String[] assetFiles = {
+            "UserSetting.json",
+            "HardwareProfile.json",
+            "GraphicSetting.json",
+            "GraphicsSettings_2026.json",
+            "GraphicsSettings.ini",
+            "ControlsSettings.ini",
+            "boot.config",
+            "cod_prefs.json",
+            "com.activision.callofduty.shooter.v2.playerprefs.xml",
+            "com.garena.game.codm.v2.playerprefs.xml",
+            "com.garena.game.codm_preferences.xml",
+            "GameConfig.xml",
+            "GraphicsSetting.xml",
+            "UserProfile.xml",
+            "HUDLayoutConfig.json",
+            "JoySticksConfig.json"
+        };
+
+        for (String root : roots) {
+            String filesDir = root + "/files";
+            String configDir = root + "/files/Config";
+            String configDirLower = root + "/files/config";
+            String hudDir = root + "/files/Config/hud";
+            String joystickDir = root + "/files/Config/joystick";
+            String prefsDir = root + "/files/prefs";
+            String sharedPrefsDir = root + "/shared_prefs";
+
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(filesDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(configDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(configDirLower);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(hudDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(joystickDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(prefsDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(sharedPrefsDir);
+
+            for (String assetName : assetFiles) {
+                byte[] data = readAssetBytes(am, "codm/" + assetName);
+                if (data == null || data.length == 0) continue;
+
+                if (assetName.equals("UserSetting.json") || assetName.equals("HardwareProfile.json") ||
+                    assetName.equals("GraphicSetting.json") || assetName.equals("GraphicsSettings_2026.json")) {
+                    writeAssetWithFallback(configDir + "/" + assetName, data);
+                    writeAssetWithFallback(configDirLower + "/" + assetName, data);
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
+                    anyDeployed = true;
+                } else if (assetName.equals("HUDLayoutConfig.json")) {
+                    writeAssetWithFallback(hudDir + "/" + assetName, data);
+                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_MP_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_BR_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_MP2_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_BR2_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(configDir + "/" + assetName, data);
+                    anyDeployed = true;
+                } else if (assetName.equals("JoySticksConfig.json")) {
+                    writeAssetWithFallback(joystickDir + "/" + assetName, data);
+                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_MP_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_BR_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_MP2_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_BR2_Manaul_3771080214970436972.json", data);
+                    writeAssetWithFallback(configDir + "/" + assetName, data);
+                    anyDeployed = true;
+                } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml")) {
+                    writeAssetWithFallback(prefsDir + "/" + assetName, data);
+                    writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
+                    anyDeployed = true;
+                } else if (assetName.endsWith(".playerprefs.xml") || assetName.endsWith("_preferences.xml")) {
+                    writeAssetWithFallback(filesDir + "/" + packageName + ".v2.playerprefs.xml", data);
+                    writeAssetWithFallback(sharedPrefsDir + "/" + packageName + ".v2.playerprefs.xml", data);
+                    writeAssetWithFallback(filesDir + "/" + packageName + "_preferences.xml", data);
+                    writeAssetWithFallback(sharedPrefsDir + "/" + packageName + "_preferences.xml", data);
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
+                    writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
+                    anyDeployed = true;
+                } else {
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
+                    writeAssetWithFallback(configDir + "/" + assetName, data);
+                    anyDeployed = true;
+                }
+            }
+        }
+        Log.i(TAG, "📦 [CODM Asset Deployer] Deployed asset templates for " + packageName + " (success=" + anyDeployed + ")");
+        return anyDeployed;
+    }
+
+    public static List<String> resolveRootDirs(String pkg) {
+        List<String> roots = new java.util.ArrayList<>();
+        if (pkg == null || pkg.trim().isEmpty()) pkg = "com.activision.callofduty.shooter";
+
+        roots.add("/storage/emulated/0/Android/data/" + pkg);
+        roots.add("/sdcard/Android/data/" + pkg);
+        roots.add("/data/data/" + pkg);
+        roots.add("/data/user/0/" + pkg);
+        roots.add("/storage/emulated/0/Android/media/" + pkg);
+
+        for (int userId = 10; userId <= 14; userId++) {
+            roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
+            roots.add("/data/user/" + userId + "/" + pkg);
+        }
+        return roots;
+    }
+
+    private static byte[] readAssetBytes(android.content.res.AssetManager am, String path) {
+        try (java.io.InputStream is = am.open(path);
+             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream()) {
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+            return baos.toByteArray();
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static boolean writeAssetWithFallback(String path, byte[] data) {
+        if (path == null || data == null) return false;
+        try {
+            java.io.File f = new java.io.File(path);
+            java.io.File parent = f.getParentFile();
+            if (parent != null) parent.mkdirs();
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
+                fos.write(data);
+                fos.flush();
+            }
+            f.setReadable(true, false);
+            f.setWritable(true, false);
+            return true;
+        } catch (Throwable t) {
+            try {
+                String str = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+                return com.gamebooster.app.shizuku.ShizukuFileManager.writeFile(path, str).success;
+            } catch (Throwable ignored) {}
+        }
+        return false;
     }
 
 
