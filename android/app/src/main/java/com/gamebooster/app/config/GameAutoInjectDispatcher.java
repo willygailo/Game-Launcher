@@ -175,7 +175,7 @@ public final class GameAutoInjectDispatcher {
                 FreeFireConfigPatcher.applyDamageLockMax(pkg);
                 FreeFireConfigPatcher.applyAimAssistLockMax(pkg);
                 FreeFireConfigPatcher.applyVulkanPipelinePrime(pkg);
-            } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("hkrpg") || pkg.contains("honkai") || pkg.contains("zenless") || pkg.contains("nap")) {
+            } else if (pkg.contains("genshin") || pkg.contains("mihoyo") || pkg.contains("cognosphere") || pkg.contains("hkrpg") || pkg.contains("honkai") || pkg.contains("zenless") || pkg.contains("nap") || pkg.contains("wutheringwaves") || pkg.contains("kurogame") || pkg.contains("aki.intl")) {
                 GenshinConfigPatcher.patchUltraExtreme185(pkg);
                 GenshinConfigPatcher.patch(pkg, 185);
                 GenshinConfigPatcher.applyDamage10000ElementalBurstMax(pkg);
@@ -183,20 +183,20 @@ public final class GameAutoInjectDispatcher {
                 GenshinConfigPatcher.applyAimAssistLockMax(pkg);
                 GenshinConfigPatcher.applyVulkanPipelinePrime(pkg);
                 GenshinConfigPatcher.applySuperFastTouch(pkg);
-            } else if (pkg.contains("hok") || pkg.contains("honorofkings") || pkg.contains("arenaofvalor") || pkg.contains("ngame.allstar")) {
+            } else if (pkg.contains("hok") || pkg.contains("honorofkings") || pkg.contains("arenaofvalor") || pkg.contains("ngame.allstar") || pkg.contains("sgame") || pkg.contains("kgtw") || pkg.contains("kgvn") || pkg.contains("kgid")) {
                 HokConfigPatcher.patchUltraExtreme185(pkg);
                 HokConfigPatcher.patch(pkg, 185);
                 HokConfigPatcher.applyAutoSmiteObjective(pkg);
                 HokConfigPatcher.applyDamageLockMax(pkg);
                 HokConfigPatcher.applyAimAssistLockMax(pkg);
                 HokConfigPatcher.applyVulkanPipelinePrime(pkg);
-            } else if (pkg.contains("wildrift") || pkg.contains("leagueoflegends")) {
+            } else if (pkg.contains("wildrift") || pkg.contains("leagueoflegends") || pkg.contains("riotgames.league")) {
                 WildRiftConfigPatcher.patchUltraExtreme185(pkg);
                 WildRiftConfigPatcher.patch(pkg, 185);
                 WildRiftConfigPatcher.applyDamageLockMax(pkg);
                 WildRiftConfigPatcher.applyAimAssistLockMax(pkg);
                 WildRiftConfigPatcher.applySuperFastTouch(pkg);
-            } else if (pkg.contains("deltaforce")) {
+            } else if (pkg.contains("deltaforce") || pkg.contains("dfm")) {
                 DeltaForceConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 DeltaForceConfigPatcher.applyDeltaForceMasterSuite(pkg);
                 DeltaForceConfigPatcher.applyDamageLockMax(pkg);
@@ -208,26 +208,26 @@ public final class GameAutoInjectDispatcher {
                 SupercellConfigPatcher.applyDamageLockMax(pkg);
                 SupercellConfigPatcher.applyAimAssistLockMax(pkg);
                 SupercellConfigPatcher.applyVulkanPipelinePrime(pkg);
-            } else if (pkg.contains("farlight") || pkg.contains("farlight84")) {
+            } else if (pkg.contains("farlight") || pkg.contains("farlight84") || pkg.contains("solarland")) {
                 FarlightConfigPatcher.applyJetpackZeroCooldown(pkg);
                 FarlightConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 FarlightConfigPatcher.applyFarlightMasterSuite(pkg);
                 FarlightConfigPatcher.applyDamageLockMax(pkg);
                 FarlightConfigPatcher.applyAimAssistLockMax(pkg);
-            } else if (pkg.contains("bloodstrike")) {
+            } else if (pkg.contains("bloodstrike") || pkg.contains("newspike")) {
                 BloodStrikeConfigPatcher.applyZeroRecoil(pkg);
                 BloodStrikeConfigPatcher.applySlideCancelOverdrive(pkg);
                 BloodStrikeConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 BloodStrikeConfigPatcher.applyBloodStrikeMasterSuite(pkg);
-            } else if (pkg.contains("arenabreakout")) {
+            } else if (pkg.contains("arenabreakout") || pkg.contains("uamo")) {
                 ArenaBreakoutConfigPatcher.applyThermalFootstepAudio(pkg);
                 ArenaBreakoutConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 ArenaBreakoutConfigPatcher.applyArenaBreakoutMasterSuite(pkg);
-            } else if (pkg.contains("carx")) {
+            } else if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters") || pkg.contains("nfs")) {
                 CarXConfigPatcher.applyTorqueHorsepower10000Max(pkg);
                 CarXConfigPatcher.applyDamageLockMax(pkg);
                 CarXConfigPatcher.applySuperFastTouch(pkg);
-            } else if (pkg.contains("standoff2")) {
+            } else if (pkg.contains("standoff2") || pkg.contains("axlebolt")) {
                 Standoff2ConfigPatcher.applyTick128ZeroSpread(pkg);
                 Standoff2ConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 Standoff2ConfigPatcher.applyStandoff2MasterSuite(pkg);
@@ -235,6 +235,25 @@ public final class GameAutoInjectDispatcher {
                 RobloxConfigPatcher.applyDamage10000Max(pkg);
                 RobloxConfigPatcher.applyDamageLockMax(pkg);
                 RobloxConfigPatcher.applyAimAssistLockMax(pkg);
+            } else if (pkg.contains("projectc") || pkg.contains("valorant")) {
+                ValorantConfigPatcher.patchUltraExtreme185(pkg);
+                ValorantConfigPatcher.patch(pkg, 185);
+                ValorantConfigPatcher.applyValorantMasterSuite(pkg);
+                ValorantConfigPatcher.applyCounterStrafeAimLock(pkg);
+                ValorantConfigPatcher.applyDamageLockMax(pkg);
+                ValorantConfigPatcher.applyAimAssistLockMax(pkg);
+                ValorantConfigPatcher.applyVulkanPipelinePrime(pkg);
+            } else if (pkg.contains("pesam") || pkg.contains("fifamobile") || pkg.contains("easports") || pkg.contains("soccer") || pkg.contains("dls7")) {
+                CommonConfigTuningInjector.applyDamageLockMax(pkg);
+                CommonConfigTuningInjector.applyAimAssistLockMax(pkg);
+                CommonConfigTuningInjector.applyVulkanPipelinePrime(pkg);
+                CommonConfigTuningInjector.applySuperFastTouch(pkg);
+                CommonConfigTuningInjector.applyNetworkLagCompensation(pkg);
+            } else if (pkg.contains("sololv") || pkg.contains("mrevolution") || pkg.contains("lifeafter") || pkg.contains("lbsg")) {
+                CommonConfigTuningInjector.applyDamageLockMax(pkg);
+                CommonConfigTuningInjector.applyAimAssistLockMax(pkg);
+                CommonConfigTuningInjector.applyVulkanPipelinePrime(pkg);
+                CommonConfigTuningInjector.applySuperFastTouch(pkg);
             }
 
             // Universal Native Combat & Security Lock
