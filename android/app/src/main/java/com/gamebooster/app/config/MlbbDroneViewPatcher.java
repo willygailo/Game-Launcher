@@ -155,6 +155,12 @@ public final class MlbbDroneViewPatcher {
                 }
             }
 
+            byte[] droneCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/DroneViewConfig.json");
+            byte[] binaryMd5Bytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BinaryPatchMD5.xml");
+            byte[] resCheckBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/ResCheckConf.xml");
+            byte[] uiBattleCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/UI_BattleCamera.unity3d");
+            byte[] atlasCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/Atlas_BattleCamera_add.unity3d");
+
             // 2. Direct dragon2017 & Document Assets Deployment (Primary In-Game Camera Source)
             for (String rootDir : rootDirs) {
                 String[] targetDocPaths = {
@@ -172,6 +178,25 @@ public final class MlbbDroneViewPatcher {
                         anyApplied = true;
                         Log.i(TAG, "🎯 [Direct Camera] Deployed BattleSystemConfig.bytes [" + getTierLabel(tier) + "] to: " + battlePath);
                     }
+                    if (droneCfgBytes != null && droneCfgBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/DroneViewConfig.json", droneCfgBytes, "666");
+                    }
+                    if (binaryMd5Bytes != null && binaryMd5Bytes.length > 0) {
+                        writeWithFallback(context, docDir + "/BinaryPatchMD5.xml", binaryMd5Bytes, "666");
+                    }
+                    if (resCheckBytes != null && resCheckBytes.length > 0) {
+                        writeWithFallback(context, docDir + "/ResCheckConf.xml", resCheckBytes, "666");
+                    }
+                }
+
+                // Deploy UI Camera bundles
+                String uiDir = rootDir + "/files/dragon2017/assets/UI/android";
+                ShizukuFileManager.makeDirectory(uiDir);
+                if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
+                    writeWithFallback(context, uiDir + "/UI_BattleCamera.unity3d", uiBattleCamBytes, "666");
+                }
+                if (atlasCamBytes != null && atlasCamBytes.length > 0) {
+                    writeWithFallback(context, uiDir + "/Atlas_BattleCamera_add.unity3d", atlasCamBytes, "666");
                 }
             }
 
@@ -225,13 +250,56 @@ public final class MlbbDroneViewPatcher {
                 stageFix.setReadable(true, false);
             }
 
+            byte[] droneCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/DroneViewConfig.json");
+            byte[] binaryMd5Bytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/BinaryPatchMD5.xml");
+            byte[] resCheckBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/ResCheckConf.xml");
+            byte[] uiBattleCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/UI_BattleCamera.unity3d");
+            byte[] atlasCamBytes = readAssetBytes(am, ASSET_BASE_DIR + "/UI/android/Atlas_BattleCamera_add.unity3d");
+
+            File stageDroneCfg = new File(cacheDir, "stage_drone_cfg.json");
+            File stageBinaryMd5 = new File(cacheDir, "stage_binary_md5.xml");
+            File stageResCheck = new File(cacheDir, "stage_res_check.xml");
+            File stageUiBattleCam = new File(cacheDir, "stage_ui_battle_cam.unity3d");
+            File stageAtlasCam = new File(cacheDir, "stage_atlas_cam.unity3d");
+
+            if (droneCfgBytes != null && droneCfgBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageDroneCfg)) { fos.write(droneCfgBytes); fos.flush(); }
+                stageDroneCfg.setReadable(true, false);
+            }
+            if (binaryMd5Bytes != null && binaryMd5Bytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageBinaryMd5)) { fos.write(binaryMd5Bytes); fos.flush(); }
+                stageBinaryMd5.setReadable(true, false);
+            }
+            if (resCheckBytes != null && resCheckBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageResCheck)) { fos.write(resCheckBytes); fos.flush(); }
+                stageResCheck.setReadable(true, false);
+            }
+            if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageUiBattleCam)) { fos.write(uiBattleCamBytes); fos.flush(); }
+                stageUiBattleCam.setReadable(true, false);
+            }
+            if (atlasCamBytes != null && atlasCamBytes.length > 0) {
+                try (FileOutputStream fos = new FileOutputStream(stageAtlasCam)) { fos.write(atlasCamBytes); fos.flush(); }
+                stageAtlasCam.setReadable(true, false);
+            }
+
             String stageBattlePath = stageBattle.getAbsolutePath();
             String stageFixPath = stageFix.exists() ? stageFix.getAbsolutePath() : "";
+            String stageDroneCfgPath = stageDroneCfg.exists() ? stageDroneCfg.getAbsolutePath() : "";
+            String stageBinaryMd5Path = stageBinaryMd5.exists() ? stageBinaryMd5.getAbsolutePath() : "";
+            String stageResCheckPath = stageResCheck.exists() ? stageResCheck.getAbsolutePath() : "";
+            String stageUiBattleCamPath = stageUiBattleCam.exists() ? stageUiBattleCam.getAbsolutePath() : "";
+            String stageAtlasCamPath = stageAtlasCam.exists() ? stageAtlasCam.getAbsolutePath() : "";
 
             // Build consolidated high-speed shell script
             StringBuilder sb = new StringBuilder();
             sb.append("sb=\"").append(stageBattlePath).append("\"\n");
             sb.append("sf=\"").append(stageFixPath).append("\"\n");
+            sb.append("sdcfg=\"").append(stageDroneCfgPath).append("\"\n");
+            sb.append("smd5=\"").append(stageBinaryMd5Path).append("\"\n");
+            sb.append("src=\"").append(stageResCheckPath).append("\"\n");
+            sb.append("subc=\"").append(stageUiBattleCamPath).append("\"\n");
+            sb.append("satl=\"").append(stageAtlasCamPath).append("\"\n");
             sb.append("APPLIED=0\n");
             sb.append("for root in \"/storage/emulated/0/Android/data/").append(pkg).append("\" \"/sdcard/Android/data/").append(pkg).append("\"; do\n");
             sb.append("  [ -d \"$root\" ] || continue\n");
@@ -240,11 +308,22 @@ public final class MlbbDroneViewPatcher {
             sb.append("  for d in \"$root/files/dragon2017/assets/Document/android\" \"$root/files/dragon2017/assets/Document\" \"$root/files/LoadResManager/Document/android\"; do\n");
             sb.append("    mkdir -p \"$d\" 2>/dev/null\n");
             sb.append("    cp -f \"$sb\" \"$d/BattleSystemConfig.bytes\" 2>/dev/null\n");
-            sb.append("    chmod 666 \"$d/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sdcfg\" ] && cp -f \"$sdcfg\" \"$d/DroneViewConfig.json\" 2>/dev/null\n");
+            sb.append("    [ -n \"$smd5\" ] && cp -f \"$smd5\" \"$d/BinaryPatchMD5.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$src\" ] && cp -f \"$src\" \"$d/ResCheckConf.xml\" 2>/dev/null\n");
+            sb.append("    chmod 666 \"$d\"/* 2>/dev/null\n");
             sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
 
-            // 1.1 V3 Fix Directory Locks & ResCheck Bypass Folders
+            // 1.1 UI Camera extension bundles
+            sb.append("  for u in \"$root/files/dragon2017/assets/UI/android\" \"$root/files/LoadResManager/UI/android\"; do\n");
+            sb.append("    mkdir -p \"$u\" 2>/dev/null\n");
+            sb.append("    [ -n \"$subc\" ] && cp -f \"$subc\" \"$u/UI_BattleCamera.unity3d\" 2>/dev/null\n");
+            sb.append("    [ -n \"$satl\" ] && cp -f \"$satl\" \"$u/Atlas_BattleCamera_add.unity3d\" 2>/dev/null\n");
+            sb.append("    chmod 666 \"$u\"/* 2>/dev/null\n");
+            sb.append("  done\n");
+
+            // 1.2 V3 Fix Directory Locks & ResCheck Bypass Folders
             sb.append("  mkdir -p \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
             sb.append("  touch \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix/.keep\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp/.keep\" 2>/dev/null\n");
             sb.append("  chmod -R 777 \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
@@ -258,10 +337,16 @@ public final class MlbbDroneViewPatcher {
             sb.append("    mkdir -p \"$s/Document/android\" \"$s/Document\" 2>/dev/null\n");
             sb.append("    cp -f \"$sb\" \"$s/Document/android/BattleSystemConfig.bytes\" 2>/dev/null\n");
             sb.append("    cp -f \"$sb\" \"$s/Document/BattleSystemConfig.bytes\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sdcfg\" ] && cp -f \"$sdcfg\" \"$s/Document/android/DroneViewConfig.json\" 2>/dev/null\n");
+            sb.append("    [ -n \"$sdcfg\" ] && cp -f \"$sdcfg\" \"$s/Document/DroneViewConfig.json\" 2>/dev/null\n");
+            sb.append("    [ -n \"$smd5\" ] && cp -f \"$smd5\" \"$s/Document/android/BinaryPatchMD5.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$smd5\" ] && cp -f \"$smd5\" \"$s/Document/BinaryPatchMD5.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$src\" ] && cp -f \"$src\" \"$s/Document/android/ResCheckConf.xml\" 2>/dev/null\n");
+            sb.append("    [ -n \"$src\" ] && cp -f \"$src\" \"$s/Document/ResCheckConf.xml\" 2>/dev/null\n");
             sb.append("    echo -n '1' > \"$s/__ready\" 2>/dev/null\n");
             sb.append("    echo -n '1' > \"$s/__active\" 2>/dev/null\n");
             sb.append("    if [ -f \"$sf\" ]; then cp -f \"$sf\" \"$s/__fix_rescheck\" 2>/dev/null; else echo -n '1' > \"$s/__fix_rescheck\" 2>/dev/null; fi\n");
-            sb.append("    chmod 666 \"$s/Document/android/BattleSystemConfig.bytes\" \"$s/Document/BattleSystemConfig.bytes\" \"$s/__ready\" \"$s/__active\" \"$s/__fix_rescheck\" 2>/dev/null\n");
+            sb.append("    chmod 666 \"$s/Document/android\"/* \"$s/Document\"/* \"$s/__ready\" \"$s/__active\" \"$s/__fix_rescheck\" 2>/dev/null\n");
             sb.append("    [ -f \"$s/Document/android/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
             sb.append("done\n");
@@ -274,6 +359,11 @@ public final class MlbbDroneViewPatcher {
 
             stageBattle.delete();
             if (stageFix.exists()) stageFix.delete();
+            if (stageDroneCfg.exists()) stageDroneCfg.delete();
+            if (stageBinaryMd5.exists()) stageBinaryMd5.delete();
+            if (stageResCheck.exists()) stageResCheck.delete();
+            if (stageUiBattleCam.exists()) stageUiBattleCam.delete();
+            if (stageAtlasCam.exists()) stageAtlasCam.delete();
 
             // Ensure V3 Fix Document.unity3d is deployed & patched in-place
             try {

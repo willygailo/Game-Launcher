@@ -1901,8 +1901,24 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
  * and hero-specific fast combo chains (Ling, Fanny, Gusion, Chou, Lancelot, Hayabusa, Nolan, Suyou, etc.)
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUniversalZeroDelayCombo
-  (JNIEnv *, jclass, jstring);
+/*
+ * Modular C++ Combat System Architecture (2026 Engine Spec)
+ * Diminishing returns mitigation, 3D angular aim assist cone, monotonic cooldowns
+ */
+JNIEXPORT jfloat JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCalculateCombatDamage
+  (JNIEnv *, jclass, jfloat, jint, jfloat, jboolean, jfloat, jboolean);
+
+JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeEvaluateAimAssistTarget
+  (JNIEnv *, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloatArray, jint, jfloat, jfloat);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownTrigger
+  (JNIEnv *, jclass, jint, jfloat);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownIsReady
+  (JNIEnv *, jclass, jint);
+
+JNIEXPORT jfloat JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownRemaining
+  (JNIEnv *, jclass, jint);
 
 #ifdef __cplusplus
 }

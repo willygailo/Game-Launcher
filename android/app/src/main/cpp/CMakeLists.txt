@@ -16,6 +16,7 @@ add_library(
     codm_injector.cpp
     other_games_injector.cpp
     universal_combat_injector.cpp
+    combat_system_jni.cpp
     native_security_bypass.cpp
     proc_cloak_engine.cpp
     signal_trap_guard.cpp

@@ -541,6 +541,101 @@ public class NativeConfigInjector {
      */
     public static native boolean nativeInjectPubgmEnemyLockAllScope(String path);
 
+    // ── 2026 Modular C++ Combat System Architecture ────────────────────────
+    public static native float nativeCalculateCombatDamage(float rawDamage, int damageType, float armor, boolean isCrit, float critMult, boolean dodgeRoll);
+    public static native int nativeEvaluateAimAssistTarget(float originX, float originY, float originZ, float fwdX, float fwdY, float fwdZ, float[] enemyPositions, int enemyCount, float maxRange, float coneAngleDegrees);
+    public static native boolean nativeCombatCooldownTrigger(int actionId, float durationSeconds);
+    public static native boolean nativeCombatCooldownIsReady(int actionId);
+    public static native float nativeCombatCooldownRemaining(int actionId);
+
+    public static float calculateCombatDamage(float rawDamage, int damageType, float armor, boolean isCrit, float critMult, boolean dodgeRoll) {
+        ensureNativeLoaded();
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeCalculateCombatDamage(rawDamage, damageType, armor, isCrit, critMult, dodgeRoll);
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeCalculateCombatDamage fallback: " + t.getMessage());
+            }
+        }
+        if (dodgeRoll) return 0.0f;
+        float incoming = rawDamage * (isCrit ? (critMult > 0 ? critMult : 1.5f) : 1.0f);
+        if (damageType == 2) return incoming; // TrueDamage
+        return armor >= 0.0f ? incoming * (100.0f / (100.0f + armor)) : incoming * (2.0f - (100.0f / (100.0f - armor)));
+    }
+
+    public static int evaluateAimAssistTarget(float originX, float originY, float originZ,
+                                             float fwdX, float fwdY, float fwdZ,
+                                             float[] enemyPositions, int enemyCount,
+                                             float maxRange, float coneAngleDegrees) {
+        ensureNativeLoaded();
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeEvaluateAimAssistTarget(originX, originY, originZ, fwdX, fwdY, fwdZ, enemyPositions, enemyCount, maxRange, coneAngleDegrees);
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeEvaluateAimAssistTarget fallback: " + t.getMessage());
+            }
+        }
+        // Java fallback calculation
+        if (enemyPositions == null || enemyCount <= 0 || enemyPositions.length < enemyCount * 3) return -1;
+        float fwdLen = (float) Math.sqrt(fwdX * fwdX + fwdY * fwdY + fwdZ * fwdZ);
+        if (fwdLen <= 0.0001f) return -1;
+        float fx = fwdX / fwdLen, fy = fwdY / fwdLen, fz = fwdZ / fwdLen;
+        float minDot = (float) Math.cos(Math.toRadians(coneAngleDegrees * 0.5f));
+        float maxRangeSq = maxRange * maxRange;
+        int bestId = -1;
+        float highestDot = -1.0f;
+        for (int i = 0; i < enemyCount; i++) {
+            float dx = enemyPositions[i * 3] - originX;
+            float dy = enemyPositions[i * 3 + 1] - originY;
+            float dz = enemyPositions[i * 3 + 2] - originZ;
+            float distSq = dx * dx + dy * dy + dz * dz;
+            if (distSq > maxRangeSq || distSq <= 0.0001f) continue;
+            float invDist = 1.0f / (float) Math.sqrt(distSq);
+            float dot = fx * (dx * invDist) + fy * (dy * invDist) + fz * (dz * invDist);
+            if (dot >= minDot && dot > highestDot) {
+                highestDot = dot;
+                bestId = i;
+            }
+        }
+        return bestId;
+    }
+
+    public static boolean triggerCombatCooldown(int actionId, float durationSeconds) {
+        ensureNativeLoaded();
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeCombatCooldownTrigger(actionId, durationSeconds);
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeCombatCooldownTrigger fallback: " + t.getMessage());
+            }
+        }
+        return true;
+    }
+
+    public static boolean isCombatCooldownReady(int actionId) {
+        ensureNativeLoaded();
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeCombatCooldownIsReady(actionId);
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeCombatCooldownIsReady fallback: " + t.getMessage());
+            }
+        }
+        return true;
+    }
+
+    public static float getCombatCooldownRemaining(int actionId) {
+        ensureNativeLoaded();
+        if (sNativeLibraryLoaded) {
+            try {
+                return nativeCombatCooldownRemaining(actionId);
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeCombatCooldownRemaining fallback: " + t.getMessage());
+            }
+        }
+        return 0.0f;
+    }
+
     /**
      * MLBB Enemy Lock + Headshot Suite — Unity/MOBA Engine (2026.3).
      * Native-first with ConfigFileHelper fallback.
