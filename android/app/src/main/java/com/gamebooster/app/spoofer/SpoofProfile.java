@@ -395,7 +395,7 @@ public class SpoofProfile {
         props.put("vendor.gpu.available_frequencies", "1000000000,900000000,800000000,600000000,400000000");
         props.put("debug.adreno.version", glVersion != null ? glVersion : "OpenGL ES 3.2 V@0700.0");
         props.put("debug.egl.hw", "1");
-        props.put("debug.hwui.renderer", "vulkan");
+        props.put("debug.hwui.renderer", "skiavk");
         props.put("debug.renderengine.backend", "vulkan");
         props.put("debug.vulkan.pipeline_cache", "1");
 

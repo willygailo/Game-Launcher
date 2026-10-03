@@ -368,7 +368,7 @@ public class UserService extends IUserService.Stub {
                      "setprop debug.tensor.gpu.boost 1; " +
                      "setprop debug.exynos.performance.mode 1; " +
                      "setprop debug.xclipse.gpu.boost 1; " +
-                     "setprop debug.hwui.renderer vulkan; " +
+                     "setprop debug.hwui.renderer skiavk; " +
                      "setprop debug.renderengine.backend vulkan; " +
                      "setprop debug.renderengine.skia_pipeline true; " +
                      "setprop debug.hwui.use_gpu_pixel_buffers true; " +

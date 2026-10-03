@@ -93,8 +93,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "sf_zero_latency_queue",
                 "SurfaceFlinger Zero-Backpressure Display Queue",
-                "Bypasses presentation backpressure and latches unsignaled buffers for instant frame-to-screen dispatch",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.early_phase_offset_ns 500000; setprop debug.sf.early_app_phase_offset_ns 500000",
+                "Bypasses presentation backpressure with synchronized fences for instant frame-to-screen dispatch",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 1; setprop debug.sf.early_phase_offset_ns 500000; setprop debug.sf.early_app_phase_offset_ns 500000",
                 "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0",
                 TweakCategory.CPU_GPU,
                 true
@@ -104,8 +104,8 @@ public class TweakManagerRepository {
                 "vulkan_renderengine_prime",
                 "Force Vulkan RenderEngine & Pre-Warm Pipeline",
                 "Forces Vulkan backend for HWUI and Android RenderEngine to eliminate OpenGLES shader stutter",
-                "setprop debug.renderengine.backend vulkan; setprop ro.hwui.use_vulkan true; setprop debug.hwui.renderer skiagl; setprop debug.hwui.pipeline true",
-                "setprop debug.renderengine.backend skiagl; setprop ro.hwui.use_vulkan false",
+                "setprop debug.renderengine.backend vulkan; setprop ro.hwui.use_vulkan true; setprop debug.hwui.renderer skiavk; setprop debug.hwui.pipeline true",
+                "setprop debug.renderengine.backend \"\"; setprop ro.hwui.use_vulkan false",
                 TweakCategory.CPU_GPU,
                 true
         ));
@@ -230,8 +230,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "thermalservice_override",
                 "Nuclear Thermal Throttling Bypass & Sysfs Defeat",
-                "Disables Linux kernel thermal zones, elevates trip points to 120°C, resets cooling devices, terminates OEM thermal daemons, and forces PowerHAL sustained performance",
-                "for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
+                "Clamps Linux kernel thermal trip points to safe 75°C hardware ceiling, resets cooling devices, overrides thermal services, and forces PowerHAL sustained performance",
+                "for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 75000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance",
                 "for z in /sys/class/thermal/thermal_zone*; do echo enabled > \"$z/mode\" 2>/dev/null; done; start thermald 2>/dev/null; start thermal-engine 2>/dev/null; start mi_thermald 2>/dev/null; start vendor.thermal-engine 2>/dev/null; cmd thermalservice override-status -1 2>/dev/null; cmd thermal override-status -1 2>/dev/null; cmd power set-fixed-performance-mode-enabled false 2>/dev/null; cmd power set-mode 0 0 2>/dev/null; cmd power set-mode 2 0 2>/dev/null; setprop debug.thermal.throttle.disable 0; setprop vendor.thermal.mode normal",
                 TweakCategory.SHIZUKU_SYSTEM,
                 true
@@ -661,9 +661,9 @@ public class TweakManagerRepository {
 
         TWEAKS.add(new TweakItem(
                 "surfaceflinger_185hz_unsignaled_latch",
-                "SurfaceFlinger 185Hz Unsignaled Latching & Zero Phase Delay",
-                "Forces SurfaceFlinger to latch unsignaled buffers immediately, disables backpressure drops, and sets zero phase offsets for instant display presentation",
-                "setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0; setprop debug.sf.high_fps_early_phase_offset_ns 0; setprop debug.sf.high_fps_early_app_phase_offset_ns 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3; setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.layer_caching_enabled 0; setprop debug.sf.enable_transaction_tracing false; setprop debug.sf.dump_frame_events 0; service call SurfaceFlinger 1008 2>/dev/null",
+                "SurfaceFlinger 185Hz Synchronized Latching & Zero Phase Delay",
+                "Forces SurfaceFlinger to latch synchronized buffers immediately, disables backpressure drops, and sets zero phase offsets for instant display presentation",
+                "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 1; setprop debug.sf.enable_gl_backpressure 0; setprop debug.sf.early_phase_offset_ns 0; setprop debug.sf.early_app_phase_offset_ns 0; setprop debug.sf.early_gl_phase_offset_ns 0; setprop debug.sf.high_fps_early_phase_offset_ns 0; setprop debug.sf.high_fps_early_app_phase_offset_ns 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 3; setprop debug.sf.predict_hwc_composition_strategy 1; setprop debug.sf.use_content_detection_for_refresh_rate false; setprop debug.sf.layer_caching_enabled 0; setprop debug.sf.enable_transaction_tracing false; setprop debug.sf.dump_frame_events 0; service call SurfaceFlinger 1008 2>/dev/null",
                 "setprop debug.sf.latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; setprop ro.surface_flinger.max_frame_buffer_acquired_buffers 2",
                 TweakCategory.CPU_GPU,
                 true
@@ -702,8 +702,8 @@ public class TweakManagerRepository {
         TWEAKS.add(new TweakItem(
                 "vulkan_raytracing_pipeline",
                 "Hardware Vulkan Ray Tracing & Driver Extension Pipeline",
-                "Configures SkiaGL render backends, latch_unsignaled Vulkan pipelines, and binds MediaTek MT6878 / Adreno Game Driver",
-                "setprop debug.hwui.renderer skiagl; setprop debug.renderengine.backend skiagl; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; setprop vendor.gpu.vulkan_version_override 1.3; setprop ro.hardware.vulkan 1",
+                "Configures SkiaVK Vulkan render backends, synchronized Vulkan pipelines, and binds MediaTek MT6878 / Adreno Game Driver",
+                "setprop debug.hwui.renderer skiavk; setprop debug.renderengine.backend vulkan; setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 1; setprop vendor.gpu.vulkan_version_override 1.3; setprop ro.hardware.vulkan 1",
                 "setprop debug.hwui.renderer \"\"; setprop debug.renderengine.backend \"\"; setprop debug.sf.latch_unsignaled 0",
                 TweakCategory.CPU_GPU,
                 true
@@ -1281,13 +1281,13 @@ public class TweakManagerRepository {
 
         List<String> noLimitCmds = new ArrayList<>();
         // 1. Uncap SurfaceFlinger to hardware max FPS
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 1; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null", context));
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 1; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null", context));
         // 2. CPU max burst frequency lock & Oryon/X4 affinity
         noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo performance > \"$p/scaling_governor\" 2>/dev/null; if [ -f \"$p/scaling_max_freq\" ]; then cat \"$p/scaling_max_freq\" > \"$p/scaling_min_freq\" 2>/dev/null; fi; done; echo 0 > /dev/cpu_dma_latency 2>/dev/null; echo 4-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 1024 > /dev/cpuset/top-app/uclamp.min 2>/dev/null", context));
         // 3. GPU Turbo mode
         noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.adreno.turbo 1; setprop debug.adreno.perf_level 0; setprop debug.mali.force_gpu_boost 1; setprop vendor.gpu.power_mode 1", context));
-        // 4. Defeat thermal throttling
-        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 120000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance", context));
+        // 4. Defeat thermal throttling with safe 75C trip point ceiling
+        noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for z in /sys/class/thermal/thermal_zone*; do echo disabled > \"$z/mode\" 2>/dev/null; done; for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do echo 75000 > \"$t\" 2>/dev/null; done; for c in /sys/class/thermal/cooling_device*/cur_state; do echo 0 > \"$c\" 2>/dev/null; done; stop thermald 2>/dev/null; stop thermal-engine 2>/dev/null; stop mi_thermald 2>/dev/null; stop vendor.thermal-engine 2>/dev/null; killall -9 thermald thermal-engine 2>/dev/null; cmd thermalservice override-status 0 2>/dev/null; cmd thermal override-status 0 2>/dev/null; cmd power set-fixed-performance-mode-enabled true 2>/dev/null; cmd power set-mode 0 1 2>/dev/null; cmd power set-mode 2 1 2>/dev/null; setprop debug.thermal.throttle.disable 1; setprop vendor.thermal.mode performance", context));
         // 5. Zero-LTPO, 1000Hz touch & UFS 4.0 read-ahead
         noLimitCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.use_content_detection_for_refresh_rate false; setprop persist.vendor.display.vrr.disable 1; setprop view.touch_slop 0; setprop persist.sys.touch.report_rate 1000; for q in /sys/block/sd*/queue/read_ahead_kb; do echo 2048 > \"$q\" 2>/dev/null; done", context));
         // 6. Network QuickACK & TCP BBR v3
@@ -1314,7 +1314,7 @@ public class TweakManagerRepository {
 
         List<String> balancedCmds = new ArrayList<>();
         // 1. Lock display & SurfaceFlinger to stable hardware-adapted FPS
-        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 1; setprop debug.sf.disable_backpressure 0; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null; cmd window set-app-refresh-rate global " + targetHz + " 2>/dev/null; settings put system peak_refresh_rate " + targetHz + ".0; settings put system min_refresh_rate " + targetHz + ".0", context));
+        balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("setprop debug.sf.fps_limit " + targetHz + "; setprop persist.sys.NV_FPSLIMIT " + targetHz + "; setprop persist.sys.game.fps " + targetHz + "; setprop debug.sf.latch_unsignaled 0; setprop debug.sf.auto_latch_unsignaled 0; setprop debug.sf.disable_backpressure 0; service call SurfaceFlinger 1035 i32 " + targetHz + " 2>/dev/null; cmd window set-app-refresh-rate global " + targetHz + " 2>/dev/null; settings put system peak_refresh_rate " + targetHz + ".0; settings put system min_refresh_rate " + targetHz + ".0", context));
         // 2. CPU balanced schedutil / EAS energy-efficient governors
         balancedCmds.add(TweakSelfHealingVerifier.adaptCommandForHardware("for p in /sys/devices/system/cpu/cpufreq/policy*; do echo schedutil > \"$p/scaling_governor\" 2>/dev/null; done; echo 0-7 > /dev/cpuset/top-app/cpus 2>/dev/null; echo 512 > /dev/cpuset/top-app/uclamp.min 2>/dev/null; echo 1 > /proc/sys/kernel/sched_energy_aware 2>/dev/null", context));
         // 3. GPU balanced power mode

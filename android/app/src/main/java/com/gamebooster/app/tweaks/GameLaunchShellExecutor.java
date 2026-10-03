@@ -152,13 +152,26 @@ public final class GameLaunchShellExecutor {
         sb.append("setprop vendor.gpu.power_mode 1; ");
         sb.append("setprop debug.gpu.performance 1; ");
 
-        // Thermal bypass — disable zones & stop daemon
-        sb.append("for z in /sys/class/thermal/thermal_zone*; do")
-          .append(" echo disabled > \"$z/mode\" 2>/dev/null;")
+        // Thermal ceiling clamp (75°C hardware-safe trip lock + cooling reset)
+        sb.append("for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do")
+          .append(" echo 75000 > \"$t\" 2>/dev/null;")
           .append(" done; ");
-        sb.append("stop thermal-engine 2>/dev/null; ");
-        sb.append("stop thermald 2>/dev/null; ");
+        sb.append("for c in /sys/class/thermal/cooling_device*/cur_state; do")
+          .append(" echo 0 > \"$c\" 2>/dev/null;")
+          .append(" done; ");
+        sb.append("cmd thermalservice override-status 0 2>/dev/null; ");
+        sb.append("cmd thermal override-status 0 2>/dev/null; ");
+        sb.append("cmd power set-fixed-performance-mode-enabled true 2>/dev/null; ");
+        sb.append("setprop debug.thermal.throttle.disable 1; ");
+        sb.append("setprop vendor.thermal.mode performance; ");
         sb.append("setprop persist.sys.thermal.ignore 1; ");
+
+        // Renderer and SurfaceFlinger synchronization
+        sb.append("setprop debug.hwui.renderer skiavk; ");
+        sb.append("setprop debug.renderengine.backend vulkan; ");
+        sb.append("setprop debug.sf.latch_unsignaled 0; ");
+        sb.append("setprop debug.sf.auto_latch_unsignaled 0; ");
+        sb.append("setprop debug.sf.disable_backpressure 1; ");
 
         // Hz enforcement — hardware adaptive
         sb.append("settings put system peak_refresh_rate ").append(hz).append(".0; ");
@@ -241,11 +254,22 @@ public final class GameLaunchShellExecutor {
     private static String resolveGameFamilyScript(Context ctx, String pkg, int hz) {
         String[][] families = {
             {"com.mobile.legends", "mobilelegends", "com.vng.mlbbvn"},
-            {"com.tencent.ig", "com.pubg", "com.vng.pubgmobile", "com.krafton.bgmi"},
-            {"com.activision.callofduty", "com.garena.game.codm", "com.vng.codmvn"},
+            {"com.tencent.ig", "com.pubg", "com.vng.pubgmobile", "com.krafton.bgmi", "com.pubg.newstate"},
+            {"com.activision.callofduty", "com.garena.game.codm", "com.vng.codmvn", "warzone"},
             {"com.dts.freefire", "com.dts.freefiremax"},
-            {"com.levelinfinite.sgame", "com.tencent.tmgp.sgame"},
-            {"com.riotgames.league.wildrift"},
+            {"com.levelinfinite.sgame", "com.tencent.tmgp.sgame", "arenaofvalor", "kgtw", "kgvn"},
+            {"com.riotgames.league.wildrift", "wildrifttw", "wildriftvn"},
+            {"genshin", "mihoyo", "cognosphere", "hoyoverse", "hkrpg", "nap", "wutheringwaves"},
+            {"uamo", "arenabreakout", "deltaforce"},
+            {"bloodstrike", "newspike"},
+            {"farlight", "solarland"},
+            {"standoff2", "axlebolt"},
+            {"roblox"},
+            {"brawlstars", "clashroyale", "clashofclans", "squad"},
+            {"carx", "glofta9hm", "asphalt", "r3_row", "nfs"},
+            {"projectc", "valorant"},
+            {"pesam", "fifamobile", "fo4m"},
+            {"sololv", "mrvl", "marvel"},
         };
         String[] familyScripts = {
             "com.mobile.legends.sh",
@@ -254,6 +278,17 @@ public final class GameLaunchShellExecutor {
             "com.dts.freefireth.sh",
             "com.levelinfinite.sgameGlobal.sh",
             "com.riotgames.league.wildrift.sh",
+            "com.miHoYo.GenshinImpact.sh",
+            "com.proximabeta.mf.uamo.sh",
+            "com.netease.bloodstrike.sh",
+            "com.miraclegames.farlight84.sh",
+            "com.axlebolt.standoff2.sh",
+            "com.roblox.client.sh",
+            "com.supercell.brawlstars.sh",
+            "com.carxtech.sr.sh",
+            "com.riotgames.val.mobile.sh",
+            "jp.konami.pesam.sh",
+            "com.netmarble.sololv.sh",
         };
 
         for (int i = 0; i < families.length; i++) {

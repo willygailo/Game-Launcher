@@ -46,9 +46,9 @@ public final class VulkanRayTracingEngine {
                 Log.d(TAG, "Applying Vulkan Ray Tracing & Ultra Driver Pipeline for: " + packageName);
 
                 String[] commands = {
-                        // 1. Force SkiaGL / Vulkan HWUI render engine
-                        "setprop debug.hwui.renderer skiagl",
-                        "setprop debug.renderengine.backend skiagl",
+                        // 1. Force SkiaVK / Vulkan HWUI render engine
+                        "setprop debug.hwui.renderer skiavk",
+                        "setprop debug.renderengine.backend vulkan",
 
                         // 2. Enable Vulkan Ray Tracing & tear-free synchronized buffer latching
                         "setprop debug.sf.latch_unsignaled 0",

@@ -513,7 +513,7 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("applyThermalAndKernelBoost", e);
             }
         }
-        ShizukuExecutor.executeShizukuCommands("setprop debug.thermal.throttle.disable 1; setprop debug.performance.tuning 1; setprop debug.hwui.renderer vulkan");
+        ShizukuExecutor.executeShizukuCommands("setprop debug.thermal.throttle.disable 1; setprop debug.performance.tuning 1; setprop debug.hwui.renderer skiavk");
     }
 
     public boolean setCpuAffinity(int pid, int mask) {

@@ -471,7 +471,8 @@ public class ManualSettingsPreferences {
             // 2. GPU Render Mode
             String gpuMode = getGpuMode(context);
             if ("vulkan".equalsIgnoreCase(gpuMode)) {
-                executeCmd("setprop debug.hwui.renderer vulkan");
+                executeCmd("setprop debug.hwui.renderer skiavk");
+                executeCmd("setprop debug.renderengine.backend vulkan");
                 executeCmd("setprop renderthread.skia.glcontext 0");
             } else {
                 executeCmd("setprop debug.hwui.renderer skiagl");

@@ -399,7 +399,7 @@ public final class WebViewBoosterChannel {
                 sb.append("device_config put runtime_native_boot webview_webassembly_threads true; ");
                 sb.append("setprop debug.chromium.flags \"--enable-gpu-rasterization --enable-zero-copy --enable-drdc --ignore-gpu-blocklist --enable-oop-rasterization --enable-webgl2-compute-context --enable-skia-graphite --enable-raw-draw --enable-webgpu --enable-webassembly-threads --enable-webassembly-simd\"; ");
                 sb.append("setprop debug.hwui.use_gpu_pixel_buffers true; ");
-                sb.append("setprop debug.hwui.renderer vulkan; ");
+                sb.append("setprop debug.hwui.renderer skiavk; ");
                 sb.append("setprop debug.hwui.render_thread_priority -20; ");
                 sb.append("setprop debug.hwui.fps_limit 0; ");
                 sb.append("setprop debug.chromium.prerender 1; ");

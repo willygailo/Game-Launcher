@@ -151,6 +151,19 @@ public class CfgProfileManager {
             "com.supercell.squad"
     );
 
+    private static final List<String> SPORTS_PACKAGES = Arrays.asList(
+            "jp.konami.pesam",
+            "com.ea.gp.fifamobile",
+            "com.ea.gp.fifamobile.kr",
+            "com.nexon.fo4m"
+    );
+
+    private static final List<String> ACTION_RPG_PACKAGES = Arrays.asList(
+            "com.netmarble.sololv",
+            "com.netease.mrvl",
+            "com.kurogame.wutheringwaves.global"
+    );
+
     // ─── Save / Load ─────────────────────────────────────────────────────────
 
     /**
@@ -169,11 +182,14 @@ public class CfgProfileManager {
         if (pkg.contains("sgame") || pkg.contains("levelinfinite") || pkg.contains("arenaofvalor") || pkg.contains("kgtw") || pkg.contains("kgvn")) return CompetitiveCfgProfile.GAME_HOK;
         if (pkg.contains("bloodstrike") || pkg.contains("newspike")) return CompetitiveCfgProfile.GAME_BLOODSTRIKE;
         if (pkg.contains("standoff2") || pkg.contains("axlebolt")) return CompetitiveCfgProfile.GAME_STANDOFF2;
+        if (pkg.contains("wildrift") || pkg.contains("wildrifttw") || pkg.contains("wildriftvn")) return CompetitiveCfgProfile.GAME_WILDRIFT;
         if (pkg.contains("carx") || pkg.contains("glofta9hm") || pkg.contains("asphalt") || pkg.contains("r3_row") || pkg.contains("speeddrifters") || pkg.contains("fdtw")) return CompetitiveCfgProfile.GAME_CARX;
         if (pkg.contains("supercell") || pkg.contains("brawlstars") || pkg.contains("clashroyale") || pkg.contains("clashofclans")) return CompetitiveCfgProfile.GAME_SUPERCELL;
         if (pkg.contains("roblox")) return CompetitiveCfgProfile.GAME_ROBLOX;
         if (pkg.contains("projectc") || pkg.contains("valorant")) return CompetitiveCfgProfile.GAME_VALORANT;
         if (pkg.contains("farlight") || pkg.contains("solarland")) return CompetitiveCfgProfile.GAME_FARLIGHT;
+        if (pkg.contains("pesam") || pkg.contains("fifamobile") || pkg.contains("fo4m")) return CompetitiveCfgProfile.GAME_SPORTS;
+        if (pkg.contains("sololv") || pkg.contains("mrvl") || pkg.contains("marvel") || pkg.contains("wutheringwaves")) return CompetitiveCfgProfile.GAME_ACTION_RPG;
         return CompetitiveCfgProfile.GAME_ALL;
     }
 
@@ -296,7 +312,9 @@ public class CfgProfileManager {
                 CompetitiveCfgProfile.GAME_WILDRIFT,
                 CompetitiveCfgProfile.GAME_CARX,
                 CompetitiveCfgProfile.GAME_ARENABREAKOUT,
-                CompetitiveCfgProfile.GAME_SUPERCELL}) {
+                CompetitiveCfgProfile.GAME_SUPERCELL,
+                CompetitiveCfgProfile.GAME_SPORTS,
+                CompetitiveCfgProfile.GAME_ACTION_RPG}) {
             CompetitiveCfgProfile p = new CompetitiveCfgProfile(gameKey, effectiveFps, superTouch, forceHz, true, true, true, true, true, true, true, true, true, true);
             total += applyProfile(context, gameKey, p);
         }
@@ -385,6 +403,8 @@ public class CfgProfileManager {
             case CompetitiveCfgProfile.GAME_CARX:          return CARX_PACKAGES;
             case CompetitiveCfgProfile.GAME_ARENABREAKOUT: return ARENABREAKOUT_PACKAGES;
             case CompetitiveCfgProfile.GAME_SUPERCELL:     return SUPERCELL_PACKAGES;
+            case CompetitiveCfgProfile.GAME_SPORTS:        return SPORTS_PACKAGES;
+            case CompetitiveCfgProfile.GAME_ACTION_RPG:    return ACTION_RPG_PACKAGES;
             case CompetitiveCfgProfile.GAME_ALL:
             default:
                 List<String> all = new java.util.ArrayList<>();
@@ -403,6 +423,8 @@ public class CfgProfileManager {
                 all.addAll(CARX_PACKAGES);
                 all.addAll(ARENABREAKOUT_PACKAGES);
                 all.addAll(SUPERCELL_PACKAGES);
+                all.addAll(SPORTS_PACKAGES);
+                all.addAll(ACTION_RPG_PACKAGES);
                 return all;
         }
     }

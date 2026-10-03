@@ -16,19 +16,25 @@ public final class GameAutoInjectDispatcher {
 
     private static final String TAG = "GameAutoInject";
 
-    private GameAutoInjectDispatcher() {
-    }
+    private GameAutoInjectDispatcher() {}
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> LAST_INJECTED =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long INJECTION_COOLDOWN_MS = 8000L;
 
     public static boolean isPackageInjected(String packageName) {
-        return false;
+        if (packageName == null) return false;
+        Long ts = LAST_INJECTED.get(packageName.trim().toLowerCase());
+        return ts != null && (System.currentTimeMillis() - ts) < INJECTION_COOLDOWN_MS;
     }
 
     public static void resetPackageInjectionState(String packageName) {
-        // No state is retained.
+        if (packageName != null) {
+            LAST_INJECTED.remove(packageName.trim().toLowerCase());
+        }
     }
 
     public static void resetAll() {
-        // No state is retained.
+        LAST_INJECTED.clear();
     }
 
     public static void dispatchForPackage(String packageName) {
@@ -48,6 +54,11 @@ public final class GameAutoInjectDispatcher {
             return;
         }
         String pkg = packageName.trim().toLowerCase();
+        if (!force && isPackageInjected(pkg)) {
+            Log.i(TAG, "🛡️ [ConflictPrevention] " + pkg + " already injected in current window — skipping duplicate pass");
+            return;
+        }
+        LAST_INJECTED.put(pkg, System.currentTimeMillis());
         try {
             Context ctx = context != null ? context : ConfigBackupManager.getAppContext();
 

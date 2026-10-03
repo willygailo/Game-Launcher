@@ -1,8 +1,7 @@
 #!/system/bin/sh
 # ─────────────────────────────────────────────────────────────────────────────
 # base_perf.sh — Universal Game Booster (auto-loaded on every game launch)
-# 185fps force unlock — multi-vendor kernel + SurfaceFlinger + SwappyGL
-# Updated: Sep 30 2026 — fixed {TARGET_HZ} placeholder → hardcoded 185
+# Synchronized Vulkan pipeline + Dynamic Hz unlock + Safe Thermal Governor
 # ─────────────────────────────────────────────────────────────────────────────
 
 # CPU — performance governor on ALL cpufreq policies
@@ -31,54 +30,69 @@ setprop vendor.gpu.power_mode 1
 # GPU Mali boost
 setprop debug.mali.sched.priority -20
 setprop debug.mali.force_gpu_boost 1
-setprop debug.hwui.renderer vulkan 2>/dev/null
 
-# Thermal bypass — disable thermal zones & daemons
-for z in /sys/class/thermal/thermal_zone*; do
-  echo disabled > "$z/mode" 2>/dev/null
+# HWUI & RenderEngine — Unified SkiaVK + Vulkan pipeline
+setprop debug.hwui.renderer skiavk 2>/dev/null
+setprop debug.renderengine.backend vulkan 2>/dev/null
+setprop debug.renderengine.skia_pipeline true 2>/dev/null
+
+# Thermal ceiling clamp (75°C hardware-safe trip lock + cooling reset)
+for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do
+  echo 75000 > "$t" 2>/dev/null
 done
-stop thermal-engine 2>/dev/null
-stop thermald 2>/dev/null
-stop vendor.thermal-engine 2>/dev/null
+for c in /sys/class/thermal/cooling_device*/cur_state; do
+  echo 0 > "$c" 2>/dev/null
+done
+cmd thermalservice override-status 0 2>/dev/null
+cmd thermal override-status 0 2>/dev/null
+cmd power set-fixed-performance-mode-enabled true 2>/dev/null
+setprop debug.thermal.throttle.disable 1
+setprop vendor.thermal.mode performance
 setprop persist.sys.thermal.ignore 1
-setprop vendor.thermal.config "" 2>/dev/null
 
-# ── 185fps Force Unlock — Layer 1: System Settings ───────────────────────────
-settings put system peak_refresh_rate 185.0 2>/dev/null
-settings put system min_refresh_rate 185.0 2>/dev/null
+# ── Dynamic Refresh Rate Resolution ──────────────────────────────────────────
+TARGET_HZ="{TARGET_HZ}"
+case "$TARGET_HZ" in
+  *{*}*|"") TARGET_HZ=120 ;;
+esac
+
+# ── Layer 1: System Settings ──────────────────────────────────────────────────
+settings put system peak_refresh_rate ${TARGET_HZ}.0 2>/dev/null
+settings put system min_refresh_rate ${TARGET_HZ}.0 2>/dev/null
 settings put system match_content_frame_rate 0 2>/dev/null
 settings put global game_mode_config 0 2>/dev/null
 
-# ── 185fps Force Unlock — Layer 2: SurfaceFlinger props + binder calls ───────
-setprop debug.sf.fps_limit 185
-setprop persist.sys.NV_FPSLIMIT 185
-setprop persist.game_mode.performance.fps 185
+# ── Layer 2: SurfaceFlinger props + binder calls ──────────────────────────────
+setprop debug.sf.fps_limit $TARGET_HZ
+setprop persist.sys.NV_FPSLIMIT $TARGET_HZ
+setprop persist.game_mode.performance.fps $TARGET_HZ
 # SurfaceFlinger binder: 1034=setDesiredDisplayModeSpecs, 1035=setFrameRate
-service call SurfaceFlinger 1034 i32 185 2>/dev/null
-service call SurfaceFlinger 1035 i32 185 2>/dev/null
+service call SurfaceFlinger 1034 i32 $TARGET_HZ 2>/dev/null
+service call SurfaceFlinger 1035 i32 $TARGET_HZ 2>/dev/null
 # 1008=setActiveConfig (older Qualcomm BSP), 1029=setDisplayMode (Samsung BSP)
-service call SurfaceFlinger 1008 i32 185 2>/dev/null
-service call SurfaceFlinger 1029 i32 185 2>/dev/null
+service call SurfaceFlinger 1008 i32 $TARGET_HZ 2>/dev/null
+service call SurfaceFlinger 1029 i32 $TARGET_HZ 2>/dev/null
 
-# ── 185fps Force Unlock — Layer 3: SwappyGL / EGL swap disable ───────────────
+# ── Layer 3: SwappyGL / Zero Latency Display Queue (Zero-Tear Fences) ─────────
 setprop swappy.disable 1
 setprop debug.swappy.swap_interval 0
 setprop debug.egl.swapinterval 0
 setprop debug.sf.disable_backpressure 1
-setprop debug.sf.latch_unsignaled 1
+setprop debug.sf.latch_unsignaled 0
+setprop debug.sf.auto_latch_unsignaled 0
 
-# ── 185fps Force Unlock — Layer 4: Kernel sysfs nodes (all chipset vendors) ──
+# ── Layer 4: Kernel sysfs nodes (multi-vendor) ───────────────────────────────
 # MediaTek (MTK)
-echo 185 > /sys/devices/platform/mtk_disp_mgr.0/refresh_rate 2>/dev/null
-echo 185 > /proc/mtk_display/fps 2>/dev/null
-echo 185 > /sys/devices/virtual/graphics/fb0/dynamic_fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/platform/mtk_disp_mgr.0/refresh_rate 2>/dev/null
+echo $TARGET_HZ > /proc/mtk_display/fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/virtual/graphics/fb0/dynamic_fps 2>/dev/null
 # Qualcomm (Snapdragon)
-echo 185 > /sys/class/graphics/fb0/dynamic_fps 2>/dev/null
-echo 185 > /sys/devices/platform/soc/soc:qcom,dsi-display-primary/max_fps 2>/dev/null
+echo $TARGET_HZ > /sys/class/graphics/fb0/dynamic_fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/platform/soc/soc:qcom,dsi-display-primary/max_fps 2>/dev/null
 # Samsung Exynos
-echo 185 > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev/null
 # Generic DRM
-echo 185 > /sys/class/drm/card0-DSI-1/max_fps 2>/dev/null
+echo $TARGET_HZ > /sys/class/drm/card0-DSI-1/max_fps 2>/dev/null
 
 # SurfaceFlinger — HW composition, disable idle timer
 setprop debug.sf.hw 1

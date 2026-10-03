@@ -28,6 +28,8 @@ public class CompetitiveCfgProfile {
     public static final String GAME_CARX          = "CARX";
     public static final String GAME_ARENABREAKOUT = "ARENABREAKOUT";
     public static final String GAME_SUPERCELL     = "SUPERCELL";
+    public static final String GAME_SPORTS        = "SPORTS";
+    public static final String GAME_ACTION_RPG    = "ACTION_RPG";
     public static final String GAME_ALL           = "ALL";
 
     // ─── FPS Tier Constants ─────────────────────────────────────────────────

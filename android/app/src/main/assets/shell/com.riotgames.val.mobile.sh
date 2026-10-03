@@ -1,32 +1,32 @@
 #!/system/bin/sh
 # ─────────────────────────────────────────────────────────────────────────────
-# com.dts.freefireth.sh — Free Fire & Free Fire MAX tuning
-# Covers: com.dts.freefireth, com.dts.freefiremax
-# Synchronized Vulkan pipeline + Dynamic Hz unlock + Safe Thermal Governor
+# com.riotgames.val.mobile.sh — Valorant Mobile / Project C tuning
+# Unreal Engine 4 competitive esports FPS — Tickrate + zero touch latency
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Unified HWUI & RenderEngine backend
 setprop debug.hwui.renderer skiavk
 setprop debug.renderengine.backend vulkan
-setprop debug.egl.swapinterval 0
-setprop debug.egl.buffcount 2
 setprop debug.sf.disable_backpressure 1
 setprop debug.sf.latch_unsignaled 0
 setprop debug.sf.auto_latch_unsignaled 0
+setprop debug.egl.swapinterval 0
+setprop debug.adreno.turbo 1
+setprop vendor.gpu.power_mode 1
 
-# CPU — performance governor
+# Touch & input precision
+setprop view.touch_slop 0
+setprop persist.sys.touch.report_rate 1000
+
 for p in /sys/devices/system/cpu/cpufreq/policy*; do
   echo performance > "$p/scaling_governor" 2>/dev/null
   cat "$p/cpuinfo_max_freq" > "$p/scaling_min_freq" 2>/dev/null
 done
 
-# ── Dynamic Hz Resolution ─────────────────────────────────────────────────────
 TARGET_HZ="{TARGET_HZ}"
 case "$TARGET_HZ" in
   *{*}*|"") TARGET_HZ=120 ;;
 esac
 
-# Hz lock
 settings put system peak_refresh_rate ${TARGET_HZ}.0 2>/dev/null
 settings put system min_refresh_rate ${TARGET_HZ}.0 2>/dev/null
 setprop debug.sf.fps_limit $TARGET_HZ
@@ -47,10 +47,8 @@ cmd power set-fixed-performance-mode-enabled true 2>/dev/null
 setprop debug.thermal.throttle.disable 1
 setprop vendor.thermal.mode performance
 
-# Garena network servers
 sysctl -w net.ipv4.tcp_congestion_control=bbr 2>/dev/null
 sysctl -w net.ipv4.tcp_quickack=1 2>/dev/null
+sysctl -w net.ipv4.tcp_nodelay=1 2>/dev/null
 
-# Memory — Unity garbage collector works better with prepped RAM
-echo 1 > /proc/sys/vm/drop_caches 2>/dev/null
-echo 0 > /proc/sys/vm/swappiness 2>/dev/null
+echo 2 > /proc/sys/vm/drop_caches 2>/dev/null

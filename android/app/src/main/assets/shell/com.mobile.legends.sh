@@ -2,11 +2,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # com.mobile.legends.sh — Mobile Legends: Bang Bang tuning
 # Target: com.mobile.legends (GLOBAL ONLY)
-# Updated: Sep 30 2026 — 185fps unlock + AC telemetry null-route + global-only
+# Synchronized Vulkan pipeline + Dynamic Hz unlock + Safe Thermal Governor
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Force ultra graphics path via Vulkan renderer
-setprop debug.hwui.renderer vulkan
+setprop debug.hwui.renderer skiavk
+setprop debug.renderengine.backend vulkan
 setprop debug.vulkan.layers ""
 setprop debug.vulkan.enable_validation_layers 0
 
@@ -21,31 +22,52 @@ sysctl -w net.ipv4.tcp_keepalive_time=60 2>/dev/null
 sysctl -w net.ipv4.tcp_rmem="4096 87380 6291456" 2>/dev/null
 sysctl -w net.ipv4.tcp_wmem="4096 16384 4194304" 2>/dev/null
 
-# Adreno — MLBB uses OpenGL ES 3.2, push quality flags
+# Adreno — MLBB uses OpenGL ES / Vulkan, push quality flags
 setprop ro.hardware.egl adreno
-setprop debug.egl.swapinterval -1
+setprop debug.egl.swapinterval 0
 setprop debug.egl.buffcount 3
 
-# ── 185fps Force Unlock (MLBB-specific Hz lock — resists OEM reverting mid-match) ──
-settings put system peak_refresh_rate 185.0 2>/dev/null
-settings put system min_refresh_rate 185.0 2>/dev/null
+# ── Dynamic Hz Resolution ─────────────────────────────────────────────────────
+TARGET_HZ="{TARGET_HZ}"
+case "$TARGET_HZ" in
+  *{*}*|"") TARGET_HZ=120 ;;
+esac
+
+# ── Hz Lock (resists OEM reverting mid-match) ─────────────────────────────────
+settings put system peak_refresh_rate ${TARGET_HZ}.0 2>/dev/null
+settings put system min_refresh_rate ${TARGET_HZ}.0 2>/dev/null
 settings put global game_mode_config 0 2>/dev/null
-setprop debug.sf.fps_limit 185
-setprop persist.sys.NV_FPSLIMIT 185
-setprop persist.game_mode.performance.fps 185
+setprop debug.sf.fps_limit $TARGET_HZ
+setprop persist.sys.NV_FPSLIMIT $TARGET_HZ
+setprop persist.game_mode.performance.fps $TARGET_HZ
 setprop swappy.disable 1
 setprop debug.swappy.swap_interval 0
 setprop debug.egl.swapinterval 0
 setprop debug.sf.disable_backpressure 1
-setprop debug.sf.latch_unsignaled 1
-service call SurfaceFlinger 1034 i32 185 2>/dev/null
-service call SurfaceFlinger 1035 i32 185 2>/dev/null
+setprop debug.sf.latch_unsignaled 0
+setprop debug.sf.auto_latch_unsignaled 0
+service call SurfaceFlinger 1034 i32 $TARGET_HZ 2>/dev/null
+service call SurfaceFlinger 1035 i32 $TARGET_HZ 2>/dev/null
+
 # Kernel-level display nodes (tries all chipset vendors)
-echo 185 > /sys/devices/virtual/graphics/fb0/dynamic_fps 2>/dev/null
-echo 185 > /sys/class/graphics/fb0/dynamic_fps 2>/dev/null
-echo 185 > /sys/devices/platform/mtk_disp_mgr.0/refresh_rate 2>/dev/null
-echo 185 > /proc/mtk_display/fps 2>/dev/null
-echo 185 > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/virtual/graphics/fb0/dynamic_fps 2>/dev/null
+echo $TARGET_HZ > /sys/class/graphics/fb0/dynamic_fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/platform/mtk_disp_mgr.0/refresh_rate 2>/dev/null
+echo $TARGET_HZ > /proc/mtk_display/fps 2>/dev/null
+echo $TARGET_HZ > /sys/devices/platform/exynos-drm/drm/card0/card0-DSI-1/max_fps 2>/dev/null
+
+# Thermal ceiling clamp (75°C hardware-safe trip lock + cooling reset)
+for t in /sys/class/thermal/thermal_zone*/trip_point_*_temp; do
+  echo 75000 > "$t" 2>/dev/null
+done
+for c in /sys/class/thermal/cooling_device*/cur_state; do
+  echo 0 > "$c" 2>/dev/null
+done
+cmd thermalservice override-status 0 2>/dev/null
+cmd thermal override-status 0 2>/dev/null
+cmd power set-fixed-performance-mode-enabled true 2>/dev/null
+setprop debug.thermal.throttle.disable 1
+setprop vendor.thermal.mode performance
 
 # Drop caches before first frame
 echo 1 > /proc/sys/vm/drop_caches 2>/dev/null
