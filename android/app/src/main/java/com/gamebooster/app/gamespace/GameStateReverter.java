@@ -72,6 +72,14 @@ public final class GameStateReverter {
         } catch (Throwable ignored) {
             // Session cleanup should remain best-effort.
         }
+
+        // Phase 4: Cleanly restore original host identity when game session ends
+        try {
+            com.gamebooster.app.spoofer.DeviceSpooferEngine.revertToOriginalIdentity(context);
+        } catch (Throwable t) {
+            Log.w(TAG, "Device identity revert note: " + t.getMessage());
+        }
+
         Log.i(TAG, report.message);
         return report;
     }

@@ -88,9 +88,7 @@ public final class GameAutoInjectDispatcher {
             }
 
             try {
-                if (com.gamebooster.app.spoofer.SpoofPreferences.isSpoofEnabled(ctx)) {
-                    com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(ctx, pkg);
-                }
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.autoApplyOptimalProfileForGame(ctx, pkg);
             } catch (Throwable t) {
                 Log.w(TAG, "Device spoof injection note for " + pkg + ": " + t.getMessage());
             }

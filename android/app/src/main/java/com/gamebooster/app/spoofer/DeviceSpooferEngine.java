@@ -48,6 +48,110 @@ public class DeviceSpooferEngine {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    //  Phase 4: Device Identity Snapshot & Auto-Revert
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static class DeviceIdentitySnapshot {
+        public final String model;
+        public final String brand;
+        public final String manufacturer;
+        public final String device;
+        public final String product;
+        public final String hardware;
+        public final String board;
+        public final String fingerprint;
+        public final String display;
+        public final String serial;
+        public final String release;
+        public final int sdkInt;
+        public final String securityPatch;
+        public final String incremental;
+        public final String socModel;
+        public final String socManufacturer;
+
+        public DeviceIdentitySnapshot() {
+            this.model = android.os.Build.MODEL;
+            this.brand = android.os.Build.BRAND;
+            this.manufacturer = android.os.Build.MANUFACTURER;
+            this.device = android.os.Build.DEVICE;
+            this.product = android.os.Build.PRODUCT;
+            this.hardware = android.os.Build.HARDWARE;
+            this.board = android.os.Build.BOARD;
+            this.fingerprint = android.os.Build.FINGERPRINT;
+            this.display = android.os.Build.DISPLAY;
+            this.serial = getSafeSerial();
+            this.release = android.os.Build.VERSION.RELEASE;
+            this.sdkInt = android.os.Build.VERSION.SDK_INT;
+            this.securityPatch = android.os.Build.VERSION.SECURITY_PATCH;
+            this.incremental = android.os.Build.VERSION.INCREMENTAL;
+            this.socModel = getSafeField("SOC_MODEL");
+            this.socManufacturer = getSafeField("SOC_MANUFACTURER");
+        }
+
+        @SuppressWarnings("deprecation")
+        private static String getSafeSerial() {
+            try {
+                return android.os.Build.getSerial();
+            } catch (Throwable t) {
+                return android.os.Build.SERIAL;
+            }
+        }
+
+        private static String getSafeField(String name) {
+            try {
+                java.lang.reflect.Field f = android.os.Build.class.getField(name);
+                return (String) f.get(null);
+            } catch (Throwable t) {
+                return "";
+            }
+        }
+    }
+
+    private static volatile DeviceIdentitySnapshot sOriginalSnapshot = null;
+
+    /**
+     * Captures a pristine snapshot of the real host device before any spoofing or reflection.
+     */
+    public static synchronized void captureOriginalIdentitySnapshot() {
+        if (sOriginalSnapshot == null) {
+            sOriginalSnapshot = new DeviceIdentitySnapshot();
+            Log.i(TAG, "📸 [Snapshot] Captured real host device identity: " + sOriginalSnapshot.brand + " " + sOriginalSnapshot.model);
+        }
+    }
+
+    public static DeviceIdentitySnapshot getOriginalIdentitySnapshot() {
+        if (sOriginalSnapshot == null) {
+            captureOriginalIdentitySnapshot();
+        }
+        return sOriginalSnapshot;
+    }
+
+    /**
+     * Reverts all in-memory reflection, Shizuku system properties, and game states
+     * back to the host device's original identity without requiring a system reboot.
+     */
+    public static boolean revertToOriginalIdentity(Context context) {
+        try {
+            captureOriginalIdentitySnapshot();
+            DeviceIdentitySnapshot snap = sOriginalSnapshot;
+            if (snap != null) {
+                HardwareMaskEngine.restoreReflectionMask(snap);
+            }
+            HardwareMaskEngine.resetHardwareMask();
+            activeProfileId = null;
+            if (context != null) {
+                SpoofPreferences.setSpoofEnabled(context, false);
+                SpoofPreferences.clearActiveProfile(context);
+            }
+            Log.i(TAG, "✔ [Identity Reverted] Host device restored cleanly to: " + (snap != null ? snap.model : "Original"));
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "Error reverting identity: " + t.getMessage(), t);
+            return false;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     //  Profile access (delegates to registry)
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -107,13 +211,13 @@ public class DeviceSpooferEngine {
             return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
-        // 2. CODM / Warzone / Blood Strike / Tactical FPS (Snapdragon 8 Elite / Adreno 830)
-        // Fix S2b: Garena regional CODM packages now explicitly routed to S25 Ultra
+        // 2. CODM / Warzone / Blood Strike / Tactical FPS (ASUS ROG Phone 9 Pro / Snapdragon 8 Elite / 185Hz)
         if (pkg.contains("callofduty") || pkg.contains("activision") || pkg.contains("tmgp.cod") ||
             pkg.contains("garena.game.codm") || pkg.contains("garena.codm") ||
             pkg.contains("tm.codm") || pkg.contains("codmobile") || pkg.contains("codm.garena") ||
             pkg.contains("bloodstrike") || pkg.contains("standoff2") || pkg.contains("deltaforce")) {
-            return SpoofProfileRegistry.getById("samsung_s25_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("asus_rog9_pro");
+            return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
         // 3. MLBB / HOK / Arena of Valor / Wild Rift / Roblox (185Hz / Ultra-low Touch Latency)
@@ -124,11 +228,12 @@ public class DeviceSpooferEngine {
             return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
-        // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves (Vulkan Ultra Tier 5)
+        // 4. Genshin Impact / Honkai: Star Rail / Zenless Zone Zero / Wuthering Waves (Apple M4 120Hz ProMotion)
         if (pkg.contains("genshin") || pkg.contains("hkrpg") || pkg.contains("honkai") || 
             pkg.contains("cognosphere") || pkg.contains("mihoyo") || pkg.contains("hoyoverse") || 
             pkg.contains("nap") || pkg.contains("wutheringwaves")) {
-            SpoofProfile p = SpoofProfileRegistry.getById("xiaomi_15_ultra");
+            SpoofProfile p = SpoofProfileRegistry.getById("ipad_pro_m4");
+            if (p == null) p = SpoofProfileRegistry.getById("xiaomi_15_ultra");
             return p != null ? p : SpoofProfileRegistry.getById("samsung_s25_ultra");
         }
 
@@ -178,6 +283,9 @@ public class DeviceSpooferEngine {
             Log.e(TAG, "Cannot apply null spoof profile.");
             return false;
         }
+
+        // Snapshot original host identity before any changes take effect
+        captureOriginalIdentitySnapshot();
 
         // Feature compatibility check: informs of chipset differences but never blocks user-selected profiles
         try {
@@ -326,17 +434,33 @@ public class DeviceSpooferEngine {
      * and injects the tailored engine configs.
      */
     public static boolean applyWorkingSpoofForGame(Context context, String packageName) {
-        if (context == null || packageName == null || packageName.trim().isEmpty()) return false;
-        if (!SpoofPreferences.isSpoofEnabled(context)) {
-            Log.d(TAG, "Device spoofing is not enabled by user — skipping auto working spoof for " + packageName);
-            return false;
+        if (packageName == null || packageName.trim().isEmpty()) return false;
+        String pkg = packageName.trim();
+        SpoofProfile profile = null;
+        if (context != null && SpoofPreferences.isSpoofEnabled(context)) {
+            profile = getEffectiveProfile(context, pkg);
         }
-        SpoofProfile profile = getEffectiveProfile(context, packageName);
         if (profile == null) {
-            Log.d(TAG, "No effective spoof profile configured for " + packageName);
-            return false;
+            profile = getRecommendedProfile(pkg);
+            if (context != null && profile != null) {
+                SpoofPreferences.setSpoofEnabled(context, true);
+                SpoofPreferences.setProfileIdForPackage(context, pkg, profile.id);
+                SpoofPreferences.setActiveProfileId(context, profile.id);
+            }
         }
-        return applyProfile(context, profile, packageName.trim());
+        if (profile == null) {
+            profile = getDefaultProfile();
+        }
+        if (profile == null) return false;
+        Log.i(TAG, "⚡ [Smart Auto-Spoof] Applying optimal profile for " + pkg + " -> " + profile.displayName + " (" + profile.id + ")");
+        return applyProfile(context, profile, pkg);
+    }
+
+    /**
+     * Working Method: Auto-applies optimal profile for game unconditionally.
+     */
+    public static boolean autoApplyOptimalProfileForGame(Context context, String packageName) {
+        return applyWorkingSpoofForGame(context, packageName);
     }
 
     /**

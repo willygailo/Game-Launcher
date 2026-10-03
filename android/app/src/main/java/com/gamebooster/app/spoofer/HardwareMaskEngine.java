@@ -3,10 +3,12 @@ package com.gamebooster.app.spoofer;
 import android.content.Context;
 import android.util.Log;
 import com.gamebooster.app.booster.GpuTweaksChannel;
+import com.gamebooster.app.config.CodmConfigPatcher;
 import com.gamebooster.app.config.ConfigFileHelper;
 import com.gamebooster.app.config.GameConfigPathResolver;
 import com.gamebooster.app.config.GameSecurityBypassEngine;
 import com.gamebooster.app.config.MlbbConfigPatcher;
+import com.gamebooster.app.config.MlbbDroneViewPatcher;
 import com.gamebooster.app.config.NativeConfigInjector;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
@@ -280,6 +282,7 @@ public class HardwareMaskEngine {
      */
     public static void applyInAppReflectionMask(SpoofProfile profile) {
         if (profile == null) return;
+        DeviceSpooferEngine.captureOriginalIdentitySnapshot();
         try {
             setStaticField(android.os.Build.class, "MODEL", profile.model);
             setStaticField(android.os.Build.class, "BRAND", profile.brand);
@@ -316,6 +319,45 @@ public class HardwareMaskEngine {
             Log.d(TAG, "In-app Build reflection applied: " + profile.model + " (" + profile.brand + ")");
         } catch (Throwable t) {
             Log.w(TAG, "applyInAppReflectionMask non-fatal: " + t.getMessage());
+        }
+    }
+
+    /**
+     * Reverts in-app Build reflection back to the pristine host device snapshot.
+     */
+    public static void restoreReflectionMask(DeviceSpooferEngine.DeviceIdentitySnapshot snap) {
+        if (snap == null) return;
+        try {
+            setStaticField(android.os.Build.class, "MODEL", snap.model);
+            setStaticField(android.os.Build.class, "BRAND", snap.brand);
+            setStaticField(android.os.Build.class, "MANUFACTURER", snap.manufacturer);
+            setStaticField(android.os.Build.class, "DEVICE", snap.device);
+            setStaticField(android.os.Build.class, "PRODUCT", snap.product);
+            setStaticField(android.os.Build.class, "HARDWARE", snap.hardware);
+            setStaticField(android.os.Build.class, "BOARD", snap.board);
+            setStaticField(android.os.Build.class, "FINGERPRINT", snap.fingerprint);
+            setStaticField(android.os.Build.class, "DISPLAY", snap.display);
+            setStaticField(android.os.Build.class, "SERIAL", snap.serial);
+
+            try {
+                setStaticField(android.os.Build.VERSION.class, "RELEASE", snap.release);
+                setStaticField(android.os.Build.VERSION.class, "SDK_INT", snap.sdkInt);
+                setStaticField(android.os.Build.VERSION.class, "SECURITY_PATCH", snap.securityPatch);
+                setStaticField(android.os.Build.VERSION.class, "INCREMENTAL", snap.incremental);
+            } catch (Throwable ignored) {}
+
+            try {
+                if (snap.socModel != null && !snap.socModel.isEmpty()) {
+                    setStaticField(android.os.Build.class, "SOC_MODEL", snap.socModel);
+                }
+                if (snap.socManufacturer != null && !snap.socManufacturer.isEmpty()) {
+                    setStaticField(android.os.Build.class, "SOC_MANUFACTURER", snap.socManufacturer);
+                }
+            } catch (Throwable ignored) {}
+
+            Log.d(TAG, "Host Build reflection restored: " + snap.model);
+        } catch (Throwable t) {
+            Log.w(TAG, "restoreReflectionMask non-fatal: " + t.getMessage());
         }
     }
 
@@ -482,6 +524,15 @@ public class HardwareMaskEngine {
                     "chmod 666 /sdcard/Android/data/" + pkg + "/files/HardwareProfile.json 2>/dev/null";
                 ShizukuExecutor.executeShizukuCommand(codFallbackCmd);
             } catch (Throwable ignored) {}
+
+            // Direct sync with all extracted 2026 CODM assets
+            try {
+                CodmConfigPatcher.deployCodmAssets(pkg);
+                CodmConfigPatcher.patch(pkg, targetFps);
+            } catch (Throwable t) {
+                Log.w(TAG, "CodmConfigPatcher sync error: " + t.getMessage());
+            }
+
             GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         }
 
@@ -520,6 +571,11 @@ public class HardwareMaskEngine {
                     MlbbConfigPatcher.patch(packageName, targetFps);
                 }
                 MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(packageName, targetFps);
+                try {
+                    MlbbDroneViewPatcher.applyDroneViewAtomic(packageName, targetFps);
+                } catch (Throwable t) {
+                    Log.w(TAG, "MlbbDroneViewPatcher sync note: " + t.getMessage());
+                }
             } catch (Throwable ignored) {}
 
             String mlbbIni = profile.generateMlbbDeviceConfig(targetFps);

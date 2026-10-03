@@ -181,6 +181,10 @@ public class CodmConfigPatcher {
         Log.i(TAG, "⚡ CODM God Mode Full Overdrive Cheat Suite 100% applied for " + packageName);
     }
 
+    public static boolean deployCodmAssets(String packageName) {
+        return deployCodmAssets(null, packageName);
+    }
+
     /**
      * Deploys complete CODM asset template suite from assets/codm/ into target game paths.
      */

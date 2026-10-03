@@ -249,6 +249,12 @@ public final class MlbbDroneViewPatcher {
         }
     }
 
+    public static boolean applyDroneViewAtomic(String pkg, int tier) {
+        Context context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        return applyDroneViewAtomic(context, pkg, tier);
+    }
+
     /**
      * Ultra-fast atomic batch injection for MLBB Drone View.
      * Executes in ~150ms by staging assets in app cache and deploying to all

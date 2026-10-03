@@ -188,6 +188,11 @@ public class GameUpdateMonitorService extends Service {
                 FreeFireConfigPatcher.applyFreeFireMasterSuite(pkg);
             }
 
+            // Auto Device & Hardware Profile Spoofing
+            try {
+                com.gamebooster.app.spoofer.DeviceSpooferEngine.applyWorkingSpoofForGame(context, pkg);
+            } catch (Throwable ignored) {}
+
             showNotification("Auto-patch complete", pkg + " patched successfully after update.");
             Log.i(TAG, "[Auto-Patch Complete] " + pkg);
 
