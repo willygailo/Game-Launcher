@@ -24,9 +24,6 @@
         <item name="switchStyle">@style/Widget.GameBooster.Switch</item>
     </style>
 
-    <!-- Legacy / Compatibility Alias -->
-    <style name="Theme.GameLauncher" parent="Theme.GameBooster" />
-
     <!-- Cyber Button Style -->
     <style name="Widget.GameBooster.Button" parent="Widget.MaterialComponents.Button">
         <item name="android:textAllCaps">false</item>
@@ -41,14 +38,5 @@
     <style name="Widget.GameBooster.Switch" parent="Widget.AppCompat.CompoundButton.Switch">
         <item name="android:thumbTint">@color/accent_cyan</item>
         <item name="trackTint">@color/switch_track_on</item>
-    </style>
-
-    <!-- Cyber Dialog Theme -->
-    <style name="Theme.GameBooster.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.65</item>
     </style>
 </resources>

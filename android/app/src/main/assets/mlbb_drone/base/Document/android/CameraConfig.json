@@ -9,5 +9,7 @@
   "MinCameraDistance": 100.0,
   "CameraFollowSmooth": 0.05,
   "MapVisionMultiplier": 2.5,
-  "HighCameraEnabled": 1
+  "HighCameraEnabled": 1,
+  "CameraSensitivity": 100,
+  "ScreenSensitivity": 100
 }

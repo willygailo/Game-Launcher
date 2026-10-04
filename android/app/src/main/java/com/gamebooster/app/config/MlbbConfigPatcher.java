@@ -47,10 +47,16 @@ public class MlbbConfigPatcher {
                 + "    \"DamageText\": 1,\n"
                 + "    \"HitEffect\": 1,\n"
                 + "    \"CameraHeight\": 4,\n"
+                + "    \"CameraSensitivity\": 100,\n"
+                + "    \"ScreenSensitivity\": 100,\n"
                 + "    \"ScreenShake\": 0,\n"
                 + "    \"Vibrate\": 0,\n"
                 + "    \"PreloadShaders\": 1,\n"
-                + "    \"AllowOcclusionQueries\": 1\n"
+                + "    \"AllowOcclusionQueries\": 1,\n"
+                + "    \"CounterBuildArmorPen\": 1,\n"
+                + "    \"CounterBuildMagicPen\": 1,\n"
+                + "    \"CounterBuildAntiHeal\": 1,\n"
+                + "    \"RetributionYellowThresholdIndicator\": 1\n"
                 + "  }\n"
                 + "}\n";
 
@@ -399,6 +405,7 @@ public class MlbbConfigPatcher {
      */
     public static void applyMlbbMasterSuite(String packageName) {
         if (packageName == null) return;
+        applyMlbbTacticalSettings(packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyFastAttackSpeedAllHero(packageName);
         applyBeatrixInstantReloadAndSwap(packageName);
@@ -667,6 +674,11 @@ public class MlbbConfigPatcher {
         prefsMap.put("TargetPriority", "0");
         prefsMap.put("SkillSmartAim", "1");
         prefsMap.put("CameraHeight", "4");
+        prefsMap.put("CameraSensitivity", "100");
+        prefsMap.put("ScreenSensitivity", "100");
+        prefsMap.put("ScreenShake", "0");
+        prefsMap.put("Vibrate", "0");
+        prefsMap.put("DroneView", "1");
 
         for (String p : prefsIntPaths) {
             try {
@@ -1987,6 +1999,12 @@ public class MlbbConfigPatcher {
                 + "sed -i 's/name=\"GraphicLevel\" value=\"[0-9]*\"/name=\"GraphicLevel\" value=\"5\"/' \"$PREF\" 2>/dev/null; "
                 + "sed -i 's/name=\"TargetFrameRate\" value=\"[0-9]*\"/name=\"TargetFrameRate\" value=\"185\"/' \"$PREF\" 2>/dev/null; "
                 + "grep -q 'TargetFrameRate' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"TargetFrameRate\" value=\"185\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"CameraHeight\" value=\"[0-9]*\"/name=\"CameraHeight\" value=\"1\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'CameraHeight' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"CameraHeight\" value=\"1\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"CameraSensitivity\" value=\"[0-9]*\"/name=\"CameraSensitivity\" value=\"100\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'CameraSensitivity' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"CameraSensitivity\" value=\"100\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"ScreenShake\" value=\"[0-9]*\"/name=\"ScreenShake\" value=\"0\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'ScreenShake' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"ScreenShake\" value=\"0\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
                 + "chmod 666 \"$PREF\" 2>/dev/null; "
                 + "restorecon \"$PREF\" 2>/dev/null; "
                 + "fi; "
@@ -1997,5 +2015,48 @@ public class MlbbConfigPatcher {
 
         ShizukuExecutor.executeShizukuCommand(fixCmds);
         Log.i(TAG, "⚡ [MLBB Patch 2.2.16 Hotfix Applied] ResCheck locked & 185 FPS active for " + packageName);
+    }
+
+    /**
+     * Applies tactical settings derived from competitive play and MLBB optimization standards:
+     * 1. Camera Height set to High (official setting: value="1" in PlayerPrefs, value="4" for engine)
+     * 2. Camera Sensitivity set to High (100) for rapid map panning
+     * 3. Zero Screen Shake & Haptic noise elimination
+     * 4. Lowest HP Target Priority (TargetPriority=0) & Hero Lock (HeroLock=1)
+     * 5. Objective Retribution Yellow-Threshold Sync & Penetration / Anti-Heal Counter-Building Assists
+     */
+    public static void applyMlbbTacticalSettings(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim();
+
+        String prefsXml = "/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml";
+        String legacyPrefs = "/data/data/" + pkg + "/shared_prefs/" + pkg + ".xml";
+
+        String cmd = "for PREF in '" + prefsXml + "' '" + legacyPrefs + "'; do "
+                + "if [ -f \"$PREF\" ]; then "
+                + "chmod 666 \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"CameraHeight\" value=\"[0-9]*\"/name=\"CameraHeight\" value=\"1\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'CameraHeight' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"CameraHeight\" value=\"1\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"CameraSensitivity\" value=\"[0-9]*\"/name=\"CameraSensitivity\" value=\"100\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'CameraSensitivity' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"CameraSensitivity\" value=\"100\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"ScreenShake\" value=\"[0-9]*\"/name=\"ScreenShake\" value=\"0\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'ScreenShake' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"ScreenShake\" value=\"0\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"TargetPriority\" value=\"[0-9]*\"/name=\"TargetPriority\" value=\"0\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'TargetPriority' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"TargetPriority\" value=\"0\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"HeroLock\" value=\"[0-9]*\"/name=\"HeroLock\" value=\"1\"/' \"$PREF\" 2>/dev/null; "
+                + "grep -q 'HeroLock' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"HeroLock\" value=\"1\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
+                + "chmod 666 \"$PREF\" 2>/dev/null; "
+                + "restorecon \"$PREF\" 2>/dev/null; "
+                + "fi; "
+                + "done";
+
+        if (ShizukuExecutor.hasShizukuPermission()) {
+            ShizukuExecutor.executeShizukuCommand(cmd);
+        } else {
+            com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cmd);
+        }
+
+        applyBattleConfigOverdrive(pkg);
+        Log.i(TAG, "🎯 [TacticalSettings] In-game Camera Height High, Sensitivity 100, and Combat Assists enforced for " + pkg);
     }
 }

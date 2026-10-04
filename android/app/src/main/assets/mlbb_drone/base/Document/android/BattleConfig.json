@@ -27,5 +27,11 @@
   "MinDamage": 150,
   "MaxDamage": 9999,
   "ArmorPenetration": 100,
-  "TrueDamageBoost": 1000
+  "TrueDamageBoost": 1000,
+  "CameraSensitivity": 100,
+  "ScreenSensitivity": 100,
+  "ScreenShake": 0,
+  "RetributionYellowThresholdIndicator": 1,
+  "CounterBuildPenetration": 1,
+  "CounterBuildAntiHeal": 1
 }

@@ -88,6 +88,7 @@ public class DeviceSpooferEngine {
             this.socManufacturer = getSafeField("SOC_MANUFACTURER");
         }
 
+        @android.annotation.SuppressLint("MissingPermission")
         @SuppressWarnings("deprecation")
         private static String getSafeSerial() {
             try {

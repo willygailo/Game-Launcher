@@ -31,7 +31,7 @@ launcher intent — with **deep system-level performance tuning** via Root/Shizu
 | `HwuiRenderAccelerator` | RenderThread RT FIFO 6, SkiaVK, Choreographer tuning, triple-buffer, ART speed-profile, 256 MB shader cache |
 | `PerformanceChannel` | Unified profile selector (Extreme / Performance / Balanced) |
 | `MemoryCleanerPro` / `RamZramChannel` | ZRAM tuning, swappiness=10, mlockall framebuffers, OOM protection |
-| `NetworkTweaksChannel` / `AdvancedNetworkQosEngine` | Wi-Fi power save off, TCP BBR, DSCP EF QoS, DNS DoH |
+| `AdvancedNetworkQosEngine` | Wi-Fi power save off, TCP BBR, DSCP EF QoS, DNS DoH |
 | `ThermalChannel` | Thermal headroom monitoring, auto-throttle at 50°C, hard disable at 55°C |
 | `SafetyGuard` | 2s thermal monitor, device compatibility blocklist (§8.2), boost arming/restore |
 | `SnapshotSystem` | Pre-change snapshot of sysfs/settings/props with JSON serialize + rollback |

@@ -3531,7 +3531,8 @@ public class NativeConfigInjector {
             "MapClarity=1", "MinimapEnemyPriority=1", "FogOfWarRemoval=1", "FogOfWarBypass=1",
             "AllowOcclusionQueries=1", "UltraWallhackEspClarity=1", "HeroLockRange=9999",
             "VisionRangeBoost=2.0", "DronePerspectiveMode=1", "DroneCameraSmooth=1",
-            "DroneAntiShake=1", "DroneAntiBlackscreen=1", "DroneLockElevation=1"
+            "DroneAntiShake=1", "DroneAntiBlackscreen=1", "DroneLockElevation=1",
+            "CameraSensitivity=100", "ScreenSensitivity=100", "ScreenShake=0", "InGameCameraHeight=High"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbUltraDroneView]");
     }
