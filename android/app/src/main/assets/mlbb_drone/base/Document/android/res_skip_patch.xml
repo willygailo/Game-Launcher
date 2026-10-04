@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
+  <skip_check enable="true" />
   <version name="null" />
+  <patch_lock value="1" />
+  <integrity_bypass status="active" />
 </root>
