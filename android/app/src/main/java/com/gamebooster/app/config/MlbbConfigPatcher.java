@@ -19,6 +19,70 @@ import com.gamebooster.app.shizuku.ShizukuExecutor;
  */
 public class MlbbConfigPatcher {
 
+    public static boolean deployMlbbAssets(String packageName) {
+        return deployMlbbAssets(null, packageName);
+    }
+
+    /**
+     * Deploys complete MLBB mod and overdrive asset suite from assets/mlbb_mod/modified/ into target game paths.
+     */
+    public static boolean deployMlbbAssets(android.content.Context context, String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) packageName = "com.mobile.legends";
+        if (context == null) context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null) return false;
+
+        android.content.res.AssetManager am = context.getAssets();
+        List<String> roots = MlbbDroneViewPatcher.resolveMlbbRootDirs(packageName);
+        boolean anyDeployed = false;
+
+        // Relative path mappings from assets/mlbb_mod/modified/ to game root
+        String[][] assetMappings = {
+            // Document/android/
+            {"mlbb_mod/modified/Document/android/BattleConfig.json", "files/dragon2017/assets/Document/android/BattleConfig.json"},
+            {"mlbb_mod/modified/Document/android/HeroStatConfig.json", "files/dragon2017/assets/Document/android/HeroStatConfig.json"},
+            {"mlbb_mod/modified/Document/android/CameraConfig.json", "files/dragon2017/assets/Document/android/CameraConfig.json"},
+            {"mlbb_mod/modified/Document/android/DroneViewConfig.json", "files/dragon2017/assets/Document/android/DroneViewConfig.json"},
+            {"mlbb_mod/modified/Document/android/res_skip_patch.xml", "files/dragon2017/assets/Document/android/res_skip_patch.xml"},
+            {"mlbb_mod/modified/Document/android/BinaryPatchMD5.xml", "files/dragon2017/assets/Document/android/BinaryPatchMD5.xml"},
+            {"mlbb_mod/modified/Document/android/SplitLibMD5.xml", "files/dragon2017/assets/Document/android/SplitLibMD5.xml"},
+            {"mlbb_mod/modified/Document/android/mode_versions_build.xml", "files/dragon2017/assets/Document/android/mode_versions_build.xml"},
+            {"mlbb_mod/modified/Document/android/mola_config.xml", "files/dragon2017/assets/Document/android/mola_config.xml"},
+            {"mlbb_mod/modified/Document/android/ResCheckConf.xml", "files/dragon2017/assets/Document/android/ResCheckConf.xml"},
+            {"mlbb_mod/modified/Document/android/BattleConfig.unity3d", "files/dragon2017/assets/Document/android/BattleConfig.unity3d"},
+            {"mlbb_mod/modified/Document/android/GameResAlternative.unity3d", "files/dragon2017/assets/Document/android/GameResAlternative.unity3d"},
+
+            // Document/ root
+            {"mlbb_mod/modified/Document/BattleConfig.json", "files/dragon2017/assets/Document/BattleConfig.json"},
+            {"mlbb_mod/modified/Document/HeroStatConfig.json", "files/dragon2017/assets/Document/HeroStatConfig.json"},
+
+            // version/android/
+            {"mlbb_mod/modified/version/android/version.xml", "files/dragon2017/assets/version/android/version.xml"},
+            {"mlbb_mod/modified/version/android/realversion.xml", "files/dragon2017/assets/version/android/realversion.xml"},
+            {"mlbb_mod/modified/version/android/usrinfo.xml", "files/dragon2017/assets/version/android/usrinfo.xml"},
+            {"mlbb_mod/modified/version/android/iplist.xml", "files/dragon2017/assets/version/android/iplist.xml"},
+
+            // root_files
+            {"mlbb_mod/modified/root_files/boot.config", "files/boot.config"},
+            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
+        };
+
+        for (String root : roots) {
+            for (String[] mapping : assetMappings) {
+                String srcAsset = mapping[0];
+                String relDest = mapping[1];
+                byte[] data = MlbbDroneViewPatcher.readAssetBytes(am, srcAsset);
+                if (data != null && data.length > 0) {
+                    String fullDest = root + "/" + relDest;
+                    boolean ok = MlbbDroneViewPatcher.writeWithFallback(context, fullDest, data, "666");
+                    if (ok) anyDeployed = true;
+                }
+            }
+        }
+        android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB Mod Asset Deployer] Deployed mod assets for " + packageName + " (success=" + anyDeployed + ")");
+        return anyDeployed;
+    }
+
     /**
      * Dedicated BattleConfig JSON and Runtime Synchronization for MLBB (Season 42+).
      * Deploys and enforces optimized combat, hit-reg, camera, and damage parameters

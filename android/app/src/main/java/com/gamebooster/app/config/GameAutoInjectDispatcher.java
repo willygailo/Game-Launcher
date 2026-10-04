@@ -94,6 +94,7 @@ public final class GameAutoInjectDispatcher {
             }
 
             if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+                MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
                 MlbbConfigPatcher.patchUltraExtreme185(pkg);
                 MlbbConfigPatcher.patch(pkg, 185);
                 MlbbConfigPatcher.patchCompetitive(pkg, 185);

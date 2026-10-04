@@ -315,24 +315,9 @@ public class CodmConfigPatcher {
 
     private static boolean writeAssetWithFallback(String path, byte[] data) {
         if (path == null || data == null) return false;
-        try {
-            java.io.File f = new java.io.File(path);
-            java.io.File parent = f.getParentFile();
-            if (parent != null) parent.mkdirs();
-            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
-                fos.write(data);
-                fos.flush();
-            }
-            f.setReadable(true, false);
-            f.setWritable(true, false);
-            return true;
-        } catch (Throwable t) {
-            try {
-                String str = new String(data, java.nio.charset.StandardCharsets.UTF_8);
-                return com.gamebooster.app.shizuku.ShizukuFileManager.writeFile(path, str).success;
-            } catch (Throwable ignored) {}
-        }
-        return false;
+        android.content.Context ctx = ConfigBackupManager.getAppContext();
+        if (ctx == null) ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+        return MlbbDroneViewPatcher.writeWithFallback(ctx, path, data, "666");
     }
 
 

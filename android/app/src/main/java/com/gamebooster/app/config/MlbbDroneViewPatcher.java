@@ -795,7 +795,7 @@ public final class MlbbDroneViewPatcher {
      *  4. Direct Java FileOutputStream
      *  5. SAF Document Engine
      */
-    private static boolean writeWithFallback(Context context, String destPath, byte[] data, String chmod) {
+    public static boolean writeWithFallback(Context context, String destPath, byte[] data, String chmod) {
         if (destPath == null || data == null) return false;
 
         // Strategy 0: Direct Shizuku shell copy via accessible temp file (guaranteed bypass of Scoped Storage)
@@ -927,7 +927,7 @@ public final class MlbbDroneViewPatcher {
     /**
      * Reads the entire byte contents of an APK asset.
      */
-    private static byte[] readAssetBytes(AssetManager am, String assetPath) {
+    public static byte[] readAssetBytes(AssetManager am, String assetPath) {
         try (InputStream is = am.open(assetPath);
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buf = new byte[8192];
