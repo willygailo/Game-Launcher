@@ -99,6 +99,7 @@ public final class GameAutoInjectDispatcher {
                 MlbbConfigPatcher.patchCompetitive(pkg, 185);
                 MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(pkg, 185);
                 MlbbConfigPatcher.applyMlbbTacticalSettings(pkg);
+                MlbbConfigPatcher.applyBattleConfigOverdrive(pkg);
                 MlbbConfigPatcher.applyFastLoadSplashBypass(pkg);
                 MlbbConfigPatcher.applyFastFarmingAllHero(pkg);
                 MlbbConfigPatcher.applyFastRetributionObjectiveSteal(pkg);
