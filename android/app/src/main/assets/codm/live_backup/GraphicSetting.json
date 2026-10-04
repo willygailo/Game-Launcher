@@ -1,7 +1,7 @@
 {
   "Version": 2026,
-  "MaxFrameRate": 185,
-  "TargetFPS": 185,
+  "MaxFrameRate": 144,
+  "TargetFPS": 144,
   "FPSLevel": 9,
   "GraphicQuality": 4,
   "TextureQuality": 4,
@@ -20,7 +20,7 @@
   "HDRMode": 1,
   "UltraHDMode": 1,
   "SuperResolution": 1,
-  "TouchBoostHz": 185,
+  "TouchBoostHz": 144,
   "TouchPollingRate": 1000,
   "TouchZeroDelay": 1,
   "ZeroInputLag": 1,

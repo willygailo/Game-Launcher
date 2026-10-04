@@ -1,0 +1,12 @@
+{
+  "Version": 2026,
+  "TouchPollingRate": 1000,
+  "TouchZeroDelay": 1,
+  "TouchBoostHz": 144,
+  "ZeroInputLag": 1,
+  "InstantHitReg": 1,
+  "FireButtonScale": 1.5,
+  "AimSnapSpeed": 10,
+  "AdsZeroDelay": 1,
+  "ScopeFastSwitch": 1
+}

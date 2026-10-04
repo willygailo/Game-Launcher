@@ -165,6 +165,7 @@ public final class GameAutoInjectDispatcher {
                 PubgConfigPatcher.applyPubgUltraDroneViewMaxFov(pkg);
                 PubgConfigPatcher.deployPakPatch(pkg);
             } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
+                CodmConfigPatcher.deployCodmAssets(ctx, pkg);
                 CodmConfigPatcher.patchUltraExtreme185(pkg);
                 CodmConfigPatcher.patch(pkg, 185);
                 CodmConfigPatcher.applyDamage10000AttackSpeedMax(pkg);

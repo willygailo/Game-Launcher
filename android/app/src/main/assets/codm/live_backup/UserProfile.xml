@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="DamageBoost" value="10000" />
+    <int name="KineticArmorOverdrive" value="10000" />
+    <int name="AimAssistStrength" value="100" />
+    <int name="LockOnTarget" value="1" />
+    <int name="MinDamage" value="150" />
+    <int name="MaxDamage" value="9999" />
+    <int name="ArmorValue" value="9999" />
+    <float name="AttackRangeMultiplier" value="3.0" />
+    <float name="OperatorSkillDamageMultiplier" value="5.0" />
+    <float name="OperatorSkillAoERadius" value="25.0" />
+    <float name="OperatorSkillCooldownMultiplier" value="0.1" />
+</map>

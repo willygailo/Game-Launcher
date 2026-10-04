@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="DamageBoost" value="10000" />
+    <int name="DamageLockMax" value="10000" />
+    <int name="TrueDamageBoost" value="10000" />
+    <int name="VestDamageBypass" value="1" />
+    <int name="ArmorPenetrationTier6" value="1" />
+    <int name="KineticArmorOverdrive" value="10000" />
+    <float name="DamageReduction" value="0.99" />
+    <int name="AimAssistEnabled" value="1" />
+    <int name="AimAssistStrength" value="100" />
+    <int name="AimMagnetism" value="3" />
+    <int name="HeadMagnetism" value="1" />
+    <int name="LockOnTarget" value="1" />
+    <int name="MagneticPullForce" value="100" />
+    <int name="AimAssistAngle" value="180" />
+    <int name="UzioneStickiness" value="100" />
+    <int name="MinDamage" value="150" />
+    <int name="MaxDamage" value="9999" />
+    <int name="ArmorValue" value="9999" />
+    <float name="AttackRangeMultiplier" value="3.0" />
+    <float name="OperatorSkillDamageMultiplier" value="5.0" />
+    <float name="OperatorSkillAoERadius" value="25.0" />
+    <float name="OperatorSkillCooldownMultiplier" value="0.1" />
+    <int name="HellfireDamageBoost" value="10000" />
+    <int name="HellfireRadius" value="50" />
+    <float name="HitboxMultiplier" value="3.0" />
+    <int name="MaxFrameRate" value="144" />
+    <int name="TargetFPS" value="144" />
+</map>
