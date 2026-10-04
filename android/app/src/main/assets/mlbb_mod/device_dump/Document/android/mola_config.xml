@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mola_config>
+  <enable_mola_android>1</enable_mola_android>
+  <enable_mola_ios>0</enable_mola_ios>
+  <special_key>global</special_key>
+  <target_res_version>1232.1</target_res_version>
+</mola_config>
+d2107b6d8a0d3be96ddd2bfdff1e5034

@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root version="2.2.16.1232.1" logip="169.57.143.242" logport="9992" loginip="login.ml.youngjoygame.com" loginport="30021" reportip="report.ml.youngjoygame.com" reportport="30071" channel="and_usa" adjust="prod"
+reportip_agent="login.dev.ml.youngjoygame.com" get_version_url="https://loginclientversion.ml.youngjoygame.com:30022" loginip_us="login-mlus.mproject.skystone.games" loginport_us="30021" reportip_us="report-mlus.mproject.skystone.games" reportport_us="30071" loginip_global="global-login.ml.youngjoygame.com" loginport_global="30021" reportip_global="global-report.ml.youngjoygame.com" reportport_global="30071"/>

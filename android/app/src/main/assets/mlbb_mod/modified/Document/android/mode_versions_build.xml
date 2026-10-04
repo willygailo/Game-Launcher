@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <root>
+  <mode name="CloneImbaOneRoadMode" modeid="390" realversion="680.1" prev_version="670.1"/>
+  <mode name="CloneMode" modeid="220" realversion="690.1" prev_version="680.1"/>
+  <mode name="CommonRes" modeid="0" realversion="660.1" prev_version="650.1"/>
+  <mode name="DeathRacingMode" modeid="230" realversion="690.1" prev_version="680.1"/>
+  <mode name="DisOrderNewMode" modeid="130" realversion="150.1" prev_version="140.1"/>
+  <mode name="FrigidseaMode" modeid="3010" realversion="252.1" prev_version="242.1"/>
+  <mode name="ImbaMode" modeid="260" realversion="706.1" prev_version="696.1"/>
+  <mode name="MCGG" modeid="354" realversion="102.1" prev_version="100.1"/>
+  <mode name="NewSurvivalMode" modeid="3040" realversion="252.1" prev_version="242.1"/>
+  <mode name="OverDriveHeroMode" modeid="440" realversion="560.1" prev_version="550.1"/>
+  <mode name="PVE_DefenceMode" modeid="3020" realversion="252.1" prev_version="242.1"/>
+  <mode name="RogueMobaMode" modeid="430" realversion="524.1" prev_version="514.1"/>
+  <mode name="RoguelikeMode" modeid="2001" realversion="250.1" prev_version="240.1"/>
+  <mode name="SoloMode" modeid="2002" realversion="250.1" prev_version="240.1"/>
+  </root>

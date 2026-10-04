@@ -1,0 +1,9 @@
+{
+  "DroneView": 1,
+  "CameraHeight": 4,
+  "CameraDistance": 180.0,
+  "FieldOfView": 130.0,
+  "WideCameraAngle": 1,
+  "PanoramicFOV": 1,
+  "MapVisibilityRange": 2.5
+}
