@@ -56,15 +56,52 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/Document/BattleConfig.json", "files/dragon2017/assets/Document/BattleConfig.json"},
             {"mlbb_mod/modified/Document/HeroStatConfig.json", "files/dragon2017/assets/Document/HeroStatConfig.json"},
 
+            // comlibs (Hero damage, stats, and AI behavior tables)
+            {"mlbb_mod/modified/comlibs/arm64-v8a/table.bin", "files/dragon2017/assets/comlibs/arm64-v8a/table.bin"},
+            {"mlbb_mod/modified/comlibs/arm64-v8a/BBAI1_Version_1278.xml", "files/dragon2017/assets/comlibs/arm64-v8a/BBAI1_Version_1278.xml"},
+            {"mlbb_mod/modified/comlibs/arm64-v8a/BBAI2_Version_1278.xml", "files/dragon2017/assets/comlibs/arm64-v8a/BBAI2_Version_1278.xml"},
+
             // version/android/
             {"mlbb_mod/modified/version/android/version.xml", "files/dragon2017/assets/version/android/version.xml"},
             {"mlbb_mod/modified/version/android/realversion.xml", "files/dragon2017/assets/version/android/realversion.xml"},
             {"mlbb_mod/modified/version/android/usrinfo.xml", "files/dragon2017/assets/version/android/usrinfo.xml"},
             {"mlbb_mod/modified/version/android/iplist.xml", "files/dragon2017/assets/version/android/iplist.xml"},
 
+            // UI and Camera unity3d overrides
+            {"mlbb_mod/modified/UI/android/UI_BattleCamera.unity3d", "files/dragon2017/assets/UI/android/UI_BattleCamera.unity3d"},
+            {"mlbb_mod/modified/UI/android/Atlas_BattleCamera_add.unity3d", "files/dragon2017/assets/UI/android/Atlas_BattleCamera_add.unity3d"},
+            {"mlbb_mod/modified/UI/android/UI_HeroGet.unity3d", "files/dragon2017/assets/UI/android/UI_HeroGet.unity3d"},
+            {"mlbb_mod/modified/UI/android/UI_RenewRech2024_new.unity3d", "files/dragon2017/assets/UI/android/UI_RenewRech2024_new.unity3d"},
+            {"mlbb_mod/modified/UI/android/Atlas_RenewRech2024_new01_add.unity3d", "files/dragon2017/assets/UI/android/Atlas_RenewRech2024_new01_add.unity3d"},
+            {"mlbb_mod/modified/UI/android/UI_Activity_1072Combine_add.unity3d", "files/dragon2017/assets/UI/android/UI_Activity_1072Combine_add.unity3d"},
+
+            // Art/android models and visual fx
+            {"mlbb_mod/modified/Art/android/FX_UI_HeroTower_purple_add.unity3d", "files/dragon2017/assets/Art/android/FX_UI_HeroTower_purple_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/FX_UI_StencilMask1_add.unity3d", "files/dragon2017/assets/Art/android/FX_UI_StencilMask1_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/mon_Next2026Yezi_add.unity3d", "files/dragon2017/assets/Art/android/mon_Next2026Yezi_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/mon_Next2026Yezi_high_add.unity3d", "files/dragon2017/assets/Art/android/mon_Next2026Yezi_high_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/mon_Next2026Yezi_low_add.unity3d", "files/dragon2017/assets/Art/android/mon_Next2026Yezi_low_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/mon_Next2026Yezi_extlow_add.unity3d", "files/dragon2017/assets/Art/android/mon_Next2026Yezi_extlow_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/nextnextninja_skill03_UI_skin07_add.unity3d", "files/dragon2017/assets/Art/android/nextnextninja_skill03_UI_skin07_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/nextnextninja_skill03_fire_skin07_add.unity3d", "files/dragon2017/assets/Art/android/nextnextninja_skill03_fire_skin07_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/nextnextninja_skill03_beiji_skin07_add.unity3d", "files/dragon2017/assets/Art/android/nextnextninja_skill03_beiji_skin07_add.unity3d"},
+            {"mlbb_mod/modified/Art/android/zzp2_nextnextninja_skill03_UI_skin07_add.unity3d", "files/dragon2017/assets/Art/android/zzp2_nextnextninja_skill03_UI_skin07_add.unity3d"},
+
+            // Anti-check & validation bypass
+            {"mlbb_mod/modified/__fix_rescheck", "files/dragon2017/assets/__fix_rescheck"},
+
+            // Bypass & Anti-Hack Override
+            {"mlbb_mod/modified/bypass/modified_config.xml", "files/dragon2017/assets/bypass/modified_config.xml"},
+            {"mlbb_mod/modified/bypass/modified_config.xml", "files/modified_config.xml"},
+            {"mlbb_mod/modified/bypass/securityconfig_patched.bytes", "files/dragon2017/assets/bypass/securityconfig_patched.bytes"},
+            {"mlbb_mod/modified/bypass/securityconfig_patched.bytes", "files/dragon2017/assets/Document/android/securityconfig.bytes"},
+            {"mlbb_mod/modified/bypass/libAkSoundEngine_patched.bytes", "files/dragon2017/assets/bypass/libAkSoundEngine_patched.bytes"},
+            {"mlbb_mod/modified/bypass/anti_hack_patched.bytes", "files/dragon2017/assets/bypass/anti_hack_patched.bytes"},
+
             // root_files
             {"mlbb_mod/modified/root_files/boot.config", "files/boot.config"},
-            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
+            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"},
+            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "files/com.mobile.legends.v2.playerprefs.xml"}
         };
 
         for (String root : roots) {

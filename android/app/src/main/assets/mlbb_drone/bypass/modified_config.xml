@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Modified bypass config — disables runtime integrity + anti-cheat init -->
+<config>
+  <security>
+    <checksum enabled="false" />
+    <fileIntegrity enabled="false" />
+    <memoryProtection enabled="false" />
+    <kernelAudit enabled="false" />
+    <signatureVerify enabled="false" />
+  </security>
+  <anticheat>
+    <enabled>false</enabled>
+    <reportInterval>0</reportInterval>
+    <scanMemory>false</scanMemory>
+    <scanProcess>false</scanProcess>
+    <hookDetect>false</hookDetect>
+    <speedHackDetect>false</speedHackDetect>
+  </anticheat>
+  <network>
+    <validatePackets>false</validatePackets>
+    <encryptGameState>true</encryptGameState>
+    <integrityReport>false</integrityReport>
+  </network>
+</config>

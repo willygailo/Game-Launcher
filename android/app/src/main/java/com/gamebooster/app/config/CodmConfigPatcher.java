@@ -210,11 +210,26 @@ public class CodmConfigPatcher {
             "com.activision.callofduty.shooter.v2.playerprefs.xml",
             "com.garena.game.codm.v2.playerprefs.xml",
             "com.garena.game.codm_preferences.xml",
+            "com.tencent.tmgp.cod.v2.playerprefs.xml",
+            "com.vng.codm.v2.playerprefs.xml",
+            "app_pref.xml",
             "GameConfig.xml",
             "GraphicsSetting.xml",
             "UserProfile.xml",
             "HUDLayoutConfig.json",
-            "JoySticksConfig.json"
+            "HUDLayoutConfig_MP_Manaul_3771080214970436972.json",
+            "HUDLayoutConfig_BR_Manaul_3771080214970436972.json",
+            "HUDLayoutConfig_MP2_Manaul_3771080214970436972.json",
+            "HUDLayoutConfig_BR2_Manaul_3771080214970436972.json",
+            "JoySticksConfig.json",
+            "JoySticksConfig_MP_Manaul_3771080214970436972.json",
+            "JoySticksConfig_BR_Manaul_3771080214970436972.json",
+            "JoySticksConfig_MP2_Manaul_3771080214970436972.json",
+            "JoySticksConfig_BR2_Manaul_3771080214970436972.json"
+        };
+
+        String[] configCacheFiles = {
+            "1", "2", "3", "5", "6", "7", "8", "16", "18", "20", "22", "29", "30"
         };
 
         for (String root : roots) {
@@ -225,6 +240,7 @@ public class CodmConfigPatcher {
             String joystickDir = root + "/files/Config/joystick";
             String prefsDir = root + "/files/prefs";
             String sharedPrefsDir = root + "/shared_prefs";
+            String cacheDir = root + "/files/Config/ConfigCache/3771080214970436972/1.6.57.0";
 
             com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(filesDir);
             com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(configDir);
@@ -233,7 +249,9 @@ public class CodmConfigPatcher {
             com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(joystickDir);
             com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(prefsDir);
             com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(sharedPrefsDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(cacheDir);
 
+            // Deploy standard assets
             for (String assetName : assetFiles) {
                 byte[] data = readAssetBytes(am, "codm/" + assetName);
                 if (data == null || data.length == 0) continue;
@@ -244,28 +262,22 @@ public class CodmConfigPatcher {
                     writeAssetWithFallback(configDirLower + "/" + assetName, data);
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
                     anyDeployed = true;
-                } else if (assetName.equals("HUDLayoutConfig.json")) {
+                } else if (assetName.startsWith("HUDLayoutConfig")) {
                     writeAssetWithFallback(hudDir + "/" + assetName, data);
-                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_MP_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_BR_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_MP2_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(hudDir + "/HUDLayoutConfig_BR2_Manaul_3771080214970436972.json", data);
                     writeAssetWithFallback(configDir + "/" + assetName, data);
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
                     anyDeployed = true;
-                } else if (assetName.equals("JoySticksConfig.json")) {
+                } else if (assetName.startsWith("JoySticksConfig")) {
                     writeAssetWithFallback(joystickDir + "/" + assetName, data);
-                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_MP_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_BR_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_MP2_Manaul_3771080214970436972.json", data);
-                    writeAssetWithFallback(joystickDir + "/JoySticksConfig_BR2_Manaul_3771080214970436972.json", data);
                     writeAssetWithFallback(configDir + "/" + assetName, data);
+                    writeAssetWithFallback(filesDir + "/" + assetName, data);
                     anyDeployed = true;
                 } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml")) {
                     writeAssetWithFallback(prefsDir + "/" + assetName, data);
                     writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
                     anyDeployed = true;
-                } else if (assetName.endsWith(".playerprefs.xml") || assetName.endsWith("_preferences.xml")) {
+                } else if (assetName.endsWith(".playerprefs.xml") || assetName.endsWith("_preferences.xml") || assetName.equals("app_pref.xml")) {
                     writeAssetWithFallback(filesDir + "/" + packageName + ".v2.playerprefs.xml", data);
                     writeAssetWithFallback(sharedPrefsDir + "/" + packageName + ".v2.playerprefs.xml", data);
                     writeAssetWithFallback(filesDir + "/" + packageName + "_preferences.xml", data);
@@ -276,6 +288,31 @@ public class CodmConfigPatcher {
                 } else {
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
                     writeAssetWithFallback(configDir + "/" + assetName, data);
+                    anyDeployed = true;
+                }
+            }
+
+            // Deploy engine binary blob .W6JBf0B
+            byte[] blobData = readAssetBytes(am, "codm/Config/.W6JBf0B");
+            if (blobData != null && blobData.length > 0) {
+                writeAssetWithFallback(configDir + "/.W6JBf0B", blobData);
+                writeAssetWithFallback(configDirLower + "/.W6JBf0B", blobData);
+                anyDeployed = true;
+            }
+
+            // Deploy engine config GJmkJwm0gBq0fJ.rDfVJw
+            byte[] gjmData = readAssetBytes(am, "codm/Config/GJmkJwm0gBq0fJ.rDfVJw");
+            if (gjmData != null && gjmData.length > 0) {
+                writeAssetWithFallback(configDir + "/GJmkJwm0gBq0fJ.rDfVJw", gjmData);
+                writeAssetWithFallback(configDirLower + "/GJmkJwm0gBq0fJ.rDfVJw", gjmData);
+                anyDeployed = true;
+            }
+
+            // Deploy ConfigCache files
+            for (String cacheId : configCacheFiles) {
+                byte[] cacheData = readAssetBytes(am, "codm/Config/ConfigCache/3771080214970436972/1.6.57.0/" + cacheId);
+                if (cacheData != null && cacheData.length > 0) {
+                    writeAssetWithFallback(cacheDir + "/" + cacheId, cacheData);
                     anyDeployed = true;
                 }
             }
