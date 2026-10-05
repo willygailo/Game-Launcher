@@ -72,10 +72,15 @@ public class GameConfigPathResolver {
         // 1. Dynamic Privileged Deep Search via Shizuku if available
         if (ShizukuExecutor.hasShizukuPermission()) {
             try {
-                String scanRoots = "/storage/emulated/0/Android/data/" + pkg + "/ /data/data/" + pkg + "/ /data/user/0/" + pkg + "/ /sdcard/Android/data/" + pkg + "/";
+                StringBuilder scanRoots = new StringBuilder();
+                scanRoots.append("/storage/emulated/0/Android/data/").append(pkg).append("/ ");
+                if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                    scanRoots.append("/data/data/").append(pkg).append("/ ");
+                    scanRoots.append("/data/user/0/").append(pkg).append("/ ");
+                }
                 // Depth 8 covers deeply nested UE4 (files/UE4Game/.../Saved/Config/Android/) and Unity subtrees
                 // Exclude only binaries (so, apk, unity3d, bundle, bytes, obb, mp4, bank, lib, cache)
-                String cmd = "find " + scanRoots + " -maxdepth 8 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"boot.config\" \\) "
+                String cmd = "find " + scanRoots.toString() + "-maxdepth 8 -type f \\( -name \"*.ini\" -o -name \"*.json\" -o -name \"*.xml\" -o -name \"*.cfg\" -o -name \"*.sav\" -o -name \"*.dat\" -o -name \"boot.config\" \\) "
                         + "! -name \"*.so\" ! -name \"*.apk\" ! -name \"*.unity3d\" ! -name \"*.bundle\" ! -name \"*.bytes\" ! -name \"*.obb\" ! -name \"*.mp4\" ! -name \"*.bank\" "
                         + "! -path \"*/lib/*\" ! -path \"*/cache/*\" ! -path \"*/code_cache/*\" ! -path \"*/crashlytics/*\" "
                         + "! -path \"*/assets/*/*.xml\" ! -path \"*/assets/version/*\" ! -path \"*/assets/UI/*\" ! -path \"*/assets/Art/*\" ! -path \"*/assets/Audio/*\" "
@@ -286,16 +291,11 @@ public class GameConfigPathResolver {
                 if (!f.exists() || f.length() == 0) {
                     String lower = path.toLowerCase();
                     String template = "";
-                    if (lower.endsWith(".xml")) {
+                    if (lower.endsWith(".xml") && (lower.contains("playerprefs") || lower.contains("preference"))) {
                         template = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n</map>\n";
-                    } else if (lower.endsWith(".json")) {
-                        if (lower.contains("droneview")) {
-                            template = "{\n  \"DroneView\": 1,\n  \"CameraHeight\": 4,\n  \"CameraDistance\": 180.0,\n  \"FieldOfView\": 130.0,\n  \"WideCameraAngle\": 1,\n  \"PanoramicFOV\": 1,\n  \"MapVisibilityRange\": 2.5\n}\n";
-                        } else {
-                            template = "{\n}\n";
-                        }
+                    } else if (lower.endsWith(".json") && lower.contains("droneview")) {
+                        template = "{\n  \"DroneView\": 1,\n  \"CameraHeight\": 4,\n  \"CameraDistance\": 180.0,\n  \"FieldOfView\": 130.0,\n  \"WideCameraAngle\": 1,\n  \"PanoramicFOV\": 1,\n  \"MapVisibilityRange\": 2.5\n}\n";
                     }
-                    // NEVER write dummy # GameBooster 2026 header to UE4 INI/CFG files to prevent game initialization corruption
                     if (!template.isEmpty()) {
                         ConfigFileHelper.writeContentAtomic(path, template);
                         if (ShizukuExecutor.hasShizukuPermission()) {
@@ -317,10 +317,12 @@ public class GameConfigPathResolver {
         List<String> roots = new ArrayList<>();
         // 1. Primary User 0 standard storage locations (highest priority)
         roots.add("/storage/emulated/0/Android/data/" + pkg);
-        roots.add("/sdcard/Android/data/" + pkg);
-        roots.add("/data/user/0/" + pkg);
-        roots.add("/data/data/" + pkg);
-        roots.add("/storage/emulated/0/Android/media/" + pkg);
+
+        // App-private data roots are only accessible when true root (su) is available
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            roots.add("/data/user/0/" + pkg);
+            roots.add("/data/data/" + pkg);
+        }
 
         // 2. Multi-profile / Dual App / Private Space roots only if secondary user dir exists
         int[] secondaryUserIds = {10, 11, 12, 13, 14, 15, 999};
@@ -328,8 +330,9 @@ public class GameConfigPathResolver {
             File userRoot = new File("/storage/emulated/" + u);
             if (userRoot.exists() || ShizukuFileManager.isDirectory("/storage/emulated/" + u)) {
                 roots.add("/storage/emulated/" + u + "/Android/data/" + pkg);
-                roots.add("/data/user/" + u + "/" + pkg);
-                roots.add("/storage/emulated/" + u + "/Android/media/" + pkg);
+                if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                    roots.add("/data/user/" + u + "/" + pkg);
+                }
             }
         }
         return roots;

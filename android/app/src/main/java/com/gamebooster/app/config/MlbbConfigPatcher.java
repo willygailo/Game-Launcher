@@ -1569,6 +1569,11 @@ public class MlbbConfigPatcher {
                     || lower.contains("splitlib") || lower.contains("mola_config") || lower.contains("res_skip")) {
                 continue;
             }
+            // Strictly exclude structured JSON game assets from flat key patching
+            if (lower.endsWith("battleconfig.json") || lower.contains("herostatconfig")
+                    || lower.contains("cameraconfig") || lower.contains("droneviewconfig")) {
+                continue;
+            }
             if (lower.endsWith(".xml")) {
                 if (lower.contains("/assets/")) {
                     continue;

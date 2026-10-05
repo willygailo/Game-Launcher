@@ -1,3 +1,19 @@
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
+    <int name="fps_limit" value="185" />
+    <int name="target_fps" value="185" />
+    <int name="aim_assist" value="1" />
+    <int name="aim_assist_strength" value="100" />
+    <int name="magnetic_pull_force" value="100" />
+    <int name="lock_on_target" value="1" />
+    <int name="damage_boost" value="10000" />
+    <int name="kinetic_armor_overdrive" value="10000" />
+    <float name="damage_reduction" value="0.99" />
+    <int name="min_damage" value="150" />
+    <int name="max_damage" value="9999" />
+    <int name="armor_value" value="9999" />
+    <float name="attack_range_multiplier" value="3.0" />
+    <float name="operator_skill_aoe" value="25.0" />
+    <float name="operator_skill_dmg" value="5.0" />
+    <int name="touch_polling_rate" value="1000" />
 </map>

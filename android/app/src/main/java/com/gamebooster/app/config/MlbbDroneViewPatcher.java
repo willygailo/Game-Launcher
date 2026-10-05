@@ -88,16 +88,24 @@ public final class MlbbDroneViewPatcher {
         List<String> roots = new ArrayList<>();
         if (pkg == null || pkg.trim().isEmpty()) pkg = "com.mobile.legends";
 
+        // Primary User 0 external data root
         roots.add("/storage/emulated/0/Android/data/" + pkg);
-        roots.add("/sdcard/Android/data/" + pkg);
-        roots.add("/data/data/" + pkg);
-        roots.add("/data/user/0/" + pkg);
-        roots.add("/storage/emulated/0/Android/media/" + pkg);
 
-        // Android 15 Private Space / App Clones / Work Profiles (User IDs 10..14)
+        // App-private data roots are only accessible when true root (su) is available
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            roots.add("/data/data/" + pkg);
+            roots.add("/data/user/0/" + pkg);
+        }
+
+        // Secondary profiles only if the user directory physically exists on storage
         for (int userId = 10; userId <= 14; userId++) {
-            roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
-            roots.add("/data/user/" + userId + "/" + pkg);
+            File userRoot = new File("/storage/emulated/" + userId);
+            if (userRoot.exists()) {
+                roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
+                if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                    roots.add("/data/user/" + userId + "/" + pkg);
+                }
+            }
         }
         return roots;
     }

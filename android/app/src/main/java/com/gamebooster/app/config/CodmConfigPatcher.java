@@ -215,17 +215,7 @@ public class CodmConfigPatcher {
             "app_pref.xml",
             "GameConfig.xml",
             "GraphicsSetting.xml",
-            "UserProfile.xml",
-            "HUDLayoutConfig.json",
-            "HUDLayoutConfig_MP_Manaul_3771080214970436972.json",
-            "HUDLayoutConfig_BR_Manaul_3771080214970436972.json",
-            "HUDLayoutConfig_MP2_Manaul_3771080214970436972.json",
-            "HUDLayoutConfig_BR2_Manaul_3771080214970436972.json",
-            "JoySticksConfig.json",
-            "JoySticksConfig_MP_Manaul_3771080214970436972.json",
-            "JoySticksConfig_BR_Manaul_3771080214970436972.json",
-            "JoySticksConfig_MP2_Manaul_3771080214970436972.json",
-            "JoySticksConfig_BR2_Manaul_3771080214970436972.json"
+            "UserProfile.xml"
         };
 
         String[] configCacheFiles = {
@@ -254,7 +244,7 @@ public class CodmConfigPatcher {
             // Deploy standard assets
             for (String assetName : assetFiles) {
                 byte[] data = readAssetBytes(am, "codm/" + assetName);
-                if (data == null || data.length == 0) continue;
+                if (data == null || data.length <= 20) continue;
 
                 if (assetName.equals("UserSetting.json") || assetName.equals("HardwareProfile.json") ||
                     assetName.equals("GraphicSetting.json") || assetName.equals("GraphicsSettings_2026.json")) {
@@ -262,16 +252,12 @@ public class CodmConfigPatcher {
                     writeAssetWithFallback(configDirLower + "/" + assetName, data);
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
                     anyDeployed = true;
-                } else if (assetName.startsWith("HUDLayoutConfig")) {
-                    writeAssetWithFallback(hudDir + "/" + assetName, data);
-                    writeAssetWithFallback(configDir + "/" + assetName, data);
-                    writeAssetWithFallback(filesDir + "/" + assetName, data);
-                    anyDeployed = true;
-                } else if (assetName.startsWith("JoySticksConfig")) {
-                    writeAssetWithFallback(joystickDir + "/" + assetName, data);
-                    writeAssetWithFallback(configDir + "/" + assetName, data);
-                    writeAssetWithFallback(filesDir + "/" + assetName, data);
-                    anyDeployed = true;
+                } else if (assetName.startsWith("HUDLayoutConfig") || assetName.startsWith("JoySticksConfig")) {
+                    // NEVER wipe out existing player HUD/Joystick layouts
+                    String dest = assetName.startsWith("HUDLayoutConfig") ? hudDir + "/" + assetName : joystickDir + "/" + assetName;
+                    if (!new java.io.File(dest).exists()) {
+                        writeAssetWithFallback(dest, data);
+                    }
                 } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml")) {
                     writeAssetWithFallback(prefsDir + "/" + assetName, data);
                     writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
@@ -325,15 +311,24 @@ public class CodmConfigPatcher {
         List<String> roots = new java.util.ArrayList<>();
         if (pkg == null || pkg.trim().isEmpty()) pkg = "com.activision.callofduty.shooter";
 
+        // Primary User 0 external data root
         roots.add("/storage/emulated/0/Android/data/" + pkg);
-        roots.add("/sdcard/Android/data/" + pkg);
-        roots.add("/data/data/" + pkg);
-        roots.add("/data/user/0/" + pkg);
-        roots.add("/storage/emulated/0/Android/media/" + pkg);
 
+        // App-private data roots are only accessible when true root (su) is available
+        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+            roots.add("/data/data/" + pkg);
+            roots.add("/data/user/0/" + pkg);
+        }
+
+        // Secondary profiles only if the user directory physically exists on storage
         for (int userId = 10; userId <= 14; userId++) {
-            roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
-            roots.add("/data/user/" + userId + "/" + pkg);
+            java.io.File userRoot = new java.io.File("/storage/emulated/" + userId);
+            if (userRoot.exists()) {
+                roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
+                if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                    roots.add("/data/user/" + userId + "/" + pkg);
+                }
+            }
         }
         return roots;
     }
@@ -1251,9 +1246,18 @@ public class CodmConfigPatcher {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     private static List<String> getConfigPaths(String pkg) {
-        List<String> paths = GameConfigPathResolver.getPathsForGame(pkg);
-        GameConfigPathResolver.ensureDirectoriesForPaths(paths);
-        return paths;
+        List<String> raw = GameConfigPathResolver.getPathsForGame(pkg);
+        List<String> filtered = new java.util.ArrayList<>(raw.size());
+        for (String p : raw) {
+            if (p == null) continue;
+            String lower = p.toLowerCase().replace('\\', '/');
+            if (lower.contains("hudlayout") || lower.contains("joysticksconfig") || lower.contains(".w6jbf0b") || lower.contains("configcache")) {
+                continue;
+            }
+            filtered.add(p);
+        }
+        GameConfigPathResolver.ensureDirectoriesForPaths(filtered);
+        return filtered;
     }
 
     private static boolean applyPatch(String path, int targetFps) {

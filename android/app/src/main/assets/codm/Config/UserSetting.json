@@ -1,2 +1,23 @@
 {
+  "AimAssist": 1,
+  "AimAssistEnabled": 1,
+  "AimAssistStrength": 100,
+  "AimMagnetism": 3,
+  "HeadMagnetism": 1,
+  "LockOnTarget": 1,
+  "AimAssistAngle": 180,
+  "MagneticPullForce": 100,
+  "UzioneStickiness": 100,
+  "OneTapHeadshot": 1,
+  "AutoHeadshotAllScope": 1,
+  "HeadshotBulletCount": 3,
+  "KillBulletThreshold": 5,
+  "TouchPollingRate": 1000,
+  "TouchZeroDelay": 1,
+  "ZeroInputLag": 1,
+  "CameraFOV": 120,
+  "DroneView": 1,
+  "CameraDistance": 220,
+  "CameraHeight": 4,
+  "iPadView": 1
 }

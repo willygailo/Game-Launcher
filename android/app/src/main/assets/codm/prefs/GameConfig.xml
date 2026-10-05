@@ -1,3 +1,9 @@
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
+    <int name="target_fps" value="185" />
+    <int name="max_fps" value="185" />
+    <int name="unlock_185fps" value="1" />
+    <int name="touch_boost_hz" value="185" />
+    <int name="touch_polling_rate" value="1000" />
+    <int name="zero_input_lag" value="1" />
 </map>

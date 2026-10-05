@@ -1,2 +1,14 @@
 {
+  "DeviceModel": "SM-S928B",
+  "DeviceBrand": "samsung",
+  "Manufacturer": "samsung",
+  "GPU": "Adreno (TM) 750",
+  "CPU": "Snapdragon 8 Gen 3",
+  "RAMTotalMB": 16384,
+  "TargetFPS": 185,
+  "MaxSupportedFPS": 185,
+  "MaxRefreshRate": 185,
+  "GraphicTier": "Ultra",
+  "VulkanSupport": true,
+  "HDRSupport": true
 }

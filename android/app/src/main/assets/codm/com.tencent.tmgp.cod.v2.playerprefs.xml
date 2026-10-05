@@ -1,3 +1,17 @@
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
+    <int name="GraphicQuality" value="4" />
+    <int name="FrameRate" value="9" />
+    <int name="TargetFPS" value="185" />
+    <int name="MaxFrameRate" value="185" />
+    <int name="FPSLimit" value="185" />
+    <int name="FrameRateLimit" value="185" />
+    <int name="Unlock185FPS" value="1" />
+    <int name="Ultra185FPS" value="1" />
+    <int name="TouchBoostHz" value="185" />
+    <int name="TouchPollingRate" value="1000" />
+    <int name="TouchZeroDelay" value="1" />
+    <int name="ZeroInputLag" value="1" />
+    <boolean name="bFramePacingEnabled" value="true" />
+    <boolean name="VulkanSupport" value="true" />
 </map>
