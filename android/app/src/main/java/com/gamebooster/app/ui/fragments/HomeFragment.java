@@ -482,9 +482,10 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         PopupMenu popup = new PopupMenu(ctx, anchor);
         popup.getMenu().add(0, 1, 0, "🚀  Launch");
         popup.getMenu().add(0, 2, 1, "⚙️  Tune / Pre-Launch");
-        popup.getMenu().add(0, 3, 2, "👁  Hide from Home");
-        popup.getMenu().add(0, 4, 3, "🗑  Uninstall");
-        popup.getMenu().add(0, 5, 4, "ℹ️  App Info");
+        popup.getMenu().add(0, 6, 2, "🎛  CFG & Graphics Mod Studio");
+        popup.getMenu().add(0, 3, 3, "👁  Hide from Home");
+        popup.getMenu().add(0, 4, 4, "🗑  Uninstall");
+        popup.getMenu().add(0, 5, 5, "ℹ️  App Info");
 
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
@@ -496,6 +497,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                     android.app.Activity act = getActivity();
                     if (act != null && !act.isFinishing()) {
                         com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game);
+                    }
+                    return true;
+
+                case 6: // CFG & Graphics Mod Studio
+                    android.app.Activity actStudio = getActivity();
+                    if (actStudio != null && !actStudio.isFinishing()) {
+                        com.gamebooster.app.ui.dialogs.GameCfgDialog.show(actStudio, game, (pkgName, targetFps, patchedCount) -> {
+                            Toast.makeText(ctx, "⚡ Applied " + targetFps + "FPS mods (" + patchedCount + " configs)", Toast.LENGTH_SHORT).show();
+                        });
                     }
                     return true;
 

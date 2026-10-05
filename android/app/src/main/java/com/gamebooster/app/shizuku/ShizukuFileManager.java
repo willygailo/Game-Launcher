@@ -144,6 +144,27 @@ public final class ShizukuFileManager {
             ensureParentDirectory(path);
             String mode = (chmodMode != null && !chmodMode.isEmpty()) ? chmodMode : "666";
 
+            // 0. Direct Java Process I/O for app-owned files or accessible paths
+            try {
+                File f = new File(path);
+                File parent = f.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+                if ((parent != null && parent.canWrite()) || f.canWrite() || path.contains("com.gamebooster.app")) {
+                    try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
+                        fos.write(content.getBytes(StandardCharsets.UTF_8));
+                        fos.flush();
+                    }
+                    f.setReadable(true, false);
+                    f.setWritable(true, false);
+                    Log.d(TAG, "writeFile via Direct Java I/O SUCCESS: " + path);
+                    return FileOpResult.ok(path, "Written directly via Java I/O");
+                }
+            } catch (Throwable directIoErr) {
+                Log.d(TAG, "Direct Java I/O bypassed for " + path + ": " + directIoErr.getMessage());
+            }
+
             // 1. Direct AIDL Native I/O (High Speed, zero subshell)
             if (ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
                 boolean written = ShizukuUserServiceConnector.getInstance().writeDirectFile(path, content, mode);
@@ -424,6 +445,33 @@ public final class ShizukuFileManager {
         ensureParentDirectory(targetProtectedPath);
         String mode = (chmodMode != null && !chmodMode.isEmpty()) ? chmodMode : "666";
 
+        long origTime = 0L;
+        try {
+            File existing = new File(targetProtectedPath);
+            if (existing.exists()) {
+                origTime = existing.lastModified();
+            }
+        } catch (Throwable ignored) {}
+
+        // Strategy 0: Direct Process I/O for app-owned or directly writable files
+        try {
+            File f = new File(targetProtectedPath);
+            File parent = f.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            if ((parent != null && parent.canWrite()) || f.canWrite() || targetProtectedPath.contains("com.gamebooster.app")) {
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(f)) {
+                    fos.write(data);
+                    fos.flush();
+                }
+                f.setReadable(true, false);
+                f.setWritable(true, false);
+                if (origTime > 0) f.setLastModified(origTime);
+                return FileOpResult.ok(targetProtectedPath, "Uploaded directly via Java I/O");
+            }
+        } catch (Throwable ignored) {}
+
         // Strategy 1: Staged Copy via App's accessible storage
         // Completely bypasses shell command-line size limits (ARG_MAX) for files of any size (e.g. 690KB BattleSystemConfig)
         try {
@@ -451,6 +499,17 @@ public final class ShizukuFileManager {
                         ? ShizukuExecutor.executeShizukuCommand(cpCmd)
                         : CommandExecutor.executeSystemCommand(cpCmd);
                 stageFile.delete();
+
+                if (origTime > 0) {
+                    try {
+                        File target = new File(targetProtectedPath);
+                        if (target.exists()) target.setLastModified(origTime);
+                        String touchCmd = "touch -d @$((" + (origTime / 1000L) + ")) '" + targetProtectedPath + "' 2>/dev/null || true";
+                        if (ShizukuExecutor.hasShizukuPermission()) {
+                            ShizukuExecutor.executeShizukuCommand(touchCmd);
+                        }
+                    } catch (Throwable ignored) {}
+                }
 
                 if (res != null && res.contains("UPLOAD_OK")) {
                     return FileOpResult.ok(targetProtectedPath, "Uploaded " + data.length + " bytes via staged copy");
@@ -615,6 +674,32 @@ public final class ShizukuFileManager {
             return res != null && !res.toLowerCase().contains("error");
         } catch (Throwable t) {
             Log.w(TAG, "setPermissions exception for " + path, t);
+            return false;
+        }
+    }
+
+    /**
+     * Clones timestamp from reference file to target file (touch -r reference target).
+     * Prevents anti-cheat engines from detecting fresh file modification dates.
+     */
+    public static boolean cloneTimestamp(String referencePath, String targetPath) {
+        if (referencePath == null || targetPath == null) return false;
+        try {
+            File ref = new File(referencePath);
+            File tgt = new File(targetPath);
+            if (ref.exists() && tgt.exists()) {
+                long mtime = ref.lastModified();
+                if (mtime > 0) {
+                    tgt.setLastModified(mtime);
+                }
+            }
+            String cmd = "touch -r '" + referencePath + "' '" + targetPath + "' 2>/dev/null || true";
+            String res = ShizukuExecutor.hasShizukuPermission() 
+                    ? ShizukuExecutor.executeShizukuCommand(cmd) 
+                    : CommandExecutor.executeSystemCommand(cmd);
+            return res != null && !res.toLowerCase().contains("error");
+        } catch (Throwable t) {
+            Log.w(TAG, "cloneTimestamp exception for " + targetPath, t);
             return false;
         }
     }

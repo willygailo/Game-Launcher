@@ -112,21 +112,28 @@ public final class HardwareDisplayController {
         float targetF = (float) targetHz;
         boolean anySuccess = false;
 
-        // ── Path A: Settings.System (public API) ─────────────────────────────────────
-        if (Settings.System.canWrite(context)) {
-            try {
-                boolean peak = Settings.System.putFloat(context.getContentResolver(), "peak_refresh_rate", targetF);
-                boolean min  = Settings.System.putFloat(context.getContentResolver(), "min_refresh_rate",  targetF);
-                // Disable adaptive / match-content frame-rate — these silently drop Hz to 60
-                Settings.System.putInt(context.getContentResolver(), "match_content_frame_rate", 0);
-                Settings.Global.putInt(context.getContentResolver(), "match_content_frame_rate", 0);
-                Log.i(TAG, "Settings.System enforced " + targetHz + "Hz (peak=" + peak + ", min=" + min + ")");
-                anySuccess = peak || min;
-            } catch (SecurityException e) {
-                Log.w(TAG, "Settings.System write denied: " + e.getMessage());
+        // ── Path A: Settings.System / Settings.Secure (public API) ─────────────────────────────────────
+        try {
+            if (Settings.System.canWrite(context)) {
+                try {
+                    boolean peak = Settings.System.putFloat(context.getContentResolver(), "peak_refresh_rate", targetF);
+                    boolean min  = Settings.System.putFloat(context.getContentResolver(), "min_refresh_rate",  targetF);
+                    try { Settings.System.putInt(context.getContentResolver(), "match_content_frame_rate", 0); } catch (Throwable ignored) {}
+                    try { Settings.Global.putInt(context.getContentResolver(), "match_content_frame_rate", 0); } catch (Throwable ignored) {}
+                    Log.i(TAG, "Settings.System enforced " + targetHz + "Hz (peak=" + peak + ", min=" + min + ")");
+                    anySuccess = peak || min;
+                } catch (Throwable e) {
+                    Log.w(TAG, "Settings.System write bypassed: " + e.getMessage());
+                }
+            } else {
+                Log.i(TAG, "MODIFY_SYSTEM_SETTINGS not granted — escalating to privileged shell");
             }
-        } else {
-            Log.i(TAG, "MODIFY_SYSTEM_SETTINGS not granted — escalating to privileged shell");
+            try {
+                Settings.Secure.putFloat(context.getContentResolver(), "peak_refresh_rate", targetF);
+                Settings.Secure.putFloat(context.getContentResolver(), "min_refresh_rate", targetF);
+            } catch (Throwable ignored) {}
+        } catch (Throwable t) {
+            Log.w(TAG, "Public settings API write notice: " + t.getMessage());
         }
 
         // ── Path B: Privileged shell via Shizuku/Root (fires regardless of canWrite) ─

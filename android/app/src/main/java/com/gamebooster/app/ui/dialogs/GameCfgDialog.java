@@ -68,7 +68,9 @@ public class GameCfgDialog {
         Window window = dialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+            int displayHeight = activity.getResources().getDisplayMetrics().heightPixels;
+            int dialogHeight = (int) (displayHeight * 0.85f);
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, dialogHeight);
             window.setDimAmount(0.65f);
         }
 

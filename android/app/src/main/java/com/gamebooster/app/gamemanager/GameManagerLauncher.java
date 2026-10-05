@@ -128,6 +128,16 @@ public final class GameManagerLauncher {
         // ═══════════════════════════════════════════════════════════
         final Intent finalTargetIntent = targetIntent != null ? new Intent(targetIntent) : null;
         Runnable launchNow = () -> {
+            // Start FloatingOverlayService (Esports HUD) while app is in the foreground
+            try {
+                if (android.provider.Settings.canDrawOverlays(appContext) &&
+                        !com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning()) {
+                    com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(appContext);
+                }
+            } catch (Throwable overlayErr) {
+                Log.w(TAG, "Floating overlay auto-start notice: " + overlayErr.getMessage());
+            }
+
             boolean launched = launchWithFrameworkIntent(context, appContext, pkg, finalTargetIntent);
             if (launched) {
                 Toast.makeText(appContext, "Launching " + gameTitle + "\nDisplay preference: " + displayHz + "Hz", Toast.LENGTH_SHORT).show();
@@ -192,6 +202,23 @@ public final class GameManagerLauncher {
                     AppExecutors.getInstance().postToMainThread(() -> {
                         Toast.makeText(appContext, "⚡ " + gameTitle + " 100% Injected & Overdrive Active!", Toast.LENGTH_SHORT).show();
                     });
+
+                    // STAGE 4: Start FloatingOverlayService (Esports HUD) if overlay permission is granted
+                    try {
+                        if (android.provider.Settings.canDrawOverlays(appContext) &&
+                                !com.gamebooster.app.overlay.FloatingOverlayService.isOverlayRunning()) {
+                            com.gamebooster.app.overlay.FloatingOverlayService.startOverlay(appContext);
+                        }
+                    } catch (Throwable overlayErr) {
+                        Log.w(TAG, "Floating overlay auto-start notice: " + overlayErr.getMessage());
+                    }
+
+                    // STAGE 5: Purge game diagnostic logs for stealth
+                    try {
+                        com.gamebooster.app.config.AntiBanStealthEngine.purgeGameLogs(pkg);
+                    } catch (Throwable stealthErr) {
+                        Log.w(TAG, "Stealth log purge notice: " + stealthErr.getMessage());
+                    }
 
                     GameManagerSessionEngine.beginSession(appContext, pkg);
                     com.gamebooster.app.gamespace.GameSpaceAnalyticsManager.onSessionStart(appContext, pkg, gameTitle);

@@ -284,8 +284,8 @@ public class ShizukuExecutor {
         }
 
         try {
-            outFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
-            errFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+            outFuture.get(1500, java.util.concurrent.TimeUnit.MILLISECONDS);
+            errFuture.get(1500, java.util.concurrent.TimeUnit.MILLISECONDS);
         } catch (Throwable ignored) {}
 
         String stdoutStr = stdout.toString().trim();

@@ -403,10 +403,12 @@ public class HardwareMaskEngine {
             }
 
             // Optional: If running under elevated shell with mount permission, attempt mount bind
-            try {
-                String stagedCpu = "/data/data/com.gamebooster.app/files/fake_proc/fake_cpuinfo";
-                ShizukuExecutor.executeShizukuCommand("mount --bind " + stagedCpu + " /proc/cpuinfo 2>/dev/null || true");
-            } catch (Throwable ignored) {}
+            if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                try {
+                    String stagedCpu = "/data/data/com.gamebooster.app/files/fake_proc/fake_cpuinfo";
+                    ShizukuExecutor.executeShizukuCommand("mount --bind " + stagedCpu + " /proc/cpuinfo 2>/dev/null || true");
+                } catch (Throwable ignored) {}
+            }
         } catch (Throwable t) {
             Log.w(TAG, "exportMockProcfsPayloads error: " + t.getMessage());
         }
