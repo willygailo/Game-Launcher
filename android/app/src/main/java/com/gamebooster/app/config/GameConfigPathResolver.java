@@ -1,6 +1,8 @@
 package com.gamebooster.app.config;
 
+import android.os.Looper;
 import android.util.Log;
+import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 import com.gamebooster.app.shizuku.ShizukuFileManager;
@@ -253,7 +255,12 @@ public class GameConfigPathResolver {
         if (cached != null && !cached.isEmpty()) {
             Long timestamp = CACHE_TIMESTAMPS.get(pkg);
             if (timestamp != null && (System.currentTimeMillis() - timestamp) < CACHE_TTL_MS) {
-                ensureConfigFilesExist(cached);
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    final List<String> pathsToEnsure = new ArrayList<>(cached);
+                    AppExecutors.getInstance().executeCommand(() -> ensureConfigFilesExist(pathsToEnsure));
+                } else {
+                    ensureConfigFilesExist(cached);
+                }
                 return cached;
             }
             CACHED_PATHS.remove(pkg);
@@ -263,7 +270,12 @@ public class GameConfigPathResolver {
         List<String> knownRelativePaths = getKnownRelativePathsForPackage(pkg);
         List<String> resolved = resolveConfigPaths(packageName, knownRelativePaths);
         CACHE_TIMESTAMPS.put(pkg, System.currentTimeMillis());
-        ensureConfigFilesExist(resolved);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            final List<String> pathsToEnsure = new ArrayList<>(resolved);
+            AppExecutors.getInstance().executeCommand(() -> ensureConfigFilesExist(pathsToEnsure));
+        } else {
+            ensureConfigFilesExist(resolved);
+        }
         return resolved;
     }
 
@@ -390,14 +402,9 @@ public class GameConfigPathResolver {
             rel.add("shared_prefs/com.mobile.legends.xml");
             rel.add("shared_prefs/" + pkg + ".xml");
 
-            rel.add("files/" + pkg + ".v4.playerprefs.xml");
-            rel.add("files/com.mobile.legends.v4.playerprefs.xml");
-            rel.add("files/" + pkg + ".v3.playerprefs.xml");
-            rel.add("files/com.mobile.legends.v3.playerprefs.xml");
-            rel.add("files/" + pkg + ".v2.playerprefs.xml");
-            rel.add("files/com.mobile.legends.v2.playerprefs.xml");
-            rel.add("files/" + pkg + "_preferences.xml");
-            rel.add("files/com.mobile.legends_preferences.xml");
+            // NOTE: PlayerPrefs XMLs are intentionally NOT listed under files/ root.
+            // MLBB reads PlayerPrefs exclusively from /data/data/<pkg>/shared_prefs/.
+            // Stub-creating these paths in files/ confuses the MLBB preferences loader.
             // Document & battle configs (JSON settings introduced/relocated in NEXT 2026)
             rel.add("files/dragon2017/assets/Document/QualityConfig.json");
             rel.add("files/Dragon2017/assets/Document/QualityConfig.json");
@@ -435,8 +442,9 @@ public class GameConfigPathResolver {
             rel.add("files/dragon2017/assets/Document/FpsSetting.json");
             rel.add("files/dragon2017/assets/Document/CombatConfig.json");
             rel.add("files/dragon2017/assets/Document/DroneViewConfig.json");
-            rel.add("files/dragon2017/assets/boot.config");
-            rel.add("files/boot.config");
+            // NOTE: files/boot.config intentionally excluded.
+            // Unity 2020+ IL2CPP bootstrap ignores unrecognized keys in boot.config but some
+            // Unity forks (MLBB's custom engine) abort init entirely on unknown key prefixes.
             rel.add("files/Config/QualityConfig.json");
             rel.add("files/battle_config/QualityConfig.json");
             rel.add("files/battle_config/BattleConfig.json");

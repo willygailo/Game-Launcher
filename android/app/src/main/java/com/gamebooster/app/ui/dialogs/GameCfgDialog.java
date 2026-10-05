@@ -329,52 +329,66 @@ public class GameCfgDialog {
             else if (rbCfg50 != null && rbCfg50.isChecked()) selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X;
             else selectedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_3X;
 
-            // Apply resolution scaling, drone view FOV, and visual filter immediately
-            if (droneView) {
-                com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg, selectedTier);
-            } else if (targetScale < 0.99f) {
-                com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
-            } else {
-                com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
-            }
-            com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(context, targetFilter);
-
-            // INSTANT AUTO-EXIT: Immediately dismiss without any blocking confirmation modals
+            // INSTANT AUTO-EXIT: Dismiss immediately on UI thread with zero blocking
             dismissCurrent();
 
             // Direct non-blocking notification
-            Toast.makeText(context.getApplicationContext(), "⚡ DONE: CFG Applied for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context.getApplicationContext(), "⚡ Applying CFG for " + game.getLabel() + " (" + targetFps + " FPS)...", Toast.LENGTH_SHORT).show();
 
             final int finalTier = selectedTier;
             AppExecutors.getInstance().executeCommand(() -> {
                 int patchedFilesCount = 0;
                 try {
-                    // 1. Build and Save Profile
+                    // 1. Hardware Resolution Scaling & Visual Filters (Off-main-thread)
+                    try {
+                        if (targetScale < 0.99f) {
+                            com.gamebooster.app.engine.ResolutionScalerEngine.applyResolutionScale(context, targetScale);
+                        } else {
+                            com.gamebooster.app.engine.ResolutionScalerEngine.resetResolutionSync();
+                        }
+                    } catch (Throwable t) {
+                        Log.w(TAG, "Resolution scale background warn: " + t.getMessage());
+                    }
+
+                    try {
+                        com.gamebooster.app.overlay.VisualFilterOverlayService.setFilter(context, targetFilter);
+                    } catch (Throwable t) {
+                        Log.w(TAG, "Visual filter background warn: " + t.getMessage());
+                    }
+
+                    // 2. Build and Save Profile
                     CompetitiveCfgProfile profile = new CompetitiveCfgProfile(gameKey, targetFps, superTouch, forceHz);
                     profile.setAntiLogEnabled(antiLog);
                     profile.setDroneViewUltraEnabled(droneView);
                     profile.setDroneViewTier(finalTier);
                     CfgProfileManager.saveProfile(context, profile);
 
-                    // 2. Fast direct config patching for target package only
+                    // 3. Fast direct config patching & Drone View for target package
                     GameConfigPatcher.applyGameFpsPatch(context, pkg, targetFps);
+                    if (droneView) {
+                        try {
+                            com.gamebooster.app.config.CommonConfigTuningInjector.applyDroneViewUltraConfig(pkg, finalTier);
+                        } catch (Throwable t) {
+                            Log.w(TAG, "Drone view ultra inject warn: " + t.getMessage());
+                        }
+                    }
                     com.gamebooster.app.config.CommonConfigTuningInjector.applyAllEnabledTunings(pkg, profile);
                     com.gamebooster.app.config.GameAutoInjectDispatcher.dispatchForPackage(pkg);
-                    // NEW MAP UPDATE: always sync new map on Apply for MLBB (Season 42+)
-                    if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-                        com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
-                    }
+                    // MLBB: New map / camera keys are synced ONLY via DroneView toggle,
+                    // NOT on every CFG apply. Injecting newMapUpdate here overwrote live
+                    // dragon2017 assets (SplitLibMD5.xml, BattleConfig.unity3d) while the
+                    // game was loading, causing Unity table-signature failures on the splash screen.
                     if (profile.isHardwareMaskEnabled()) {
                         com.gamebooster.app.spoofer.DeviceSpooferEngine.applySpoofing(context, pkg);
                     }
                     patchedFilesCount = 1;
 
-                    // 3. Apply Targeted Graphics Driver (Protected: 0 impact on global apps)
+                    // 4. Apply Targeted Graphics Driver (Protected: 0 impact on global apps)
                     if (ShizukuExecutor.hasShizukuPermission()) {
                         com.gamebooster.app.booster.GpuTweaksChannel.setTargetGameDriver(pkg, driverType);
                     }
 
-                    // 4. Fast single-batch privileged system optimizations
+                    // 5. Fast single-batch privileged system optimizations
                     if (forceHz && ShizukuExecutor.hasShizukuPermission()) {
                         StringBuilder sb = new StringBuilder();
                         sb.append("cmd game mode performance ").append(pkg).append(" 2>/dev/null; ");
@@ -394,7 +408,7 @@ public class GameCfgDialog {
                         ShizukuExecutor.executeShizukuCommand(sb.toString());
                     }
 
-                    // 5. Anti-Log & Telemetry Purge
+                    // 6. Anti-Log & Telemetry Purge
                     if (antiLog) {
                         AntiLogPatcher.applyAntiLog(pkg);
                     }
@@ -405,6 +419,7 @@ public class GameCfgDialog {
 
                 final int finalPatched = patchedFilesCount;
                 AppExecutors.getInstance().postToMainThread(() -> {
+                    Toast.makeText(context.getApplicationContext(), "⚡ DONE: CFG Applied for " + game.getLabel() + " (" + targetFps + " FPS Tier)", Toast.LENGTH_SHORT).show();
                     if (listener != null) {
                         listener.onConfigApplied(pkg, targetFps, finalPatched);
                     }

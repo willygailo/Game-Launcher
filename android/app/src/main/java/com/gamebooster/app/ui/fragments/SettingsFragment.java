@@ -199,8 +199,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private boolean isPrivilegedExecutionAvailable() {
         boolean active = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
         if (!active && getContext() != null) {
-            com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
-            active = com.gamebooster.app.engine.PrivilegeBridgeEngine.isPrivilegedActive();
+            final Context appCtx = getContext().getApplicationContext();
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+                } catch (Throwable ignored) {}
+            });
         }
         return active;
     }
@@ -265,8 +269,12 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         // Settings Background Looping Video
         videoSettingsBg = view.findViewById(R.id.video_settings_bg);
         if (videoSettingsBg != null) {
-            videoSettingsBg.setMuted(true);
-            videoSettingsBg.setVideoRawResource(R.raw.settings_bg_video);
+            try {
+                videoSettingsBg.setMuted(true);
+                videoSettingsBg.setVideoRawResource(R.raw.settings_bg_video);
+            } catch (Throwable t) {
+                android.util.Log.w("SettingsFragment", "videoSettingsBg init note: " + t.getMessage());
+            }
         }
 
         // Card 1b: Diagnostics — shareable crash + settings snapshot
@@ -2135,11 +2143,17 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     @Override
     public void onResume() {
         super.onResume();
-        if (videoSettingsBg != null) videoSettingsBg.play();
-        if (getContext() != null) {
-            com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
-        } else {
-            com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+        if (videoSettingsBg != null) {
+            try { videoSettingsBg.play(); } catch (Throwable ignored) {}
+        }
+        final Context ctx = getContext();
+        if (ctx != null) {
+            final Context appCtx = ctx.getApplicationContext();
+            AppExecutors.getInstance().executeCommand(() -> {
+                try {
+                    com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(appCtx).onResumeCheck();
+                } catch (Throwable ignored) {}
+            });
         }
         refreshAllStatuses();
         startLiveDiagnosticsTicker();
@@ -2148,7 +2162,9 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     @Override
     public void onPause() {
         super.onPause();
-        if (videoSettingsBg != null) videoSettingsBg.pause();
+        if (videoSettingsBg != null) {
+            try { videoSettingsBg.pause(); } catch (Throwable ignored) {}
+        }
         stopLiveDiagnosticsTicker();
     }
 
@@ -2156,14 +2172,22 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (hidden) {
-            if (videoSettingsBg != null) videoSettingsBg.pause();
+            if (videoSettingsBg != null) {
+                try { videoSettingsBg.pause(); } catch (Throwable ignored) {}
+            }
             stopLiveDiagnosticsTicker();
         } else {
-            if (videoSettingsBg != null) videoSettingsBg.play();
-            if (getContext() != null) {
-                com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(getContext()).onResumeCheck();
-            } else {
-                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+            if (videoSettingsBg != null) {
+                try { videoSettingsBg.play(); } catch (Throwable ignored) {}
+            }
+            final Context ctx = getContext();
+            if (ctx != null) {
+                final Context appCtx = ctx.getApplicationContext();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        com.gamebooster.app.shizuku.ShizukuLifecycleManager.getInstance(appCtx).onResumeCheck();
+                    } catch (Throwable ignored) {}
+                });
             }
             refreshAllStatuses();
             renderDiagnostics(true);

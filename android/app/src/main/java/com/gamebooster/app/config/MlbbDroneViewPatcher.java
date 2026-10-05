@@ -209,21 +209,11 @@ public final class MlbbDroneViewPatcher {
                     if (cameraJsonBytes != null && cameraJsonBytes.length > 0) {
                         writeWithFallback(context, docDir + "/CameraConfig.json", cameraJsonBytes, "666");
                     }
-                    if (battleUnityBytes != null && battleUnityBytes.length > 0) {
-                        writeWithFallback(context, docDir + "/BattleConfig.unity3d", battleUnityBytes, "666");
-                    }
-                    if (splitLibBytes != null && splitLibBytes.length > 0) {
-                        writeWithFallback(context, docDir + "/SplitLibMD5.xml", splitLibBytes, "666");
-                    }
-                    if (modeVerBytes != null && modeVerBytes.length > 0) {
-                        writeWithFallback(context, docDir + "/mode_versions_build.xml", modeVerBytes, "666");
-                    }
-                    if (molaCfgBytes != null && molaCfgBytes.length > 0) {
-                        writeWithFallback(context, docDir + "/mola_config.xml", molaCfgBytes, "666");
-                    }
-                    if (resSkipBytes != null && resSkipBytes.length > 0) {
-                        writeWithFallback(context, docDir + "/res_skip_patch.xml", resSkipBytes, "666");
-                    }
+                    // INTENTIONALLY NOT WRITING:
+                    // - BattleConfig.unity3d (Unity CRC-validated binary bundle — mismatch = loading screen hang)
+                    // - SplitLibMD5.xml      (native SO checksum manifest — mismatching halts Unity bootstrap)
+                    // - mode_versions_build.xml / mola_config.xml / res_skip_patch.xml (MLBB version integrity)
+                    // - realversion.xml       (server-side version validation manifest)
                 }
 
                 // Deploy Version files
@@ -348,30 +338,13 @@ public final class MlbbDroneViewPatcher {
                 try (FileOutputStream fos = new FileOutputStream(stageCameraJson)) { fos.write(cameraJsonBytes); fos.flush(); }
                 stageCameraJson.setReadable(true, false);
             }
-            if (battleUnityBytes != null && battleUnityBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageBattleUnity)) { fos.write(battleUnityBytes); fos.flush(); }
-                stageBattleUnity.setReadable(true, false);
-            }
-            if (splitLibBytes != null && splitLibBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageSplitLib)) { fos.write(splitLibBytes); fos.flush(); }
-                stageSplitLib.setReadable(true, false);
-            }
-            if (modeVerBytes != null && modeVerBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageModeVer)) { fos.write(modeVerBytes); fos.flush(); }
-                stageModeVer.setReadable(true, false);
-            }
-            if (molaCfgBytes != null && molaCfgBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageMolaCfg)) { fos.write(molaCfgBytes); fos.flush(); }
-                stageMolaCfg.setReadable(true, false);
-            }
-            if (resSkipBytes != null && resSkipBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageResSkip)) { fos.write(resSkipBytes); fos.flush(); }
-                stageResSkip.setReadable(true, false);
-            }
-            if (realVerBytes != null && realVerBytes.length > 0) {
-                try (FileOutputStream fos = new FileOutputStream(stageRealVer)) { fos.write(realVerBytes); fos.flush(); }
-                stageRealVer.setReadable(true, false);
-            }
+            // INTENTIONALLY NOT STAGING:
+            // - BattleConfig.unity3d  (CRC-validated binary bundle — version mismatch = loading screen hang)
+            // - SplitLibMD5.xml       (native SO checksum manifest — mismatch halts Unity bootstrap)
+            // - mode_versions_build.xml / mola_config.xml / res_skip_patch.xml (MLBB version integrity)
+            // - realversion.xml       (server-side version validation manifest)
+            // These are NOT updated by drone view; only BattleSystemConfig.bytes and DroneViewConfig.json
+            // carry the camera offset data. Writing the above causes table signature errors on load.
             if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageUiBattleCam)) { fos.write(uiBattleCamBytes); fos.flush(); }
                 stageUiBattleCam.setReadable(true, false);
@@ -388,12 +361,12 @@ public final class MlbbDroneViewPatcher {
             String stageResCheckPath = stageResCheck.exists() ? stageResCheck.getAbsolutePath() : "";
             String stageBattleJsonPath = stageBattleJson.exists() ? stageBattleJson.getAbsolutePath() : "";
             String stageCameraJsonPath = stageCameraJson.exists() ? stageCameraJson.getAbsolutePath() : "";
-            String stageBattleUnityPath = stageBattleUnity.exists() ? stageBattleUnity.getAbsolutePath() : "";
-            String stageSplitLibPath = stageSplitLib.exists() ? stageSplitLib.getAbsolutePath() : "";
-            String stageModeVerPath = stageModeVer.exists() ? stageModeVer.getAbsolutePath() : "";
-            String stageMolaCfgPath = stageMolaCfg.exists() ? stageMolaCfg.getAbsolutePath() : "";
-            String stageResSkipPath = stageResSkip.exists() ? stageResSkip.getAbsolutePath() : "";
-            String stageRealVerPath = stageRealVer.exists() ? stageRealVer.getAbsolutePath() : "";
+            String stageBattleUnityPath = "";  // NOT deployed — CRC-validated bundle
+            String stageSplitLibPath = "";      // NOT deployed — SO checksum manifest
+            String stageModeVerPath = "";        // NOT deployed — version integrity
+            String stageMolaCfgPath = "";        // NOT deployed — version integrity
+            String stageResSkipPath = "";        // NOT deployed — version integrity
+            String stageRealVerPath = "";           // NOT deployed — server version manifest
             String stageUiBattleCamPath = stageUiBattleCam.exists() ? stageUiBattleCam.getAbsolutePath() : "";
             String stageAtlasCamPath = stageAtlasCam.exists() ? stageAtlasCam.getAbsolutePath() : "";
 

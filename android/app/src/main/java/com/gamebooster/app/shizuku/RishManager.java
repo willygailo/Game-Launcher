@@ -31,7 +31,7 @@ public class RishManager {
     private static final boolean RISH_MIGHT_BE_BROKEN = Build.VERSION.SDK_INT >= 36;
 
     public static boolean isRishAvailable() {
-        if (isRishBrokenOnThisDevice) return false;
+        if (isRishBrokenOnThisDevice || RISH_MIGHT_BE_BROKEN) return false;
         return (isInitialized && rishBinFile != null && rishBinFile.exists()) ||
                 (rishBinFile != null && rishBinFile.exists());
     }
@@ -187,6 +187,7 @@ public class RishManager {
     }
 
     public static boolean isAvailable(Context context) {
+        if (isRishBrokenOnThisDevice || RISH_MIGHT_BE_BROKEN) return false;
         if (!isInitialized) {
             initialize(context);
         }

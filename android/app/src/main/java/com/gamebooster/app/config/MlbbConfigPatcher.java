@@ -45,11 +45,11 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/Document/android/DroneViewConfig.json", "files/dragon2017/assets/Document/android/DroneViewConfig.json"},
             {"mlbb_mod/modified/Document/android/res_skip_patch.xml", "files/dragon2017/assets/Document/android/res_skip_patch.xml"},
             {"mlbb_mod/modified/Document/android/BinaryPatchMD5.xml", "files/dragon2017/assets/Document/android/BinaryPatchMD5.xml"},
-            {"mlbb_mod/modified/Document/android/SplitLibMD5.xml", "files/dragon2017/assets/Document/android/SplitLibMD5.xml"},
-            {"mlbb_mod/modified/Document/android/mode_versions_build.xml", "files/dragon2017/assets/Document/android/mode_versions_build.xml"},
-            {"mlbb_mod/modified/Document/android/mola_config.xml", "files/dragon2017/assets/Document/android/mola_config.xml"},
-            {"mlbb_mod/modified/Document/android/ResCheckConf.xml", "files/dragon2017/assets/Document/android/ResCheckConf.xml"},
-            {"mlbb_mod/modified/Document/android/BattleConfig.unity3d", "files/dragon2017/assets/Document/android/BattleConfig.unity3d"},
+            // REMOVED: BattleConfig.unity3d, SplitLibMD5.xml — these are Unity engine CRC manifests.
+            // Injecting custom builds here causes Unity table signature failures at load time:
+            //   "table binary data error, invalid signature! table : MultiLanguage_Preload"
+            // REMOVED: securityconfig.bytes from Document/android/ — the correct bypass dir is
+            //   files/dragon2017/assets/bypass/ (see lines below), not Document/android/.
             {"mlbb_mod/modified/Document/android/GameResAlternative.unity3d", "files/dragon2017/assets/Document/android/GameResAlternative.unity3d"},
 
             // Document/ root
@@ -94,14 +94,17 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/bypass/modified_config.xml", "files/dragon2017/assets/bypass/modified_config.xml"},
             {"mlbb_mod/modified/bypass/modified_config.xml", "files/modified_config.xml"},
             {"mlbb_mod/modified/bypass/securityconfig_patched.bytes", "files/dragon2017/assets/bypass/securityconfig_patched.bytes"},
-            {"mlbb_mod/modified/bypass/securityconfig_patched.bytes", "files/dragon2017/assets/Document/android/securityconfig.bytes"},
+            // REMOVED: securityconfig.bytes injected to Document/android/securityconfig.bytes — MLBB's
+            // native loader validates this path against the installed APK's own asset signature.
+            // Injecting a foreign bytes blob here triggers a CRC mismatch and blocks splash init.
             {"mlbb_mod/modified/bypass/libAkSoundEngine_patched.bytes", "files/dragon2017/assets/bypass/libAkSoundEngine_patched.bytes"},
             {"mlbb_mod/modified/bypass/anti_hack_patched.bytes", "files/dragon2017/assets/bypass/anti_hack_patched.bytes"},
 
-            // root_files
-            {"mlbb_mod/modified/root_files/boot.config", "files/boot.config"},
-            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"},
-            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "files/com.mobile.legends.v2.playerprefs.xml"}
+            // root_files — boot.config is intentionally NOT deployed to files/boot.config:
+            // Unity 2020+ IL2CPP ignores or stalls on unrecognized keys in boot.config.
+            // PlayerPrefs XMLs are NOT deployed to files/ root — MLBB reads them only from
+            // /data/data/<pkg>/shared_prefs/, never from external storage files/.
+            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
         };
 
         for (String root : roots) {
