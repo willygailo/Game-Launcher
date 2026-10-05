@@ -11,15 +11,37 @@ import com.gamebooster.app.engine.AceContainerEvasionEngine;
  * Compatibility bridge for older callers. Game data is never changed by the
  * launcher; callers can retain this API without mutating another app's files,
  * process state, or network configuration.
+ *
+ * MLBB fix (2026-10): All heavy MLBB file I/O is deferred 5 seconds post-launch
+ * to avoid competing with Unity's splash-screen CRC validation loop. Running asset
+ * deployment + 130+ hero script writes during the splash caused OOM / stall in
+ * rikka.shizuku's ParcelFileDescriptor transfer thread.
  */
 public final class GameAutoInjectDispatcher {
 
     private static final String TAG = "GameAutoInject";
 
     private GameAutoInjectDispatcher() {}
+
     private static final java.util.concurrent.ConcurrentHashMap<String, Long> LAST_INJECTED =
             new java.util.concurrent.ConcurrentHashMap<>();
     private static final long INJECTION_COOLDOWN_MS = 8000L;
+
+    /**
+     * Session-level guard: asset deployment (unity3d copies) runs at most once
+     * every 2 minutes per package to avoid thrashing game directories mid-match.
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> LAST_ASSET_DEPLOYED =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long ASSET_DEPLOY_COOLDOWN_MS = 120_000L;
+
+    /**
+     * Session-level guard: hero script dispatch (130+ writes) runs at most once
+     * every 5 minutes per package.
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> LAST_HERO_DISPATCH =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long HERO_DISPATCH_COOLDOWN_MS = 300_000L;
 
     public static boolean isPackageInjected(String packageName) {
         if (packageName == null) return false;
@@ -29,12 +51,17 @@ public final class GameAutoInjectDispatcher {
 
     public static void resetPackageInjectionState(String packageName) {
         if (packageName != null) {
-            LAST_INJECTED.remove(packageName.trim().toLowerCase());
+            String key = packageName.trim().toLowerCase();
+            LAST_INJECTED.remove(key);
+            LAST_ASSET_DEPLOYED.remove(key);
+            LAST_HERO_DISPATCH.remove(key);
         }
     }
 
     public static void resetAll() {
         LAST_INJECTED.clear();
+        LAST_ASSET_DEPLOYED.clear();
+        LAST_HERO_DISPATCH.clear();
     }
 
     public static void dispatchForPackage(String packageName) {
@@ -76,7 +103,7 @@ public final class GameAutoInjectDispatcher {
                 Log.w(TAG, "PlayIntegrityBypassEngine note for " + pkg + ": " + t.getMessage());
             }
 
-            // ── 2026: Container Evasion (warn if running in VirtualAPP/container) ──
+            // ── 2026: Container Evasion ──
             try {
                 AceContainerEvasionEngine.ContainerStatus containerStatus =
                     AceContainerEvasionEngine.applyContainerEvasion(pkg);
@@ -94,52 +121,99 @@ public final class GameAutoInjectDispatcher {
             }
 
             if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
-                MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
-                MlbbConfigPatcher.patchUltraExtreme185(pkg);
-                MlbbConfigPatcher.patch(pkg, 185);
-                MlbbConfigPatcher.patchCompetitive(pkg, 185);
-                MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(pkg, 185);
-                MlbbConfigPatcher.applyMlbbTacticalSettings(pkg);
-                MlbbConfigPatcher.applyBattleConfigOverdrive(pkg);
-                MlbbConfigPatcher.applyFastLoadSplashBypass(pkg);
-                MlbbConfigPatcher.applyFastFarmingAllHero(pkg);
-                MlbbConfigPatcher.applyFastRetributionObjectiveSteal(pkg);
-                MlbbConfigPatcher.applyFastAttackSpeedAllHero(pkg);
-                MlbbConfigPatcher.applyAllHeroGodSuite2026(pkg);
-                MlbbConfigPatcher.applyEnemyLockMaxAllScope(pkg);
-                MlbbConfigPatcher.applyAutoHeadshotBulletKill(pkg);
-                MlbbConfigPatcher.applyUltraDamageAllHero(pkg);
-                MlbbConfigPatcher.applyArmorAllHero(pkg);
-                MlbbConfigPatcher.applyMlbbGodModeFullOverdrive(pkg);
-                MlbbConfigPatcher.applyMlbbCombatOverdrive2026(pkg);
-                MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(pkg);
-                MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(pkg);
-                MlbbConfigPatcher.applyMlbbUniversalZeroDelayCombo(pkg);
-                // NEW MAP & PATCH 2.2.16 UPDATE (Season 42+): sync camera, radar, 185 FPS, and anti-redownload keys
-                MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
-                MlbbConfigPatcher.applyMlbb2216PatchFix(pkg);
-                int mlbbDroneTier = MlbbDroneViewPatcher.DEFAULT_TIER;
-                boolean mlbbDroneEnabled = true;
-                try {
-                    android.content.SharedPreferences dPrefs = ctx != null
-                            ? ctx.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE)
-                            : null;
-                    if (dPrefs != null) {
-                        mlbbDroneEnabled = dPrefs.getBoolean("drone_enabled", true);
-                        mlbbDroneTier = dPrefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                // ────────────────────────────────────────────────────────────────────────────
+                // MLBB SPLASH-SAFE DEFERRED INJECTION
+                //
+                // deployMlbbAssets copies .unity3d / binary files. Running this during MLBB's
+                // Unity splash CRC validation window causes I/O contention → OOM in
+                // rikka.shizuku's ParcelFileDescriptor transfer thread → loading screen hangs.
+                // ALL MLBB file I/O is deferred 5 s onto a worker thread so Unity finishes
+                // its CRC pass before we write anything to the same directories.
+                // ────────────────────────────────────────────────────────────────────────────
+
+                final boolean needsAssetDeploy;
+                Long lastDeploy = LAST_ASSET_DEPLOYED.get(pkg);
+                if (lastDeploy == null || (System.currentTimeMillis() - lastDeploy) > ASSET_DEPLOY_COOLDOWN_MS) {
+                    LAST_ASSET_DEPLOYED.put(pkg, System.currentTimeMillis());
+                    needsAssetDeploy = true;
+                } else {
+                    needsAssetDeploy = false;
+                }
+
+                final boolean needsHeroDispatch;
+                Long lastHero = LAST_HERO_DISPATCH.get(pkg);
+                if (lastHero == null || (System.currentTimeMillis() - lastHero) > HERO_DISPATCH_COOLDOWN_MS) {
+                    LAST_HERO_DISPATCH.put(pkg, System.currentTimeMillis());
+                    needsHeroDispatch = true;
+                } else {
+                    needsHeroDispatch = false;
+                }
+
+                final Context fCtx = ctx;
+                final String fPkg = pkg;
+
+                com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
+                    // 5-second grace period — MLBB splash finishes CRC in ~3-4 s
+                    try { Thread.sleep(5000); } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
                     }
-                } catch (Throwable ignored) {}
-                if (mlbbDroneEnabled) {
-                    MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(pkg, mlbbDroneTier);
-                    MlbbDroneViewPatcher.deployV3FixConfig(ctx, pkg, mlbbDroneTier, false);
-                }
-                MlbbConfigPatcher.applyMlbbAllRolesNoLimitSuite(pkg);
-                MlbbConfigPatcher.applyMlbbAllItemsNoLimitSuite(pkg);
-                if (context != null) {
-                    MlbbHeroScriptDispatcher.dispatchAllHeroes(context, pkg);
-                }
+                    try {
+                        if (needsAssetDeploy) {
+                            MlbbConfigPatcher.deployMlbbAssets(fCtx, fPkg);
+                        }
+                        MlbbConfigPatcher.patchUltraExtreme185(fPkg);
+                        MlbbConfigPatcher.patch(fPkg, 185);
+                        MlbbConfigPatcher.patchCompetitive(fPkg, 185);
+                        MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(fPkg, 185);
+                        MlbbConfigPatcher.applyMlbbTacticalSettings(fPkg);
+                        MlbbConfigPatcher.applyBattleConfigOverdrive(fPkg);
+                        MlbbConfigPatcher.applyFastLoadSplashBypass(fPkg);
+                        MlbbConfigPatcher.applyFastFarmingAllHero(fPkg);
+                        MlbbConfigPatcher.applyFastRetributionObjectiveSteal(fPkg);
+                        MlbbConfigPatcher.applyFastAttackSpeedAllHero(fPkg);
+                        MlbbConfigPatcher.applyAllHeroGodSuite2026(fPkg);
+                        MlbbConfigPatcher.applyEnemyLockMaxAllScope(fPkg);
+                        MlbbConfigPatcher.applyAutoHeadshotBulletKill(fPkg);
+                        MlbbConfigPatcher.applyUltraDamageAllHero(fPkg);
+                        MlbbConfigPatcher.applyArmorAllHero(fPkg);
+                        MlbbConfigPatcher.applyMlbbGodModeFullOverdrive(fPkg);
+                        MlbbConfigPatcher.applyMlbbCombatOverdrive2026(fPkg);
+                        MlbbConfigPatcher.applyMlbbBasicAttackRegenOverdrive(fPkg);
+                        MlbbConfigPatcher.applyMlbbSovereignFullWorkingCombatSuite(fPkg);
+                        MlbbConfigPatcher.applyMlbbUniversalZeroDelayCombo(fPkg);
+                        // NEW MAP & PATCH 2.2.16 UPDATE (Season 42+): camera, radar, 185 FPS, anti-redownload
+                        MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(fPkg);
+                        MlbbConfigPatcher.applyMlbb2216PatchFix(fPkg);
+                        int mlbbDroneTier = MlbbDroneViewPatcher.DEFAULT_TIER;
+                        boolean mlbbDroneEnabled = true;
+                        try {
+                            android.content.SharedPreferences dPrefs = fCtx != null
+                                    ? fCtx.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE)
+                                    : null;
+                            if (dPrefs != null) {
+                                mlbbDroneEnabled = dPrefs.getBoolean("drone_enabled", true);
+                                mlbbDroneTier = dPrefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                            }
+                        } catch (Throwable ignored) {}
+                        if (mlbbDroneEnabled) {
+                            MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(fPkg, mlbbDroneTier);
+                            MlbbDroneViewPatcher.deployV3FixConfig(fCtx, fPkg, mlbbDroneTier, false);
+                        }
+                        MlbbConfigPatcher.applyMlbbAllRolesNoLimitSuite(fPkg);
+                        MlbbConfigPatcher.applyMlbbAllItemsNoLimitSuite(fPkg);
+                        // Hero scripts: 130+ writes, gated to once per 5-minute window
+                        if (needsHeroDispatch && fCtx != null) {
+                            MlbbHeroScriptDispatcher.dispatchAllHeroes(fCtx, fPkg);
+                        }
+                        // Native inject deferred together with rest of MLBB I/O
+                        NativeConfigInjector.injectAllConfigsForPackage(fPkg, 185);
+                        Log.i(TAG, "✅ [MLBB Deferred Inject] All overrides applied for " + fPkg);
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Error in MLBB deferred injection for " + fPkg, t);
+                    }
+                });
+
             } else if (pkg.contains("pubg") || pkg.contains("tencent.ig") || pkg.contains("imobile") || pkg.contains("vng.pubgmobile") || pkg.contains("pubgm")) {
-                // Read user's preferred FPS for this game — honors 165fps selection properly
                 int pubgmTargetFps = 185;
                 try {
                     int storedFps = GameProfilePreferences.getTargetHz(ctx, pkg);
@@ -147,16 +221,13 @@ public final class GameAutoInjectDispatcher {
                 } catch (Throwable ignored) {}
 
                 if (pubgmTargetFps == 165) {
-                    // Dedicated 165fps SuperSmooth + HDR path
                     PubgConfigPatcher.patchUltraExtreme165(pkg);
                     PubgConfigPatcher.patchSuperSmooth165(pkg);
                     PubgConfigPatcher.apply165FpsHdrUnlock(pkg);
                 } else {
-                    // Default: 185fps Ultra Extreme
                     PubgConfigPatcher.patchUltraExtreme185(pkg);
                 }
                 PubgConfigPatcher.patch(pkg, pubgmTargetFps);
-
                 PubgConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
                 PubgConfigPatcher.applyPubgmGodModeFullOverdrive(pkg);
                 PubgConfigPatcher.applyPubgmMasterSuite(pkg);
@@ -270,7 +341,10 @@ public final class GameAutoInjectDispatcher {
             }
 
             // Universal Native Combat & Security Lock
-            NativeConfigInjector.injectAllConfigsForPackage(pkg, 185);
+            // MLBB skipped here — runs deferred in the 5-second background block above
+            if (!pkg.contains("mobile.legends") && !pkg.contains("mobilelegends")) {
+                NativeConfigInjector.injectAllConfigsForPackage(pkg, 185);
+            }
             GameSecurityBypassEngine.postInjectionBypassAndLock(pkg);
 
             // ── 2026: Deferred FPS re-apply at T+3s (prevents OEM reverting mid-launch) ──
