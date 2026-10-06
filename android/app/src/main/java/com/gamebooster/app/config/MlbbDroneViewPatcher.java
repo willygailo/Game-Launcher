@@ -422,10 +422,9 @@ public final class MlbbDroneViewPatcher {
             sb.append("    chmod 666 \"$u\"/* 2>/dev/null\n");
             sb.append("  done\n");
 
-            // 1.2 V3 Fix Directory Locks & ResCheck Bypass Folders
-            sb.append("  mkdir -p \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
-            sb.append("  touch \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix/.keep\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp/.keep\" 2>/dev/null\n");
-            sb.append("  chmod -R 777 \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
+            // 1.2 Clean up any legacy directory locks that stall Unity loading
+            sb.append("  rm -rf \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
+            sb.append("  chmod 666 \"$root/files/dragon2017/assets/Document/android/Document.unity3d\" 2>/dev/null\n");
 
             // 2. Active mini_patch slots
             sb.append("  mp=\"$root/files/mini_patch\"\n");
@@ -698,16 +697,14 @@ public final class MlbbDroneViewPatcher {
                 }
             }
 
-            // ── Step 2: Directory lock folders (res_check_fix) — must survive map update
+            // ── Step 2: Clean up legacy directory lock folders (res_check_fix) that stall Unity loading at 80%
             String fixDir  = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix";
             String fixTemp = rootDir + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp";
-            String lockCmd = "mkdir -p \"" + fixDir + "\" \"" + fixTemp + "\" 2>/dev/null; " +
-                             "touch \"" + fixDir + "/.keep\" \"" + fixTemp + "/.keep\" 2>/dev/null; " +
-                             "chmod -R 777 \"" + fixDir + "\" \"" + fixTemp + "\" 2>/dev/null";
+            String cleanCmd = "rm -rf \"" + fixDir + "\" \"" + fixTemp + "\" 2>/dev/null";
             if (ShizukuExecutor.hasShizukuPermission()) {
-                ShizukuExecutor.executeShizukuCommand(lockCmd);
+                ShizukuExecutor.executeShizukuCommand(cleanCmd);
             } else {
-                CommandExecutor.executeSystemCommand(lockCmd);
+                CommandExecutor.executeSystemCommand(cleanCmd);
             }
         }
 
@@ -1117,39 +1114,27 @@ public final class MlbbDroneViewPatcher {
                     }
                 }
 
-                if (needDeploy) {
-                    // NEW MAP UPDATE: If device already has a valid-size Document.unity3d
-                    // (meaning game was updated), only patch in-place to preserve new map data.
-                    boolean alreadyCurrent = isDocumentUnity3dCurrentForNewMap(rootDir);
-                    if (alreadyCurrent && !force) {
-                        Log.i(TAG, "🗺️ [V3 Fix] Device Document.unity3d is new-map current — using in-place camera sync instead of full redeploy");
-                        boolean inPlaceOk = syncNewMapCameraInPlace(docTargetPath, tier);
-                        if (inPlaceOk) anySuccess = true;
-                    } else {
-                        boolean ok = copyLargeAssetToDevice(context, ASSET_V3_FIX_DIR + "/Document.unity3d", docTargetPath);
-                        if (ok) {
-                            Log.i(TAG, "📦 [V3 Fix] Deployed fresh Document.unity3d (35.5MB) to: " + docTargetPath);
-                            anySuccess = true;
-                        }
-                    }
-                }
-
-                // 2. Directory Locks for ResCheck bypass
-                String lockCmd = "mkdir -p \"" + fixDir + "\" \"" + fixTempDir + "\" 2>/dev/null; " +
-                                 "touch \"" + fixDir + "/.keep\" \"" + fixTempDir + "/.keep\" 2>/dev/null; " +
-                                 "chmod -R 777 \"" + fixDir + "\" \"" + fixTempDir + "\" 2>/dev/null";
+                // Modern MLBB 2.2.16+ uses BattleSystemConfig.bytes & DroneViewConfig.json for dynamic camera.
+                // Overwriting Document.unity3d with outdated assets or running sed on the binary bundle
+                // corrupts UnityFS LZ4 archive metadata and causes an 85% loading screen deadlock.
+                // Purge any corrupted external Document.unity3d overrides so MLBB loads its verified base assets.
+                String purgeLegacyBundle = "rm -f \"" + docTargetPath + "\" \"" + docTargetPath + ".bak\" \"" + docTargetPath + ".tmp\" 2>/dev/null";
                 if (ShizukuExecutor.hasShizukuPermission()) {
-                    ShizukuExecutor.executeShizukuCommand(lockCmd);
+                    ShizukuExecutor.executeShizukuCommand(purgeLegacyBundle);
                 } else {
-                    CommandExecutor.executeSystemCommand(lockCmd);
+                    CommandExecutor.executeSystemCommand(purgeLegacyBundle);
                 }
 
-                // 3. Patch in-place camera coordinates & ResCheck XML
-                boolean patched = patchDocumentUnity3d(context, docTargetPath, rootDir, tier);
-                if (patched) {
-                    anySuccess = true;
-                    Log.i(TAG, "🎯 [V3 Fix] Patched camera height [" + getTierLabel(tier) + "] on: " + docTargetPath);
+                // 2. Clean up legacy directory lock folders that stall Unity loading at 80%
+                String cleanCmd = "rm -rf \"" + fixDir + "\" \"" + fixTempDir + "\" 2>/dev/null";
+                if (ShizukuExecutor.hasShizukuPermission()) {
+                    ShizukuExecutor.executeShizukuCommand(cleanCmd);
+                } else {
+                    CommandExecutor.executeSystemCommand(cleanCmd);
                 }
+
+                anySuccess = true;
+                Log.i(TAG, "🛡️ [V3 Fix] Verified clean bundle state and purged legacy loading locks for " + pkg);
             }
         } catch (Throwable t) {
             Log.e(TAG, "Error deploying V3 Fix Config for " + pkg, t);

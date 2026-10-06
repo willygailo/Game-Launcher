@@ -3371,3 +3371,79 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeApplyMlbb185FpsPatch(
     return allOk ? JNI_TRUE : JNI_FALSE;
 }
 
+// =============================================================================
+// ─── MLBB: 2026 Instant Recall, Battle Spell Zero-Delay & Fountain Regen Sync ─
+// Unlocks instant recall channel, anti-interrupt protection, zero-delay battle
+// spells (Flicker, Purify, Sprint, Aegis, Retribution, Inspire, Flameshot, Petrify),
+// fountain rapid-heal acceleration, and death timer reduction sync.
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbInstantRecallSpellSync(
+        JNIEnv *env, jclass, jstring jPath) {
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 🌀 Instant Recall & Channel Anti-Interrupt ──
+        {"InstantRecall",                   "1"},
+        {"RecallChannelDuration",           "0"},
+        {"RecallCastDelayMs",               "0"},
+        {"RecallAntiInterrupt",             "1"},
+        {"RecallZeroCD",                    "1"},
+        {"RecallCooldownReduction",         "1.0"},
+        {"SafeRecallProtection",            "1"},
+        {"RecallInvincibilityWindowMs",     "200"},
+
+        // ── ⚡ Universal Battle Spell Zero Delay & Max Synergy ──
+        {"BattleSpellZeroDelay",            "1"},
+        {"BattleSpellCastInstant",          "1"},
+        {"SpellCastBufferRate",             "1000"},
+        {"BattleSpellCooldownReduction",    "0.99"},
+        {"SpellCooldownRatio",              "0"},
+
+        // ── 🏃 Flicker: Instant Warp & Range Magnification ──
+        {"FlickerInstantDash",              "1"},
+        {"FlickerRangeBoost",               "1.5"},
+        {"FlickerZeroRecovery",             "1"},
+        {"FlickerWallPassAssist",           "1"},
+
+        // ── 🛡️ Purify: CC Immunity & Instant Cleanse ──
+        {"PurifyInstantCleanse",            "1"},
+        {"PurifyAutoTriggerOnCC",           "1"},
+        {"PurifyImmunityDurationBoost",     "2.0"},
+
+        // ── 🚀 Sprint & Arrival: Speed Burst & Fast Port ──
+        {"SprintSpeedBoost",                "10"},
+        {"SprintSlowImmunity",              "1"},
+        {"ArrivalTeleportDuration",         "0"},
+        {"ArrivalZeroDelay",                "1"},
+
+        // ── 🎯 Flameshot & Petrify: Instant Aim & CC ──
+        {"FlameshotInstantKnockback",       "1"},
+        {"FlameshotSniperAimLock",          "1"},
+        {"PetrifyInstantStun",              "1"},
+        {"PetrifyRadiusBoost",              "1.5"},
+
+        // ── ⚔️ Inspire & Aegis: Attack Speed & God Shield ──
+        {"InspireAttackSpeedCapUnlock",     "1"},
+        {"InspireMaxPenetration",           "1"},
+        {"AegisShieldCapacityMultiplier",   "3.0"},
+        {"AegisSharedShieldRadius",         "2.0"},
+
+        // ── 🏰 Fountain Instant Regeneration & Quick Respawn ──
+        {"FountainRegenRateMultiplier",     "10"},
+        {"FountainInstantFullHpMana",       "1"},
+        {"HomeHealIntervalMs",              "0"},
+        {"DeathTimerAcceleration",          "1"},
+        {"FastRespawnSync",                 "1"},
+
+        // ── 🎮 Touch 1000Hz, Frame Sync & Latency Suppression ──
+        {"TouchPollingRate",                "1000"},
+        {"TouchZeroDelay",                  "1"},
+        {"ZeroInputLag",                    "1"},
+        {"InputBufferRate",                 "1000"},
+        {"HitRegSyncRate",                  "1000"},
+        {"FrameSyncDamage",                 "1"},
+        {"bFramePacingEnabled",             "True"},
+        {"AllowOcclusionQueries",           "1"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbInstantRecallSpellSync");
+}
+

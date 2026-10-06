@@ -158,6 +158,7 @@ public final class GameAutoInjectDispatcher {
                         Thread.currentThread().interrupt();
                     }
                     try {
+                        MlbbConfigPatcher.cleanLegacyLoadingLocks(fPkg);
                         if (needsAssetDeploy) {
                             MlbbConfigPatcher.deployMlbbAssets(fCtx, fPkg);
                         }
@@ -207,6 +208,7 @@ public final class GameAutoInjectDispatcher {
                         }
                         // Native inject deferred together with rest of MLBB I/O
                         NativeConfigInjector.injectAllConfigsForPackage(fPkg, 185);
+                        MlbbConfigPatcher.cleanLegacyLoadingLocks(fPkg);
                         Log.i(TAG, "✅ [MLBB Deferred Inject] All overrides applied for " + fPkg);
                     } catch (Throwable t) {
                         Log.e(TAG, "Error in MLBB deferred injection for " + fPkg, t);

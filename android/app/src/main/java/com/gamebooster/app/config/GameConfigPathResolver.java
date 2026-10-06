@@ -215,6 +215,16 @@ public class GameConfigPathResolver {
             return true;
         }
 
+        // 4.1 MLBB custom engine strict protection:
+        // Unity 2020+ IL2CPP fork in MLBB stalls/crashes at 80% loading screen if boot.config
+        // or res_check_fix lock directories exist in files/.
+        if (lower.contains("mobile.legends") || lower.contains("mobilelegends")) {
+            if (lower.endsWith("boot.config") || lower.contains("res_check_fix")
+                    || lower.contains("loadres_checking_progress")) {
+                return false;
+            }
+        }
+
         // 5. Accepted config file extensions
         return lower.endsWith(".ini") || lower.endsWith(".json")
                 || lower.endsWith(".cfg") || lower.endsWith(".sav") || lower.endsWith(".dat")
@@ -269,6 +279,17 @@ public class GameConfigPathResolver {
 
         List<String> knownRelativePaths = getKnownRelativePathsForPackage(pkg);
         List<String> resolved = resolveConfigPaths(packageName, knownRelativePaths);
+        if (pkg.contains("mobile.legends") || pkg.contains("mobilelegends")) {
+            List<String> mlbbFiltered = new ArrayList<>(resolved.size());
+            for (String p : resolved) {
+                String pLower = p.toLowerCase();
+                if (!pLower.endsWith("boot.config") && !pLower.contains("res_check_fix")
+                        && !pLower.contains("loadres_checking_progress")) {
+                    mlbbFiltered.add(p);
+                }
+            }
+            resolved = mlbbFiltered;
+        }
         CACHE_TIMESTAMPS.put(pkg, System.currentTimeMillis());
         if (Looper.myLooper() == Looper.getMainLooper()) {
             final List<String> pathsToEnsure = new ArrayList<>(resolved);

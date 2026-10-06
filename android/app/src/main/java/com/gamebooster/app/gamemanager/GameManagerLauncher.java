@@ -169,6 +169,7 @@ public final class GameManagerLauncher {
                         } catch (Throwable t) {
                             Log.w(TAG, "Post-launch Drone View setup: " + t.getMessage());
                         }
+                        com.gamebooster.app.config.MlbbConfigPatcher.cleanLegacyLoadingLocks(pkg);
                     }
 
                     // STAGE 0: Auto Shell Apply — fires GPU turbo, CPU governor, thermal bypass,

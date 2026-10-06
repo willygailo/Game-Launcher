@@ -863,33 +863,18 @@ public class MlbbConfigPatcher {
             }
         }
 
-        // 2. Target boot.config files
+        // 2. Clean up any boot.config files (Unity 2020+ IL2CPP hangs/stalls if boot.config is present in files/)
         String[] bootPaths = {
             "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/boot.config",
             "/sdcard/Android/data/" + packageName + "/files/dragon2017/assets/boot.config",
             "/storage/emulated/0/Android/data/" + packageName + "/files/boot.config",
             "/sdcard/Android/data/" + packageName + "/files/boot.config"
         };
-        String bootContent =
-            "target-frame-rate=" + fps + "\n" +
-            "application-target-frame-rate=" + fps + "\n" +
-            "wait-for-native-debugger=0\n" +
-            "vr-device-cardboard-enable=0\n" +
-            "gfx-enable-native-gles=1\n" +
-            "vulkan-enable-validation-layers=0\n" +
-            "force-driver-memory-reclaim=1\n" +
-            "single-threaded-rendering=0\n";
-
         for (String bp : bootPaths) {
             try {
-                ShizukuFileManager.ensureParentDirectory(bp);
-                ShizukuFileManager.writeFile(bp, bootContent, "666");
-                byte[] bytes = bootContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                String b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
-                ShizukuExecutor.executeShizukuCommand("echo '" + b64 + "' | base64 -d > " + bp + " 2>/dev/null; chmod 666 " + bp + " 2>/dev/null");
-            } catch (Throwable t) {
-                Log.w(TAG, "Error writing boot.config at " + bp + ": " + t.getMessage());
-            }
+                ShizukuFileManager.deleteFile(bp);
+                ShizukuExecutor.executeShizukuCommand("rm -f \"" + bp + "\" 2>/dev/null");
+            } catch (Throwable ignored) {}
         }
 
         // 3. Target Document & Document/android JSON configs
@@ -2068,8 +2053,17 @@ public class MlbbConfigPatcher {
         // 10. 100% Working Drone View (PlayerPrefs XML + Document JSON + Ultra-Wide)
         applyMlbbUltraDroneViewMaxFov(packageName);
 
-        // 11. V3 FIX CONFIG (Document.unity3d + res_check_fix directory locks)
-        applyMlbbV3FixConfig(packageName);
+        // 11. Clean up legacy boot.config & res_check_fix directory locks that stall Unity loading
+        cleanLegacyLoadingLocks(packageName);
+
+        // 12. Universal Zero-Delay Combo & All-Hero Animation Cancel (2026)
+        applyMlbbUniversalZeroDelayCombo(packageName);
+
+        // 13. Season 42+ New Map Update Terrain & Drone Coordinate Sync
+        applyMlbbNewMapUpdateConfig(packageName);
+
+        // 14. Instant Recall & Battle Spell Zero-Delay Suite (2026)
+        applyMlbbInstantRecallSpellSync(packageName);
 
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, getConfigPaths(packageName));
         Log.i(TAG, "🔥 [MLBB 100% OVERDRIVE COMPLETE] All user requested features applied for " + packageName);
@@ -2084,6 +2078,86 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectMlbbUniversalZeroDelayCombo(path);
         }
         Log.i(TAG, "⚡ MLBB Universal Zero-Delay Combo applied across all config nodes for " + packageName);
+    }
+
+    /**
+     * MLBB Instant Recall & Battle Spell Zero-Delay Suite (2026).
+     */
+    public static void applyMlbbInstantRecallSpellSync(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbInstantRecallSpellSync(path);
+        }
+        Log.i(TAG, "⚡ MLBB Instant Recall & Battle Spell Zero-Delay applied across all config nodes for " + packageName);
+    }
+
+    /**
+     * Cleans up legacy boot.config files and .res_check_fix directories that cause
+     * Unity 2020+ IL2CPP to stall at 80% on the loading screen.
+     */
+    public static void cleanLegacyLoadingLocks(String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) return;
+        String pkg = packageName.trim();
+        String[] lockPaths = {
+            "/storage/emulated/0/Android/data/" + pkg + "/files/boot.config",
+            "/sdcard/Android/data/" + pkg + "/files/boot.config",
+            "/data/data/" + pkg + "/files/boot.config",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/boot.config",
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/boot.config",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix",
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp",
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp",
+            "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/loadres_checking_progress",
+            "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/loadres_checking_progress"
+        };
+        for (String lp : lockPaths) {
+            try {
+                java.io.File f = new java.io.File(lp);
+                if (f.exists()) {
+                    if (f.isDirectory()) {
+                        java.io.File[] children = f.listFiles();
+                        if (children != null) {
+                            for (java.io.File c : children) c.delete();
+                        }
+                    }
+                    f.delete();
+                }
+            } catch (Throwable ignored) {}
+            try {
+                ShizukuFileManager.deleteFile(lp);
+            } catch (Throwable ignored) {}
+            try {
+                ShizukuExecutor.executeShizukuCommand("rm -rf \"" + lp + "\" 2>/dev/null");
+            } catch (Throwable ignored) {}
+            try {
+                com.gamebooster.app.engine.CommandExecutor.executeSystemCommand("rm -rf \"" + lp + "\" 2>/dev/null");
+            } catch (Throwable ignored) {}
+        }
+
+        // Wildcard fallback sweep
+        try {
+            String sweep = "rm -rf /sdcard/Android/data/" + pkg + "/files/*boot.config* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/*boot.config* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/*boot.config* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/*boot.config* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*res_check_fix* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*res_check_fix* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/*loadres* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/*loadres* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/res_skip_patch.xml "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/res_skip_patch.xml "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* 2>/dev/null";
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(sweep);
+            } else {
+                com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(sweep);
+            }
+        } catch (Throwable ignored) {}
+        Log.i(TAG, "🧹 MLBB boot.config & loading screen lock files purged for " + pkg);
     }
 
     /**

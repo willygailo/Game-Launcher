@@ -1901,6 +1901,32 @@ JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_
  * and hero-specific fast combo chains (Ling, Fanny, Gusion, Chou, Lancelot, Hayabusa, Nolan, Suyou, etc.)
  * Signature: (Ljava/lang/String;)Z
  */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUniversalZeroDelayCombo
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeInjectMlbbNewMapUpdate
+ * Injects Season 42+ New Map update camera, terrain sync, bush culling bypass, and minimap radar keys.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbNewMapUpdate
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * nativeApplyMlbb185FpsPatch
+ * Direct /proc/self/mem ARM64 patch on libunity.so (vSyncCount NOP + targetFrameRate clamp override).
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeApplyMlbb185FpsPatch
+  (JNIEnv *, jclass);
+
+/*
+ * nativeInjectMlbbInstantRecallSpellSync
+ * Injects 2026 Instant Recall, Zero-Delay Battle Spells & Rapid Fountain Regeneration Suite.
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbInstantRecallSpellSync
+  (JNIEnv *, jclass, jstring);
 /*
  * Modular C++ Combat System Architecture (2026 Engine Spec)
  * Diminishing returns mitigation, 3D angular aim assist cone, monotonic cooldowns

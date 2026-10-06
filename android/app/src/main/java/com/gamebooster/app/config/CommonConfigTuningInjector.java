@@ -852,9 +852,16 @@ public final class CommonConfigTuningInjector {
      */
     public static void applyUnityBootConfigOptimization(String packageName, int targetFps) {
         if (packageName == null || packageName.trim().isEmpty()) return;
+        String pLower = packageName.toLowerCase();
+        if (pLower.contains("mobile.legends") || pLower.contains("mobilelegends")) {
+            MlbbConfigPatcher.cleanLegacyLoadingLocks(packageName);
+            return;
+        }
         List<String> paths = getPaths(packageName);
         for (String path : paths) {
-            NativeConfigInjector.injectUnityBootConfig(path, targetFps);
+            if (path != null && path.endsWith("boot.config")) {
+                NativeConfigInjector.injectUnityBootConfig(path, targetFps);
+            }
         }
         Log.i(TAG, "Unity boot.config optimization injected @ " + targetFps + "fps for " + packageName);
     }

@@ -20,6 +20,8 @@ public class GameConfigPathResolverTest {
         assertTrue(GameConfigPathResolver.isAcceptableConfigPath(
                 "/storage/emulated/0/Android/data/com.activision.callofduty.shooter/files/configs/game_settings.json"));
         assertTrue(GameConfigPathResolver.isAcceptableConfigPath(
+                "/sdcard/Android/data/com.activision.callofduty.shooter/files/boot.config"));
+        assertFalse(GameConfigPathResolver.isAcceptableConfigPath(
                 "/sdcard/Android/data/com.mobile.legends/files/boot.config"));
         assertTrue(GameConfigPathResolver.isAcceptableConfigPath(
                 "/sdcard/Android/data/com.riotgames.league.wildrift/files/SaveData/Local/Settings.cfg"));

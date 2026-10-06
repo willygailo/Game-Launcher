@@ -588,7 +588,7 @@ public class HardwareMaskEngine {
                 if (p.contains("playerprefs") || p.endsWith(".xml")) {
                     NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);
                 } else if (p.endsWith("boot.config")) {
-                    NativeConfigInjector.injectUnityBootConfig(p, targetFps);
+                    MlbbConfigPatcher.cleanLegacyLoadingLocks(packageName);
                 } else if (p.endsWith(".json")) {
                     if (!p.contains("DroneView")) {
                         NativeConfigInjector.injectHardwareMaskProfile(p, profile, targetFps);

@@ -169,6 +169,8 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbUniversalZeroDelayCombo(String path);
     // 2026 New Map Update Sync (Season 42+ / Sep 2026 Map Refresh)
     public static native boolean nativeInjectMlbbNewMapUpdate(String path);
+    public static native boolean nativeApplyMlbb185FpsPatch();
+    public static native boolean nativeInjectMlbbInstantRecallSpellSync(String path);
 
     /**
      * 2026 New Patch Method: Injects per-hero script modifiers (damage, cooldown, range, speed, etc.)
@@ -1638,6 +1640,7 @@ public class NativeConfigInjector {
         boolean isMlbb = packageName.toLowerCase().contains("mobile.legends");
         for (String path : paths) {
             if (path.endsWith("boot.config")) {
+                if (isMlbb) continue;
                 if (injectUnityBootConfig(path, targetFps)) count++;
             } else if (path.endsWith(".ini")) {
                 if (injectUnrealEngineIni(path, targetFps)) count++;
@@ -3618,7 +3621,8 @@ public class NativeConfigInjector {
         boolean ok8 = injectMlbbAutoMapGlitch3s(path);
         boolean ok9 = injectMlbbFastSovereignOverdrive(path);
         boolean ok10 = injectMlbbUniversalZeroDelayCombo(path);
-        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10;
+        boolean ok11 = injectMlbbInstantRecallSpellSync(path);
+        return ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8 || ok9 || ok10 || ok11;
     }
 
     /**
@@ -3642,6 +3646,38 @@ public class NativeConfigInjector {
             "TouchZeroDelay=1", "ZeroInputLag=1", "bFramePacingEnabled=True", "HitRegSyncRate=1000"
         };
         return ConfigFileHelper.patchKeys(path, keys, "[MlbbUniversalZeroDelayCombo2026]");
+    }
+
+    /**
+     * MLBB Instant Recall & Battle Spell Zero-Delay Suite (2026).
+     * Instant recall, anti-interrupt, zero-delay Flicker/Purify/Sprint, fountain rapid regen.
+     */
+    public static boolean injectMlbbInstantRecallSpellSync(String path) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        if (sNativeLibraryLoaded) {
+            try {
+                if (nativeInjectMlbbInstantRecallSpellSync(path)) return true;
+            } catch (Throwable ignored) {}
+        }
+        String[] keys = {
+            "InstantRecall=1", "RecallChannelDuration=0", "RecallCastDelayMs=0",
+            "RecallAntiInterrupt=1", "RecallZeroCD=1", "RecallCooldownReduction=1.0",
+            "SafeRecallProtection=1", "RecallInvincibilityWindowMs=200", "BattleSpellZeroDelay=1",
+            "BattleSpellCastInstant=1", "SpellCastBufferRate=1000", "BattleSpellCooldownReduction=0.99",
+            "SpellCooldownRatio=0", "FlickerInstantDash=1", "FlickerRangeBoost=1.5",
+            "FlickerZeroRecovery=1", "FlickerWallPassAssist=1", "PurifyInstantCleanse=1",
+            "PurifyAutoTriggerOnCC=1", "PurifyImmunityDurationBoost=2.0", "SprintSpeedBoost=10",
+            "SprintSlowImmunity=1", "ArrivalTeleportDuration=0", "ArrivalZeroDelay=1",
+            "FlameshotInstantKnockback=1", "FlameshotSniperAimLock=1", "PetrifyInstantStun=1",
+            "PetrifyRadiusBoost=1.5", "InspireAttackSpeedCapUnlock=1", "InspireMaxPenetration=1",
+            "AegisShieldCapacityMultiplier=3.0", "AegisSharedShieldRadius=2.0",
+            "FountainRegenRateMultiplier=10", "FountainInstantFullHpMana=1", "HomeHealIntervalMs=0",
+            "DeathTimerAcceleration=1", "FastRespawnSync=1", "TouchPollingRate=1000",
+            "TouchZeroDelay=1", "ZeroInputLag=1", "InputBufferRate=1000", "HitRegSyncRate=1000",
+            "FrameSyncDamage=1", "bFramePacingEnabled=True", "AllowOcclusionQueries=1"
+        };
+        return ConfigFileHelper.patchKeys(path, keys, "[MlbbInstantRecallSpellSync2026]");
     }
 
 
