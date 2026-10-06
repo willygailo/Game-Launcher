@@ -175,17 +175,18 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         if (btnEmptyAddGame != null) btnEmptyAddGame.setOnClickListener(openAddGameAction);
         if (btnEmptyScanApks != null) btnEmptyScanApks.setOnClickListener(openApkManagerAction);
 
+        View.OnClickListener restoreAction = v -> {
+            Context ctx = getContext();
+            if (ctx == null) return;
+            GameLauncherHelper.resetAllExcludedPackages(ctx);
+            GameLauncherHelper.clearAllCustomPackages(ctx);
+            Toast.makeText(ctx, "✅ Game list restored to defaults!", Toast.LENGTH_SHORT).show();
+            loadAndScanGames(true);
+        };
         Button btnRestoreDefaults = view.findViewById(R.id.btn_restore_default_games);
-        if (btnRestoreDefaults != null) {
-            btnRestoreDefaults.setOnClickListener(v -> {
-                Context ctx = getContext();
-                if (ctx == null) return;
-                GameLauncherHelper.resetAllExcludedPackages(ctx);
-                GameLauncherHelper.clearAllCustomPackages(ctx);
-                Toast.makeText(ctx, "✅ Game list restored to defaults!", Toast.LENGTH_SHORT).show();
-                loadAndScanGames(true);
-            });
-        }
+        if (btnRestoreDefaults != null) btnRestoreDefaults.setOnClickListener(restoreAction);
+        Button btnEmptyRestoreDefaults = view.findViewById(R.id.btn_empty_restore_defaults);
+        if (btnEmptyRestoreDefaults != null) btnEmptyRestoreDefaults.setOnClickListener(restoreAction);
 
         if (tvGamesHeader != null) {
             tvGamesHeader.setOnClickListener(v -> {
@@ -213,7 +214,9 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 public void onTune(GameAppInfo game) {
                     android.app.Activity act = getActivity();
                     if (act != null && !act.isFinishing()) {
-                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game);
+                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game, () -> {
+                            if (adapter != null) adapter.notifyDataSetChanged();
+                        });
                     }
                 }
 
@@ -496,7 +499,9 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                 case 2: // Tune
                     android.app.Activity act = getActivity();
                     if (act != null && !act.isFinishing()) {
-                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game);
+                        com.gamebooster.app.ui.dialogs.PreLaunchGameDialog.show(act, game, () -> {
+                            if (adapter != null) adapter.notifyDataSetChanged();
+                        });
                     }
                     return true;
 
@@ -505,6 +510,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
                     if (actStudio != null && !actStudio.isFinishing()) {
                         com.gamebooster.app.ui.dialogs.GameCfgDialog.show(actStudio, game, (pkgName, targetFps, patchedCount) -> {
                             Toast.makeText(ctx, "⚡ Applied " + targetFps + "FPS mods (" + patchedCount + " configs)", Toast.LENGTH_SHORT).show();
+                            if (adapter != null) adapter.notifyDataSetChanged();
                         });
                     }
                     return true;

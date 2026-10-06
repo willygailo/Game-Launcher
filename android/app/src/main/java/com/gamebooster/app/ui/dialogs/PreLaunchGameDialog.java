@@ -41,6 +41,10 @@ public final class PreLaunchGameDialog {
     }
 
     public static void show(Context context, GameAppInfo game) {
+        show(context, game, null);
+    }
+
+    public static void show(Context context, GameAppInfo game, Runnable onDismissListener) {
         if (context == null || game == null) return;
         Activity activity = null;
         if (context instanceof Activity) {
@@ -316,6 +320,9 @@ public final class PreLaunchGameDialog {
         }
 
         dialog.setCanceledOnTouchOutside(true);
+        if (onDismissListener != null) {
+            dialog.setOnDismissListener(d -> onDismissListener.run());
+        }
         activeDialog = dialog;
         dialog.show();
     }
