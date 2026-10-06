@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0A0F"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚡ GAME MOD ENGINE"
+            android:textColor="#00FFD4"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tv_mod_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="STATUS: IDLE"
+            android:textColor="#888888"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- MLBB PANEL                                                         -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_cyber_bg"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp">
+
+            <!-- Game Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🗡 MOBILE LEGENDS: BB"
+                    android:textColor="#FFD700"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="monospace"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v2.2.16"
+                    android:textColor="#555555"
+                    android:textSize="10sp"
+                    android:fontFamily="monospace"/>
+            </LinearLayout>
+
+            <!-- Damage Multiplier -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_damage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💥 Damage Multiplier"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_dmg_value"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="3x"
+                    android:textColor="#00FFD4"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_damage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="2"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#00FFD4"
+                android:thumbTint="#00FFD4"/>
+
+            <!-- Attack Speed -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_aspd"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="⚡ Attack Speed"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_aspd_value"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="2x"
+                    android:textColor="#00FFD4"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_aspd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="1"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FF6B35"
+                android:thumbTint="#FF6B35"/>
+
+            <!-- No Cooldown -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_mlbb_nocool"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔄 No Skill Cooldown"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Map Hack -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_mlbb_map"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🗺 Map Vision (Fog Remove)"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- FPS Unlock -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_fps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🎯 FPS Unlock"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_fps_value"
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:text="165fps"
+                    android:textColor="#A855F7"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_fps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="4"
+                android:progress="4"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#A855F7"
+                android:thumbTint="#A855F7"/>
+
+            <!-- Anti-Ban -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_mlbb_antiban"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🛡 Anti-Ban Layer (SSL Unpin)"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:checked="true"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_mlbb_pull"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="PULL APK"
+                    android:textSize="11sp"
+                    android:backgroundTint="#1A2A1A"
+                    android:textColor="#44FF44"
+                    android:layout_marginEnd="4dp"/>
+
+                <Button
+                    android:id="@+id/btn_mlbb_inject"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="INJECT NOW"
+                    android:textSize="11sp"
+                    android:backgroundTint="#1A1A2A"
+                    android:textColor="#00FFD4"
+                    android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- CODM PANEL                                                         -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_cyber_bg"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp">
+
+            <!-- Game Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🎯 CALL OF DUTY: MOBILE"
+                    android:textColor="#FF6B35"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="monospace"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v1.6.57"
+                    android:textColor="#555555"
+                    android:textSize="10sp"
+                    android:fontFamily="monospace"/>
+            </LinearLayout>
+
+            <!-- Aimbot -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_codm_aimbot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🎯 Aimbot / Aim Assist"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Damage -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_damage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💥 Damage Multiplier"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_dmg_value"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="2x"
+                    android:textColor="#FF6B35"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_damage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="1"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FF6B35"
+                android:thumbTint="#FF6B35"/>
+
+            <!-- Speed -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_speed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🏃 Speed Hack"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_speed_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="1.5x"
+                    android:textColor="#FFD700"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_speed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="1"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FFD700"
+                android:thumbTint="#FFD700"/>
+
+            <!-- No Recoil -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_codm_recoil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔫 No Recoil"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- FPS Unlock -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_fps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🎯 FPS Unlock"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_fps_value"
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:text="165fps"
+                    android:textColor="#A855F7"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_fps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="4"
+                android:progress="4"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#A855F7"
+                android:thumbTint="#A855F7"/>
+
+            <!-- Anti-Ban -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_codm_antiban"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🛡 Anti-Ban Layer (SSL Unpin)"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:checked="true"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_codm_pull"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="PULL APK"
+                    android:textSize="11sp"
+                    android:backgroundTint="#1A2A1A"
+                    android:textColor="#44FF44"
+                    android:layout_marginEnd="4dp"/>
+
+                <Button
+                    android:id="@+id/btn_codm_inject"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:text="INJECT NOW"
+                    android:textSize="11sp"
+                    android:backgroundTint="#2A1A1A"
+                    android:textColor="#FF6B35"
+                    android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ── Frida Server Control ─────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_cyber_bg"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔬 FRIDA SERVER"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_frida_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="● OFFLINE"
+                    android:textColor="#FF4444"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace"/>
+
+                <Button
+                    android:id="@+id/btn_frida_toggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="START"
+                    android:textSize="11sp"
+                    android:backgroundTint="#1A2A1A"
+                    android:textColor="#44FF44"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btn_mod_save"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="💾 SAVE MOD PROFILE"
+            android:textColor="#000000"
+            android:backgroundTint="#00FFD4"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>

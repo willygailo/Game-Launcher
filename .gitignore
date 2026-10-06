@@ -11,6 +11,8 @@
 *.bundle
 *.apk.idsig
 
+*.so
+
 # Runtime Assets & Precompiled JNI Exceptions (MUST BE PRESERVED)
 !**/shizuku/*.dex
 !**/assets/shizuku/*.dex
@@ -21,6 +23,17 @@
 !**/assets/mlbb_drone/**
 !**/assets/lua/**
 !**/assets/shell/**
+!**/assets/frida/**
+!**/assets/codm/**
+!**/assets/mlbb_mod/**
+
+# ====================================================================
+# Reverse Engineering Workspace, APK Dumps & Extracted Binaries
+# ====================================================================
+android/all/
+**/android/all/
+frida-server*
+**/frida-server*
 
 # Gradle Build Cache, Daemon & Outputs
 .gradle/

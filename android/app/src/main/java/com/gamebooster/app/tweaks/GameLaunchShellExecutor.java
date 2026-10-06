@@ -8,6 +8,8 @@ import com.gamebooster.app.config.GameProfileAutoConfigurator;
 import com.gamebooster.app.config.GameProfilePreferences;
 import com.gamebooster.app.core.AppExecutors;
 import com.gamebooster.app.engine.CommandExecutor;
+import com.gamebooster.app.mods.GameModEngine;
+import com.gamebooster.app.mods.GameModProfile;
 import com.gamebooster.app.shizuku.ShizukuExecutor;
 
 import java.io.BufferedReader;
@@ -77,6 +79,9 @@ public final class GameLaunchShellExecutor {
 
                 // PHASE 4 — Drop VM caches for max RAM headroom
                 exec("echo 3 > /proc/sys/vm/drop_caches 2>/dev/null");
+
+                // PHASE 5 — Game Mod Injection (Frida hooks for MLBB/CODM)
+                applyGameModInjection(appCtx, pkg);
 
                 long ms = System.currentTimeMillis() - start;
                 Log.i(TAG, "✅ [GameLaunchShell] Pipeline complete for " + pkg + " in " + ms + "ms");
@@ -354,5 +359,47 @@ public final class GameLaunchShellExecutor {
             Log.w(TAG, "Asset read error for " + assetPath + ": " + t.getMessage());
             return null;
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PHASE 5 — GAME MOD INJECTION (Frida)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Auto-injects Frida hook scripts for MLBB and CODM if mods are enabled.
+     * Silently skips for all other games.
+     */
+    private static void applyGameModInjection(Context ctx, String pkg) {
+        if (!GameModEngine.PKG_MLBB.equals(pkg) && !GameModEngine.PKG_CODM.equals(pkg)) return;
+
+        GameModProfile profile = GameModProfile.load(ctx);
+
+        boolean mlbbModsEnabled = GameModEngine.PKG_MLBB.equals(pkg)
+            && (profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled
+                || profile.mlbbNoCooldown  || profile.mlbbMapHack
+                || profile.mlbbFpsUnlock   || profile.mlbbAntiBan);
+
+        boolean codmModsEnabled = GameModEngine.PKG_CODM.equals(pkg)
+            && (profile.codmAimbot       || profile.codmDamageEnabled
+                || profile.codmSpeedEnabled || profile.codmNoRecoil
+                || profile.codmFpsUnlock   || profile.codmAntiBan);
+
+        if (!mlbbModsEnabled && !codmModsEnabled) {
+            Log.d(TAG, "[Phase5] No mods enabled for " + pkg + " — skipping injection");
+            return;
+        }
+
+        Log.i(TAG, "💉 [Phase5] Frida injection starting for " + pkg);
+
+        // Start frida-server (idempotent — kills existing instance first)
+        GameModEngine.startFridaServer(ctx);
+
+        // Small delay to let frida-server bind before injecting
+        try { Thread.sleep(1200); } catch (InterruptedException ignored) {}
+
+        // Apply mods (sets SystemProperties + injects script)
+        GameModEngine.applyMods(ctx, pkg, profile);
+
+        Log.i(TAG, "💉 [Phase5] Frida injection dispatched for " + pkg);
     }
 }

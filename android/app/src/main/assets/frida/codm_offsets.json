@@ -1,0 +1,16 @@
+{
+  "version": "1.6.57.0",
+  "arch": "arm64-v8a",
+  "targets": {
+    "engine": "libunity.so",
+    "anticheat": "libanort.so"
+  },
+  "offsets": {
+    "Camera_get_main": "0x00F82410",
+    "Transform_get_position": "0x00ED8920",
+    "Transform_set_position": "0x00ED8A30",
+    "WeaponController_RecoilModifier": "0x01E4A9C0",
+    "WeaponController_SpreadModifier": "0x01E4AD50",
+    "PlayerController_SpeedMultiplier": "0x01D382B0"
+  }
+}

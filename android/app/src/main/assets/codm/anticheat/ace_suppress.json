@@ -1,0 +1,23 @@
+{
+  "engine": "Tencent ACE / Anti-Cheat Expert",
+  "libraries": [
+    "libanort.so",
+    "libanogs.so",
+    "libsaf.so",
+    "libCrashSight.so",
+    "libtgpa.so"
+  ],
+  "suppression": {
+    "block_heartbeat": true,
+    "block_crash_upload": true,
+    "nullify_watchdog_timer": true,
+    "spoof_clean_memory_hash": true,
+    "sanitize_proc_maps": true
+  },
+  "blocked_endpoints": [
+    "cs.mbgame.anticheat.qq.com",
+    "report.crashsight.qq.com",
+    "tpns.qq.com",
+    "gcloud.qq.com"
+  ]
+}

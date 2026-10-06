@@ -1,0 +1,21 @@
+{
+  "version": "2.2.16.12322",
+  "arch": "arm64-v8a",
+  "target": "libil2cpp.so",
+  "methods": {
+    "HeroDamageCalc_CalculateDamage": "0x0182C4D0",
+    "HeroAttackSpeed_GetMultiplier": "0x01831E20",
+    "SkillManager_GetCooldownTime": "0x0184A100",
+    "FogOfWarManager_IsVisible": "0x019056B0",
+    "CameraManager_SetHeight": "0x019128A0",
+    "MovementComponent_GetSpeed": "0x0187B2C0",
+    "HeroDefense_GetArmor": "0x01859E40"
+  },
+  "fields": {
+    "Hero_CurrentHp": "0x48",
+    "Hero_MaxHp": "0x4C",
+    "Hero_AttackPower": "0x54",
+    "Hero_AttackSpeed": "0x5C",
+    "Hero_MovementSpeed": "0x68"
+  }
+}
