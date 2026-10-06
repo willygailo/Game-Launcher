@@ -216,22 +216,10 @@ public final class MlbbDroneViewPatcher {
                     // - realversion.xml       (server-side version validation manifest)
                 }
 
-                // Deploy Version files
-                String verDir = rootDir + "/files/dragon2017/assets/version/android";
-                ShizukuFileManager.makeDirectory(verDir);
-                if (realVerBytes != null && realVerBytes.length > 0) {
-                    writeWithFallback(context, verDir + "/realversion.xml", realVerBytes, "666");
-                }
-
-                // Deploy UI Camera bundles
-                String uiDir = rootDir + "/files/dragon2017/assets/UI/android";
-                ShizukuFileManager.makeDirectory(uiDir);
-                if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
-                    writeWithFallback(context, uiDir + "/UI_BattleCamera.unity3d", uiBattleCamBytes, "666");
-                }
-                if (atlasCamBytes != null && atlasCamBytes.length > 0) {
-                    writeWithFallback(context, uiDir + "/Atlas_BattleCamera_add.unity3d", atlasCamBytes, "666");
-                }
+                // Clean up any legacy UI/android and version/android files that cause lobby black screen
+                try {
+                    ShizukuExecutor.executeShizukuCommand("rm -rf \"" + rootDir + "/files/dragon2017/assets/UI/android\" \"" + rootDir + "/files/dragon2017/assets/version/android\" 2>/dev/null");
+                } catch (Throwable ignored) {}
             }
 
             // 3. V3 Fix Document.unity3d & Directory Locks Deployment
@@ -409,18 +397,8 @@ public final class MlbbDroneViewPatcher {
             sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
 
-            // 1.0 Version path
-            sb.append("  mkdir -p \"$root/files/dragon2017/assets/version/android\" 2>/dev/null\n");
-            sb.append("  [ -n \"$sreal\" ] && cp -f \"$sreal\" \"$root/files/dragon2017/assets/version/android/realversion.xml\" 2>/dev/null\n");
-            sb.append("  chmod 666 \"$root/files/dragon2017/assets/version/android\"/* 2>/dev/null\n");
-
-            // 1.1 UI Camera extension bundles
-            sb.append("  for u in \"$root/files/dragon2017/assets/UI/android\" \"$root/files/LoadResManager/UI/android\"; do\n");
-            sb.append("    mkdir -p \"$u\" 2>/dev/null\n");
-            sb.append("    [ -n \"$subc\" ] && cp -f \"$subc\" \"$u/UI_BattleCamera.unity3d\" 2>/dev/null\n");
-            sb.append("    [ -n \"$satl\" ] && cp -f \"$satl\" \"$u/Atlas_BattleCamera_add.unity3d\" 2>/dev/null\n");
-            sb.append("    chmod 666 \"$u\"/* 2>/dev/null\n");
-            sb.append("  done\n");
+            // 1.1 Purge dangerous UI/android and version/android bundles that cause lobby black screen
+            sb.append("  rm -rf \"$root/files/dragon2017/assets/UI/android\" \"$root/files/dragon2017/assets/version/android\" \"$root/files/LoadResManager/UI/android\" 2>/dev/null\n");
 
             // 1.2 Clean up any legacy directory locks that stall Unity loading
             sb.append("  rm -rf \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");

@@ -36,6 +36,11 @@ public final class MlbbModManager {
             try {
                 Log.i(TAG, "⚡ Initializing MLBB Mod Pipeline...");
 
+                // Purge any legacy corrupted files/AssetBundles causing black screen
+                try {
+                    MlbbConfigPatcher.cleanLegacyLoadingLocks(PKG_MLBB);
+                } catch (Throwable ignored) {}
+
                 // Layer 1: Display refresh rate & surface flinger unlock
                 if (profile.mlbbFpsUnlock) {
                     GameModEngine.enforceDisplayRefreshRate(profile.mlbbTargetFps);

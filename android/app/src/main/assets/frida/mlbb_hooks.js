@@ -138,14 +138,13 @@ waitForModule('libil2cpp.so', (mod) => {
   if (CFG.mapHack) {
     try {
       // Hook FogOfWar visibility check — return true (visible) for all units
-      // Typically: bool FogOfWarManager::IsUnitVisible(Unit* unit)
       const fogPatterns = [
-        '20 00 80 52 C0 03 5F D6',  // MOV W0, #1; RET  (always visible)
+        '20 00 80 52 C0 03 5F D6',  // MOV W0, #1; RET
       ];
       for (const p of fogPatterns) {
         const m = Memory.scanSync(mod.base, mod.size, p);
         if (m.length > 0) {
-          Interceptor.attach(m[0].address.sub(4), {
+          Interceptor.attach(m[0].address, {
             onLeave(retval) { retval.replace(ptr(1)); }
           });
           console.log('[GameBoosterPRO] Map hack (fog bypass) active @ ' + m[0].address);
@@ -157,19 +156,8 @@ waitForModule('libil2cpp.so', (mod) => {
 });
 
 // ─── FPS Unlock (120 / 144 / 165 FPS) ────────────────────────────────────────
+// Note: eglSwapInterval(0) is intentionally omitted to avoid Mali/Adreno driver swapchain black screen
 if (CFG.fpsUnlock > 60) {
-  // 1. Universal EGL swap interval override (removes compositor 60fps clamp)
-  try {
-    const eglSwapInterval = Module.findExportByName('libEGL.so', 'eglSwapInterval');
-    if (eglSwapInterval) {
-      Interceptor.attach(eglSwapInterval, {
-        onEnter(args) {
-          args[1] = ptr(0); // VSync disabled at driver level
-        }
-      });
-      console.log('[GameBoosterPRO] MLBB eglSwapInterval uncapped (0) ✓');
-    }
-  } catch(e) {}
 
   // 2. Unity target frame rate override
   waitForModule('libunity.so', (mod) => {
