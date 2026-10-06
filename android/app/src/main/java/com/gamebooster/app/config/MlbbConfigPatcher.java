@@ -793,12 +793,12 @@ public class MlbbConfigPatcher {
         prefsMap.put("HighFPSMode", String.valueOf(highFpsMode));
         prefsMap.put("HighFPSEnable", "1");
         prefsMap.put("FrameRateLevel", String.valueOf(frameRateLevel));
-        prefsMap.put("QualitySetting", "4");
-        prefsMap.put("GraphicLevel", "4");
-        prefsMap.put("GraphicQuality", "4");
-        prefsMap.put("QualityLevel", "4");
-        prefsMap.put("GraphicsQuality", "4");
-        prefsMap.put("GraphicsPreset", "4");
+        prefsMap.put("QualitySetting", "3");
+        prefsMap.put("GraphicLevel", "3");
+        prefsMap.put("GraphicQuality", "3");
+        prefsMap.put("QualityLevel", "3");
+        prefsMap.put("GraphicsQuality", "3");
+        prefsMap.put("GraphicsPreset", "3");
         prefsMap.put("ShadowQuality", "0");
         prefsMap.put("UltraExtreme", "1");
         prefsMap.put("UltraExtreme2026", "1");
@@ -825,7 +825,7 @@ public class MlbbConfigPatcher {
         prefsMap.put("AimMethod", "1");
         prefsMap.put("TargetPriority", "0");
         prefsMap.put("SkillSmartAim", "1");
-        prefsMap.put("CameraHeight", "4");
+        prefsMap.put("CameraHeight", "1");
         prefsMap.put("CameraSensitivity", "100");
         prefsMap.put("ScreenSensitivity", "100");
         prefsMap.put("ScreenShake", "0");
@@ -877,50 +877,20 @@ public class MlbbConfigPatcher {
             } catch (Throwable ignored) {}
         }
 
-        // 3. Target Document & Document/android JSON configs
+        // 3. Purge fake JSON files from Document and Document/android
+        // Unity asset loader crashes or displays black screen when unexpected JSONs exist in Document/
         String[] docJsonFiles = {
             "QualityConfig.json",
             "HighFPSConfig.json",
             "GraphicSetting.json",
             "ResolutionConfig.json",
             "FpsSetting.json",
-            "PerformanceConfig.json"
+            "PerformanceConfig.json",
+            "GameConfig.json",
+            "HeroConfig.json",
+            "CombatConfig.json",
+            "Config.json"
         };
-        String jsonPayload = "{\n" +
-            "  \"HighFPSMode\": " + highFpsMode + ",\n" +
-            "  \"FrameRateLevel\": " + frameRateLevel + ",\n" +
-            "  \"QualitySetting\": 3,\n" +
-            "  \"GraphicLevel\": 3,\n" +
-            "  \"QualityLevel\": 3,\n" +
-            "  \"GraphicsQuality\": 5,\n" +
-            "  \"GraphicsPreset\": 5,\n" +
-            "  \"UltraExtreme\": 1,\n" +
-            "  \"UltraFrameRate\": 1,\n" +
-            "  \"SuperFrameRate\": 1,\n" +
-            "  \"TargetFPS\": " + fps + ",\n" +
-            "  \"FPS\": " + fps + ",\n" +
-            "  \"MaxFPS\": " + fps + ",\n" +
-            "  \"FrameRateLimit\": " + fps + ",\n" +
-            "  \"HighFrameRate\": 1,\n" +
-            "  \"UnlockFPS\": 1,\n" +
-            "  \"SuperHighFPS\": 1,\n" +
-            "  \"Unlock90Hz\": 1,\n" +
-            "  \"Unlock120Hz\": 1,\n" +
-            "  \"Unlock144Hz\": 1,\n" +
-            "  \"Unlock165Hz\": 1,\n" +
-            "  \"Unlock185Hz\": 1,\n" +
-            "  \"Unlock240Hz\": 1,\n" +
-            "  \"HFR\": 1,\n" +
-            "  \"ShowFPS\": 1,\n" +
-            "  \"PerformanceLevel\": 3,\n" +
-            "  \"HDMode\": 1,\n" +
-            "  \"Shadow\": 1,\n" +
-            "  \"Outline\": 1,\n" +
-            "  \"TouchBoostHz\": " + fps + ",\n" +
-            "  \"ZeroDelayTouch\": 1,\n" +
-            "  \"bFramePacingEnabled\": \"True\",\n" +
-            "  \"VulkanSupport\": true\n" +
-            "}\n";
 
         String[] docRoots = {
             "/storage/emulated/0/Android/data/" + packageName + "/files/dragon2017/assets/Document",
@@ -933,16 +903,12 @@ public class MlbbConfigPatcher {
             "/sdcard/Android/data/" + packageName + "/files/battle_config"
         };
 
-        byte[] jsonBytes = jsonPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        String jsonB64 = android.util.Base64.encodeToString(jsonBytes, android.util.Base64.NO_WRAP).replace("\n", "").replace("\r", "");
-
         for (String root : docRoots) {
             for (String file : docJsonFiles) {
                 String target = root + "/" + file;
                 try {
-                    ShizukuFileManager.ensureParentDirectory(target);
-                    ShizukuFileManager.writeFile(target, jsonPayload, "666");
-                    ShizukuExecutor.executeShizukuCommand("mkdir -p " + root + " 2>/dev/null; echo '" + jsonB64 + "' | base64 -d > " + target + " 2>/dev/null; chmod 666 " + target + " 2>/dev/null");
+                    ShizukuFileManager.deleteFile(target);
+                    ShizukuExecutor.executeShizukuCommand("rm -f \"" + target + "\" 2>/dev/null");
                 } catch (Throwable ignored) {}
             }
         }
@@ -2150,7 +2116,18 @@ public class MlbbConfigPatcher {
                     + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
                     + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
                     + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* 2>/dev/null";
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.json "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.json "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.json "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.json "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.unity3d "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.unity3d "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleSystemConfig.bytes "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleSystemConfig.bytes "
+                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/ResCheckConf.xml "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/ResCheckConf.xml 2>/dev/null; "
+                    + "setprop debug.sf.hw 1; setprop debug.egl.hw 1; setprop debug.egl.force_msaa 0 2>/dev/null";
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(sweep);
             } else {
@@ -2226,8 +2203,8 @@ public class MlbbConfigPatcher {
                 + "if [ -f \"$PREF\" ]; then "
                 + "chmod 666 \"$PREF\" 2>/dev/null; "
                 + "sed -i 's/name=\"MaxFPS\" value=\"[0-9]*\"/name=\"MaxFPS\" value=\"185\"/' \"$PREF\" 2>/dev/null; "
-                + "sed -i 's/name=\"HighFpsMode\" value=\"[0-9]*\"/name=\"HighFpsMode\" value=\"4\"/' \"$PREF\" 2>/dev/null; "
-                + "sed -i 's/name=\"GraphicLevel\" value=\"[0-9]*\"/name=\"GraphicLevel\" value=\"5\"/' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"HighFpsMode\" value=\"[0-9]*\"/name=\"HighFpsMode\" value=\"3\"/' \"$PREF\" 2>/dev/null; "
+                + "sed -i 's/name=\"GraphicLevel\" value=\"[0-9]*\"/name=\"GraphicLevel\" value=\"3\"/' \"$PREF\" 2>/dev/null; "
                 + "sed -i 's/name=\"TargetFrameRate\" value=\"[0-9]*\"/name=\"TargetFrameRate\" value=\"185\"/' \"$PREF\" 2>/dev/null; "
                 + "grep -q 'TargetFrameRate' \"$PREF\" 2>/dev/null || sed -i 's|</map>|<int name=\"TargetFrameRate\" value=\"185\" />\\n</map>|' \"$PREF\" 2>/dev/null; "
                 + "sed -i 's/name=\"CameraHeight\" value=\"[0-9]*\"/name=\"CameraHeight\" value=\"1\"/' \"$PREF\" 2>/dev/null; "

@@ -199,6 +199,7 @@ public class ManualSettingsPreferences {
     private static final String KEY_DUAL_DATA_WIFI = "pref_dual_data_wifi";
     private static final String KEY_NETWORK_MODE = "pref_network_mode"; // "data_only", "wifi_only", "dual", "default"
     private static final String KEY_ANTI_LOG = "pref_anti_log";
+    private static final String KEY_AUTO_PURGE_LOGS = "pref_auto_purge_logs";
     private static final String KEY_THERMAL_BYPASS = "pref_thermal_bypass";
     private static final String KEY_FOCUS_MODE = "pref_focus_mode";
     private static final String KEY_FOCUS_WHITELIST = "pref_focus_whitelist";
@@ -307,6 +308,16 @@ public class ManualSettingsPreferences {
     public static boolean isAntiLogEnabled(Context context) {
         if (context == null) return true;
         return getPrefs(context).getBoolean(KEY_ANTI_LOG, true);
+    }
+
+    public static void setAutoPurgeLogsEnabled(Context context, boolean enabled) {
+        if (context == null) return;
+        getPrefs(context).edit().putBoolean(KEY_AUTO_PURGE_LOGS, enabled).apply();
+    }
+
+    public static boolean isAutoPurgeLogsEnabled(Context context) {
+        if (context == null) return true;
+        return getPrefs(context).getBoolean(KEY_AUTO_PURGE_LOGS, true);
     }
 
     public static void set5g6gDataEnabled(Context context, boolean enabled) {
@@ -669,6 +680,23 @@ public class ManualSettingsPreferences {
         } catch (Throwable t) {
             Log.w(TAG, "Hidden performance settings error: " + t.getMessage());
         }
+    }
+
+    private static final String KEY_ACTIVE_FPS_PROFILE = "pref_active_fps_profile";
+
+    public static void setActiveFpsProfile(Context context, int targetHz) {
+        if (context == null) return;
+        getPrefs(context).edit().putInt(KEY_ACTIVE_FPS_PROFILE, targetHz).apply();
+    }
+
+    public static int getActiveFpsProfile(Context context) {
+        if (context == null) return 185;
+        return getPrefs(context).getInt(KEY_ACTIVE_FPS_PROFILE, 185);
+    }
+
+    public static void resetAllManualSettings(Context context) {
+        if (context == null) return;
+        getPrefs(context).edit().clear().apply();
     }
 
     private static void executeCmd(String cmd) {

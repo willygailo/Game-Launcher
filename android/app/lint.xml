@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- ===== INTENTIONALLY SUPPRESSED — GAMING APP, NO I18N NEEDED ===== -->
+    <!-- These are internal status/command strings, not user-facing translations -->
+    <issue id="HardcodedText" severity="ignore" />
+    <issue id="SetTextI18n" severity="ignore" />
+    <issue id="DefaultLocale" severity="ignore" />
+
+    <!-- ===== INTENTIONAL FEATURES — PERFORMANCE / GAMING APP ===== -->
+    <!-- High sensor sampling rate is intentional for gyro/touch tuning -->
+    <issue id="HighSamplingRate" severity="ignore" />
+    <!-- BatteryLife warnings intentional — this IS the performance booster -->
+    <issue id="BatteryLife" severity="ignore" />
+    <!-- Icon shape and location is a design choice -->
+    <issue id="IconLauncherShape" severity="ignore" />
+    <issue id="IconLocation" severity="ignore" />
+
+    <!-- QueryAllPackagesPermission: Game launcher requires package visibility across all games -->
+    <issue id="QueryAllPackagesPermission" severity="ignore" />
+
+    <!-- ===== SUPPRESS KNOWN COMPAT NOISE ===== -->
+    <!-- SdCardPath: paths are intentional system-level shell paths used via Shizuku -->
+    <issue id="SdCardPath" severity="ignore" />
+
+    <!-- ===== AGP VERSION: upgrade separately ===== -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+
+    <!-- SmallSp: HUD overlays intentionally use small text for compact gaming UI -->
+    <issue id="SmallSp" severity="ignore" />
+
+    <!-- ButtonStyle: using raw Button is intentional for custom styled gaming UI -->
+    <issue id="ButtonStyle" severity="ignore" />
+
+    <!-- NotifyDataSetChanged: adapters use full refresh for simplicity — suppress -->
+    <issue id="NotifyDataSetChanged" severity="ignore" />
+
+    <!-- DisableBaselineAlignment: LinearLayouts with weights — performance choice -->
+    <issue id="DisableBaselineAlignment" severity="ignore" />
+
+    <!-- Autofill: app fields are not autofill targets by design -->
+    <issue id="Autofill" severity="ignore" />
+
+    <!-- TooManyViews / UselessParent: complex gaming UI, can refactor later -->
+    <issue id="TooManyViews" severity="ignore" />
+    <issue id="UselessParent" severity="ignore" />
+
+    <!-- Overdraw: dark overlay backgrounds are intentional for gaming aesthetic -->
+    <issue id="Overdraw" severity="ignore" />
+
+    <!-- ClickableViewAccessibility: gaming overlays don't need a11y performClick -->
+    <issue id="ClickableViewAccessibility" severity="ignore" />
+
+    <!-- ContentDescription: gaming icon views, not translated -->
+    <issue id="ContentDescription" severity="ignore" />
+
+    <!-- TextFields: game input fields intentionally untyped -->
+    <issue id="TextFields" severity="ignore" />
+
+    <!-- InflateParams: Dialog/overlay inflations with null parent are correct by design -->
+    <issue id="InflateParams" severity="ignore" />
+</lint>

@@ -16,6 +16,7 @@ import java.util.Set;
  * It bypasses Package Visibility restrictions using Shizuku ADB commands, multi-user queries,
  * third-party store discovery (TapTap, Garena, Galaxy Store, APKPure), and storage directory inspection.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class DeepSearchScanner {
 
     private static final String TAG = "DeepSearchScanner";

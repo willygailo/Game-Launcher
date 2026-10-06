@@ -623,7 +623,7 @@ public class SpoofProfile {
                 "  \"Unlock144Hz\": true,\n" +
                 "  \"Unlock120Hz\": true,\n" +
                 "  \"Unlock90Hz\": true,\n" +
-                "  \"VulkanSupport\": true\n" +
+                "  \"VulkanSupport\": false\n" +
                 "}\n";
     }
 
@@ -762,7 +762,7 @@ public class SpoofProfile {
                 "RAMTotalMB=" + ramTotalMb + "\n" +
                 "MaxFrameRate=" + targetFps + "\n" +
                 "HighFPSMode=1\n" +
-                "VulkanSupport=1\n";
+                "VulkanSupport=0\n";
     }
 
     // ── Unique Device Identity Descriptors (7-Vector Hardware Fingerprint) ──

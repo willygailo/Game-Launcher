@@ -20,6 +20,7 @@ import com.gamebooster.app.config.GameProfileAutoConfigurator;
  * where the user has granted Modify system settings. It never claims to change
  * a separate game's frame cap or to create a mode the panel does not expose.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class HardwareDisplayController {
 
     private static final String TAG = "HardwareDisplayCtrl";

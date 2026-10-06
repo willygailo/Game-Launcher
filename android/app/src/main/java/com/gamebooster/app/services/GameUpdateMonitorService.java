@@ -46,6 +46,7 @@ import java.util.Map;
  * (required for API 26+ — static receivers cannot catch PACKAGE_REPLACED).
  * Register this service in AndroidManifest.xml and start it from GameBoosterApp.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class GameUpdateMonitorService extends Service {
 
     private static final String TAG          = "GameUpdateMonitor";

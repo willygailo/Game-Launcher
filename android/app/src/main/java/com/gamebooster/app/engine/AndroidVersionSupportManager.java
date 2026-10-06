@@ -18,6 +18,7 @@ import java.util.List;
  *
  * NOTE: minSdk=34. isAndroid14OrHigher() is the lowest meaningful version gate.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class AndroidVersionSupportManager {
 
     private static final String TAG = "AndroidVersionManager";

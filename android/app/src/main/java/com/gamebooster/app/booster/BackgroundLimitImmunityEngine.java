@@ -28,6 +28,7 @@ import java.util.List;
  * 5. Pinning Kernel Low Memory Killer oom_score_adj to -900 (system-protected, immune to LMKD).
  * 6. Bypassing OEM battery savers (MIUI/HyperOS AutoStart, Samsung OneUI, ColorOS/Realme).
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class BackgroundLimitImmunityEngine {
 
     private static final String TAG = "BackgroundImmunity";

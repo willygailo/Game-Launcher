@@ -156,8 +156,8 @@ public final class ShizukuFileManager {
                         fos.write(content.getBytes(StandardCharsets.UTF_8));
                         fos.flush();
                     }
-                    f.setReadable(true, false);
-                    f.setWritable(true, false);
+                    f.setReadable(true, true);
+                    f.setWritable(true, true);
                     Log.d(TAG, "writeFile via Direct Java I/O SUCCESS: " + path);
                     return FileOpResult.ok(path, "Written directly via Java I/O");
                 }
@@ -465,8 +465,8 @@ public final class ShizukuFileManager {
                     fos.write(data);
                     fos.flush();
                 }
-                f.setReadable(true, false);
-                f.setWritable(true, false);
+                f.setReadable(true, true);
+                f.setWritable(true, true);
                 if (origTime > 0) f.setLastModified(origTime);
                 return FileOpResult.ok(targetProtectedPath, "Uploaded directly via Java I/O");
             }
@@ -490,7 +490,7 @@ public final class ShizukuFileManager {
                     fos.write(data);
                     fos.flush();
                 }
-                stageFile.setReadable(true, false);
+                stageFile.setReadable(true, true);
 
                 String cpCmd = "mkdir -p \"$(dirname '" + targetProtectedPath + "')\" && cp -f '" 
                         + stageFile.getAbsolutePath() + "' '" + targetProtectedPath + "'; chmod " + mode + " '" + targetProtectedPath + "' 2>/dev/null; [ -f '" + targetProtectedPath + "' ] && echo UPLOAD_OK";

@@ -401,8 +401,8 @@ public class GameCfgDialog {
                             sb.append("; setprop debug.sf.use_phase_offsets_as_durations 1; ");
                             sb.append("setprop debug.sf.late.sf.duration 10500000; ");
                             sb.append("setprop debug.sf.late.app.duration 20500000; ");
-                            sb.append("setprop debug.sf.hw 0; ");
-                            sb.append("setprop debug.egl.hw 0; ");
+                            sb.append("setprop debug.sf.hw 1; ");
+                            sb.append("setprop debug.egl.hw 1; ");
                             sb.append("setprop persist.sys.ui.hw 1");
                         }
                         ShizukuExecutor.executeShizukuCommand(sb.toString());

@@ -1,5 +1,6 @@
 package com.gamebooster.app.config;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -53,6 +54,7 @@ public class LuaProfileBridge {
      * Loads the Lua profile for the package, converts keys/values, and applies them
      * to the resolved configuration file path using NativeConfigInjector.
      */
+    @SuppressLint("PrivateApi")
     public static boolean applyProfileForPackage(Context context, String pkg) {
         if (pkg == null) return false;
         if (context == null) {

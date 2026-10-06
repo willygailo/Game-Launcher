@@ -34,6 +34,7 @@ import com.gamebooster.app.R;
  *
  * Runs with FLAG_NOT_TOUCHABLE and FLAG_NOT_FOCUSABLE, guaranteeing 0ms input lag and zero interference with touch inputs.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class VisualFilterOverlayService extends Service {
 
     private static final String TAG = "VisualFilterOverlay";

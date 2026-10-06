@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat;
  * Service managing crosshair overlay lifecycle with non-touchable pass-through flags,
  * persistent preset selection, and clean view detachment.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class CrosshairOverlayService extends Service {
 
     public static final String PREF_NAME = "gamebooster_crosshair_prefs";

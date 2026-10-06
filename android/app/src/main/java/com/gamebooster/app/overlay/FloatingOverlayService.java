@@ -56,6 +56,7 @@ import java.net.Socket;
  *   - Touch pass-through without blocking background game touches
  *   - Magnetic edge snapping with coordinate persistence
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class FloatingOverlayService extends Service {
 
     public static final String PREF_NAME = "gamebooster_hud_prefs";

@@ -12,6 +12,7 @@ import java.util.Locale;
  * the current device. A requested rate is never allowed to exceed a physical
  * display mode reported by Android.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class DevicePerformanceCapabilities {
 
     public enum OemFamily {

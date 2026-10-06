@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.Switch;
+import androidx.appcompat.widget.SwitchCompat;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -262,7 +262,7 @@ public class TweaksAdapter extends RecyclerView.Adapter<TweaksAdapter.TweakViewH
         TextView tvBadge;
         TextView tvTitle;
         TextView tvDescription;
-        Switch switchToggle;
+        SwitchCompat switchToggle;
         ImageView ivLock;
         boolean isUpdatingProgrammatically = false;
 

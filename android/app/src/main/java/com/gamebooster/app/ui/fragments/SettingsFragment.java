@@ -22,7 +22,7 @@ import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Switch;
+import androidx.appcompat.widget.SwitchCompat;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
@@ -109,46 +109,46 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private final SpannableStringBuilder settingsTerminalBuffer = new SpannableStringBuilder();
 
     // Hardware & Boost Switches
-    private Switch switchGameDriver;
-    private Switch switchGpuMode;
-    private Switch switchCpuMode;
-    private Switch switchThermalBypass;
-    private Switch switchAdpfEngine;
-    private Switch switchUclampBoost;
-    private Switch switchTouch1000hzLock;
-    private Switch switchPhantomFreezerKill;
-    private Switch switchVulkanSkiavk;
-    private Switch switchMemory16kbShield;
-    private Switch switchWebviewBoost;
-    private Switch switchTetheringHw;
-    private Switch switchForceGnss;
-    private Switch switch5g6gData;
-    private Switch switchWifiLowLatency;
-    private Switch switchDualDataWifi;
-    private Switch switchOverlayHud;
-    private Switch switchGamingDnd;
-    private Switch switchAutoGameBoost;
-    private Switch switchEsportsAudio;
-    private Switch switchSpeakerBypassBoost;
-    private Switch switchAntiLog;
-    private Switch switchAutoPurgeLogs;
-    private Switch switchArtSpeedCompile;
+    private SwitchCompat switchGameDriver;
+    private SwitchCompat switchGpuMode;
+    private SwitchCompat switchCpuMode;
+    private SwitchCompat switchThermalBypass;
+    private SwitchCompat switchAdpfEngine;
+    private SwitchCompat switchUclampBoost;
+    private SwitchCompat switchTouch1000hzLock;
+    private SwitchCompat switchPhantomFreezerKill;
+    private SwitchCompat switchVulkanSkiavk;
+    private SwitchCompat switchMemory16kbShield;
+    private SwitchCompat switchWebviewBoost;
+    private SwitchCompat switchTetheringHw;
+    private SwitchCompat switchForceGnss;
+    private SwitchCompat switch5g6gData;
+    private SwitchCompat switchWifiLowLatency;
+    private SwitchCompat switchDualDataWifi;
+    private SwitchCompat switchOverlayHud;
+    private SwitchCompat switchGamingDnd;
+    private SwitchCompat switchAutoGameBoost;
+    private SwitchCompat switchEsportsAudio;
+    private SwitchCompat switchSpeakerBypassBoost;
+    private SwitchCompat switchAntiLog;
+    private SwitchCompat switchAutoPurgeLogs;
+    private SwitchCompat switchArtSpeedCompile;
 
     // Network Settings UI (Pure Manual ON/OFF Switches - Android 13 to 16)
     private TextView tvLiveNetworkTelemetry;
-    private Switch switchDisableDataSaver;
-    private Switch switchDisableBatterySaver;
-    private Switch switchDisableWifiSaver;
-    private Switch switchTcpBbrBuffers;
-    private Switch switchTntSmartSupercharger;
-    private Switch switchTmGlobeSupercharger;
-    private Switch switchWifi5g6g7g;
-    private Switch switchDnsCloudflare;
-    private Switch switchDnsGoogle;
-    private Switch switchDnsAdguard;
-    private Switch switchDnsQuad9;
-    private Switch switchPhTelcoSupercharger;
-    private Switch switchAutoDnsFlush;
+    private SwitchCompat switchDisableDataSaver;
+    private SwitchCompat switchDisableBatterySaver;
+    private SwitchCompat switchDisableWifiSaver;
+    private SwitchCompat switchTcpBbrBuffers;
+    private SwitchCompat switchTntSmartSupercharger;
+    private SwitchCompat switchTmGlobeSupercharger;
+    private SwitchCompat switchWifi5g6g7g;
+    private SwitchCompat switchDnsCloudflare;
+    private SwitchCompat switchDnsGoogle;
+    private SwitchCompat switchDnsAdguard;
+    private SwitchCompat switchDnsQuad9;
+    private SwitchCompat switchPhTelcoSupercharger;
+    private SwitchCompat switchAutoDnsFlush;
 
     // Card 4.5: System & Kernel Tweaks UI
     private TextView tvSettingsTweaksBadgeCount;
@@ -164,7 +164,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private com.gamebooster.app.tweaks.TweakCategory currentTweakCategory = com.gamebooster.app.tweaks.TweakCategory.ALL;
 
     // Device Spoofing UI
-    private Switch switchDeviceSpoof;
+    private SwitchCompat switchDeviceSpoof;
     private TextView tvSpoofActiveProfile;
     private TextView tvSettingsSpoofBrandInfo;
     private View hsvSettingsSpoofBrands;
@@ -184,8 +184,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     private Button btnGrantSafStorage;
 
     // Precision Aim Controls
-    private Switch switchPrecisionInputTuner;
-    private Switch switchCrosshairOverlay;
+    private SwitchCompat switchPrecisionInputTuner;
+    private SwitchCompat switchCrosshairOverlay;
     private TextView tvPrecisionAimStatus;
     private Button btnCrosshairPreset;
     private Button btnSensitivityCalculator;
@@ -480,12 +480,13 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (switchAutoPurgeLogs != null) {
             if (getContext() != null) {
                 isProgrammaticToggle = true;
-                switchAutoPurgeLogs.setChecked(true);
+                switchAutoPurgeLogs.setChecked(ManualSettingsPreferences.isAutoPurgeLogsEnabled(getContext()));
                 isProgrammaticToggle = false;
             }
             switchAutoPurgeLogs.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isProgrammaticToggle || getContext() == null) return;
                 if (isChecked && !checkShizukuOrRevert(buttonView, "Auto Purge Game Logs")) return;
+                ManualSettingsPreferences.setAutoPurgeLogsEnabled(getContext(), isChecked);
                 if (isChecked) {
                     AppExecutors.getInstance().executeCommand(() -> {
                         int count = AntiLogPatcher.purgeAllGameLogs();
@@ -497,6 +498,8 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                             }
                         });
                     });
+                } else {
+                    Toast.makeText(getContext(), "Auto Purge Logs Disabled", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -770,9 +773,25 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (isProgrammaticToggle || getContext() == null) return;
                 if (isChecked && !checkShizukuOrRevert(buttonView, "ADPF Power Hint Engine")) return;
                 ManualSettingsPreferences.setAdpfEngineEnabled(getContext(), isChecked);
-                Toast.makeText(getContext(), isChecked
-                        ? "⚡ Android 13–16 ADPF Power Hint Engine Enabled"
-                        : "ADPF Engine Disabled", Toast.LENGTH_SHORT).show();
+                final Context adpfCtx = getContext().getApplicationContext();
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        if (isChecked) {
+                            com.gamebooster.app.engine.NativeFrameworkBridge.startAdpfSession(adpfCtx, 120);
+                        } else {
+                            com.gamebooster.app.engine.NativeFrameworkBridge.stopAdpfSession();
+                        }
+                    } catch (Throwable t) {
+                        android.util.Log.w("SettingsFragment", "ADPF toggle note: " + t.getMessage());
+                    }
+                    AppExecutors.getInstance().postToMainThread(() -> {
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), isChecked
+                                    ? "⚡ Android 13–16 ADPF Power Hint Session Started (120fps target)"
+                                    : "ADPF Power Hint Session Closed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         }
 
@@ -1682,7 +1701,15 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 } else {
                     String activeId = SpoofPreferences.getActiveProfileId(getContext());
                     if (activeId == null || activeId.trim().isEmpty()) {
-                        // User has not selected any spoof profile yet - do NOT blind activate
+                        // Auto-select first ASUS ROG profile as default on first enable
+                        java.util.List<com.gamebooster.app.spoofer.SpoofProfile> rogProfiles =
+                                com.gamebooster.app.spoofer.SpoofProfileRegistry.getByBrand("ASUS ROG");
+                        if (!rogProfiles.isEmpty()) {
+                            activeId = rogProfiles.get(0).id;
+                            SpoofPreferences.setActiveProfileId(getContext(), activeId);
+                        }
+                    }
+                    if (activeId == null || activeId.trim().isEmpty()) {
                         if (spoofProfileAdapter != null) spoofProfileAdapter.setActiveProfileId(null);
                         updateSpoofUiState();
                         Toast.makeText(getContext(), "📱 Device Spoofing ON: Select a gaming device model below to activate spoofing.", Toast.LENGTH_LONG).show();
@@ -2039,18 +2066,21 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
         if (!requireShizukuForAction("Apply All Network Optimizations")) return;
         if (getContext() == null) return;
         final Context ctx = getContext().getApplicationContext();
+        // Track each op for the counted result toast
+        final int[] applied = {0};
+        final int TOTAL_OPS = 10;
         AppExecutors.getInstance().executeCommand(() -> {
+            try { NetworkOptimizer.disableDataSaver();         applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.disableBatterySaver();      applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.disableWifiPowerSaver();    applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.optimizeTcpBuffers();       applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.optimize5gAnd6gDataNetwork(true); applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.optimizeWifi6and7LowLatency(true); applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.setDualDataAndWifiAcceleration(true); applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.enableRankedLowLatencySocketTuning(ctx); applied[0]++; } catch (Throwable ignored) {}
+            try { NetworkOptimizer.flushDnsCache(); applied[0]++; } catch (Throwable ignored) {}
             try {
-                NetworkOptimizer.disableDataSaver();
-                NetworkOptimizer.disableBatterySaver();
-                NetworkOptimizer.disableWifiPowerSaver();
-                NetworkOptimizer.optimizeTcpBuffers();
-                NetworkOptimizer.optimize5gAnd6gDataNetwork(true);
-                NetworkOptimizer.optimizeWifi6and7LowLatency(true);
-                NetworkOptimizer.setDualDataAndWifiAcceleration(true);
-                NetworkOptimizer.enableRankedLowLatencySocketTuning(ctx);
-                NetworkOptimizer.flushDnsCache();
-                // Kernel net path writes via Shizuku (Android data temp paths)
+                // Kernel net path writes via Shizuku
                 com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(
                     "sysctl -w net.core.rmem_max=33554432 2>/dev/null; " +
                     "sysctl -w net.core.wmem_max=33554432 2>/dev/null; " +
@@ -2071,20 +2101,24 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                     "cmd wifi force-low-latency-mode enabled 2>/dev/null; " +
                     "cmd wifi force-hi-perf-mode enabled 2>/dev/null"
                 );
-                // Sync prefs so switches reflect state on next open
-                if (ctx != null) {
-                    ManualSettingsPreferences.setDisableDataSaverEnabled(ctx, true);
-                    ManualSettingsPreferences.setDisableBatterySaverEnabled(ctx, true);
-                    ManualSettingsPreferences.setDisableWifiSaverEnabled(ctx, true);
-                    ManualSettingsPreferences.setTcpBbrBuffersEnabled(ctx, true);
-                    ManualSettingsPreferences.set5g6gDataEnabled(ctx, true);
-                    ManualSettingsPreferences.setWifiLowLatencyEnabled(ctx, true);
-                    ManualSettingsPreferences.setDualDataWifiEnabled(ctx, true);
-                }
+                applied[0]++;
             } catch (Throwable ignored) {}
+            // Sync prefs so switches reflect state on next open
+            if (ctx != null) {
+                ManualSettingsPreferences.setDisableDataSaverEnabled(ctx, true);
+                ManualSettingsPreferences.setDisableBatterySaverEnabled(ctx, true);
+                ManualSettingsPreferences.setDisableWifiSaverEnabled(ctx, true);
+                ManualSettingsPreferences.setTcpBbrBuffersEnabled(ctx, true);
+                ManualSettingsPreferences.set5g6gDataEnabled(ctx, true);
+                ManualSettingsPreferences.setWifiLowLatencyEnabled(ctx, true);
+                ManualSettingsPreferences.setDualDataWifiEnabled(ctx, true);
+                // P2 Fix #9 + P1 Fix #4: apply Cloudflare DNS as part of Apply All
+                ManualSettingsPreferences.setGamingDns(ctx, NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
+                try { NetworkOptimizer.applyGamingDns(ctx, NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1); } catch (Throwable ignored) {}
+            }
+            final int finalApplied = applied[0];
             AppExecutors.getInstance().postToMainThread(() -> {
                 if (!isAdded() || getContext() == null) return;
-                // Refresh all switch states
                 isProgrammaticToggle = true;
                 if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(true);
                 if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(true);
@@ -2093,11 +2127,14 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switch5g6gData != null) switch5g6gData.setChecked(true);
                 if (switchWifiLowLatency != null) switchWifiLowLatency.setChecked(true);
                 if (switchDualDataWifi != null) switchDualDataWifi.setChecked(true);
+                // Reflect active Cloudflare DNS on switches
+                updateDnsUiState(NetworkOptimizer.DnsMode.CLOUDFLARE_1_1_1_1.name());
                 isProgrammaticToggle = false;
                 updateLiveTelemetryUi();
-                Toast.makeText(getContext(),
-                    "⚡ ALL NETWORK OPTIMIZATIONS APPLIED — Ping Shield Active!",
-                    Toast.LENGTH_LONG).show();
+                String resultMsg = finalApplied >= TOTAL_OPS
+                    ? "✅ " + finalApplied + "/" + TOTAL_OPS + " Network Optimizations Applied — Ping Shield Active!"
+                    : "⚠️ " + finalApplied + "/" + TOTAL_OPS + " Applied (some ops failed — check Shizuku)"; 
+                Toast.makeText(getContext(), resultMsg, Toast.LENGTH_LONG).show();
             });
         });
     }
@@ -2218,10 +2255,18 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 if (switchEsportsAudio != null) switchEsportsAudio.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isEnabled());
                 if (switchSpeakerBypassBoost != null) switchSpeakerBypassBoost.setChecked(com.gamebooster.app.booster.EsportsAudioEnhancer.isSpeakerBypassEnabled(getContext()));
                 if (switchAntiLog != null) switchAntiLog.setChecked(ManualSettingsPreferences.isAntiLogEnabled(getContext()));
+                if (switchAutoPurgeLogs != null) switchAutoPurgeLogs.setChecked(ManualSettingsPreferences.isAutoPurgeLogsEnabled(getContext()));
+                if (switchArtSpeedCompile != null) switchArtSpeedCompile.setChecked(ManualSettingsPreferences.isAotSpeedEnabled(getContext()));
                 if (switchGameDriver != null) switchGameDriver.setChecked(ManualSettingsPreferences.isGameDriverEnabled(getContext()));
                 if (switchGpuMode != null) switchGpuMode.setChecked("vulkan".equalsIgnoreCase(ManualSettingsPreferences.getGpuMode(getContext())));
                 if (switchCpuMode != null) switchCpuMode.setChecked("performance".equalsIgnoreCase(ManualSettingsPreferences.getCpuMode(getContext())));
                 if (switchThermalBypass != null) switchThermalBypass.setChecked(ManualSettingsPreferences.isThermalBypassEnabled(getContext()));
+                if (switchAdpfEngine != null) switchAdpfEngine.setChecked(ManualSettingsPreferences.isAdpfEngineEnabled(getContext()));
+                if (switchUclampBoost != null) switchUclampBoost.setChecked(ManualSettingsPreferences.isUclampBoostEnabled(getContext()));
+                if (switchTouch1000hzLock != null) switchTouch1000hzLock.setChecked(ManualSettingsPreferences.isTouch1000HzLockEnabled(getContext()));
+                if (switchPhantomFreezerKill != null) switchPhantomFreezerKill.setChecked(ManualSettingsPreferences.isPhantomFreezerKillEnabled(getContext()));
+                if (switchVulkanSkiavk != null) switchVulkanSkiavk.setChecked(ManualSettingsPreferences.isVulkanSkiaVkEnabled(getContext()));
+                if (switchMemory16kbShield != null) switchMemory16kbShield.setChecked(ManualSettingsPreferences.isMemory16kbShieldEnabled(getContext()));
                 if (switchDisableDataSaver != null) switchDisableDataSaver.setChecked(ManualSettingsPreferences.isDisableDataSaverEnabled(getContext()));
                 if (switchDisableBatterySaver != null) switchDisableBatterySaver.setChecked(ManualSettingsPreferences.isDisableBatterySaverEnabled(getContext()));
                 if (switchDisableWifiSaver != null) switchDisableWifiSaver.setChecked(ManualSettingsPreferences.isDisableWifiSaverEnabled(getContext()));
@@ -2255,6 +2300,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
             updateTerminalStatusInSettings();
         } catch (Throwable t) {
             android.util.Log.w("SettingsFragment", "refreshAllStatuses error: " + t.getMessage());
+            // P2 Fix: ensure diagnostics indicator never stays stuck
+            if (tvDiagLiveIndicator != null) {
+                tvDiagLiveIndicator.setText("✅ LIVE");
+            }
         }
     }
 

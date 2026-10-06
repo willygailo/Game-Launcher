@@ -1,5 +1,6 @@
 package com.gamebooster.app.core;
 
+import android.annotation.SuppressLint;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.util.Log;
@@ -32,6 +33,7 @@ public final class SurfaceFlingerDirectBinder {
     /**
      * Obtains the raw SurfaceFlinger IBinder reference from ServiceManager.
      */
+    @SuppressLint("PrivateApi")
     private static IBinder getSurfaceFlingerService() {
         if (sCachedSurfaceFlingerBinder != null && sCachedSurfaceFlingerBinder.isBinderAlive()) {
             return sCachedSurfaceFlingerBinder;

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class GameManagerRepository {
 
     private static final String TAG = "GameManagerRepository";

@@ -586,7 +586,7 @@ public class PubgConfigPatcher {
                     }
                 }
                 if (cachePak.exists() && cachePak.length() > 0) {
-                    cachePak.setReadable(true, false);
+                    cachePak.setReadable(true, true);
                     foundSource = cachePak.getAbsolutePath();
                 }
             }

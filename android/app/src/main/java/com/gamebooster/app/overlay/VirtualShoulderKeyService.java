@@ -23,6 +23,7 @@ import com.gamebooster.app.R;
 /**
  * VirtualShoulderKeyService — Manages in-game floating L1/R1 trigger buttons.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class VirtualShoulderKeyService extends Service {
 
     private static final String TAG = "VirtualShoulderKeySvc";

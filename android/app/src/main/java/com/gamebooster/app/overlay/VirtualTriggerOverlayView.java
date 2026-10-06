@@ -30,6 +30,7 @@ public class VirtualTriggerOverlayView extends View {
     private Paint circlePaint;
     private Paint borderPaint;
     private Paint textPaint;
+    private Paint pulsePaint; // pre-allocated to avoid DrawAllocation in onDraw
 
     private float pulseRadius = 0;
     private ValueAnimator pulseAnimator;
@@ -67,6 +68,10 @@ public class VirtualTriggerOverlayView extends View {
         textPaint.setTextSize(28f);
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setFakeBoldText(true);
+
+        pulsePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        pulsePaint.setStyle(Paint.Style.STROKE);
+        pulsePaint.setStrokeWidth(6f);
     }
 
     public void setup(String label, int color, WindowManager wm, WindowManager.LayoutParams params, OnPositionChangedListener listener) {
@@ -95,12 +100,9 @@ public class VirtualTriggerOverlayView extends View {
 
         // Pulse Effect when clicked
         if (pulseRadius > 0) {
-            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-            p.setColor(accentColor);
-            p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(6f);
-            p.setAlpha(120);
-            canvas.drawCircle(cx, cy, pulseRadius, p);
+            pulsePaint.setColor(accentColor);
+            pulsePaint.setAlpha(120);
+            canvas.drawCircle(cx, cy, pulseRadius, pulsePaint);
         }
 
         // Text Label

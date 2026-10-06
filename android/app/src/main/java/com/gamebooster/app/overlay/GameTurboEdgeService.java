@@ -52,6 +52,7 @@ import java.io.File;
  * - Quick In-Game Screenshot Dispatcher
  * - Gaming DND toggle
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class GameTurboEdgeService extends Service {
 
     private static final String TAG = "GameTurboEdgeService";

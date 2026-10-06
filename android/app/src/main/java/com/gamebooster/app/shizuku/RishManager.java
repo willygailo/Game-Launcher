@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
  * Manages the Shizuku 13.5 `rish` (Root/Shizuku Shell) binary and `rish_shizuku.dex`.
  * Provides standalone, elevated ADB/Root shell command execution across Android 13, 14, 15, and 16.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class RishManager {
 
     private static final String TAG = "RishManager";

@@ -29,6 +29,7 @@ import java.util.List;
  * - Reads files and lists directory contents directly through DocumentsProvider.
  * - Acts as an autonomous fallback when Shizuku service is not running or stopped.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class SafStorageManager {
 
     private static final String TAG = "SafStorageManager";

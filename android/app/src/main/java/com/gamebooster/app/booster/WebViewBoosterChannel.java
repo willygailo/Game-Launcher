@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
  * GPU rasterization, multi-threaded CPU rasterization, zero-copy buffers, DrDc (Decoupled
  * Raster Dynamic Compositing), and V8 turbo JIT optimizations without crashing low-end devices.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class WebViewBoosterChannel {
 
     private static final String TAG = "WebViewBoosterChannel";

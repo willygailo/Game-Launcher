@@ -280,14 +280,14 @@ public final class MlbbDroneViewPatcher {
                 fos.write(battleBytes);
                 fos.flush();
             }
-            stageBattle.setReadable(true, false);
+            stageBattle.setReadable(true, true);
 
             if (fixBytes != null && fixBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageFix)) {
                     fos.write(fixBytes);
                     fos.flush();
                 }
-                stageFix.setReadable(true, false);
+                stageFix.setReadable(true, true);
             }
 
             byte[] droneCfgBytes = readAssetBytes(am, ASSET_BASE_DIR + "/Document/android/DroneViewConfig.json");
@@ -320,23 +320,23 @@ public final class MlbbDroneViewPatcher {
 
             if (droneCfgBytes != null && droneCfgBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageDroneCfg)) { fos.write(droneCfgBytes); fos.flush(); }
-                stageDroneCfg.setReadable(true, false);
+                stageDroneCfg.setReadable(true, true);
             }
             if (binaryMd5Bytes != null && binaryMd5Bytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageBinaryMd5)) { fos.write(binaryMd5Bytes); fos.flush(); }
-                stageBinaryMd5.setReadable(true, false);
+                stageBinaryMd5.setReadable(true, true);
             }
             if (resCheckBytes != null && resCheckBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageResCheck)) { fos.write(resCheckBytes); fos.flush(); }
-                stageResCheck.setReadable(true, false);
+                stageResCheck.setReadable(true, true);
             }
             if (battleJsonBytes != null && battleJsonBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageBattleJson)) { fos.write(battleJsonBytes); fos.flush(); }
-                stageBattleJson.setReadable(true, false);
+                stageBattleJson.setReadable(true, true);
             }
             if (cameraJsonBytes != null && cameraJsonBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageCameraJson)) { fos.write(cameraJsonBytes); fos.flush(); }
-                stageCameraJson.setReadable(true, false);
+                stageCameraJson.setReadable(true, true);
             }
             // INTENTIONALLY NOT STAGING:
             // - BattleConfig.unity3d  (CRC-validated binary bundle — version mismatch = loading screen hang)
@@ -347,11 +347,11 @@ public final class MlbbDroneViewPatcher {
             // carry the camera offset data. Writing the above causes table signature errors on load.
             if (uiBattleCamBytes != null && uiBattleCamBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageUiBattleCam)) { fos.write(uiBattleCamBytes); fos.flush(); }
-                stageUiBattleCam.setReadable(true, false);
+                stageUiBattleCam.setReadable(true, true);
             }
             if (atlasCamBytes != null && atlasCamBytes.length > 0) {
                 try (FileOutputStream fos = new FileOutputStream(stageAtlasCam)) { fos.write(atlasCamBytes); fos.flush(); }
-                stageAtlasCam.setReadable(true, false);
+                stageAtlasCam.setReadable(true, true);
             }
 
             String stageBattlePath = stageBattle.getAbsolutePath();
@@ -790,7 +790,7 @@ public final class MlbbDroneViewPatcher {
                         fos.write(data);
                         fos.flush();
                     }
-                    temp.setReadable(true, false);
+                    temp.setReadable(true, true);
                     String copyCmd = "mkdir -p \"$(dirname '" + destPath + "')\" && cp -f '" + temp.getAbsolutePath() + "' '" + destPath + "'; chmod 666 '" + destPath + "' 2>/dev/null; [ -f '" + destPath + "' ] && [ $(wc -c < '" + destPath + "') -ge " + Math.max(1, data.length / 2) + " ] && echo DRONE_COPY_OK";
                     String res = ShizukuExecutor.executeShizukuCommand(copyCmd);
                     temp.delete();
@@ -1037,7 +1037,7 @@ public final class MlbbDroneViewPatcher {
                 }
                 fos.flush();
             }
-            stageFile.setReadable(true, false);
+            stageFile.setReadable(true, true);
 
             String copyCmd = "mkdir -p \"$(dirname '" + destPath + "')\" && cp -f '" + stageFile.getAbsolutePath() + "' '" + destPath + "' && chmod 666 '" + destPath + "' && echo V3_DEPLOY_OK";
             String res = ShizukuExecutor.hasShizukuPermission()

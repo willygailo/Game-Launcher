@@ -3153,7 +3153,7 @@ public class NativeConfigInjector {
                 "Unlock144Hz=true",
                 "Unlock165Hz=true",
                 "Unlock185Hz=true",
-                "VulkanSupport=true"
+                "VulkanSupport=false"
             };
             return ConfigFileHelper.patchKeys(path, jsonKeys, null);
         }
@@ -3241,7 +3241,7 @@ public class NativeConfigInjector {
                 "Unlock165Hz=true",
                 "Unlock144Hz=true",
                 "Unlock120Hz=true",
-                "VulkanSupport=true"
+                "VulkanSupport=false"
             };
             return ConfigFileHelper.patchKeys(path, jsonKeys, null);
         }

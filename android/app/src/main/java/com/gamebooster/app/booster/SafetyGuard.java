@@ -15,6 +15,7 @@ import com.gamebooster.app.engine.PrivilegeBridgeEngine;
  * restore the pre-boost snapshot and disarm. Also carries the §8.2 device
  * compatibility blocklist (severity WARN logs + notifies, BLOCK refuses to arm).
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class SafetyGuard {
 
     private static final String TAG = "SafetyGuard";

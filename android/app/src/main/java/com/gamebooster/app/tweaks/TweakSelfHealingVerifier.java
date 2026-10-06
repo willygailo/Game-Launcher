@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
  * Samsung Exynos 2400 Xclipse, Google Tensor G3/G4) and dynamically rewrites/verifies sysfs nodes.
  * Continuously monitors active tweaks and heals any parameters reverted by OEM thermal daemons.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public final class TweakSelfHealingVerifier {
 
     private static final String TAG = "TweakSelfHealing";

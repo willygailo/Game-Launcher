@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class AutoGameMonitorService extends Service {
 
     private static final String TAG = "AutoGameMonitor";

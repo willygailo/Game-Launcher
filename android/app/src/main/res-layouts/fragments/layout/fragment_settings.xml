@@ -131,7 +131,7 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.03" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_overlay_hud"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -140,7 +140,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_gaming_dnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -149,7 +149,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_auto_game_boost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -158,7 +158,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_esports_audio"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -167,7 +167,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_speaker_bypass_boost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -176,7 +176,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_anti_log"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -185,7 +185,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_auto_purge_logs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -194,7 +194,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_art_speed_compile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -232,7 +232,7 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_crosshair_overlay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -370,7 +370,7 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_game_driver"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -379,7 +379,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_gpu_mode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -388,7 +388,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_cpu_mode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -397,7 +397,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_precision_input_tuner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -406,7 +406,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_thermal_bypass"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -415,7 +415,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_adpf_engine"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -451,7 +451,7 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_uclamp_boost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -460,7 +460,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_touch_1000hz_lock"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -469,7 +469,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_phantom_freezer_kill"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -478,7 +478,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_vulkan_skiavk"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -487,7 +487,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_memory_16kb_shield"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -496,7 +496,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_webview_boost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -537,7 +537,7 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_disable_data_saver"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -546,7 +546,7 @@
                     android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_disable_battery_saver"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -567,7 +567,7 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_disable_wifi_saver"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -576,7 +576,7 @@
                     android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_tcp_bbr_buffers"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -585,7 +585,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_5g_6g_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -594,7 +594,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_tnt_smart_supercharger"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -603,7 +603,7 @@
                     android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_tm_globe_supercharger"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -612,7 +612,7 @@
                     android:textColor="@color/accent_cyan"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_wifi_low_latency"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -621,7 +621,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_wifi_5g_6g_7g"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -630,7 +630,7 @@
                     android:textColor="@color/accent_neon_green"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_dual_data_wifi"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -639,7 +639,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_dns_cloudflare"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -648,7 +648,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_dns_google"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -657,7 +657,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_dns_adguard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -666,7 +666,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_dns_quad9"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -675,7 +675,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_ph_telco_supercharger"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -684,7 +684,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_auto_dns_flush"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -693,7 +693,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_tethering_hw"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -702,7 +702,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
-                <Switch
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch_force_gnss"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -933,7 +933,7 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <Switch
+                    <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switch_device_spoof"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1218,6 +1218,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="monospace"
+                        android:paddingStart="0dp"
                         android:paddingEnd="4dp"
                         android:text="&gt;$"
                         android:textColor="@color/accent_neon_green"

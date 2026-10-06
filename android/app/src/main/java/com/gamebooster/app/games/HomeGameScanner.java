@@ -23,6 +23,7 @@ import java.util.Set;
  * Valorant, Farlight, and all installed device games.
  * Resolves verified, explicit launch intents with FLAG_INCLUDE_STOPPED_PACKAGES for guaranteed opening.
  */
+@android.annotation.SuppressLint("ObsoleteSdkInt")
 public class HomeGameScanner {
 
     public static class TargetGameSpec {
