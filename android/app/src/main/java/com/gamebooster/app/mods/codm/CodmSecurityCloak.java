@@ -36,16 +36,12 @@ public final class CodmSecurityCloak {
             setprop("persist.sys.crashsight.disable", "1");
             setprop("gamebooster.codm.antiban", "1");
 
-            // 2. Clear known CrashSight & ACE crash/log directories in sandbox
-            String[] cleanupDirs = {
-                "/data/data/" + PKG_CODM + "/files/crashsight",
-                "/data/data/" + PKG_CODM + "/files/anogs",
-                "/data/data/" + PKG_CODM + "/files/tprt",
-                "/data/data/" + PKG_CODM + "/files/apollo"
-            };
+            // 2. In-Storage preferences & directories suppression
+            com.gamebooster.app.config.CodmAceBypassPatcher.applyBypass(PKG_CODM);
 
-            for (String dir : cleanupDirs) {
-                exec("rm -rf " + dir + " 2>/dev/null; mkdir -p " + dir + "; chmod 0000 " + dir + " 2>/dev/null");
+            // 3. Native in-process cloaking
+            if (com.gamebooster.app.engine.AceCloakEngine.isAvailable()) {
+                com.gamebooster.app.engine.AceCloakEngine.cloakAceModules();
             }
 
             Log.i(TAG, "✅ CODM Security Cloak engaged. Watchdogs nullified.");
