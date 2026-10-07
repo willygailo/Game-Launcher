@@ -1,0 +1,56 @@
+{
+    "general": {
+        "serverConfig": {
+        },
+		"frameRate": 10,
+        "logLevel": 0,
+        "usePandoraSocket": false,
+        "useJsBuiltInLog": false,
+        "usingNano": false,
+        "socketTickInterval": 100,
+        "allowMultipleWindowsForOneApp": false,
+        "cgiRequestCmd": 7003,
+        "enableATM": false,
+        "enableTDM": false,
+        "enableIntl": false,
+        "enableFaasHttp": false,
+        "tdmSrcId": "",
+        "intlSrcId": "",
+		"useVFS": false,
+		"useCurlDetachMode": false,
+		"enableFaasReport" : false,
+		"faasUseBroker": false,
+        "tdmStatsEventName": "pdr_stats_pub",
+        "tdmMonitorEventName": "pdr_monitor_pub",
+        "intlStatsEventName": "pdr_stats_pub",
+        "intlMonitorEventName": "pdr_monitor_pub",
+        "bizCode": "gameletlite"
+    },
+    "tnm2": {
+        "RES_DOWNLOAD_COUNT": "RES_DOWNLOAD_COUNT",  
+        "RES_DOWNLOAD_FAILED": "RES_DOWNLOAD_FAILED", 
+        "RES_DOWNLOAD_SUCCESS": "RES_DOWNLOAD_SUCCESS",
+        "RES_MD5_VALIDATE_FAILED": "RES_MD5_VALIDATE_FAILED",
+        "RES_FILE_WRITE_FAILED": "RES_FILE_WRITE_FAILED",
+        "RES_FILE_WRITE_SUCCESS": "RES_FILE_WRITE_SUCCESS",
+        "RES_FILE_EXTRACT_FAILED": "RES_FILE_EXTRACT_FAILED",
+
+        "CGI_REQUEST_COUNT": "CGI_REQUEST_COUNT",
+        "CGI_TIMEOUT": "CGI_TIMEOUT",
+        "CGI_ERROR": "CGI_ERROR",
+        "CGI_PROCESS_SUCCESS": "CGI_PROCESS_SUCCESS",
+
+        "ENTRANCE_EXECUTE_COUNT": "ENTRANCE_EXECUTE_COUNT",
+        "ENTRANCE_EXECUTE_FAILED": "ENTRANCE_EXECUTE_FAILED",
+        "ENTRANCE_EXECUTE_SUCCESS": "ENTRANCE_EXECUTE_SUCCESS",
+
+        "SCRIPT_EXCEPTION": "SCRIPT_EXCEPTION",
+
+        "SCRIPT_EXCEPTION_DETAIL": "SCRIPT_EXCEPTION_DETAIL",
+        "CGI_TIMEOUT_DETAIL": "CGI_TIMEOUT_DETAIL",
+        "CGI_CONTENT_ERR_DETAIL": "CGI_CONTENT_ERR_DETAIL",
+
+        "SCRIPT_EXCEPTION_TEST": "SCRIPT_EXCEPTION_TEST",
+        "SCRIPT_EXCEPTION_DETAIL_TEST": "SCRIPT_EXCEPTION_DETAIL_TEST"
+    }
+}

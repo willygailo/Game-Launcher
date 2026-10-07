@@ -1,0 +1,57 @@
+{
+    "tve": {
+        "volume_scala": {
+            "HM NOTE 1TDXiaomi": 30,
+            "HUAWEI G750-T00Huawei": 60,
+            "Coolpad 8675-HDCoolpad": 40,
+            "HTC M8ehtc": 60,
+            "Nexus 4google": 400
+        },
+        "delay_time": {
+            "2G": {
+                "max": 1600,
+                "default": 600,
+                "min": 600
+            },
+            "3G": {
+                "max": 1200,
+                "default": 300,
+                "min": 300
+            },
+            "4G": {
+                "max": 1200,
+                "default": 300,
+                "min": 300
+            },
+            "WiFi": {
+                "max": 1200,
+                "default": 300,
+                "min": 300
+            },
+            "unknown": {
+                "max": 1200,
+                "default": 300,
+                "min": 300
+            }
+        },
+        "device_config": {}
+    },
+    "log": {
+        "enable": 1
+    },
+    "rstt": {
+        "rstt_max_record_seconds": 60
+    },
+    "cdnvister": {
+        "default_url": {
+            "remoteConfigUrl": "https://hwconfig.gcloudcs.com:443",
+            "logReportUrl": "https://tglog-hw.gcloudsdk.com:443",
+            "voiceReportUrl": "https://harmony-global.voice.gcloudsdk.com:443",
+            "voiceTranslateUrl": "https://sg.api.translator.voice.gcloudsdk.com:443",
+            "asrFeedbackUrl": "https://127.0.0.1:443",
+            "voiceUrl": "udp://sg.voice.gcloudcs.com:8700",
+            "flqUrl": "udp://cdn.hw.gcloudcs.com:18301",
+            "dataReportUrl": "udp://qoshw.gcloudsdk.com:8011"
+        }
+    }
+}

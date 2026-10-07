@@ -216,10 +216,7 @@ public final class MlbbDroneViewPatcher {
                     // - realversion.xml       (server-side version validation manifest)
                 }
 
-                // Clean up any legacy UI/android and version/android files that cause lobby black screen
-                try {
-                    ShizukuExecutor.executeShizukuCommand("rm -rf \"" + rootDir + "/files/dragon2017/assets/UI/android\" \"" + rootDir + "/files/dragon2017/assets/version/android\" 2>/dev/null");
-                } catch (Throwable ignored) {}
+                // Preserving official MLBB UI/android and version/android assets (never wipe them)
             }
 
             // 3. V3 Fix Document.unity3d & Directory Locks Deployment
@@ -396,9 +393,6 @@ public final class MlbbDroneViewPatcher {
             sb.append("    chmod 666 \"$d\"/* 2>/dev/null\n");
             sb.append("    [ -f \"$d/BattleSystemConfig.bytes\" ] && APPLIED=$((APPLIED+1))\n");
             sb.append("  done\n");
-
-            // 1.1 Purge dangerous UI/android and version/android bundles that cause lobby black screen
-            sb.append("  rm -rf \"$root/files/dragon2017/assets/UI/android\" \"$root/files/dragon2017/assets/version/android\" \"$root/files/LoadResManager/UI/android\" 2>/dev/null\n");
 
             // 1.2 Clean up any legacy directory locks that stall Unity loading
             sb.append("  rm -rf \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix\" \"$root/files/dragon2017/assets/Document/android/Document.unity3d.res_check_fix.temp\" 2>/dev/null\n");
@@ -596,15 +590,15 @@ public final class MlbbDroneViewPatcher {
             // Patch ALL fPosY occurrences in one pass (covers iIndex 1-30)
             "  sed -i 's/fPosY=\\\"-[0-9\\.]*\\\"/fPosY=\\\"" + posY + "\\\"/g' \"$f\" 2>/dev/null || " +
             "  true\n" +
-            // Lock against overwrite
-            "  chmod 444 \"$f\" 2>/dev/null\n" +
+            // Keep readable and writable by game engine
+            "  chmod 666 \"$f\" 2>/dev/null\n" +
             // Update ResCheckConf.xml — set skipFix=1 and neutralize MD5 check
             "  rc=\"$(dirname \"$f\")/ResCheckConf.xml\"\n" +
             "  if [ -f \"$rc\" ]; then\n" +
             "    chmod 666 \"$rc\" 2>/dev/null\n" +
             "    sed -i 's/name=\\\"Document\\\"[^\\/]*md5=\\\"[^\\\"]*\\\"/name=\\\"Document\\\" md5=\\\"0698dc1046f8154fabb6fdcfde00cac9\\\"/g' \"$rc\" 2>/dev/null\n" +
             "    sed -i 's/skipFix=\\\"0\\\"/skipFix=\\\"1\\\"/g' \"$rc\" 2>/dev/null\n" +
-            "    chmod 444 \"$rc\" 2>/dev/null\n" +
+            "    chmod 666 \"$rc\" 2>/dev/null\n" +
             "  fi\n" +
             // Update res_skip_patch.xml — add BattleSystemConfig skipFix entry if missing
             "  rsp=\"$(dirname \"$f\")/res_skip_patch.xml\"\n" +
@@ -612,7 +606,7 @@ public final class MlbbDroneViewPatcher {
             "    chmod 666 \"$rsp\" 2>/dev/null\n" +
             "    grep -q 'name=\\\"Document\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"Document\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
             "    grep -q 'name=\\\"BattleSystemConfig\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"BattleSystemConfig\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
-            "    chmod 444 \"$rsp\" 2>/dev/null\n" +
+            "    chmod 666 \"$rsp\" 2>/dev/null\n" +
             "  fi\n" +
             "  echo SUCCESS\n" +
             "fi\n";
@@ -970,7 +964,7 @@ public final class MlbbDroneViewPatcher {
                 "  sed -i 's/fPosY=\"-[0-9.]*\"/fPosY=\"" + targetHeightStr + "\"/g' \"$f\" 2>/dev/null || {\n" +
                 "    awk '{gsub(/fPosY=\"-[0-9.]*\"/, \"fPosY=\\\"" + targetHeightStr + "\\\"\"); print}' \"$f\" > \"$f.tmp\" && mv \"$f.tmp\" \"$f\"\n" +
                 "  }\n" +
-                "  chmod 444 \"$f\" 2>/dev/null\n" +
+                "  chmod 666 \"$f\" 2>/dev/null\n" +
                 "  rc=\"" + rootDir + "/files/dragon2017/assets/Document/android/ResCheckConf.xml\"\n" +
                 "  if [ -f \"$rc\" ]; then\n" +
                 "    sed -i 's/name=\"Document\" [^\"]* md5=\"[^\"]*\"/name=\"Document\" md5=\"0698dc1046f8154fabb6fdcfde00cac9\"/g' \"$rc\" 2>/dev/null\n" +

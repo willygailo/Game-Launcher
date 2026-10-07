@@ -514,13 +514,13 @@ public final class GameSecurityBypassEngine {
                 };
                 StringBuilder resLock = new StringBuilder();
                 for (String d : resDirs) {
-                    resLock.append("test -f '" + d + "/ResCheckConf.xml' && chmod 444 '" + d + "/ResCheckConf.xml' 2>/dev/null; ");
-                    resLock.append("test -f '" + d + "/res_skip_patch.xml' && chmod 444 '" + d + "/res_skip_patch.xml' 2>/dev/null; ");
+                    resLock.append("test -f '" + d + "/ResCheckConf.xml' && chmod 666 '" + d + "/ResCheckConf.xml' 2>/dev/null; ");
+                    resLock.append("test -f '" + d + "/res_skip_patch.xml' && chmod 666 '" + d + "/res_skip_patch.xml' 2>/dev/null; ");
                 }
                 String lockCmd = resLock.toString();
                 if (!lockCmd.trim().isEmpty()) {
                     executePrivileged(lockCmd);
-                    Log.i(TAG, "[Step 9] ResCheckConf.xml & res_skip_patch.xml re-locked (444) for " + pkg);
+                    Log.i(TAG, "[Step 9] ResCheckConf.xml & res_skip_patch.xml verified (666) for " + pkg);
                 }
             } catch (Throwable resErr) {
                 Log.w(TAG, "[Step 9] ResCheckConf re-lock warning: " + resErr.getMessage());

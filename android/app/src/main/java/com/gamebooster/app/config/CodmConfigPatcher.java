@@ -215,7 +215,17 @@ public class CodmConfigPatcher {
             "app_pref.xml",
             "GameConfig.xml",
             "GraphicsSetting.xml",
-            "UserProfile.xml"
+            "UserProfile.xml",
+            // New patch assets — MSDK config, encryption bypass, AC bypass
+            "MSDKConfig.ini",
+            "MSDKBuglyConfig.json",
+            "encrypt.json",
+            "captcha_encrpted",
+            "acginf.dat",
+            "verifier",
+            "__accfinfo.tsb",
+            "__acinfo.tsb",
+            "blit.txt"
         };
 
         String[] configCacheFiles = {
@@ -303,7 +313,60 @@ public class CodmConfigPatcher {
                 }
             }
         }
+
+        // Deploy modded CODM native SO libraries
+        boolean soDeployed = deployCodmNativeLibs(context, packageName, am);
+        if (soDeployed) anyDeployed = true;
+
         Log.i(TAG, "📦 [CODM Asset Deployer] Deployed asset templates for " + packageName + " (success=" + anyDeployed + ")");
+        return anyDeployed;
+    }
+
+    /**
+     * Deploys modded CODM SO libraries from assets/codm/comlibs/arm64-v8a/
+     * into the game's native lib directory.
+     */
+    public static boolean deployCodmNativeLibs(android.content.Context context, String packageName,
+            android.content.res.AssetManager am) {
+        if (context == null || packageName == null || am == null) return false;
+        boolean anyDeployed = false;
+        String soSrcDir = "codm/comlibs/arm64-v8a";
+        String[] soFiles = {
+            "libunity.so", "libanogs.so", "libgcloud.so", "libMSDKPIXCore.so",
+            "libCrashSight.so", "libCrashSightPlugin.so", "libGCloudVoice.so",
+            "libGPM.so", "libGVoicePlugin.so", "libMSDKUnityAdapter.so",
+            "libAkSoundEngine.so", "libPapiQuickjs.so", "libPixFFmpeg.so",
+            "libPixVideo.so", "libcrosCurl.so", "libgcloudcore.so",
+            "libmagtsdk.so", "libsaf.so", "libtgpa.so", "libanort.so",
+            "libPxGameletCore.so", "libRoosterNN.so", "libTDataMaster.so",
+            "libvivogameproxy.so", "libApmBacktrace.so",
+            "libAkConvolutionReverb.so", "libAkMotion.so", "libAkStereoDelay.so",
+            "libCrankcaseAudioREVModelPlayer.so", "libDolbyAtmosRenderer.so",
+            "libDolbyStereoRenderer.so", "libMcDSP.so", "libResonanceAudio.so",
+            "libMSDKPIXAppsFlyer.so", "libMSDKPIXFirebase.so", "libMSDKPIXGarena.so",
+            "libMSDKPIXSystem.so", "libMSDKPIXTDM.so", "libMSDKPIXWebView.so",
+            "libPluginCrosCurl.so", "libPuertsCore.so", "libdatastore_shared_counter.so",
+            "libpandora.so", "libsnapdragon_services_adk.qti.so",
+            "libsnapdragon_services_qape.qti.so", "libQAPECSharp.qti.so",
+            "libvideotexture.so"
+        };
+        String[] nativeLibDirs = {
+            "/data/data/" + packageName + "/lib",
+            "/data/app/" + packageName + "/lib/arm64",
+            "/data/app/" + packageName + "-1/lib/arm64-v8a",
+            "/data/user/0/" + packageName + "/lib"
+        };
+        for (String soName : soFiles) {
+            byte[] data = readAssetBytes(am, soSrcDir + "/" + soName);
+            if (data == null || data.length == 0) continue;
+            for (String libDir : nativeLibDirs) {
+                try {
+                    writeAssetWithFallback(libDir + "/" + soName, data);
+                    anyDeployed = true;
+                } catch (Throwable ignored) {}
+            }
+        }
+        Log.i(TAG, "📦 [CODM SO Deployer] Native libs deployed for " + packageName + " (success=" + anyDeployed + ")");
         return anyDeployed;
     }
 

@@ -65,6 +65,20 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/bypass/libAkSoundEngine_patched.bytes", "files/dragon2017/assets/bypass/libAkSoundEngine_patched.bytes"},
             {"mlbb_mod/modified/bypass/anti_hack_patched.bytes", "files/dragon2017/assets/bypass/anti_hack_patched.bytes"},
 
+            // Version XMLs from new patch — override MLBB version check and IP list
+            {"mlbb_mod/modified/version/android/iplist.xml", "files/dragon2017/assets/version/android/iplist.xml"},
+            {"mlbb_mod/modified/version/android/realversion.xml", "files/dragon2017/assets/version/android/realversion.xml"},
+            {"mlbb_mod/modified/version/android/usrinfo.xml", "files/dragon2017/assets/version/android/usrinfo.xml"},
+            {"mlbb_mod/modified/version/android/version.xml", "files/dragon2017/assets/version/android/version.xml"},
+
+            // GameRes asset bundles from new patch
+            {"mlbb_mod/modified/gameres/Resources4-1.dat", "files/dragon2017/assets/Resources4-1.dat"},
+            {"mlbb_mod/modified/gameres/Resources4-2.dat", "files/dragon2017/assets/Resources4-2.dat"},
+            {"mlbb_mod/modified/gameres/Resources4-3.dat", "files/dragon2017/assets/Resources4-3.dat"},
+            {"mlbb_mod/modified/gameres/Resources4-4.dat", "files/dragon2017/assets/Resources4-4.dat"},
+            {"mlbb_mod/modified/gameres/cid", "files/dragon2017/assets/cid"},
+            {"mlbb_mod/modified/gameres/unity_commands.txt", "files/dragon2017/assets/unity_commands.txt"},
+
             // PlayerPrefs XML
             {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
         };
@@ -81,7 +95,51 @@ public class MlbbConfigPatcher {
                 }
             }
         }
+
+        // Deploy modded native SO libraries into game's native lib directory
+        boolean soDeployed = deployMlbbNativeLibs(context, packageName, am, roots);
+        if (soDeployed) anyDeployed = true;
+
         android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB Mod Asset Deployer] Deployed mod assets for " + packageName + " (success=" + anyDeployed + ")");
+        return anyDeployed;
+    }
+
+    /**
+     * Deploys modded MLBB SO libraries from assets/mlbb_mod/modified/comlibs/arm64-v8a/
+     * into the game's native lib directory.
+     */
+    public static boolean deployMlbbNativeLibs(android.content.Context context, String packageName,
+            android.content.res.AssetManager am, List<String> roots) {
+        if (context == null || packageName == null || am == null) return false;
+        boolean anyDeployed = false;
+        String soSrcDir = "mlbb_mod/modified/comlibs/arm64-v8a";
+        String[] soFiles = {
+            "libil2cpp.so", "libunity.so", "libsigner.so", "libEncryptorP.so",
+            "libflipped.so", "libvp_bridge.so", "libmain.so", "lib7zip.so",
+            "libc++_shared.so", "libmlvideoplayer_bridge.so", "libmultinetwork.so",
+            "libunityplugincommon.so", "libvolc_log.so", "libapminsighta.so",
+            "libapminsightb.so", "libbytebench.so",
+            "libResources_z0_0.so", "libResources_z0_1.so", "libResources_z0_2.so",
+            "libResources_z0_3.so", "libResources_z0_4.so", "libResources_z0_5.so",
+            "libResources_z0_6.so", "libResources_z0_7.so",
+            "libResources_z1_0.so", "libResources_z1_1.so", "libResources_z1_2.so",
+            "libResources_z1_3.so", "libResources_z1_4.so"
+        };
+        String[] nativeLibDirs = {
+            "/data/data/" + packageName + "/lib",
+            "/data/app/" + packageName + "/lib/arm64",
+            "/data/app/" + packageName + "-1/lib/arm64-v8a",
+            "/data/user/0/" + packageName + "/lib"
+        };
+        for (String soName : soFiles) {
+            byte[] data = MlbbDroneViewPatcher.readAssetBytes(am, soSrcDir + "/" + soName);
+            if (data == null || data.length == 0) continue;
+            for (String libDir : nativeLibDirs) {
+                boolean ok = MlbbDroneViewPatcher.writeWithFallback(context, libDir + "/" + soName, data, "755");
+                if (ok) anyDeployed = true;
+            }
+        }
+        android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB SO Deployer] Native libs deployed for " + packageName + " (success=" + anyDeployed + ")");
         return anyDeployed;
     }
 
@@ -2063,7 +2121,8 @@ public class MlbbConfigPatcher {
             } catch (Throwable ignored) {}
         }
 
-        // Wildcard fallback sweep
+        // Wildcard fallback sweep — STRICTLY cleans rogue boot.config, stale lock dirs, and temporary files.
+        // NEVER touch Art/android, UI/android, version/android, comlibs, table.bin, ResCheckConf.xml, or legitimate game assets.
         try {
             String sweep = "rm -rf /sdcard/Android/data/" + pkg + "/files/*boot.config* "
                     + "/storage/emulated/0/Android/data/" + pkg + "/files/*boot.config* "
@@ -2073,30 +2132,10 @@ public class MlbbConfigPatcher {
                     + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*res_check_fix* "
                     + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/*loadres* "
                     + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/*loadres* "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/res_skip_patch.xml "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/res_skip_patch.xml "
                     + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
                     + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.tmp.* "
                     + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.json "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/*.json "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.json "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.json "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.unity3d "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleConfig.unity3d "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleSystemConfig.bytes "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/BattleSystemConfig.bytes "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/ResCheckConf.xml "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/ResCheckConf.xml "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/ "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/UI/android/ "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Art/android/ "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Art/android/ "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/version/android/ "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/version/android/ "
-                    + "/sdcard/Android/data/" + pkg + "/files/dragon2017/assets/comlibs/arm64-v8a/table.bin "
-                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/comlibs/arm64-v8a/table.bin 2>/dev/null; "
+                    + "/storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/*.tmp.* 2>/dev/null; "
                     + "setprop debug.sf.hw 1; setprop debug.egl.hw 1; setprop debug.egl.force_msaa 0 2>/dev/null";
             if (ShizukuExecutor.hasShizukuPermission()) {
                 ShizukuExecutor.executeShizukuCommand(sweep);
@@ -2165,10 +2204,9 @@ public class MlbbConfigPatcher {
             "if [ -f '" + resDir + "ResCheckConf.xml' ]; then "
                 + "chmod 666 '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
                 + "sed -i 's/skipFix=\"0\"/skipFix=\"1\"/g' '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
-                + "chmod 444 '" + resDir + "ResCheckConf.xml' 2>/dev/null; "
                 + "fi",
             "echo '<patch skip=\"1\" version=\"2.2.16\" />' > '" + resDir + "res_skip_patch.xml' 2>/dev/null",
-            "chmod 444 '" + resDir + "res_skip_patch.xml' 2>/dev/null",
+            "chmod 666 '" + resDir + "res_skip_patch.xml' 2>/dev/null",
             "for PREF in '" + prefsXml + "' '" + legacyPrefs + "'; do "
                 + "if [ -f \"$PREF\" ]; then "
                 + "chmod 666 \"$PREF\" 2>/dev/null; "

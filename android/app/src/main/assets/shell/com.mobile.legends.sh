@@ -72,14 +72,21 @@ setprop vendor.thermal.mode performance
 # Drop caches before first frame
 echo 1 > /proc/sys/vm/drop_caches 2>/dev/null
 
-# ── MLBB bind-mount ResCheckConf as read-only (prevents Moonton bg integrity overwrite) ──
+# ── MLBB permissions — ensure readable and writable so game updater does not fail ──
 for RDIR in "/sdcard/Android/data/com.mobile.legends/files/dragon2017/assets/Document/android" "/sdcard/Android/data/com.mobile.legends/files/dragon2017/res"; do
     if [ -d "$RDIR" ]; then
-        test -f "$RDIR/ResCheckConf.xml" && mount --bind "$RDIR/ResCheckConf.xml" "$RDIR/ResCheckConf.xml" 2>/dev/null && mount -o remount,ro "$RDIR/ResCheckConf.xml" 2>/dev/null
-        test -f "$RDIR/ResCheckConf.xml" && chmod 444 "$RDIR/ResCheckConf.xml" 2>/dev/null
-        test -f "$RDIR/res_skip_patch.xml" && chmod 444 "$RDIR/res_skip_patch.xml" 2>/dev/null
+        test -f "$RDIR/ResCheckConf.xml" && chmod 666 "$RDIR/ResCheckConf.xml" 2>/dev/null
+        test -f "$RDIR/res_skip_patch.xml" && chmod 666 "$RDIR/res_skip_patch.xml" 2>/dev/null
     fi
 done
+
+# ── New patch version XMLs — ensure writable ──────────────────────────────────
+VERSION_DIR="/sdcard/Android/data/com.mobile.legends/files/dragon2017/assets/version/android"
+if [ -d "$VERSION_DIR" ]; then
+    for VXML in "$VERSION_DIR/iplist.xml" "$VERSION_DIR/realversion.xml" "$VERSION_DIR/usrinfo.xml" "$VERSION_DIR/version.xml"; do
+        test -f "$VXML" && chmod 666 "$VXML" 2>/dev/null
+    done
+fi
 
 # ── AC Telemetry Null-Route (crash/bug reports only — NOT heartbeat to avoid blackout flag) ──
 for HOST in bugly.qq.com androidsdk.bugly.qq.com ac.tosshub.com; do

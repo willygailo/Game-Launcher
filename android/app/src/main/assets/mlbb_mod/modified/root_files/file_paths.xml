@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path name="img1" path="" />
+    <files-path name="name2" path="" />
+    <external-path name="Highlights" path="HighlightsGSDKVideo-MobileLegends/" />
+    <external-path name="SimpleVideo" path="SimpleVideo-MobileLegends/" />
+    <external-cache-path name="name4" path="" />
+    <root-path name="root_path" path="." />
+</paths>

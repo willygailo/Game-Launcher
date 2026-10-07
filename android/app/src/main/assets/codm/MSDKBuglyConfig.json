@@ -1,0 +1,31 @@
+{
+    "iOS": {
+        "GCloudCore": "b9f32178c2",
+        "GCloud": "1f8dda5025",
+        "GVoice": "d879c54ac7",
+        "MSDK": "67fcb6d17b",
+        "TSS": "b5b306baee",
+        "APM": "0052dcc824",
+        "GEM": "39d5600404",
+        "TGPA": "",
+        "HttpDNS": "10fc67c36c",
+        "TDM": "1bedc353e7",
+        "GRobot": "51cc1f793a"
+    },
+    "Android": {
+        "GCloudCore": "99f843986f",
+        "GCloud": "56c1c24886",
+        "GVoice": "4608ab1c7b",
+        "MSDK": "ab63093be8",
+        "TSS": "82f4c564cb",
+        "APM": "8fd6a06957",
+        "GEM": "860bc651f6",
+        "TGPA": "5f05d4cdfa",
+        "HttpDNS": "754fa2b52b",
+        "TDM": "2ade6a3afb",
+        "GRobot": "1d1833095c"
+    },
+    "Harmony": {
+        "MSDK": "913c7114dc"
+    }
+}
