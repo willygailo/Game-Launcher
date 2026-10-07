@@ -115,4 +115,19 @@ public final class GameConfigPatchVerifier {
         }
         return null;
     }
+
+    /**
+     * Checks if a target file exists and is non-empty on disk (via standard File or Shizuku).
+     */
+    public static boolean verifyFileExistsAndNonEmpty(String filePath) {
+        if (filePath == null || filePath.isEmpty()) return false;
+        try {
+            java.io.File f = new java.io.File(filePath);
+            if (f.exists() && f.length() > 0) return true;
+        } catch (Throwable ignored) {}
+        try {
+            return com.gamebooster.app.shizuku.ShizukuFileManager.fileExists(filePath);
+        } catch (Throwable ignored) {}
+        return false;
+    }
 }

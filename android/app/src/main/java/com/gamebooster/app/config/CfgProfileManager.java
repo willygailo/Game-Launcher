@@ -323,6 +323,44 @@ public class CfgProfileManager {
         return total;
     }
 
+    /**
+     * Applies the MAX ALL profile across all supported games in one shot:
+     * 185 FPS, 1000Hz touch, Shizuku Hz force, Drone View 5X, Hardware Mask (ROG 8 Pro),
+     * and all combat/graphics enhancement modules.
+     *
+     * @return total packages patched across all games
+     */
+    public static int applyMaxAll(Context context) {
+        int total = 0;
+        final int effectiveFps = CompetitiveCfgProfile.FPS_185;
+        AntiLogPatcher.applySystemAntiLog();
+
+        for (String gameKey : new String[]{
+                CompetitiveCfgProfile.GAME_MLBB,
+                CompetitiveCfgProfile.GAME_PUBGM,
+                CompetitiveCfgProfile.GAME_CODM,
+                CompetitiveCfgProfile.GAME_FREEFIRE,
+                CompetitiveCfgProfile.GAME_GENSHIN,
+                CompetitiveCfgProfile.GAME_HOK,
+                CompetitiveCfgProfile.GAME_ROBLOX,
+                CompetitiveCfgProfile.GAME_VALORANT,
+                CompetitiveCfgProfile.GAME_FARLIGHT,
+                CompetitiveCfgProfile.GAME_BLOODSTRIKE,
+                CompetitiveCfgProfile.GAME_STANDOFF2,
+                CompetitiveCfgProfile.GAME_WILDRIFT,
+                CompetitiveCfgProfile.GAME_CARX,
+                CompetitiveCfgProfile.GAME_ARENABREAKOUT,
+                CompetitiveCfgProfile.GAME_SUPERCELL,
+                CompetitiveCfgProfile.GAME_SPORTS,
+                CompetitiveCfgProfile.GAME_ACTION_RPG}) {
+            CompetitiveCfgProfile p = CompetitiveCfgProfile.maxAll(gameKey);
+            total += applyProfile(context, gameKey, p);
+        }
+        applyShizukuHzForce(effectiveFps);
+        Log.i(TAG, "CfgProfileManager: Max All applied across " + total + " packages @ 185fps");
+        return total;
+    }
+
     // ─── Internal helpers ────────────────────────────────────────────────────
 
     private static boolean applyToPackage(String pkg, CompetitiveCfgProfile profile) {

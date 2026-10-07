@@ -79,6 +79,12 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/gameres/cid", "files/dragon2017/assets/cid"},
             {"mlbb_mod/modified/gameres/unity_commands.txt", "files/dragon2017/assets/unity_commands.txt"},
 
+            // MLSDK and Core gameres overrides
+            {"mlbb_mod/modified/gameres/MLSDK/android/arm64-v8a/unitypluginmoba_resources_bytes_v2", "files/dragon2017/assets/MLSDK/android/arm64-v8a/unitypluginmoba_resources_bytes_v2"},
+            {"mlbb_mod/modified/gameres/MLSDK/android/armeabi-v7a/unitypluginmoba_resources_bytes_v2", "files/dragon2017/assets/MLSDK/android/armeabi-v7a/unitypluginmoba_resources_bytes_v2"},
+            {"mlbb_mod/modified/gameres/android/Define.bytes", "files/dragon2017/assets/android/Define.bytes"},
+            {"mlbb_mod/modified/gameres/android/mlf/ModulesConf.bytes", "files/dragon2017/assets/android/mlf/ModulesConf.bytes"},
+
             // PlayerPrefs XML
             {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
         };
@@ -1313,6 +1319,7 @@ public class MlbbConfigPatcher {
             }
         }
         AntiLogPatcher.applyAntiLog(packageName);
+        deployMlbbAssets(packageName);
         Log.i(TAG, "MLBB competitive safe " + forcedFps + "FPS patch: " + written + " paths @ " + forcedFps + "fps for " + packageName);
         return written > 0;
     }

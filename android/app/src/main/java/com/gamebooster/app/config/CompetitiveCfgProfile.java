@@ -192,6 +192,35 @@ public class CompetitiveCfgProfile {
         return new CompetitiveCfgProfile(gameKey, FPS_185, true, true, true, true, true, true, true, true, true, true, true, true, true, true);
     }
 
+    /**
+     * Returns a Max All profile with ALL features enabled at maximum ceilings:
+     * 185 FPS, 1000Hz touch, Shizuku Hz force, Rotational Aim Assist, Damage Script,
+     * Recoil Control, Tracking Bullet, Gyro Tuning, Touch Zero-Delay, Armor Def,
+     * Fast Cooldown, Shield 1500, Drone View Tier 5X, Hardware Mask (ROG 8 Pro), and Anti-Log.
+     */
+    public static CompetitiveCfgProfile maxAll(String gameKey) {
+        CompetitiveCfgProfile p = new CompetitiveCfgProfile(
+            gameKey,
+            FPS_185,
+            /* superFastTouchEnabled   */ true,
+            /* forceWriteSystemHz      */ true,
+            /* aimAssistEnabled        */ true,
+            /* mlbbDamageScriptEnabled */ true,
+            /* recoilControlEnabled    */ true,
+            /* trackingBulletEnabled   */ true,
+            /* gyroTuningEnabled       */ true,
+            /* touchNoDelayEnabled     */ true,
+            /* armorDefEnabled         */ true,
+            /* fastCooldownEnabled     */ true,
+            /* shield1500Enabled       */ true,
+            /* droneViewUltraEnabled   */ true,
+            /* hardwareMaskEnabled     */ true,
+            /* antiLogEnabled          */ true
+        );
+        p.setDroneViewTier(MlbbDroneViewPatcher.TIER_5X);
+        return p;
+    }
+
     // ─── UltraExtreme 144fps SuperSmooth Factory Methods ─────────────────────
 
     /**
