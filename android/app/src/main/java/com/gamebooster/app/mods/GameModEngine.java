@@ -103,10 +103,11 @@ public final class GameModEngine {
      *  4. Inject into running game process via frida-inject
      */
     public static void applyMods(Context ctx, String packageName, GameModProfile profile) {
-        if (PKG_MLBB.equals(packageName)) {
-            com.gamebooster.app.mods.mlbb.MlbbModManager.applyProfile(ctx, profile);
-        } else if (PKG_CODM.equals(packageName)) {
-            com.gamebooster.app.mods.codm.CodmModManager.applyProfile(ctx, profile);
+        if (packageName == null) return;
+        if (packageName.contains("mobile.legends") || packageName.contains("mobilelegends")) {
+            com.gamebooster.app.mods.mlbb.MlbbModManager.applyProfile(ctx, packageName, profile);
+        } else if (packageName.contains("codm") || packageName.contains("callofduty")) {
+            com.gamebooster.app.mods.codm.CodmModManager.applyProfile(ctx, packageName, profile);
         }
     }
 

@@ -84,42 +84,13 @@ public class MlbbConfigPatcher {
     }
 
     /**
-     * Deploys modded MLBB SO libraries from assets/mlbb_mod/modified/comlibs/arm64-v8a/
-     * into the game's native lib directory.
+     * Deploys modded MLBB SO libraries.
+     * Note: Disabled for stability to avoid runtime SIGSEGV dynamic linker crashes.
      */
     public static boolean deployMlbbNativeLibs(android.content.Context context, String packageName,
             android.content.res.AssetManager am, List<String> roots) {
-        if (context == null || packageName == null || am == null) return false;
-        boolean anyDeployed = false;
-        String soSrcDir = "mlbb_mod/modified/comlibs/arm64-v8a";
-        String[] soFiles = {
-            "libil2cpp.so", "libunity.so", "libsigner.so", "libEncryptorP.so",
-            "libflipped.so", "libvp_bridge.so", "libmain.so", "lib7zip.so",
-            "libc++_shared.so", "libmlvideoplayer_bridge.so", "libmultinetwork.so",
-            "libunityplugincommon.so", "libvolc_log.so", "libapminsighta.so",
-            "libapminsightb.so", "libbytebench.so",
-            "libResources_z0_0.so", "libResources_z0_1.so", "libResources_z0_2.so",
-            "libResources_z0_3.so", "libResources_z0_4.so", "libResources_z0_5.so",
-            "libResources_z0_6.so", "libResources_z0_7.so",
-            "libResources_z1_0.so", "libResources_z1_1.so", "libResources_z1_2.so",
-            "libResources_z1_3.so", "libResources_z1_4.so"
-        };
-        String[] nativeLibDirs = {
-            "/data/data/" + packageName + "/lib",
-            "/data/app/" + packageName + "/lib/arm64",
-            "/data/app/" + packageName + "-1/lib/arm64-v8a",
-            "/data/user/0/" + packageName + "/lib"
-        };
-        for (String soName : soFiles) {
-            byte[] data = MlbbDroneViewPatcher.readAssetBytes(am, soSrcDir + "/" + soName);
-            if (data == null || data.length == 0) continue;
-            for (String libDir : nativeLibDirs) {
-                boolean ok = MlbbDroneViewPatcher.writeWithFallback(context, libDir + "/" + soName, data, "755");
-                if (ok) anyDeployed = true;
-            }
-        }
-        android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB SO Deployer] Native libs deployed for " + packageName + " (success=" + anyDeployed + ")");
-        return anyDeployed;
+        android.util.Log.i("MlbbConfigPatcher", "🛡️ [MLBB Native Libs] Preserving original APK binaries for zero-crash stability on " + packageName);
+        return false;
     }
 
     /**
@@ -917,6 +888,7 @@ public class MlbbConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
+        repairAndRestoreMlbbGame(null, packageName);
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
@@ -1246,6 +1218,7 @@ public class MlbbConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
+        repairAndRestoreMlbbGame(null, packageName);
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         final int frameRateLevel = (forcedFps >= 185) ? 5 : (forcedFps >= 144 ? 4 : 3);
         final int highFpsMode = (forcedFps >= 120) ? 3 : 1; // 2026: 3 = enable 90Hz+ modes

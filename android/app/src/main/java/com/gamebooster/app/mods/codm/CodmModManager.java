@@ -29,18 +29,23 @@ public final class CodmModManager {
      * Applies the complete CODM mod configuration suite based on GameModProfile.
      */
     public static void applyProfile(Context ctx, GameModProfile profile) {
+        applyProfile(ctx, PKG_CODM, profile);
+    }
+
+    public static void applyProfile(Context ctx, String packageName, GameModProfile profile) {
         if (profile == null) return;
+        final String pkg = (packageName != null && !packageName.trim().isEmpty()) ? packageName.trim() : PKG_CODM;
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                Log.i(TAG, "⚡ Initializing CODM Mod Pipeline...");
+                Log.i(TAG, "⚡ Initializing CODM Mod Pipeline for " + pkg + "...");
 
                 // Layer 1: Display refresh rate & surface flinger unlock
                 if (profile.codmFpsUnlock) {
                     GameModEngine.enforceDisplayRefreshRate(profile.codmTargetFps);
                     try {
-                        CodmConfigPatcher.patch(PKG_CODM, profile.codmTargetFps);
-                        HardwareMaskEngine.maskAllAndroidVersions(ctx, PKG_CODM, profile.codmTargetFps);
+                        CodmConfigPatcher.patch(pkg, profile.codmTargetFps);
+                        HardwareMaskEngine.maskAllAndroidVersions(ctx, pkg, profile.codmTargetFps);
                     } catch (Throwable t) {
                         Log.w(TAG, "CODM static config patch note: " + t.getMessage());
                     }
@@ -48,13 +53,19 @@ public final class CodmModManager {
 
                 // Layer 2: In-storage weapon and combat suites
                 if (profile.codmAimbot || profile.codmDamageEnabled ||
-                    profile.codmSpeedEnabled || profile.codmNoRecoil) {
+                    profile.codmSpeedEnabled || profile.codmNoRecoil || profile.codmAllScopeLock) {
                     try {
-                        CodmConfigPatcher.applyCodmMasterSuite(PKG_CODM);
-                        CodmConfigPatcher.applyNoRecoilNoSpread(PKG_CODM);
-                        CodmConfigPatcher.applyTrackingBulletConfig(PKG_CODM);
-                        CodmConfigPatcher.applyAimHeadLockConfig(PKG_CODM);
-                        CodmConfigPatcher.applyUltraDamageOverdriveConfig(PKG_CODM);
+                        CodmConfigPatcher.applyCodmMasterSuite(pkg);
+                        CodmConfigPatcher.applyNoRecoilNoSpread(pkg);
+                        CodmConfigPatcher.applyTrackingBulletConfig(pkg);
+                        CodmConfigPatcher.applyAimHeadLockConfig(pkg);
+                        CodmConfigPatcher.applyUltraDamageOverdriveConfig(pkg);
+                        if (profile.codmAllScopeLock) {
+                            CodmConfigPatcher.applyEnemyLockMaxAllScope(pkg);
+                        }
+                        if (profile.codmAutoHeadshot) {
+                            CodmConfigPatcher.applyAutoHeadshotBulletKill(pkg);
+                        }
                     } catch (Throwable t) {
                         Log.w(TAG, "CODM master suite error: " + t.getMessage());
                     }
@@ -67,6 +78,7 @@ public final class CodmModManager {
 
                 // Layer 4: SystemProperties for Frida / Native bridge
                 setprop("gamebooster.codm.aim",     profile.codmAimbot ? "1" : "0");
+                setprop("gamebooster.codm.allscope",profile.codmAllScopeLock ? "1" : "0");
                 setprop("gamebooster.codm.dmg",     profile.codmDamageEnabled ? String.valueOf(profile.codmDamageMult) : "1.0");
                 setprop("gamebooster.codm.speed",   profile.codmSpeedEnabled ? String.valueOf(profile.codmSpeedMult) : "1.0");
                 setprop("gamebooster.codm.recoil",  profile.codmNoRecoil ? "1" : "0");
@@ -81,11 +93,11 @@ public final class CodmModManager {
                     String hookScript = readAsset(ctx, "frida/codm_hooks.js");
                     if (!hookScript.isEmpty()) {
                         pushScriptToDevice(hookScript, FRIDA_HOOK_DEVICE_DIR + "codm_hooks.js");
-                        injectFrida(PKG_CODM, FRIDA_HOOK_DEVICE_DIR + "codm_hooks.js");
+                        injectFrida(pkg, FRIDA_HOOK_DEVICE_DIR + "codm_hooks.js");
                     }
                 }
 
-                Log.i(TAG, "✅ CODM mod pipeline fully deployed.");
+                Log.i(TAG, "✅ CODM mod pipeline fully deployed for " + pkg);
             } catch (Throwable t) {
                 Log.e(TAG, "CODM mod pipeline error: " + t.getMessage(), t);
             }
@@ -97,8 +109,22 @@ public final class CodmModManager {
     }
 
     private static void injectFrida(String packageName, String scriptPath) {
-        exec("frida -U -f " + packageName + " -l " + scriptPath + " --no-pause &");
-        Log.i(TAG, "[Frida] Injected into " + packageName + " with " + scriptPath);
+        try {
+            String whichFrida = ShizukuExecutor.executeShizukuCommand("which frida 2>/dev/null || which frida-inject 2>/dev/null");
+            if (whichFrida != null && !whichFrida.trim().isEmpty() && !whichFrida.startsWith("ERROR:")) {
+                String bin = whichFrida.trim().split("\n")[0].trim();
+                if (bin.contains("frida-inject")) {
+                    exec(bin + " -n " + packageName + " -s " + scriptPath + " &");
+                } else {
+                    exec(bin + " -U -f " + packageName + " -l " + scriptPath + " --no-pause &");
+                }
+                Log.i(TAG, "[Frida] Injected into " + packageName + " with " + scriptPath);
+            } else {
+                Log.i(TAG, "ℹ️ Frida CLI not installed on device; native C++ & config layers actively maintaining mods.");
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "injectFrida note: " + t.getMessage());
+        }
     }
 
     private static void pushScriptToDevice(String content, String devicePath) {

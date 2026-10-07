@@ -30,36 +30,45 @@ public final class MlbbModManager {
      * Applies the complete MLBB mod configuration suite based on GameModProfile.
      */
     public static void applyProfile(Context ctx, GameModProfile profile) {
+        applyProfile(ctx, PKG_MLBB, profile);
+    }
+
+    public static void applyProfile(Context ctx, String packageName, GameModProfile profile) {
         if (profile == null) return;
+        final String pkg = (packageName != null && !packageName.trim().isEmpty()) ? packageName.trim() : PKG_MLBB;
 
         AppExecutors.getInstance().executeCommand(() -> {
             try {
-                Log.i(TAG, "⚡ Initializing MLBB Mod Pipeline...");
+                Log.i(TAG, "⚡ Initializing MLBB Mod Pipeline for " + pkg + "...");
 
                 // Purge any legacy corrupted files/AssetBundles causing black screen
                 try {
-                    MlbbConfigPatcher.cleanLegacyLoadingLocks(PKG_MLBB);
+                    MlbbConfigPatcher.cleanLegacyLoadingLocks(pkg);
                 } catch (Throwable ignored) {}
 
                 // Layer 1: Display refresh rate & surface flinger unlock
                 if (profile.mlbbFpsUnlock) {
                     GameModEngine.enforceDisplayRefreshRate(profile.mlbbTargetFps);
                     try {
-                        MlbbConfigPatcher.patch(PKG_MLBB, profile.mlbbTargetFps);
-                        HardwareMaskEngine.maskAllAndroidVersions(ctx, PKG_MLBB, profile.mlbbTargetFps);
+                        MlbbConfigPatcher.patch(pkg, profile.mlbbTargetFps);
+                        HardwareMaskEngine.maskAllAndroidVersions(ctx, pkg, profile.mlbbTargetFps);
                     } catch (Throwable t) {
                         Log.w(TAG, "MLBB static config patch note: " + t.getMessage());
                     }
                 }
 
-                // Layer 2: Asset deployment and Hero scripts
+                // Layer 2: Asset deployment, Drone View, and Hero scripts
                 if (profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled ||
-                    profile.mlbbNoCooldown || profile.mlbbMapHack) {
+                    profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbDroneViewEnabled) {
                     try {
-                        MlbbConfigPatcher.deployMlbbAssets(ctx, PKG_MLBB);
-                        MlbbConfigPatcher.applyBattleConfigOverdrive(PKG_MLBB);
-                        MlbbConfigPatcher.applyMlbbMasterSuite(PKG_MLBB);
-                        MlbbHeroScriptDispatcher.dispatchAllHeroes(ctx, PKG_MLBB);
+                        MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
+                        MlbbConfigPatcher.applyBattleConfigOverdrive(pkg);
+                        MlbbConfigPatcher.applyMlbbMasterSuite(pkg);
+                        MlbbHeroScriptDispatcher.dispatchAllHeroes(ctx, pkg);
+
+                        if (profile.mlbbDroneViewEnabled) {
+                            com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(ctx, pkg, profile.mlbbDroneTier);
+                        }
                     } catch (Throwable t) {
                         Log.w(TAG, "MLBB master suite error: " + t.getMessage());
                     }
@@ -70,6 +79,7 @@ public final class MlbbModManager {
                 setprop("gamebooster.mlbb.aspd",    profile.mlbbAttackSpeedEnabled ? String.valueOf(profile.mlbbAttackSpeedMult) : "1.0");
                 setprop("gamebooster.mlbb.nocool",  profile.mlbbNoCooldown ? "1" : "0");
                 setprop("gamebooster.mlbb.map",     profile.mlbbMapHack ? "1" : "0");
+                setprop("gamebooster.mlbb.drone",   profile.mlbbDroneViewEnabled ? String.valueOf(profile.mlbbDroneTier) : "0");
                 setprop("gamebooster.mlbb.fps",     String.valueOf(profile.mlbbFpsUnlock ? profile.mlbbTargetFps : 60));
                 setprop("gamebooster.mlbb.antiban", profile.mlbbAntiBan ? "1" : "0");
 
@@ -81,11 +91,11 @@ public final class MlbbModManager {
                     String hookScript = readAsset(ctx, "frida/mlbb_hooks.js");
                     if (!hookScript.isEmpty()) {
                         pushScriptToDevice(hookScript, FRIDA_HOOK_DEVICE_DIR + "mlbb_hooks.js");
-                        injectFrida(PKG_MLBB, FRIDA_HOOK_DEVICE_DIR + "mlbb_hooks.js");
+                        injectFrida(pkg, FRIDA_HOOK_DEVICE_DIR + "mlbb_hooks.js");
                     }
                 }
 
-                Log.i(TAG, "✅ MLBB mod pipeline fully deployed.");
+                Log.i(TAG, "✅ MLBB mod pipeline fully deployed for " + pkg);
             } catch (Throwable t) {
                 Log.e(TAG, "MLBB mod pipeline error: " + t.getMessage(), t);
             }
@@ -97,8 +107,22 @@ public final class MlbbModManager {
     }
 
     private static void injectFrida(String packageName, String scriptPath) {
-        exec("frida -U -f " + packageName + " -l " + scriptPath + " --no-pause &");
-        Log.i(TAG, "[Frida] Injected into " + packageName + " with " + scriptPath);
+        try {
+            String whichFrida = ShizukuExecutor.executeShizukuCommand("which frida 2>/dev/null || which frida-inject 2>/dev/null");
+            if (whichFrida != null && !whichFrida.trim().isEmpty() && !whichFrida.startsWith("ERROR:")) {
+                String bin = whichFrida.trim().split("\n")[0].trim();
+                if (bin.contains("frida-inject")) {
+                    exec(bin + " -n " + packageName + " -s " + scriptPath + " &");
+                } else {
+                    exec(bin + " -U -f " + packageName + " -l " + scriptPath + " --no-pause &");
+                }
+                Log.i(TAG, "[Frida] Injected into " + packageName + " with " + scriptPath);
+            } else {
+                Log.i(TAG, "ℹ️ Frida CLI not installed on device; native C++ & config layers actively maintaining mods.");
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "injectFrida note: " + t.getMessage());
+        }
     }
 
     private static void pushScriptToDevice(String content, String devicePath) {
