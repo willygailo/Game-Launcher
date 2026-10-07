@@ -37,19 +37,20 @@ public class MlbbConfigPatcher {
         boolean anyDeployed = false;
 
         // Relative path mappings from assets/mlbb_mod/modified/ to game root
+        // STRICTLY EXCLUDED:
+        // - version/android/*.xml: Desyncs live Moonton version/region resulting in instant auto-restart.
+        // - root_files/com.mobile.legends.v2.playerprefs.xml: Overwrites user's custom UI layout, buttons, and settings.
+        // - Document/android/GameResAlternative.unity3d: TypeTree mismatch causing lobby black screens.
+        // - gameres/Resources4-*.dat: Raw 7z archives that corrupt game asset directories.
+        // - deployMlbbNativeLibs(): Overwriting installed APK .so libs causes dynamic linker SIGSEGV.
         String[][] assetMappings = {
-            // Document/android/
+            // Document/android/ - Combat & drone parameters (pure gameplay data)
             {"mlbb_mod/modified/Document/android/BattleConfig.json", "files/dragon2017/assets/Document/android/BattleConfig.json"},
             {"mlbb_mod/modified/Document/android/HeroStatConfig.json", "files/dragon2017/assets/Document/android/HeroStatConfig.json"},
             {"mlbb_mod/modified/Document/android/CameraConfig.json", "files/dragon2017/assets/Document/android/CameraConfig.json"},
             {"mlbb_mod/modified/Document/android/DroneViewConfig.json", "files/dragon2017/assets/Document/android/DroneViewConfig.json"},
             {"mlbb_mod/modified/Document/android/res_skip_patch.xml", "files/dragon2017/assets/Document/android/res_skip_patch.xml"},
             {"mlbb_mod/modified/Document/android/BinaryPatchMD5.xml", "files/dragon2017/assets/Document/android/BinaryPatchMD5.xml"},
-            // REMOVED: BattleConfig.unity3d, SplitLibMD5.xml — Unity engine CRC manifests.
-            // REMOVED: UI/android/*.unity3d and Art/android/*.unity3d — causes TypeTree / shader
-            //          mismatch on newer MLBB versions resulting in permanent Main Lobby Black Screen.
-            // REMOVED: version/android/*.xml and table.bin — causes server handshake desync on lobby login.
-            {"mlbb_mod/modified/Document/android/GameResAlternative.unity3d", "files/dragon2017/assets/Document/android/GameResAlternative.unity3d"},
 
             // Document/ root
             {"mlbb_mod/modified/Document/BattleConfig.json", "files/dragon2017/assets/Document/BattleConfig.json"},
@@ -58,35 +59,11 @@ public class MlbbConfigPatcher {
             // Anti-check & validation bypass
             {"mlbb_mod/modified/__fix_rescheck", "files/dragon2017/assets/__fix_rescheck"},
 
-            // Bypass & Anti-Hack Override
-            {"mlbb_mod/modified/bypass/modified_config.xml", "files/dragon2017/assets/bypass/modified_config.xml"},
-            {"mlbb_mod/modified/bypass/modified_config.xml", "files/modified_config.xml"},
-            {"mlbb_mod/modified/bypass/securityconfig_patched.bytes", "files/dragon2017/assets/bypass/securityconfig_patched.bytes"},
-            {"mlbb_mod/modified/bypass/libAkSoundEngine_patched.bytes", "files/dragon2017/assets/bypass/libAkSoundEngine_patched.bytes"},
-            {"mlbb_mod/modified/bypass/anti_hack_patched.bytes", "files/dragon2017/assets/bypass/anti_hack_patched.bytes"},
-
-            // Version XMLs from new patch — override MLBB version check and IP list
-            {"mlbb_mod/modified/version/android/iplist.xml", "files/dragon2017/assets/version/android/iplist.xml"},
-            {"mlbb_mod/modified/version/android/realversion.xml", "files/dragon2017/assets/version/android/realversion.xml"},
-            {"mlbb_mod/modified/version/android/usrinfo.xml", "files/dragon2017/assets/version/android/usrinfo.xml"},
-            {"mlbb_mod/modified/version/android/version.xml", "files/dragon2017/assets/version/android/version.xml"},
-
-            // GameRes asset bundles from new patch
-            {"mlbb_mod/modified/gameres/Resources4-1.dat", "files/dragon2017/assets/Resources4-1.dat"},
-            {"mlbb_mod/modified/gameres/Resources4-2.dat", "files/dragon2017/assets/Resources4-2.dat"},
-            {"mlbb_mod/modified/gameres/Resources4-3.dat", "files/dragon2017/assets/Resources4-3.dat"},
-            {"mlbb_mod/modified/gameres/Resources4-4.dat", "files/dragon2017/assets/Resources4-4.dat"},
-            {"mlbb_mod/modified/gameres/cid", "files/dragon2017/assets/cid"},
-            {"mlbb_mod/modified/gameres/unity_commands.txt", "files/dragon2017/assets/unity_commands.txt"},
-
-            // MLSDK and Core gameres overrides
+            // MLSDK and Core gameres overrides (anti-crash and safe runtime definitions)
             {"mlbb_mod/modified/gameres/MLSDK/android/arm64-v8a/unitypluginmoba_resources_bytes_v2", "files/dragon2017/assets/MLSDK/android/arm64-v8a/unitypluginmoba_resources_bytes_v2"},
             {"mlbb_mod/modified/gameres/MLSDK/android/armeabi-v7a/unitypluginmoba_resources_bytes_v2", "files/dragon2017/assets/MLSDK/android/armeabi-v7a/unitypluginmoba_resources_bytes_v2"},
             {"mlbb_mod/modified/gameres/android/Define.bytes", "files/dragon2017/assets/android/Define.bytes"},
-            {"mlbb_mod/modified/gameres/android/mlf/ModulesConf.bytes", "files/dragon2017/assets/android/mlf/ModulesConf.bytes"},
-
-            // PlayerPrefs XML
-            {"mlbb_mod/modified/root_files/com.mobile.legends.v2.playerprefs.xml", "shared_prefs/" + packageName + ".v2.playerprefs.xml"}
+            {"mlbb_mod/modified/gameres/android/mlf/ModulesConf.bytes", "files/dragon2017/assets/android/mlf/ModulesConf.bytes"}
         };
 
         for (String root : roots) {
@@ -102,11 +79,7 @@ public class MlbbConfigPatcher {
             }
         }
 
-        // Deploy modded native SO libraries into game's native lib directory
-        boolean soDeployed = deployMlbbNativeLibs(context, packageName, am, roots);
-        if (soDeployed) anyDeployed = true;
-
-        android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB Mod Asset Deployer] Deployed mod assets for " + packageName + " (success=" + anyDeployed + ")");
+        android.util.Log.i("MlbbConfigPatcher", "📦 [MLBB Mod Asset Deployer] Deployed safe combat/drone assets for " + packageName + " (success=" + anyDeployed + ")");
         return anyDeployed;
     }
 
@@ -2151,6 +2124,58 @@ public class MlbbConfigPatcher {
             }
         } catch (Throwable ignored) {}
         Log.i(TAG, "🧹 MLBB boot.config & loading screen lock files purged for " + pkg);
+        repairAndRestoreMlbbGame(null, pkg);
+    }
+
+    /**
+     * Purges corrupting legacy overrides (alien version XMLs, dummy playerprefs, and mismatched bundles)
+     * so MLBB launches cleanly without auto-restart, UI blocking, or data loss.
+     */
+    public static boolean repairAndRestoreMlbbGame(android.content.Context context, String packageName) {
+        if (packageName == null || packageName.trim().isEmpty()) packageName = "com.mobile.legends";
+        String pkg = packageName.trim();
+        try {
+            String cleanupCmd = String.join("; ",
+                // 1. Remove foreign version and network override manifests
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/version/android/*.xml 2>/dev/null",
+                "rm -f /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/version/android/*.xml 2>/dev/null",
+                // 2. Remove alien Unity bundles & 7z archives
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/GameResAlternative.unity3d 2>/dev/null",
+                "rm -f /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/GameResAlternative.unity3d 2>/dev/null",
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/BattleConfig.unity3d 2>/dev/null",
+                "rm -f /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document/android/BattleConfig.unity3d 2>/dev/null",
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Resources4-*.dat 2>/dev/null",
+                "rm -f /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Resources4-*.dat 2>/dev/null",
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/cid 2>/dev/null",
+                "rm -f /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/unity_commands.txt 2>/dev/null",
+                "rm -rf /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/bypass 2>/dev/null",
+                "rm -rf /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/bypass 2>/dev/null",
+                // 3. Purge corrupted dummy playerprefs if it was replaced with the 58-line dummy
+                "for PREF in '/data/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml' "
+                    + "'/data/user/0/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml' "
+                    + "'/sdcard/Android/data/" + pkg + "/shared_prefs/" + pkg + ".v2.playerprefs.xml'; do "
+                    + "if [ -f \"$PREF\" ] && grep -q 'UltraExtreme2026' \"$PREF\" 2>/dev/null && [ $(wc -l < \"$PREF\" 2>/dev/null || echo 0) -lt 80 ]; then "
+                    + "rm -f \"$PREF\" 2>/dev/null; "
+                    + "fi; "
+                    + "done",
+                // 4. Clear pipeline / code cache
+                "rm -rf /data/data/" + pkg + "/cache/vulkan_pipeline/* 2>/dev/null",
+                "rm -rf /data/data/" + pkg + "/code_cache/* 2>/dev/null",
+                // 5. Ensure full read/write permissions for normal game operation
+                "chmod -R 777 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document 2>/dev/null",
+                "chmod -R 777 /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document 2>/dev/null"
+            );
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(cleanupCmd);
+            } else {
+                com.gamebooster.app.engine.CommandExecutor.executeSystemCommand(cleanupCmd);
+            }
+            Log.i(TAG, "🛡️ [MLBB Self-Repair] Removed alien version manifests, dummy prefs, and foreign bundles for " + pkg);
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "Error running repairAndRestoreMlbbGame", t);
+            return false;
+        }
     }
 
     /**
