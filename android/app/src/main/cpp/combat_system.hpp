@@ -248,7 +248,18 @@ struct Vector3 {
 struct TargetEntity {
     uint32_t id = 0;
     Vector3 position;
+    Vector3 velocity{0.0f, 0.0f, 0.0f};
     bool is_alive = true;
+};
+
+struct AimAssistResult {
+    int32_t target_id = -1;
+    Vector3 predicted_pos{0.0f, 0.0f, 0.0f};
+    Vector3 target_dir{0.0f, 0.0f, 0.0f};
+    float delta_pitch = 0.0f;
+    float delta_yaw = 0.0f;
+    float magnetic_pull = 0.0f;
+    bool is_locked = false;
 };
 
 // O(n) sweep through candidates using normalized dot-product angular alignment
@@ -291,6 +302,85 @@ inline const TargetEntity* GetBestTarget(
     }
 
     return best_target;
+}
+
+// 2026 Predictive Moving-Target Intercept & Sticky Latch Engine
+inline AimAssistResult EvaluateMovingAimAssist(
+    const Vector3& origin,
+    const Vector3& forward_unit,
+    const std::vector<TargetEntity>& enemies,
+    float max_range,
+    float cone_angle_degrees,
+    float bullet_speed,
+    float latency_seconds,
+    float strength_multiplier
+) {
+    AimAssistResult res;
+    float highest_dot = -1.0f;
+    const float max_range_sq = max_range * max_range;
+    const float min_dot_threshold = std::cos((cone_angle_degrees * 0.5f) * (3.14159265358979323846f / 180.0f));
+
+    const TargetEntity* best_target = nullptr;
+    Vector3 best_pred_pos;
+    Vector3 best_dir;
+
+    for (const auto& enemy : enemies) {
+        if (!enemy.is_alive) continue;
+
+        Vector3 to_target = enemy.position - origin;
+        float dist_sq = to_target.LengthSquared();
+        if (dist_sq > max_range_sq || dist_sq <= std::numeric_limits<float>::epsilon()) continue;
+
+        float dist = std::sqrt(dist_sq);
+        float lead_time = (bullet_speed > 0.0f ? (dist / bullet_speed) : 0.0f) + (latency_seconds > 0.0f ? latency_seconds : 0.030f);
+
+        // Intercept vector calculation for moving/sliding/running targets
+        Vector3 pred_pos = {
+            enemy.position.x + enemy.velocity.x * lead_time,
+            enemy.position.y + enemy.velocity.y * lead_time,
+            enemy.position.z + enemy.velocity.z * lead_time
+        };
+
+        Vector3 to_pred = pred_pos - origin;
+        float pred_dist = to_pred.Length();
+        if (pred_dist <= std::numeric_limits<float>::epsilon()) continue;
+
+        Vector3 dir = {to_pred.x / pred_dist, to_pred.y / pred_dist, to_pred.z / pred_dist};
+        float dot = Vector3::Dot(forward_unit, dir);
+
+        if (dot >= min_dot_threshold && dot > highest_dot) {
+            highest_dot = dot;
+            best_target = &enemy;
+            best_pred_pos = pred_pos;
+            best_dir = dir;
+        }
+    }
+
+    if (best_target != nullptr) {
+        res.target_id = static_cast<int32_t>(best_target->id);
+        res.predicted_pos = best_pred_pos;
+        res.target_dir = best_dir;
+        res.is_locked = true;
+
+        // Angular tracking delta calculation
+        float current_yaw = std::atan2(forward_unit.x, forward_unit.z);
+        float target_yaw = std::atan2(best_dir.x, best_dir.z);
+        float dy = target_yaw - current_yaw;
+        constexpr float kPi = 3.14159265358979323846f;
+        while (dy > kPi) dy -= 2.0f * kPi;
+        while (dy < -kPi) dy += 2.0f * kPi;
+
+        float current_pitch = std::asin(std::clamp(forward_unit.y, -1.0f, 1.0f));
+        float target_pitch = std::asin(std::clamp(best_dir.y, -1.0f, 1.0f));
+        float dp = target_pitch - current_pitch;
+
+        res.delta_yaw = dy;
+        res.delta_pitch = dp;
+        // Strength multiplier: 10.90 gives instantaneous magnetic pull (1.0 clamped)
+        res.magnetic_pull = std::clamp(strength_multiplier / 10.0f, 0.0f, 1.0f);
+    }
+
+    return res;
 }
 
 } // namespace combat

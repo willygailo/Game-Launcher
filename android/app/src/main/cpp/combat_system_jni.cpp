@@ -64,6 +64,64 @@ JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nati
     return best ? static_cast<jint>(best->id) : -1;
 }
 
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeEvaluateMovingAimAssistVector
+  (JNIEnv* env, jclass, jfloat originX, jfloat originY, jfloat originZ,
+   jfloat fwdX, jfloat fwdY, jfloat fwdZ,
+   jfloatArray enemyPositions, jfloatArray enemyVelocities, jint enemyCount,
+   jfloat maxRange, jfloat coneAngleDegrees, jfloat bulletSpeed, jfloat latencySeconds, jfloat strengthMultiplier,
+   jfloatArray outResult) {
+    if (!enemyPositions || enemyCount <= 0 || !outResult) return JNI_FALSE;
+
+    jsize posLen = env->GetArrayLength(enemyPositions);
+    if (posLen < enemyCount * 3) return JNI_FALSE;
+
+    jfloat* posElem = env->GetFloatArrayElements(enemyPositions, nullptr);
+    if (!posElem) return JNI_FALSE;
+
+    jfloat* velElem = (enemyVelocities && env->GetArrayLength(enemyVelocities) >= enemyCount * 3)
+                      ? env->GetFloatArrayElements(enemyVelocities, nullptr) : nullptr;
+
+    combat::Vector3 origin{originX, originY, originZ};
+    combat::Vector3 forward{fwdX, fwdY, fwdZ};
+    forward = forward.Normalized();
+
+    std::vector<combat::TargetEntity> enemies;
+    enemies.reserve(enemyCount);
+
+    for (int i = 0; i < enemyCount; ++i) {
+        combat::TargetEntity ent;
+        ent.id = static_cast<uint32_t>(i);
+        ent.position = {posElem[i * 3 + 0], posElem[i * 3 + 1], posElem[i * 3 + 2]};
+        if (velElem) {
+            ent.velocity = {velElem[i * 3 + 0], velElem[i * 3 + 1], velElem[i * 3 + 2]};
+        }
+        ent.is_alive = true;
+        enemies.push_back(ent);
+    }
+
+    env->ReleaseFloatArrayElements(enemyPositions, posElem, JNI_ABORT);
+    if (velElem) {
+        env->ReleaseFloatArrayElements(enemyVelocities, velElem, JNI_ABORT);
+    }
+
+    combat::AimAssistResult res = combat::EvaluateMovingAimAssist(
+        origin, forward, enemies, maxRange, coneAngleDegrees, bulletSpeed, latencySeconds, strengthMultiplier
+    );
+
+    if (res.is_locked) {
+        jfloat buffer[7] = {
+            static_cast<jfloat>(res.target_id),
+            res.predicted_pos.x, res.predicted_pos.y, res.predicted_pos.z,
+            res.delta_pitch, res.delta_yaw,
+            res.magnetic_pull
+        };
+        env->SetFloatArrayRegion(outResult, 0, 7, buffer);
+        return JNI_TRUE;
+    }
+
+    return JNI_FALSE;
+}
+
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownTrigger
   (JNIEnv*, jclass, jint actionId, jfloat durationSeconds) {
     std::lock_guard<std::mutex> lock(g_cooldown_mutex);

@@ -161,6 +161,7 @@ public class CodmConfigPatcher {
      */
     public static void applyCodmGodModeFullOverdrive(String packageName) {
         if (packageName == null) return;
+        repairAndRestoreCodmGame(null, packageName);
         deployCodmAssets(null, packageName);
         applyDamage10000AttackSpeedMax(packageName);
         applyFastAttackSpeed(packageName);
@@ -207,24 +208,14 @@ public class CodmConfigPatcher {
             "ControlsSettings.ini",
             "boot.config",
             "cod_prefs.json",
-            "com.activision.callofduty.shooter.v2.playerprefs.xml",
-            "com.garena.game.codm.v2.playerprefs.xml",
-            "com.garena.game.codm_preferences.xml",
-            "com.tencent.tmgp.cod.v2.playerprefs.xml",
-            "com.vng.codm.v2.playerprefs.xml",
-            "app_pref.xml",
             "GameConfig.xml",
             "GraphicsSetting.xml",
             "UserProfile.xml",
-            // New patch assets — MSDK config, encryption bypass, AC bypass
+            // Safe patch assets — MSDK config, encryption bypass
             "MSDKConfig.ini",
             "MSDKBuglyConfig.json",
             "encrypt.json",
             "captcha_encrpted",
-            "acginf.dat",
-            "verifier",
-            "__accfinfo.tsb",
-            "__acinfo.tsb",
             "blit.txt"
         };
 
@@ -265,21 +256,13 @@ public class CodmConfigPatcher {
                 } else if (assetName.startsWith("HUDLayoutConfig") || assetName.startsWith("JoySticksConfig")) {
                     // NEVER wipe out existing player HUD/Joystick layouts
                     String dest = assetName.startsWith("HUDLayoutConfig") ? hudDir + "/" + assetName : joystickDir + "/" + assetName;
-                    if (!new java.io.File(dest).exists()) {
+                    if (!com.gamebooster.app.shizuku.ShizukuFileManager.fileExists(dest) && !new java.io.File(dest).exists()) {
                         writeAssetWithFallback(dest, data);
                     }
                 } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml")) {
                     writeAssetWithFallback(prefsDir + "/" + assetName, data);
                     writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
-                    anyDeployed = true;
-                } else if (assetName.endsWith(".playerprefs.xml") || assetName.endsWith("_preferences.xml") || assetName.equals("app_pref.xml")) {
-                    writeAssetWithFallback(filesDir + "/" + packageName + ".v2.playerprefs.xml", data);
-                    writeAssetWithFallback(sharedPrefsDir + "/" + packageName + ".v2.playerprefs.xml", data);
-                    writeAssetWithFallback(filesDir + "/" + packageName + "_preferences.xml", data);
-                    writeAssetWithFallback(sharedPrefsDir + "/" + packageName + "_preferences.xml", data);
-                    writeAssetWithFallback(filesDir + "/" + assetName, data);
-                    writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
                     anyDeployed = true;
                 } else {
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
@@ -314,60 +297,62 @@ public class CodmConfigPatcher {
             }
         }
 
-        // Deploy modded CODM native SO libraries
-        boolean soDeployed = deployCodmNativeLibs(context, packageName, am);
-        if (soDeployed) anyDeployed = true;
+        // Safe bypass: Do NOT overwrite APK shared libraries (.so) to prevent linker SIGSEGV / ACE integrity crash
+        // deployCodmNativeLibs(context, packageName, am);
 
         Log.i(TAG, "📦 [CODM Asset Deployer] Deployed asset templates for " + packageName + " (success=" + anyDeployed + ")");
         return anyDeployed;
     }
 
     /**
-     * Deploys modded CODM SO libraries from assets/codm/comlibs/arm64-v8a/
-     * into the game's native lib directory.
+     * Deploys modded CODM SO libraries.
+     * Note: Disabled for stability to avoid runtime SIGSEGV / ACE anti-cheat bans.
      */
     public static boolean deployCodmNativeLibs(android.content.Context context, String packageName,
             android.content.res.AssetManager am) {
-        if (context == null || packageName == null || am == null) return false;
-        boolean anyDeployed = false;
-        String soSrcDir = "codm/comlibs/arm64-v8a";
-        String[] soFiles = {
-            "libunity.so", "libanogs.so", "libgcloud.so", "libMSDKPIXCore.so",
-            "libCrashSight.so", "libCrashSightPlugin.so", "libGCloudVoice.so",
-            "libGPM.so", "libGVoicePlugin.so", "libMSDKUnityAdapter.so",
-            "libAkSoundEngine.so", "libPapiQuickjs.so", "libPixFFmpeg.so",
-            "libPixVideo.so", "libcrosCurl.so", "libgcloudcore.so",
-            "libmagtsdk.so", "libsaf.so", "libtgpa.so", "libanort.so",
-            "libPxGameletCore.so", "libRoosterNN.so", "libTDataMaster.so",
-            "libvivogameproxy.so", "libApmBacktrace.so",
-            "libAkConvolutionReverb.so", "libAkMotion.so", "libAkStereoDelay.so",
-            "libCrankcaseAudioREVModelPlayer.so", "libDolbyAtmosRenderer.so",
-            "libDolbyStereoRenderer.so", "libMcDSP.so", "libResonanceAudio.so",
-            "libMSDKPIXAppsFlyer.so", "libMSDKPIXFirebase.so", "libMSDKPIXGarena.so",
-            "libMSDKPIXSystem.so", "libMSDKPIXTDM.so", "libMSDKPIXWebView.so",
-            "libPluginCrosCurl.so", "libPuertsCore.so", "libdatastore_shared_counter.so",
-            "libpandora.so", "libsnapdragon_services_adk.qti.so",
-            "libsnapdragon_services_qape.qti.so", "libQAPECSharp.qti.so",
-            "libvideotexture.so"
-        };
-        String[] nativeLibDirs = {
-            "/data/data/" + packageName + "/lib",
-            "/data/app/" + packageName + "/lib/arm64",
-            "/data/app/" + packageName + "-1/lib/arm64-v8a",
-            "/data/user/0/" + packageName + "/lib"
-        };
-        for (String soName : soFiles) {
-            byte[] data = readAssetBytes(am, soSrcDir + "/" + soName);
-            if (data == null || data.length == 0) continue;
-            for (String libDir : nativeLibDirs) {
-                try {
-                    writeAssetWithFallback(libDir + "/" + soName, data);
-                    anyDeployed = true;
-                } catch (Throwable ignored) {}
+        Log.i(TAG, "🛡️ [CODM Native Libs] Preserving original APK binaries for zero-crash stability on " + packageName);
+        return false;
+    }
+
+    /**
+     * Automated self-repair and recovery routine for CODM.
+     * Cleans up stale anti-cheat locks, temporary token files, and ensures proper read/write permissions.
+     */
+    public static boolean repairAndRestoreCodmGame(android.content.Context context, String packageName) {
+        if (packageName == null) return false;
+        try {
+            List<String> roots = resolveRootDirs(packageName);
+            for (String root : roots) {
+                String filesDir = root + "/files";
+                String configDir = root + "/files/Config";
+                // Remove stale AC token files and corrupting temp files
+                String[] toxicFiles = {
+                    filesDir + "/acginf.dat",
+                    filesDir + "/verifier",
+                    filesDir + "/__accfinfo.tsb",
+                    filesDir + "/__acinfo.tsb",
+                    configDir + "/acginf.dat",
+                    configDir + "/verifier",
+                    configDir + "/__accfinfo.tsb",
+                    configDir + "/__acinfo.tsb",
+                    filesDir + "/app_pref.xml"
+                };
+                for (String toxic : toxicFiles) {
+                    try {
+                        com.gamebooster.app.shizuku.ShizukuFileManager.deleteFile(toxic);
+                        new java.io.File(toxic).delete();
+                    } catch (Throwable ignored) {}
+                }
+
+                // Enforce proper permissions on game data directory via Shizuku
+                com.gamebooster.app.shizuku.ShizukuExecutor.executeShizukuCommand("chmod -R 777 " + root + "/files 2>/dev/null");
             }
+            Log.i(TAG, "🛡️ CODM self-repair complete for " + packageName);
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "Error in repairAndRestoreCodmGame: " + t.getMessage(), t);
+            return false;
         }
-        Log.i(TAG, "📦 [CODM SO Deployer] Native libs deployed for " + packageName + " (success=" + anyDeployed + ")");
-        return anyDeployed;
     }
 
     public static List<String> resolveRootDirs(String pkg) {
@@ -570,6 +555,7 @@ public class CodmConfigPatcher {
 
     public static boolean patch(String packageName, int targetFps) {
         if (packageName == null) return false;
+        repairAndRestoreCodmGame(null, packageName);
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
         List<String> paths = getConfigPaths(packageName);
         int patched = 0;
@@ -1132,6 +1118,7 @@ public class CodmConfigPatcher {
 
     public static boolean patchCompetitive(String packageName, int targetFps) {
         if (packageName == null) return false;
+        repairAndRestoreCodmGame(null, packageName);
         final int forcedFps = FpsUnlockTier.resolveTargetFps(targetFps);
 
         List<String> paths = getConfigPaths(packageName);

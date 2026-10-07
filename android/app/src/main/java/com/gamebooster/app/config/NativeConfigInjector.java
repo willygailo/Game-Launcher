@@ -546,9 +546,63 @@ public class NativeConfigInjector {
     // ── 2026 Modular C++ Combat System Architecture ────────────────────────
     public static native float nativeCalculateCombatDamage(float rawDamage, int damageType, float armor, boolean isCrit, float critMult, boolean dodgeRoll);
     public static native int nativeEvaluateAimAssistTarget(float originX, float originY, float originZ, float fwdX, float fwdY, float fwdZ, float[] enemyPositions, int enemyCount, float maxRange, float coneAngleDegrees);
+    public static native boolean nativeEvaluateMovingAimAssistVector(
+            float originX, float originY, float originZ,
+            float fwdX, float fwdY, float fwdZ,
+            float[] enemyPositions, float[] enemyVelocities, int enemyCount,
+            float maxRange, float coneAngleDegrees, float bulletSpeed, float latencySeconds, float strengthMultiplier,
+            float[] outResult);
     public static native boolean nativeCombatCooldownTrigger(int actionId, float durationSeconds);
     public static native boolean nativeCombatCooldownIsReady(int actionId);
     public static native float nativeCombatCooldownRemaining(int actionId);
+
+    public static class MovingAimResult {
+        public int targetId = -1;
+        public float predX, predY, predZ;
+        public float deltaPitch, deltaYaw;
+        public float magneticPull;
+        public boolean isLocked = false;
+    }
+
+    public static MovingAimResult evaluateMovingAimAssistVector(
+            float originX, float originY, float originZ,
+            float fwdX, float fwdY, float fwdZ,
+            float[] enemyPositions, float[] enemyVelocities, int enemyCount,
+            float maxRange, float coneAngleDegrees, float bulletSpeed, float latencySeconds, float strengthMultiplier) {
+        ensureNativeLoaded();
+        float[] buffer = new float[7];
+        if (sNativeLibraryLoaded) {
+            try {
+                boolean locked = nativeEvaluateMovingAimAssistVector(
+                        originX, originY, originZ, fwdX, fwdY, fwdZ,
+                        enemyPositions, enemyVelocities, enemyCount,
+                        maxRange, coneAngleDegrees, bulletSpeed, latencySeconds, strengthMultiplier,
+                        buffer);
+                if (locked) {
+                    MovingAimResult r = new MovingAimResult();
+                    r.targetId = (int) buffer[0];
+                    r.predX = buffer[1]; r.predY = buffer[2]; r.predZ = buffer[3];
+                    r.deltaPitch = buffer[4]; r.deltaYaw = buffer[5];
+                    r.magneticPull = buffer[6];
+                    r.isLocked = true;
+                    return r;
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "nativeEvaluateMovingAimAssistVector fallback: " + t.getMessage());
+            }
+        }
+        MovingAimResult r = new MovingAimResult();
+        int bestId = evaluateAimAssistTarget(originX, originY, originZ, fwdX, fwdY, fwdZ, enemyPositions, enemyCount, maxRange, coneAngleDegrees);
+        if (bestId >= 0) {
+            r.targetId = bestId;
+            r.predX = enemyPositions[bestId * 3];
+            r.predY = enemyPositions[bestId * 3 + 1];
+            r.predZ = enemyPositions[bestId * 3 + 2];
+            r.magneticPull = Math.min(1.0f, strengthMultiplier / 10.0f);
+            r.isLocked = true;
+        }
+        return r;
+    }
 
     public static float calculateCombatDamage(float rawDamage, int damageType, float armor, boolean isCrit, float critMult, boolean dodgeRoll) {
         ensureNativeLoaded();
