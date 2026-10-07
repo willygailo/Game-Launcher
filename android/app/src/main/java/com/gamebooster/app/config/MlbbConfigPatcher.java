@@ -2134,7 +2134,15 @@ public class MlbbConfigPatcher {
                 // 4. Clear pipeline / code cache
                 "rm -rf /data/data/" + pkg + "/cache/vulkan_pipeline/* 2>/dev/null",
                 "rm -rf /data/data/" + pkg + "/code_cache/* 2>/dev/null",
-                // 5. Ensure full read/write permissions for normal game operation
+                // 5a. Sweep mini_patch slots — remove toxic version XMLs and mismatched bundles
+                //     that were injected by old unpackAssetDirectory(ASSET_BASE_DIR) calls.
+                //     version/android/*.xml forces USA CDN channel \u2192 auto-restart.
+                //     GameResAlternative.unity3d has TypeTree mismatch \u2192 black screen.
+                "find /sdcard/Android/data/" + pkg + "/files/mini_patch -name '*.xml' -path '*/version/*' -delete 2>/dev/null",
+                "find /storage/emulated/0/Android/data/" + pkg + "/files/mini_patch -name '*.xml' -path '*/version/*' -delete 2>/dev/null",
+                "find /sdcard/Android/data/" + pkg + "/files/mini_patch -name 'GameResAlternative.unity3d' -delete 2>/dev/null",
+                "find /storage/emulated/0/Android/data/" + pkg + "/files/mini_patch -name 'GameResAlternative.unity3d' -delete 2>/dev/null",
+                // 5b. Ensure full read/write permissions for normal game operation
                 "chmod -R 777 /sdcard/Android/data/" + pkg + "/files/dragon2017/assets/Document 2>/dev/null",
                 "chmod -R 777 /storage/emulated/0/Android/data/" + pkg + "/files/dragon2017/assets/Document 2>/dev/null"
             );

@@ -577,26 +577,26 @@ public final class MlbbDroneViewPatcher {
             default:        posY = "-20.50"; break;
         }
 
-        // In-place multi-attribute patch:
-        //  1. fPosY — camera elevation for all camps
-        //  2. ResCheckConf.xml — skipFix="1" and fake MD5 to prevent re-download
-        //  3. res_skip_patch.xml — add BattleSystemConfig skipFix entry if missing
-        //  4. chmod 444 to lock against Moonton background overwrite
+        // In-place anti-redownload bypass — XML SIDECAR ONLY:
+        //  1. ResCheckConf.xml  — skipFix="1" + neutralize MD5 check
+        //  2. res_skip_patch.xml — add BattleSystemConfig & Document skipFix entries if missing
+        //
+        // INTENTIONALLY NOT running sed on Document.unity3d itself.
+        // Document.unity3d is a binary UnityFS LZ4 AssetBundle (~34MB).
+        // sed treats it as a text stream, corrupts null-byte sequences, shifts
+        // serialization offsets, and invalidates Unity chunk CRC checksums.
+        // Camera altitude is controlled exclusively via BattleSystemConfig.bytes
+        // which is deployed by applyDroneViewAtomic() — no binary patching needed.
         String script =
             "f=\"" + docUnity3dPath + "\"\n" +
             "if [ -f \"$f\" ]; then\n" +
-            // Unlock for write
-            "  chmod 666 \"$f\" 2>/dev/null\n" +
-            // Patch ALL fPosY occurrences in one pass (covers iIndex 1-30)
-            "  sed -i 's/fPosY=\\\"-[0-9\\.]*\\\"/fPosY=\\\"" + posY + "\\\"/g' \"$f\" 2>/dev/null || " +
-            "  true\n" +
-            // Keep readable and writable by game engine
+            // Keep Document.unity3d untouched — ensure it is world-readable
             "  chmod 666 \"$f\" 2>/dev/null\n" +
             // Update ResCheckConf.xml — set skipFix=1 and neutralize MD5 check
             "  rc=\"$(dirname \"$f\")/ResCheckConf.xml\"\n" +
             "  if [ -f \"$rc\" ]; then\n" +
             "    chmod 666 \"$rc\" 2>/dev/null\n" +
-            "    sed -i 's/name=\\\"Document\\\"[^\\/]*md5=\\\"[^\\\"]*\\\"/name=\\\"Document\\\" md5=\\\"0698dc1046f8154fabb6fdcfde00cac9\\\"/g' \"$rc\" 2>/dev/null\n" +
+            "    sed -i 's/name=\\\"Document\\\"[^/]*md5=\\\"[^\\\"]*\\\"/name=\\\"Document\\\" md5=\\\"0698dc1046f8154fabb6fdcfde00cac9\\\"/g' \"$rc\" 2>/dev/null\n" +
             "    sed -i 's/skipFix=\\\"0\\\"/skipFix=\\\"1\\\"/g' \"$rc\" 2>/dev/null\n" +
             "    chmod 666 \"$rc\" 2>/dev/null\n" +
             "  fi\n" +
@@ -604,8 +604,8 @@ public final class MlbbDroneViewPatcher {
             "  rsp=\"$(dirname \"$f\")/res_skip_patch.xml\"\n" +
             "  if [ -f \"$rsp\" ]; then\n" +
             "    chmod 666 \"$rsp\" 2>/dev/null\n" +
-            "    grep -q 'name=\\\"Document\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"Document\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
-            "    grep -q 'name=\\\"BattleSystemConfig\\\"' \"$rsp\" || sed -i '/<\\/root>/i \\  <item name=\\\"BattleSystemConfig\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
+            "    grep -q 'name=\\\"Document\\\"' \"$rsp\" || sed -i '/</root>/i \\  <item name=\\\"Document\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
+            "    grep -q 'name=\\\"BattleSystemConfig\\\"' \"$rsp\" || sed -i '/</root>/i \\  <item name=\\\"BattleSystemConfig\\\" type=\\\"4\\\" skipFix=\\\"1\\\" />' \"$rsp\" 2>/dev/null\n" +
             "    chmod 666 \"$rsp\" 2>/dev/null\n" +
             "  fi\n" +
             "  echo SUCCESS\n" +
@@ -701,12 +701,16 @@ public final class MlbbDroneViewPatcher {
             ShizukuFileManager.makeDirectory(targetMiniPatch);
             AssetManager am = context.getAssets();
 
-            // 1. Unpack base files if target slot is a newly generated slot without MLBB resources
-            if (targetMiniPatch.contains(MINI_PATCH_SUBPATH)) {
-                unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch);
-            }
+            // INTENTIONALLY NOT calling unpackAssetDirectory(am, ASSET_BASE_DIR, targetMiniPatch).
+            // ASSET_BASE_DIR contains:
+            //   - version/android/version.xml     → forces USA CDN channel + old patch 2.2.16 → AUTO-RESTART
+            //   - version/android/realversion.xml  → server version mismatch → AUTO-RESTART
+            //   - version/android/iplist.xml       → CDN server override → AUTO-RESTART
+            //   - version/android/usrinfo.xml      → account region mismatch → AUTO-RESTART
+            //   - Document/android/GameResAlternative.unity3d → TypeTree mismatch → BLACK SCREEN
+            // Only the files explicitly listed below are safe to deploy into mini_patch.
 
-            // 2. Write the specific tier BattleSystemConfig.bytes (both Document/android and Document paths)
+            // 1. Write the specific tier BattleSystemConfig.bytes (both Document/android and Document paths)
             String battleDocDir   = targetMiniPatch + "/Document/android";
             String battleDest     = battleDocDir + "/BattleSystemConfig.bytes";
             String battleAltDest  = targetMiniPatch + "/Document/BattleSystemConfig.bytes";
@@ -946,33 +950,27 @@ public final class MlbbDroneViewPatcher {
                 return false;
             }
 
-            String targetHeightStr;
-            switch (tier) {
-                case TIER_1_5X: targetHeightStr = "-14.50"; break;
-                case TIER_2X:   targetHeightStr = "-17.69"; break;
-                case TIER_4X:   targetHeightStr = "-23.55"; break;
-                case TIER_5X:   targetHeightStr = "-26.50"; break;
-                case TIER_3X:
-                default:        targetHeightStr = "-20.50"; break;
-            }
-
-            // Command script to safely patch in-place on device via Shizuku shell
+            // XML-sidecar-only in-place bypass script.
+            // INTENTIONALLY NOT running sed/awk on Document.unity3d:
+            // Document.unity3d is a binary UnityFS LZ4 AssetBundle. sed corrupts it.
+            // Camera coordinates are applied via BattleSystemConfig.bytes (already deployed by applyDroneViewAtomic).
             String script =
                 "f=\"" + docUnity3dPath + "\"\n" +
                 "if [ -f \"$f\" ]; then\n" +
-                "  chmod 666 \"$f\" 2>/dev/null\n" +
-                "  sed -i 's/fPosY=\"-[0-9.]*\"/fPosY=\"" + targetHeightStr + "\"/g' \"$f\" 2>/dev/null || {\n" +
-                "    awk '{gsub(/fPosY=\"-[0-9.]*\"/, \"fPosY=\\\"" + targetHeightStr + "\\\"\"); print}' \"$f\" > \"$f.tmp\" && mv \"$f.tmp\" \"$f\"\n" +
-                "  }\n" +
+                // Ensure the original bundle remains accessible — do NOT modify it
                 "  chmod 666 \"$f\" 2>/dev/null\n" +
                 "  rc=\"" + rootDir + "/files/dragon2017/assets/Document/android/ResCheckConf.xml\"\n" +
                 "  if [ -f \"$rc\" ]; then\n" +
-                "    sed -i 's/name=\"Document\" [^\"]* md5=\"[^\"]*\"/name=\"Document\" md5=\"0698dc1046f8154fabb6fdcfde00cac9\"/g' \"$rc\" 2>/dev/null\n" +
-                "    sed -i 's/name=\"Document\" \\(.*\\)skipFix=\"0\"/name=\"Document\" \\1skipFix=\"1\"/g' \"$rc\" 2>/dev/null\n" +
+                "    chmod 666 \"$rc\" 2>/dev/null\n" +
+                "    sed -i 's/name=\"Document\" [^/]* md5=\"[^\"]*\"/name=\"Document\" md5=\"0698dc1046f8154fabb6fdcfde00cac9\"/g' \"$rc\" 2>/dev/null\n" +
+                "    sed -i 's/skipFix=\"0\"/skipFix=\"1\"/g' \"$rc\" 2>/dev/null\n" +
+                "    chmod 666 \"$rc\" 2>/dev/null\n" +
                 "  fi\n" +
                 "  rsp=\"" + rootDir + "/files/dragon2017/assets/Document/android/res_skip_patch.xml\"\n" +
-                "  if [ -f \"$rsp\" ] && ! grep -q 'name=\"Document\"' \"$rsp\"; then\n" +
-                "    sed -i '/<\\/root>/i \\  <item name=\"Document\" type=\"4\" skipFix=\"1\" />' \"$rsp\" 2>/dev/null\n" +
+                "  if [ -f \"$rsp\" ]; then\n" +
+                "    grep -q 'name=\"Document\"' \"$rsp\" || sed -i '/</root>/i \\  <item name=\"Document\" type=\"4\" skipFix=\"1\" />' \"$rsp\" 2>/dev/null\n" +
+                "    grep -q 'name=\"BattleSystemConfig\"' \"$rsp\" || sed -i '/</root>/i \\  <item name=\"BattleSystemConfig\" type=\"4\" skipFix=\"1\" />' \"$rsp\" 2>/dev/null\n" +
+                "    chmod 666 \"$rsp\" 2>/dev/null\n" +
                 "  fi\n" +
                 "  echo SUCCESS\n" +
                 "fi\n";
@@ -1087,10 +1085,11 @@ public final class MlbbDroneViewPatcher {
                 }
 
                 // Modern MLBB 2.2.16+ uses BattleSystemConfig.bytes & DroneViewConfig.json for dynamic camera.
-                // Overwriting Document.unity3d with outdated assets or running sed on the binary bundle
-                // corrupts UnityFS LZ4 archive metadata and causes an 85% loading screen deadlock.
-                // Purge any corrupted external Document.unity3d overrides so MLBB loads its verified base assets.
-                String purgeLegacyBundle = "rm -f \"" + docTargetPath + "\" \"" + docTargetPath + ".bak\" \"" + docTargetPath + ".tmp\" 2>/dev/null";
+                // DO NOT delete Document.unity3d — it contains the official 3D map scene, camera rig,
+                // and terrain geometry. Removing it causes a permanent BLACK SCREEN in battle and
+                // triggers Moonton's asset-recovery watchdog → AUTO-RESTART loop.
+                // Only clean up stale .bak/.tmp remnants left by previous failed patch attempts.
+                String purgeLegacyBundle = "rm -f \"" + docTargetPath + ".bak\" \"" + docTargetPath + ".tmp\" 2>/dev/null";
                 if (ShizukuExecutor.hasShizukuPermission()) {
                     ShizukuExecutor.executeShizukuCommand(purgeLegacyBundle);
                 } else {
