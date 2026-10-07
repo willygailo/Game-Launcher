@@ -10,6 +10,9 @@ daemon/
 
 # Android binaries
 *.apk
+*.apks
+*.xapk
+*.apkm
 *.ap_
 *.aab
 *.dex

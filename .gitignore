@@ -2,6 +2,9 @@
 # Android & Gradle Build Artifacts
 # ====================================================================
 *.apk
+*.apks
+*.xapk
+*.apkm
 *.ap_
 *.aab
 *.dex
@@ -34,6 +37,23 @@ android/all/
 **/android/all/
 frida-server*
 **/frida-server*
+codm/
+/codm/
+DumpDroid/
+/DumpDroid/
+codm_extracted/
+**/codm_extracted/
+mlbb_extracted/
+**/mlbb_extracted/
+dump*.cs
+dump.cs
+*.dump
+il2cpp_dumper.py
+global-metadata.dat
+!**/src/main/assets/**/global-metadata.dat
+!**/assets/**/global-metadata.dat
+!**/assets/**/global-*-metadata.dat
+!**/assets/**.dat
 
 # Gradle Build Cache, Daemon & Outputs
 .gradle/

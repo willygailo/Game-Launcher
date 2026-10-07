@@ -20,18 +20,29 @@ const CFG = {
 
 console.log('[GameBoosterPRO] MLBB hooks loading — config:', JSON.stringify(CFG));
 
-// ─── Wait for libil2cpp.so ─────────────────────────────────────────────────────
+// ─── Wait for libil2cpp.so (Avoid loader stub trampoline < 500KB) ────────────
 function waitForModule(name, callback) {
+  const checkValid = (m) => {
+    if (!m) return false;
+    // The initial MobaGameSO2010050 stub is ~384KB; wait for full decrypted mapping
+    if (name === 'libil2cpp.so' && m.size < 500000) return false;
+    return true;
+  };
+
   const mod = Process.findModuleByName(name);
-  if (mod) {
+  if (checkValid(mod)) {
     callback(mod);
   } else {
     const id = setInterval(() => {
       const m = Process.findModuleByName(name);
-      if (m) { clearInterval(id); callback(m); }
+      if (checkValid(m)) {
+        clearInterval(id);
+        callback(m);
+      }
     }, 500);
   }
 }
+
 
 // ─── SSL Unpin (Anti-Ban Layer) ────────────────────────────────────────────────
 if (CFG.antiBan) {

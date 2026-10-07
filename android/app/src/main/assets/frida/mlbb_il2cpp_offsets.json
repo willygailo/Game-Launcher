@@ -2,6 +2,12 @@
   "version": "2.2.16.12322",
   "arch": "arm64-v8a",
   "target": "libil2cpp.so",
+  "tokens": {
+    "World": "0x02000002",
+    "MolaBigFileDownloader": "0x02000003",
+    "Camera": "0x02000059",
+    "FrameThreadDriver": "0x02000020"
+  },
   "methods": {
     "HeroDamageCalc_CalculateDamage": "0x0182C4D0",
     "HeroAttackSpeed_GetMultiplier": "0x01831E20",
@@ -17,5 +23,24 @@
     "Hero_AttackPower": "0x54",
     "Hero_AttackSpeed": "0x5C",
     "Hero_MovementSpeed": "0x68"
+  },
+  "signatures": {
+    "HeroDamageCalc_CalculateDamage": {
+      "pattern": "4F000054000000000000000000008052",
+      "mask": "xxxx????????xxxx"
+    },
+    "HeroAttackSpeed_GetMultiplier": {
+      "pattern": "1F01086B000000540000000000008052",
+      "mask": "xxxx????xxxx????"
+    },
+    "CameraManager_SetHeight": {
+      "pattern": "F44F01A9FD7B02A9FD0300910000001E",
+      "mask": "xxxxxxxxxxxx???x"
+    },
+    "MolaDownloadBypass": {
+      "pattern": "080080D2C0035FD6",
+      "mask": "xxxxxxxx"
+    }
   }
 }
+

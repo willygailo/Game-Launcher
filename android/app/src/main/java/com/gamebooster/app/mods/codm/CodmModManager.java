@@ -39,6 +39,7 @@ public final class CodmModManager {
         AppExecutors.getInstance().executeCommand(() -> {
             try {
                 Log.i(TAG, "⚡ Initializing CODM Mod Pipeline for " + pkg + "...");
+                CodmIl2cppResolver.loadOffsets(ctx);
 
                 // Layer 1: Display refresh rate & surface flinger unlock
                 if (profile.codmFpsUnlock) {

@@ -51,6 +51,8 @@ public class MlbbConfigPatcher {
             {"mlbb_mod/modified/Document/android/DroneViewConfig.json", "files/dragon2017/assets/Document/android/DroneViewConfig.json"},
             {"mlbb_mod/modified/Document/android/res_skip_patch.xml", "files/dragon2017/assets/Document/android/res_skip_patch.xml"},
             {"mlbb_mod/modified/Document/android/BinaryPatchMD5.xml", "files/dragon2017/assets/Document/android/BinaryPatchMD5.xml"},
+            {"mlbb_mod/modified/Document/android/mola_config.xml", "files/dragon2017/assets/Document/android/mola_config.xml"},
+            {"mlbb_mod/modified/Document/android/ResCheckConf.xml", "files/dragon2017/assets/Document/android/ResCheckConf.xml"},
 
             // Document/ root
             {"mlbb_mod/modified/Document/BattleConfig.json", "files/dragon2017/assets/Document/BattleConfig.json"},
@@ -105,30 +107,40 @@ public class MlbbConfigPatcher {
         String battleJson = "{\n"
                 + "  \"BattleSystem\": {\n"
                 + "    \"DamageLockMax\": 1,\n"
-                + "    \"DamageMultiplier\": 3.0,\n"
-                + "    \"PhysicalDamageBase\": 3500,\n"
-                + "    \"MagicDamageBase\": 3500,\n"
+                + "    \"DamageMultiplier\": 10.0,\n"
+                + "    \"PhysicalDamageBase\": 10000,\n"
+                + "    \"MagicDamageBase\": 10000,\n"
                 + "    \"TrueDmgConversion\": 1,\n"
                 + "    \"HitRegSyncRate\": 1000,\n"
                 + "    \"InputBufferRate\": 1000,\n"
                 + "    \"ZeroInputLag\": 1,\n"
                 + "    \"ZeroInputDelay\": 1,\n"
                 + "    \"PenetrationBoost\": 1,\n"
-                + "    \"PhysicalPenBoost\": 2500,\n"
-                + "    \"MagicPenBoost\": 2500,\n"
+                + "    \"PhysicalPenBoost\": 10000,\n"
+                + "    \"MagicPenBoost\": 10000,\n"
                 + "    \"CritRateBoost\": 1,\n"
-                + "    \"CritMultiplier\": 3.5,\n"
+                + "    \"CritMultiplier\": 10.0,\n"
                 + "    \"BasicAttackRate\": 10.0,\n"
                 + "    \"AttackSpeedBoost\": 10.0,\n"
                 + "    \"AttackSpeedCap\": 10.0,\n"
                 + "    \"AutoAttackInterval\": 0.0,\n"
                 + "    \"AttackAnimSpeed\": 10.0,\n"
                 + "    \"CooldownReduction\": 1.0,\n"
-                + "    \"SkillCDRatio\": 0.05,\n"
+                + "    \"SkillCDRatio\": 0.01,\n"
+                + "    \"SkillCooldownReduction\": 0.99,\n"
                 + "    \"GlobalCDR\": 40,\n"
                 + "    \"ZeroSkillCost\": 1,\n"
                 + "    \"ZeroManaCost\": 1,\n"
                 + "    \"ZeroEnergyCost\": 1,\n"
+                + "    \"PhysicalDefense\": 10000,\n"
+                + "    \"MagicDefense\": 10000,\n"
+                + "    \"DamageReduction\": 0.99,\n"
+                + "    \"ShieldBoost\": 10000,\n"
+                + "    \"PassiveShieldRegen\": 1000,\n"
+                + "    \"LifestealPercent\": 100,\n"
+                + "    \"SpellVampBoost\": 100,\n"
+                + "    \"MovementSpeedBoost\": 1.5,\n"
+                + "    \"MovementSpeedMax\": 1,\n"
                 + "    \"SkillCastDelayMs\": 0,\n"
                 + "    \"ZeroDelaySkillTap\": 1,\n"
                 + "    \"FastSkillCycle\": 1,\n"
@@ -177,11 +189,11 @@ public class MlbbConfigPatcher {
         }
 
         String heroStatJson = "{\n"
-                + "  \"Mage\": {\"magic_power_base\": 3500, \"magic_penetration\": 2500, \"cooldown_ratio\": 0.05, \"mana_cost\": 0, \"spell_vamp_percent\": 80, \"cast_delay_ms\": 0, \"movement_speed\": 450},\n"
-                + "  \"Assassin\": {\"physical_attack_base\": 3200, \"physical_penetration\": 2500, \"cooldown_ratio\": 0.05, \"energy_cost\": 0, \"cast_delay_ms\": 0, \"attack_speed\": 4.5, \"crit_rate\": 1.0, \"crit_multiplier\": 3.0, \"movement_speed\": 480},\n"
-                + "  \"Marksman\": {\"physical_attack_base\": 3000, \"attack_speed\": 5.0, \"attack_speed_cap\": 10.0, \"attack_interval_min\": 0.0, \"crit_rate\": 1.0, \"crit_multiplier\": 3.5, \"lifesteal_percent\": 100, \"cooldown_ratio\": 0.05, \"cast_delay_ms\": 0, \"movement_speed\": 430},\n"
-                + "  \"Fighter\": {\"physical_attack_base\": 2800, \"physical_defense\": 3000, \"magic_defense\": 3000, \"damage_reduction\": 0.85, \"spell_vamp_percent\": 90, \"cooldown_ratio\": 0.05, \"cast_delay_ms\": 0, \"movement_speed\": 420},\n"
-                + "  \"Tank\": {\"max_hp\": 45000, \"physical_defense\": 4500, \"magic_defense\": 4500, \"damage_reduction\": 0.95, \"hp_regen_rate\": 250, \"cooldown_ratio\": 0.05, \"cast_delay_ms\": 0, \"cc_resilience\": 1.0, \"movement_speed\": 410}\n"
+                + "  \"Mage\": {\"magic_power_base\": 10000, \"magic_penetration\": 10000, \"cooldown_ratio\": 0.01, \"mana_cost\": 0, \"spell_vamp_percent\": 100, \"cast_delay_ms\": 0, \"movement_speed\": 500, \"physical_defense\": 10000, \"magic_defense\": 10000},\n"
+                + "  \"Assassin\": {\"physical_attack_base\": 10000, \"physical_penetration\": 10000, \"cooldown_ratio\": 0.01, \"energy_cost\": 0, \"cast_delay_ms\": 0, \"attack_speed\": 10.0, \"crit_rate\": 1.0, \"crit_multiplier\": 10.0, \"movement_speed\": 520, \"physical_defense\": 10000, \"magic_defense\": 10000},\n"
+                + "  \"Marksman\": {\"physical_attack_base\": 10000, \"attack_speed\": 10.0, \"attack_speed_cap\": 10.0, \"attack_interval_min\": 0.0, \"crit_rate\": 1.0, \"crit_multiplier\": 10.0, \"lifesteal_percent\": 100, \"cooldown_ratio\": 0.01, \"cast_delay_ms\": 0, \"movement_speed\": 500, \"physical_defense\": 10000, \"magic_defense\": 10000},\n"
+                + "  \"Fighter\": {\"physical_attack_base\": 10000, \"physical_defense\": 10000, \"magic_defense\": 10000, \"damage_reduction\": 0.99, \"spell_vamp_percent\": 100, \"cooldown_ratio\": 0.01, \"cast_delay_ms\": 0, \"movement_speed\": 500},\n"
+                + "  \"Tank\": {\"max_hp\": 100000, \"physical_defense\": 15000, \"magic_defense\": 15000, \"damage_reduction\": 0.99, \"hp_regen_rate\": 1000, \"cooldown_ratio\": 0.01, \"cast_delay_ms\": 0, \"cc_resilience\": 1.0, \"movement_speed\": 480}\n"
                 + "}\n";
 
         String[] targetHeroStatPaths = {
@@ -204,9 +216,11 @@ public class MlbbConfigPatcher {
 
         // Apply Native DamageLockMax, AimAssist, and Combat overrides
         applyDamageLockMax(pkg);
+        applyDamage10000AttackSpeedMax(pkg);
+        applyMlbbAllHeroBoostAndArmor(pkg);
         applyAimAssistLockMax(pkg);
         applyFastLoadSplashBypass(pkg);
-        Log.i("MlbbConfigPatcher", "⚔️ [BattleConfig] Full combat & damage parameters locked for " + pkg);
+        Log.i("MlbbConfigPatcher", "⚔️ [BattleConfig] Full combat, 10000+ damage, max attack speed & armor locked for " + pkg);
     }
 
     public static void applyFastLoadSplashBypass(String packageName) {
@@ -216,11 +230,20 @@ public class MlbbConfigPatcher {
         }
     }
 
+    public static void applyMlbbAllHeroBoostAndArmor(String packageName) {
+        if (packageName == null) return;
+        for (String path : getConfigPaths(packageName)) {
+            NativeConfigInjector.injectMlbbAllHeroBoostAndArmor(path);
+        }
+        Log.i(TAG, "MLBB All Hero Boost & Armor 10000 applied for " + packageName);
+    }
+
     public static void applyUltraDamageAllHero(String packageName) {
         if (packageName == null) return;
         for (String path : getConfigPaths(packageName)) {
             NativeConfigInjector.injectMlbbUltraDamageAllHero(path);
         }
+
     }
 
     public static void applyArmorAllHero(String packageName) {

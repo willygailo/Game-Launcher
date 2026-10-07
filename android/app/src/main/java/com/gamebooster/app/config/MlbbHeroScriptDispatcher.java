@@ -305,10 +305,58 @@ public final class MlbbHeroScriptDispatcher {
 
             // Delegate to NativeConfigInjector batch write
             NativeConfigInjector.injectHeroScriptModifiers(pkg, inject);
+
+            // Trigger dedicated native C++ combo injectors for high-skill meta heroes
+            triggerHeroNativeInjector(pkg, hero.id);
+
             return true;
         } catch (Throwable t) {
             Log.w(TAG, "injectModifiers error for hero " + hero.name + ": " + t.getMessage());
             return false;
+        }
+    }
+
+    private static void triggerHeroNativeInjector(String pkg, int heroId) {
+        try {
+            switch (heroId) {
+                case 154: // Ling
+                    MlbbConfigPatcher.applyLingHeroDamageCombo(pkg);
+                    break;
+                case 114: // Fanny
+                    MlbbConfigPatcher.applyFannyFastCableCombo(pkg);
+                    break;
+                case 128: // Gusion
+                    MlbbConfigPatcher.applyGusionDaggerCombo(pkg);
+                    break;
+                case 107: // Chou
+                    MlbbConfigPatcher.applyChouKickCombo(pkg);
+                    break;
+                case 111: // Hayabusa
+                    MlbbConfigPatcher.applyHayabusaShadowCombo(pkg);
+                    break;
+                case 175: // Beatrix
+                    MlbbConfigPatcher.applyBeatrixAllGunDamage(pkg);
+                    break;
+                case 120: // Kagura
+                    MlbbConfigPatcher.applyKaguraCombo(pkg);
+                    break;
+                case 199: // Zilong
+                    MlbbConfigPatcher.applyZilongAutoSlash(pkg);
+                    break;
+                case 130: // Lancelot
+                    MlbbConfigPatcher.applyLancelotDashCombo(pkg);
+                    break;
+                case 108: // Franco
+                    MlbbConfigPatcher.applyFrancoHookCombo(pkg);
+                    break;
+                case 103: // Alucard
+                    MlbbConfigPatcher.applyAlucardLifestealCombo(pkg);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Native hero combo trigger notice: " + t.getMessage());
         }
     }
 
@@ -318,3 +366,4 @@ public final class MlbbHeroScriptDispatcher {
         if (val != null && !val.isEmpty()) target.put(destKey, val);
     }
 }
+

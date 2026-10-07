@@ -1,9 +1,40 @@
 {
   "version": "1.6.57.0",
   "arch": "arm64-v8a",
+  "il2cpp_metadata_version": 23,
   "targets": {
     "engine": "libunity.so",
-    "anticheat": "libanort.so"
+    "anticheat": "libanort.so",
+    "anticheat_guard": "libanogs.so"
+  },
+  "il2cpp_sections": {
+    "code_start": "0x041aafe8",
+    "code_stop": "0x0d23d1c0",
+    "total_methods": 238053,
+    "total_types": 52055
+  },
+  "tokens": {
+    "RecoilScaleWeaponShake": "0x06012c6b",
+    "ShotSpread": "0x06014791",
+    "RandomShotSpread": "0x060148bf",
+    "CalcShotSpreadSize": "0x06014a9f",
+    "UseAimAssist": "0x0601480b",
+    "AimAssistDis": "0x06014815",
+    "RecoilUpBase": "0x06014851",
+    "RecoilUpMax": "0x06014853",
+    "RecoilLateralModifier": "0x06014855",
+    "EnableAimAssistanceForSniper": "0x0601d7c7",
+    "AimAssistanceSpeed": "0x0601d7cd",
+    "OverrideAimAssistanceSpeed": "0x0601d7cf",
+    "RecoilFactor": "0x060202b1",
+    "GetRecoilFactorInGame": "0x060202c3",
+    "IsOpenAimAssist": "0x060203a5",
+    "RecoilLateralBase": "0x060284c1",
+    "GetRecoilUpBase": "0x06043457",
+    "MpIsOpenAimAssistSet": "0x0605ce99",
+    "BrIsOpenAimAssistSet": "0x0605cecd",
+    "BlurMinSpread": "0x06064d4d",
+    "BlurSpread": "0x06064d4f"
   },
   "offsets": {
     "Camera_get_main": "0x00F82410",
@@ -12,5 +43,15 @@
     "WeaponController_RecoilModifier": "0x01E4A9C0",
     "WeaponController_SpreadModifier": "0x01E4AD50",
     "PlayerController_SpeedMultiplier": "0x01D382B0"
+  },
+  "field_offsets": {
+    "GAS_MainFireFunnelTask_RecoilUpBase": "0x28",
+    "GAS_MainFireFunnelTask_RecoilUpModifier": "0x2C",
+    "GAS_MeleeAttackTask_RecoilUpMax": "0x30",
+    "GAS_MeleeAttackTask_RecoilLateralBase": "0x34",
+    "GAS_MeleeAttackTask_RecoilLateralModifier": "0x38",
+    "GAS_MeleeAttackTask_RecoilLateralMax": "0x3C",
+    "GAS_MeleeAttackTask_Damage": "0x54",
+    "RootMotion_Dynamics_AimAssistRot": "0x68"
   }
 }

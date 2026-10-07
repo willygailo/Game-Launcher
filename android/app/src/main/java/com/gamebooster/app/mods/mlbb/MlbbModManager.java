@@ -41,10 +41,18 @@ public final class MlbbModManager {
             try {
                 Log.i(TAG, "⚡ Initializing MLBB Mod Pipeline for " + pkg + "...");
 
+                // Pre-load IL2CPP offsets and dynamic signatures from assets
+                try {
+                    MlbbIl2cppResolver.loadOffsets(ctx);
+                } catch (Throwable t) {
+                    Log.w(TAG, "IL2CPP offset load warning: " + t.getMessage());
+                }
+
                 // Purge any legacy corrupted files/AssetBundles causing black screen
                 try {
                     MlbbConfigPatcher.cleanLegacyLoadingLocks(pkg);
                 } catch (Throwable ignored) {}
+
 
                 // Layer 1: Display refresh rate & surface flinger unlock
                 if (profile.mlbbFpsUnlock) {
