@@ -96,9 +96,39 @@ public class ShizukuConnectionManager {
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────
 
+    private final AtomicBoolean heartbeatStarted = new AtomicBoolean(false);
+
+    private void ensureHeartbeatRunning() {
+        if (!heartbeatStarted.compareAndSet(false, true)) return;
+        Thread heartbeatThread = new Thread(() -> {
+            while (enabled) {
+                sleepQuietly(8000);
+                if (!enabled) break;
+                try {
+                    boolean alive = Shizuku.pingBinder();
+                    boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+                    if (alive && granted) {
+                        if (state != State.READY) {
+                            setState(State.READY);
+                        }
+                        if (!ShizukuUserServiceConnector.getInstance().isServiceConnected()) {
+                            ShizukuUserServiceConnector.getInstance().bindService();
+                        }
+                    } else if (!alive && state == State.READY) {
+                        onBinderDead();
+                    }
+                } catch (Throwable ignored) {}
+            }
+            heartbeatStarted.set(false);
+        }, "Shizuku-Heartbeat");
+        heartbeatThread.setDaemon(true);
+        heartbeatThread.start();
+    }
+
     /** Reads the actual binder state and converges the state machine. */
     public void start() {
         enabled = true;
+        ensureHeartbeatRunning();
         try {
             boolean alive = Shizuku.pingBinder();
             boolean granted = alive && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;

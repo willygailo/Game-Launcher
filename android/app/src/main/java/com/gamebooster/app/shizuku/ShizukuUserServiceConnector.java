@@ -86,7 +86,7 @@ public class ShizukuUserServiceConnector {
         if (rebindScheduled.compareAndSet(false, true)) {
             AppExecutors.getInstance().executeCommand(() -> {
                 try {
-                    int maxAttempts = 3;
+                    int maxAttempts = 50; // Resilient retry loop (up to ~3 minutes)
                     while (consecutiveRebindFailures.get() < maxAttempts && !isServiceConnected()) {
                         int attempt = consecutiveRebindFailures.getAndIncrement();
                         long waitTime = calculateBackoffDelay(attempt);
@@ -102,7 +102,7 @@ public class ShizukuUserServiceConnector {
                         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                             Log.d(TAG, "Executing hardened auto-rebind attempt " + (attempt + 1) + " for IUserService daemon (delay=" + waitTime + "ms)...");
                             bindService();
-                            long checkDeadline = System.currentTimeMillis() + 350L;
+                            long checkDeadline = System.currentTimeMillis() + 500L;
                             while (System.currentTimeMillis() < checkDeadline && !isServiceConnected()) {
                                 try { Thread.sleep(30); } catch (InterruptedException ignored) {}
                             }
@@ -111,6 +111,9 @@ public class ShizukuUserServiceConnector {
                                 consecutiveRebindFailures.set(0);
                                 break;
                             }
+                        } else if (!Shizuku.pingBinder()) {
+                            // If main binder itself is sleeping/dead, back off briefly
+                            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
                         }
                     }
                 } finally {
@@ -122,7 +125,10 @@ public class ShizukuUserServiceConnector {
 
     private void handleRemoteException(String op, Exception e) {
         Log.w(TAG, "RemoteException in " + op + " (switching to elevated shell fallback): " + e.getMessage());
-        handleServiceDeath("RemoteException in " + op);
+        // Do NOT destroy service connection on transient call errors unless binder is truly dead
+        if (userServiceInstance == null || userServiceInstance.asBinder() == null || !userServiceInstance.asBinder().isBinderAlive()) {
+            handleServiceDeath("RemoteException in " + op + " (binder dead)");
+        }
     }
 
     private final IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
