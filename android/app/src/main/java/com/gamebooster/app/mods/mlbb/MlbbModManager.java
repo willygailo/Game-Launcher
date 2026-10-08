@@ -71,6 +71,9 @@ public final class MlbbModManager {
                     try {
                         MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
                         MlbbConfigPatcher.applyBattleConfigOverdrive(pkg);
+                        MlbbConfigPatcher.applyRankedCombatFullSuite(pkg);
+                        MlbbConfigPatcher.applyClassicCombatFullSuite(pkg);
+                        MlbbConfigPatcher.applyMlbbRankedMastery(pkg);
                         MlbbConfigPatcher.applyMlbbMasterSuite(pkg);
                         MlbbHeroScriptDispatcher.dispatchAllHeroes(ctx, pkg);
 

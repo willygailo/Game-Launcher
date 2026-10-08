@@ -357,25 +357,26 @@ public class CodmConfigPatcher {
 
     public static List<String> resolveRootDirs(String pkg) {
         List<String> roots = new java.util.ArrayList<>();
-        if (pkg == null || pkg.trim().isEmpty()) pkg = "com.activision.callofduty.shooter";
-
-        // Primary User 0 external data root
-        roots.add("/storage/emulated/0/Android/data/" + pkg);
-
-        // App-private data roots are only accessible when true root (su) is available
-        if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
-            roots.add("/data/data/" + pkg);
-            roots.add("/data/user/0/" + pkg);
+        List<String> targets = new java.util.ArrayList<>();
+        if (pkg != null && !pkg.trim().isEmpty()) {
+            targets.add(pkg.trim());
+        }
+        // Always ensure both major CODM regions are covered
+        if (!targets.contains("com.garena.game.codm")) {
+            targets.add("com.garena.game.codm");
+        }
+        if (!targets.contains("com.activision.callofduty.shooter")) {
+            targets.add("com.activision.callofduty.shooter");
+        }
+        if (!targets.contains("com.vng.codmvn")) {
+            targets.add("com.vng.codmvn");
         }
 
-        // Secondary profiles only if the user directory physically exists on storage
-        for (int userId = 10; userId <= 14; userId++) {
-            java.io.File userRoot = new java.io.File("/storage/emulated/" + userId);
-            if (userRoot.exists()) {
-                roots.add("/storage/emulated/" + userId + "/Android/data/" + pkg);
-                if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
-                    roots.add("/data/user/" + userId + "/" + pkg);
-                }
+        for (String targetPkg : targets) {
+            roots.add("/storage/emulated/0/Android/data/" + targetPkg);
+            if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
+                roots.add("/data/data/" + targetPkg);
+                roots.add("/data/user/0/" + targetPkg);
             }
         }
         return roots;

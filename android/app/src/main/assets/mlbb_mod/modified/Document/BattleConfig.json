@@ -62,6 +62,14 @@
     "RetributionYellowThresholdIndicator": 1,
     "CounterBuildArmorPen": 1,
     "CounterBuildMagicPen": 1,
-    "CounterBuildAntiHeal": 1
+    "CounterBuildAntiHeal": 1,
+    "RankedModeActive": 1,
+    "ClassicModeActive": 1,
+    "RankedCombatSync": 1,
+    "ClassicCombatSync": 1,
+    "AllModeCombatOverride": 1,
+    "DraftPickCombatActive": 1,
+    "CustomModeActive": 1,
+    "BrawlModeActive": 1
   }
 }

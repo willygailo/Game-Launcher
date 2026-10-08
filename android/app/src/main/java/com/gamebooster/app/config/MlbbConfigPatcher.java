@@ -164,7 +164,15 @@ public class MlbbConfigPatcher {
                 + "    \"CounterBuildArmorPen\": 1,\n"
                 + "    \"CounterBuildMagicPen\": 1,\n"
                 + "    \"CounterBuildAntiHeal\": 1,\n"
-                + "    \"RetributionYellowThresholdIndicator\": 1\n"
+                + "    \"RetributionYellowThresholdIndicator\": 1,\n"
+                + "    \"RankedModeActive\": 1,\n"
+                + "    \"ClassicModeActive\": 1,\n"
+                + "    \"RankedCombatSync\": 1,\n"
+                + "    \"ClassicCombatSync\": 1,\n"
+                + "    \"AllModeCombatOverride\": 1,\n"
+                + "    \"DraftPickCombatActive\": 1,\n"
+                + "    \"CustomModeActive\": 1,\n"
+                + "    \"BrawlModeActive\": 1\n"
                 + "  }\n"
                 + "}\n";
 
@@ -565,7 +573,14 @@ public class MlbbConfigPatcher {
         applyMlbbGodModeFullOverdrive(packageName);
         // 2026.3 Dame Aim Assist Suite
         applyEnemyLockMaxAllScope(packageName);
-        applyAutoHeadshotBulletKill(packageName);
+        // Ranked & Classic Mode Full Combat Synchronization
+        applyRankedCombatFullSuite(packageName);
+        applyClassicCombatFullSuite(packageName);
+        applyMlbbRankedMastery(packageName);
+        applyMlbbCombatOverdrive2026(packageName);
+        applyMlbbBasicAttackRegenOverdrive(packageName);
+        applyMlbbCcImmunityOverdrive(packageName);
+        applyMlbbLongTargetPriority(packageName);
         List<String> paths = getConfigPaths(packageName);
         for (String path : paths) {
             NativeConfigInjector.injectMlbbMasterComboSuite(path);

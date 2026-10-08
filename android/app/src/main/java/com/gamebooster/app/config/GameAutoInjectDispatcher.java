@@ -168,6 +168,9 @@ public final class GameAutoInjectDispatcher {
                         MlbbConfigPatcher.applyMlbbPrefsIntAndBootConfig(fPkg, 185);
                         MlbbConfigPatcher.applyMlbbTacticalSettings(fPkg);
                         MlbbConfigPatcher.applyBattleConfigOverdrive(fPkg);
+                        MlbbConfigPatcher.applyRankedCombatFullSuite(fPkg);
+                        MlbbConfigPatcher.applyClassicCombatFullSuite(fPkg);
+                        MlbbConfigPatcher.applyMlbbRankedMastery(fPkg);
                         MlbbConfigPatcher.applyFastLoadSplashBypass(fPkg);
                         MlbbConfigPatcher.applyFastFarmingAllHero(fPkg);
                         MlbbConfigPatcher.applyFastRetributionObjectiveSteal(fPkg);
