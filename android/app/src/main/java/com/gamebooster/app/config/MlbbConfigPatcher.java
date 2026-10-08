@@ -2343,7 +2343,7 @@ public class MlbbConfigPatcher {
         }
         // Also ensure high-safety config files & battle overrides are synced
         applyBattleConfigOverdrive(packageName);
-        applyTacticalSettingsEnforce(packageName);
+        applyMlbbTacticalSettings(packageName);
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         Log.i(TAG, "⚡ [MasterCombatMatrix] MLBB 8-Feature Master Suite applied across " + written + " paths for " + packageName);
         return written > 0;
