@@ -22,7 +22,6 @@ add_library(
     signal_trap_guard.cpp
     memfd_inject_engine.cpp
     mem_proc_patch_engine.cpp      # /proc/self/mem ARM64 patcher (no mprotect)
-    dlopen_hook_engine.cpp         # libACE.so stub dlopen intercept (2026)
     ace_cloak_engine.cpp           # Tencent ACE in-process cloak engine
     il2cpp_direct_scanner.cpp      # libil2cpp direct memory pattern scanner
 )

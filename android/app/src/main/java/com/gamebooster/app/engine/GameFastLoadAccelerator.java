@@ -72,6 +72,9 @@ public final class GameFastLoadAccelerator {
                 ShellExecutor.executeCommand(cmd);
             }
         }
+
+        // 5. Asynchronous ART Ahead-Of-Time (AOT) machine code verification
+        verifyAndWarmupArtAot(pkg);
     }
 
     /**

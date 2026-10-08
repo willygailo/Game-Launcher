@@ -285,20 +285,5 @@ public final class GameConfigStorageAccessEngine {
         }
     }
 
-    /**
-     * Extracts the package name from a standard Android storage path.
-     * e.g. "/sdcard/Android/data/com.tencent.ig/files/..." → "com.tencent.ig"
-     */
-    private static String extractPackageFromPath(String path) {
-        if (path == null) return null;
-        String[] segments = path.split("/");
-        for (int i = 0; i < segments.length - 1; i++) {
-            if ("data".equals(segments[i]) || "obb".equals(segments[i])) {
-                String candidate = segments.length > i + 1 ? segments[i + 1] : null;
-                if (candidate != null && candidate.contains(".")) return candidate;
-            }
-        }
-        return null;
-    }
 }
 

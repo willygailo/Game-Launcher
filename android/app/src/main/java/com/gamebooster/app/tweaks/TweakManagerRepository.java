@@ -1036,10 +1036,6 @@ public class TweakManagerRepository {
 
             executePrivilegedBatch(batchCmds);
 
-            try {
-                com.gamebooster.app.booster.PerformanceChannel.writeAndExecuteRootTweaksScript(185);
-            } catch (Throwable ignored) {}
-
             final int appliedCount = total;
             if (completeListener != null) {
                 AppExecutors.getInstance().postToMainThread(() -> completeListener.onBatchComplete(appliedCount));

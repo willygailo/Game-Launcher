@@ -50,33 +50,6 @@ public class NativeConfigInjector {
         return sNativeLibraryLoaded;
     }
 
-    /**
-     * Reads file content once, tries native patch, falls back to Java with pre-read content.
-     * Eliminates double file I/O when native library fails.
-     */
-    private static boolean patchWithContentFallback(String path, String[] keys, String section,
-                                                     java.util.function.BooleanSupplier nativeCall) {
-        if (path == null || path.trim().isEmpty()) return false;
-        ensureParentDirectory(path);
-
-        String content = null;
-        if (sNativeLibraryLoaded) {
-            try {
-                content = ShizukuFileManager.readFile(path);
-                if (content.isEmpty()) {
-                    java.io.File f = new java.io.File(path);
-                    if (f.exists() && f.canRead()) {
-                        content = new String(java.nio.file.Files.readAllBytes(f.toPath()), java.nio.charset.StandardCharsets.UTF_8);
-                    }
-                }
-                if (nativeCall.getAsBoolean()) return true;
-            } catch (Throwable t) {
-                if (com.gamebooster.app.BuildConfig.DEBUG) Log.w(TAG, "native patch failed, using Java fallback: " + t.getMessage());
-            }
-        }
-        return ConfigFileHelper.patchKeysWithContent(path, content, keys, section);
-    }
-
     // ─── Native C++ JNI Declarations ─────────────────────────────────────────
 
         public static native boolean nativeInjectConfig(String path, String content);

@@ -129,9 +129,6 @@ public class GameLauncherHelper {
         autoLaunchGame(context, game);
     }
 
-    private static int targetFpsForToast(Context context, String packageName) {
-        return GameProfilePreferences.getTargetHz(context, packageName);
-    }
 
     public static Set<String> getCustomPackages(Context context) {
         if (context == null) return new HashSet<>();

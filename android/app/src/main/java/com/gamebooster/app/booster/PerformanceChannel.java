@@ -69,9 +69,12 @@ public final class PerformanceChannel {
         return false;
     }
 
-    /** The launcher does not change a device-wide GPU rendering backend. */
+    /** Enables high-performance Vulkan / SkiaVK rendering pipeline. */
     public static boolean setGpuRenderMode(boolean is3D) {
-        return false;
+        if (is3D) {
+            return GpuTweaksChannel.enableVulkanRenderer();
+        }
+        return true;
     }
 
     public static boolean executeOneTapBoost(Context context) {

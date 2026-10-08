@@ -86,19 +86,4 @@ public class CommandExecutor {
         }
         return true;
     }
-
-    private static final String[] SAFE_PREFIXES = {"settings ", "setprop ", "cmd ", "device_config "};
-    private static final String UNSAFE_CHARS = ";|&`$()";
-
-    private static boolean isSafeCommand(String command) {
-        if (command == null || command.trim().isEmpty()) return false;
-        String trimmed = command.trim();
-        for (String prefix : SAFE_PREFIXES) {
-            if (trimmed.startsWith(prefix)) return true;
-        }
-        for (int i = 0; i < UNSAFE_CHARS.length(); i++) {
-            if (trimmed.indexOf(UNSAFE_CHARS.charAt(i)) >= 0) return false;
-        }
-        return true;
-    }
 }

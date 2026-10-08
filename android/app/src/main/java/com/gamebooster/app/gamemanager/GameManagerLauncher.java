@@ -172,6 +172,10 @@ public final class GameManagerLauncher {
                         com.gamebooster.app.config.MlbbConfigPatcher.cleanLegacyLoadingLocks(pkg);
                     }
 
+                    // Pre-Launch RAM Flush, UClamp burst & background AOT machine code warmup
+                    com.gamebooster.app.engine.GameFastLoadAccelerator.triggerPreLaunchBurst(appContext, pkg);
+                    com.gamebooster.app.engine.GameFastLoadAccelerator.scheduleLaunchSustainTransition(pkg);
+
                     // STAGE 0: Auto Shell Apply — fires GPU turbo, CPU governor, thermal bypass,
                     // all enabled tweaks (single Shizuku spawn), per-game asset script, Hz lock.
                     // Runs fully async so game startActivity() is NEVER blocked.

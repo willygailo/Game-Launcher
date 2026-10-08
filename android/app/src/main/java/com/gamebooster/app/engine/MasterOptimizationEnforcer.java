@@ -130,10 +130,9 @@ public class MasterOptimizationEnforcer {
                 HwuiRenderAccelerator.applyAll(null); // Global pipeline (no single package target)
                 CpuGovernorChannel.applyIoPipelineAndRtFlags(); // I/O deadline + RT throttle bypass
                 
-                // 3D. Execute master root performance script
+                // 3D. Execute master refresh rate enforcement
                 int targetHz = GameProfileAutoConfigurator.getTargetFpsHz(appContext);
                 if (targetHz <= 0) targetHz = FpsUnlockTier.resolveTargetFps(targetHz);
-                PerformanceChannel.writeAndExecuteRootTweaksScript(targetHz);
                 MaxHzForceChannel.forceApply(targetHz);
 
                 // 3E. Global Android 13-16 Performance Flags & Storage Unlock
@@ -382,14 +381,10 @@ public class MasterOptimizationEnforcer {
                             MaxHzForceChannel.forceApply(forcedFps));
                     report.attemptStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", () ->
                             PerformanceChannel.applyProfile(appContext, PerformanceChannel.Profile.EXTREME_PERFORMANCE));
-                    report.attemptStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", () ->
-                            PerformanceChannel.writeAndExecuteRootTweaksScript(forcedFps));
                 } else {
                     report.addStep("Tier 3", "MaxHzForceChannel.forceApply(" + forcedFps + ")", false,
                             "SKIPPED — depends on Tier 1 (Shizuku)");
                     report.addStep("Tier 3", "PerformanceChannel.applyProfile(EXTREME_PERFORMANCE)", false,
-                            "SKIPPED — depends on Tier 1 (Shizuku)");
-                    report.addStep("Tier 3", "writeAndExecuteRootTweaksScript(" + forcedFps + ")", false,
                             "SKIPPED — depends on Tier 1 (Shizuku)");
                 }
 
