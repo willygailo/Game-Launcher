@@ -171,4 +171,26 @@ public final class GameModAutoSyncEngine {
             Log.w(TAG, "Error initializing staging directories: " + t.getMessage());
         }
     }
+
+    /**
+     * Applies anti-redownload timestamps and checksum bypass locks so client game
+     * does not overwrite patched configuration files.
+     */
+    public static boolean applyAntiRedownloadLocks(String pkg) {
+        if (pkg == null) return false;
+        String cleanPkg = pkg.trim();
+        String script = "sh /data/data/com.gamebooster.app/assets/shell/install_game_mod_core.sh " + cleanPkg + " 2>/dev/null || "
+                      + "touch -t 203001010000 /sdcard/Android/data/" + cleanPkg + "/files/res_skip_patch 2>/dev/null";
+        try {
+            if (ShizukuExecutor.hasShizukuPermission()) {
+                ShizukuExecutor.executeShizukuCommand(script);
+            } else {
+                CommandExecutor.executeSystemCommand(script);
+            }
+            return true;
+        } catch (Throwable t) {
+            Log.w(TAG, "applyAntiRedownloadLocks note: " + t.getMessage());
+            return false;
+        }
+    }
 }

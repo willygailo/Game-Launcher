@@ -3447,3 +3447,123 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbInstantReca
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbInstantRecallSpellSync");
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MLBB: 2026 Master Combat Matrix (Spec: NewPatch.txt) ───────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Covers:
+// 1. Damage (ultra multiplier & DPS lock)
+// 2. Drone View / High FOV (Panoramic 4X / 180 FOV)
+// 3. ESP (Box + Line + HP + Name + Distance coordinate offsets)
+// 4. Speed (Move + Attack rate multiplier)
+// 5. Armor / Defence (Max mitigation / god defense)
+// 6. Near-zero Cooldown (0.01 CDR ratio)
+// 7. No Delay (Zero ADS/touch/activation delay)
+// 8. Combo / Continuous Cast (Auto chain sequencer)
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMasterCombatMatrix
+  (JNIEnv *env, jclass, jstring jPath, jfloat dmgMultiplier, jfloat fovValue, jfloat moveSpeedScale, jfloat attackSpeedScale, jboolean enableEsp) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+
+    char dmgBuf[32], fovBuf[32], moveBuf[32], atkBuf[32];
+    snprintf(dmgBuf, sizeof(dmgBuf), "%.2f", dmgMultiplier > 0.0f ? dmgMultiplier : 3.5f);
+    snprintf(fovBuf, sizeof(fovBuf), "%.1f", fovValue > 0.0f ? fovValue : 180.0f);
+    snprintf(moveBuf, sizeof(moveBuf), "%.2f", moveSpeedScale > 0.0f ? moveSpeedScale : 1.45f);
+    snprintf(atkBuf, sizeof(atkBuf), "%.2f", attackSpeedScale > 0.0f ? attackSpeedScale : 2.5f);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 1. Damage (Ultra) ──
+        {"DamageLockMax",                   "1"},
+        {"EffectiveDPSMode",                "3"},
+        {"DamageScale",                     dmgBuf},
+        {"DamageMultiplier",                dmgBuf},
+        {"PhysicalDamageMultiplier",        dmgBuf},
+        {"MagicDamageMultiplier",           dmgBuf},
+        {"CritRateBoost",                   "1.0"},
+        {"CritMultiplier",                  "4.0"},
+        {"PenetrationBoost",                "1"},
+        {"TrueDamageEnforce",               "1"},
+
+        // ── 2. Drone View / High FOV (Panoramic 4X) ──
+        {"DroneView",                       "1"},
+        {"DroneViewEnabled",                "1"},
+        {"DroneFOV",                        fovBuf},
+        {"PanoramicFOV",                    fovBuf},
+        {"MaxFOV",                          fovBuf},
+        {"FieldOfView",                     fovBuf},
+        {"CameraHeight",                    "4"},
+        {"CameraDistance",                  "320"},
+        {"Camera_Elevation",                "4.5"},
+        {"DronePerspectiveMode",            "1"},
+        {"DroneLockElevation",              "1"},
+        {"DroneAntiShake",                  "1"},
+        {"DroneAntiBlackscreen",            "1"},
+
+        // ── 3. ESP (Box + Line + HP + Name + Distance) ──
+        {"EspEnabled",                      enableEsp ? "1" : "0"},
+        {"EspBoxDraw",                      enableEsp ? "1" : "0"},
+        {"EspLineDraw",                     enableEsp ? "1" : "0"},
+        {"EspHealthBar",                    enableEsp ? "1" : "0"},
+        {"EspPlayerName",                   enableEsp ? "1" : "0"},
+        {"EspDistanceText",                 enableEsp ? "1" : "0"},
+        {"MinimapEnemyPriority",            "1"},
+        {"EnemyMapTracker3s",               "1"},
+        {"VisionFogSyncOverride",           "0"},
+        {"ShowAllEnemyHp",                  "1"},
+
+        // ── 4. Speed (Move + Attack Rate) ──
+        {"MovementSpeedScale",              moveBuf},
+        {"SprintSpeedBoost",                "10"},
+        {"AttackSpeedMultiplier",           atkBuf},
+        {"AttackIntervalMin",               "0.0"},
+        {"AttackSpeedCapUnlock",            "1"},
+        {"AutoAttackWeave",                 "1"},
+
+        // ── 5. Armor / Defence (God Defense) ──
+        {"DamageMitigationMax",             "1"},
+        {"DefenseMultiplier",               "10.0"},
+        {"PhysicalDefenseBoost",            "5000"},
+        {"MagicDefenseBoost",               "5000"},
+        {"DamageReductionPercent",          "0.99"},
+        {"LifestealPercent",                "100"},
+        {"SpellVampPercent",                "100"},
+        {"ShieldAbsorptionMultiplier",      "5.0"},
+
+        // ── 6. Near-Zero Cooldown ──
+        {"NearZeroCooldown",                "1"},
+        {"CooldownRatio",                   "0.01"},
+        {"SkillCooldownMultiplier",         "0.01"},
+        {"SpellCooldownRatio",              "0.01"},
+        {"ZeroSkillCost",                   "1"},
+        {"UnlimitedEnergy",                 "1"},
+        {"NoManaCost",                      "1"},
+
+        // ── 7. No Delay ──
+        {"CastDelayMs",                     "0"},
+        {"SkillCastDelay",                  "0"},
+        {"SkillAnimationDelay",             "0"},
+        {"AdsZeroDelay",                    "1"},
+        {"TouchZeroDelay",                  "1"},
+        {"ZeroInputLag",                    "1"},
+        {"TouchPollingRate",                "1000"},
+        {"InputBufferRate",                 "1000"},
+        {"HitRegSyncRate",                  "1000"},
+        {"FrameSyncDamage",                 "1"},
+
+        // ── 8. Combo / Continuous Cast ──
+        {"SkillAutoChain",                  "1"},
+        {"SkillAutoCombo",                  "1"},
+        {"ContinuousCastChain",             "1"},
+        {"InstantSkillCancel",              "1"},
+        {"SkillChainWindow",                "2.5"},
+        {"HeroLock",                        "1"},
+        {"SkillSmartAim",                   "1"},
+        {"AimMagnetism",                    "3"},
+        {"bFramePacingEnabled",             "True"},
+        {"AllowOcclusionQueries",           "1"}
+    };
+
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbMasterCombatMatrix");
+}
+

@@ -35,6 +35,8 @@
 # ====================================================================
 android/all/
 **/android/all/
+NewPatch/
+**/NewPatch/
 frida-server*
 **/frida-server*
 codm/

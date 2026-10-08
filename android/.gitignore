@@ -67,7 +67,18 @@ seeds.txt
 usage.txt
 dump.txt
 
-# Native libs and shizuku runtime exceptions
+# Native libs, assets & runtime exceptions (MUST BE PRESERVED)
 !**/src/main/jniLibs/**/*.so
 !**/assets/shizuku/*.dex
 !*rish_shizuku.dex
+!**/src/main/assets/**
+
+# Reverse Engineering, Patch Archives & Temporary Dumps
+NewPatch/
+**/NewPatch/
+*.extracted/
+**/.extracted/
+*.dump
+dump*.cs
+global-metadata.dat
+!**/src/main/assets/**/global-metadata.dat

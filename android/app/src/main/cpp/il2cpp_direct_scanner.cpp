@@ -98,4 +98,35 @@ Java_com_gamebooster_app_engine_Il2cppDirectScanner_scanPattern(
     return static_cast<jlong>(found);
 }
 
+JNIEXPORT jlong JNICALL
+Java_com_gamebooster_app_engine_Il2cppDirectScanner_getUnityBase(
+        JNIEnv* /*env*/, jclass /*clazz*/) {
+    return static_cast<jlong>(find_module_base("libunity.so"));
+}
+
+JNIEXPORT jlong JNICALL
+Java_com_gamebooster_app_engine_Il2cppDirectScanner_scanPatternInModule(
+        JNIEnv* env, jclass /*clazz*/, jstring jModuleName, jbyteArray jPattern, jstring jMask) {
+    if (!jModuleName || !jPattern || !jMask) return 0;
+
+    const char* mod_str = env->GetStringUTFChars(jModuleName, nullptr);
+    size_t mod_size = 0;
+    uintptr_t base = find_module_base(mod_str, &mod_size);
+    env->ReleaseStringUTFChars(jModuleName, mod_str);
+    if (!base || mod_size == 0) return 0;
+
+    jsize pat_len = env->GetArrayLength(jPattern);
+    jbyte* pat_bytes = env->GetByteArrayElements(jPattern, nullptr);
+    const char* mask_str = env->GetStringUTFChars(jMask, nullptr);
+
+    uintptr_t found = scan_pattern(base, mod_size,
+                                   reinterpret_cast<const uint8_t*>(pat_bytes),
+                                   mask_str);
+
+    env->ReleaseByteArrayElements(jPattern, pat_bytes, JNI_ABORT);
+    env->ReleaseStringUTFChars(jMask, mask_str);
+
+    return static_cast<jlong>(found);
+}
+
 } // extern "C"

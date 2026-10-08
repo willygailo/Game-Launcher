@@ -35,4 +35,14 @@ public final class Il2cppDirectScanner {
      * Mask format: 'x' for exact match, '?' for wildcard.
      */
     public static native long scanPattern(byte[] pattern, String mask);
+
+    /**
+     * Resolves the runtime base virtual address of libunity.so (CODM embedded il2cpp host).
+     */
+    public static native long getUnityBase();
+
+    /**
+     * Scans any loaded native module for the specified pattern and mask.
+     */
+    public static native long scanPatternInModule(String moduleName, byte[] pattern, String mask);
 }

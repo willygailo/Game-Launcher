@@ -1652,6 +1652,25 @@ public class CodmConfigPatcher {
         Log.i(TAG, "⚡ CODM 2026 Sovereign Overdrive & Bypass Suite applied across " + written + " paths for " + packageName);
         return written > 0;
     }
+
+    /**
+     * 2026 Master Combat Matrix Suite (Spec NewPatch.txt).
+     * Applies full 8-feature matrix: Ultra Damage, 120-130 FOV / iPad View, ESP Offsets,
+     * Sprint Turbo / Fire Rate, Max Damage Mitigation, Zero Operator Cooldown, Zero ADS Delay, Slide Cancel Auto.
+     */
+    public static boolean applyMasterCombatMatrix(String packageName, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectCodmMasterCombatMatrix(path, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp)) {
+                written++;
+            }
+        }
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ [MasterCombatMatrix] CODM 8-Feature Master Suite applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
 
 

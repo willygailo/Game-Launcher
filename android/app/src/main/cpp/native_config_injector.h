@@ -1937,11 +1937,19 @@ JNIEXPORT jfloat JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_na
 JNIEXPORT jint JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeEvaluateAimAssistTarget
   (JNIEnv *, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jfloatArray, jint, jfloat, jfloat);
 
-JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownTrigger
-  (JNIEnv *, jclass, jint, jfloat);
-
 JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownIsReady
   (JNIEnv *, jclass, jint);
+
+/*
+ * 2026 Master Combat Matrix Suite (Spec NewPatch.txt)
+ * Comprehensive 8-Feature Engine: Ultra Damage, 4X Drone View, ESP Offsets,
+ * Move/Attack Speed, God Defense/Armor, Near-zero Cooldown, No Delay, Auto Combo.
+ */
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbMasterCombatMatrix
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat, jfloat, jboolean);
+
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMasterCombatMatrix
+  (JNIEnv *, jclass, jstring, jfloat, jfloat, jfloat, jfloat, jboolean);
 
 JNIEXPORT jfloat JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeCombatCooldownRemaining
   (JNIEnv *, jclass, jint);

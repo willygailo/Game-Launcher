@@ -1,0 +1,48 @@
+{
+  "version": "2026.1",
+  "comment": "Master Anti-Redownload & Checksum Skip Manifest for MLBB & CODM",
+  "rules": [
+    {
+      "game": "com.mobile.legends",
+      "target_paths": [
+        "dragon2017/assets/Document/android/ResCheckConf.xml",
+        "dragon2017/assets/Document/android/res_skip_patch.xml",
+        "dragon2017/assets/Document/android/HeroStatConfig.json",
+        "dragon2017/assets/version/android/version.xml",
+        "dragon2017/assets/version/android/realversion.xml"
+      ],
+      "future_timestamp_seconds": 1893456000,
+      "md5_override": "MATCH_LOCAL",
+      "read_only_lock": false,
+      "mode": "skip_server_sync"
+    },
+    {
+      "game": "com.garena.game.codm",
+      "target_paths": [
+        "Config/UserSetting.json",
+        "Config/GameConfig.xml",
+        "Config/ControlsSettings.ini",
+        "Config/GraphicsSettings.ini",
+        "res_skip_patch"
+      ],
+      "future_timestamp_seconds": 1893456000,
+      "md5_override": "MATCH_LOCAL",
+      "read_only_lock": false,
+      "mode": "skip_server_sync"
+    },
+    {
+      "game": "com.activision.callofduty.shooter",
+      "target_paths": [
+        "Config/UserSetting.json",
+        "Config/GameConfig.xml",
+        "Config/ControlsSettings.ini",
+        "Config/GraphicsSettings.ini",
+        "res_skip_patch"
+      ],
+      "future_timestamp_seconds": 1893456000,
+      "md5_override": "MATCH_LOCAL",
+      "read_only_lock": false,
+      "mode": "skip_server_sync"
+    }
+  ]
+}

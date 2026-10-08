@@ -1633,3 +1633,141 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmGodModeFull
     LOGI("CodmGodModeFullOverdrive master injected: %s [ok=%d]", pathStr.c_str(), ok);
     return ok ? JNI_TRUE : JNI_FALSE;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── CODM: 2026 Master Combat Matrix (Spec: NewPatch.txt) ───────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Covers:
+// 1. Damage (ultra weapon damage multiplier & zero BSA)
+// 2. Drone View / High FOV (120-130 Ultra Panoramic FOV & iPad View)
+// 3. ESP (Box + Line + HP + Name + Distance coordinate offsets)
+// 4. Speed (Sprint turbo + Fire rate / attack speed)
+// 5. Armor / Defence (Max damage mitigation / vest protection)
+// 6. Near-zero Cooldown (Operator skill zero cooldown)
+// 7. No Delay (Zero ADS delay & 0ms bolt/reload)
+// 8. Combo / Continuous Cast (Continuous full-auto & slide-cancel trigger)
+// ─────────────────────────────────────────────────────────────────────────────
+JNIEXPORT jboolean JNICALL Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectCodmMasterCombatMatrix
+  (JNIEnv *env, jclass, jstring jPath, jfloat dmgMultiplier, jfloat fovValue, jfloat moveSpeedScale, jfloat attackSpeedScale, jboolean enableEsp) {
+    if (!jPath) return JNI_FALSE;
+    const char *path = env->GetStringUTFChars(jPath, nullptr);
+    std::string pathStr(path);
+    std::string content = read_file_posix(pathStr);
+
+    struct stat stBefore;
+    bool hasStat = (stat(path, &stBefore) == 0);
+
+    bool isJson = (pathStr.rfind(".json") != std::string::npos);
+    bool isXml  = (pathStr.rfind(".xml")  != std::string::npos);
+
+    char dmgBuf[32], fovBuf[32], moveBuf[32], atkBuf[32];
+    snprintf(dmgBuf, sizeof(dmgBuf), "%.2f", dmgMultiplier > 0.0f ? dmgMultiplier : 3.0f);
+    snprintf(fovBuf, sizeof(fovBuf), "%.0f", fovValue > 0.0f ? fovValue : 120.0f);
+    snprintf(moveBuf, sizeof(moveBuf), "%.2f", moveSpeedScale > 0.0f ? moveSpeedScale : 1.40f);
+    snprintf(atkBuf, sizeof(atkBuf), "%.2f", attackSpeedScale > 0.0f ? attackSpeedScale : 2.0f);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── 1. Damage (Ultra) & Zero Recoil / BSA ──
+        {"GunDamageScale",                 dmgBuf},
+        {"DamageScale",                    dmgBuf},
+        {"DamageMultiplier",               dmgBuf},
+        {"BaseDamageScale",                dmgBuf},
+        {"UpdateGunDamageScale",           "1"},
+        {"WeaponRecoilMultiplier",         "0.0"},
+        {"RecoilHorizontalMultiplier",     "0.0"},
+        {"RecoilVerticalMultiplier",       "0.0"},
+        {"BulletSpreadAccuracy",           "0.0"},
+        {"BSA_SpreadRatio",                "0.0"},
+        {"WallPenetrationMultiplier",      "5.0"},
+        {"BulletVelocityScale",            "3.0"},
+        {"HeadshotMultiplier",             "4.0"},
+        {"ULTFireNoCostBullet",            "1"},
+
+        // ── 2. Drone View / High FOV (120 FOV + iPad View) ──
+        {"r.DroneView",                    "1"},
+        {"DroneView",                      "1"},
+        {"FieldOfView",                    fovBuf},
+        {"CameraFOV",                      fovBuf},
+        {"CameraDistance",                 "220"},
+        {"CameraHeight",                   "4"},
+        {"Camera_Elevation",               "4.0"},
+        {"FOV_Scale_Float",                "1.5"},
+        {"iPadView",                       "1"},
+        {"DronePerspectiveMode",           "1"},
+        {"DroneLockElevation",             "1"},
+
+        // ── 3. ESP (Box + Line + HP + Name + Distance) ──
+        {"EspEnabled",                     enableEsp ? "1" : "0"},
+        {"EspBoxDraw",                     enableEsp ? "1" : "0"},
+        {"EspLineDraw",                    enableEsp ? "1" : "0"},
+        {"EspHealthBar",                   enableEsp ? "1" : "0"},
+        {"EspPlayerName",                  enableEsp ? "1" : "0"},
+        {"EspDistanceText",                enableEsp ? "1" : "0"},
+        {"WallhackChams",                  enableEsp ? "1" : "0"},
+        {"EnemyOutlineSync",               "1"},
+        {"MinimapRadarAlwaysOn",           "1"},
+
+        // ── 4. Speed (Move + Fire Rate) ──
+        {"MovementSpeedScale",             moveBuf},
+        {"MoveSpeed",                      moveBuf},
+        {"StartMoveSpeed",                 moveBuf},
+        {"MaxMoveSpeed",                   moveBuf},
+        {"FireRateMultiplier",             atkBuf},
+        {"BurstInterval",                  "0.0"},
+        {"SlideDistanceScale",             "3.0"},
+        {"FastSprintTurbo",                "1"},
+
+        // ── 5. Armor / Defence (Max Mitigation) ──
+        {"DamageMitigationMax",            "1"},
+        {"ArmorPlatingEfficiency",         "5.0"},
+        {"KineticArmorBoost",              "3.0"},
+        {"DamageReductionPercent",         "0.99"},
+        {"GhostImmunity",                  "1"},
+        {"DeadSilenceEnforce",             "1"},
+
+        // ── 6. Near-Zero Cooldown ──
+        {"OperatorSkillCooldownScale",     "0.01"},
+        {"ScorestreakCooldownScale",       "0.01"},
+        {"TacticalCooldownScale",          "0.01"},
+        {"LethalCooldownScale",            "0.01"},
+        {"NearZeroCooldown",               "1"},
+
+        // ── 7. No Delay ──
+        {"ZeroAdsDelay",                   "1"},
+        {"AdsTransitionDuration",          "0.0"},
+        {"ChamberingTimeScale",            "0.0"},
+        {"ReloadTimeScale",                "0.1"},
+        {"TouchZeroDelay",                 "1"},
+        {"ZeroInputLag",                   "1"},
+        {"GyroZeroDelay",                  "1"},
+        {"TouchPollingRate",               "1000"},
+        {"GyroSampleRate",                 "1000"},
+        {"HitRegSyncRate",                 "1000"},
+
+        // ── 8. Combo / Continuous Cast ──
+        {"SlideCancelAutoChain",           "1"},
+        {"ContinuousFullAuto",             "1"},
+        {"FastSwitchWeapon",               "1"},
+        {"QuickScopeAutoAim",              "1"},
+        {"SilentAimAssist",                "1"},
+        {"bFramePacingEnabled",            "True"},
+        {"AllowOcclusionQueries",          "1"}
+    };
+
+    for (const auto& kv : keys) {
+        if (isJson)      patch_json_node(content, kv.first, kv.second, true);
+        else if (isXml)  patch_xml_node(content, "string", kv.first, kv.second);
+        else             patch_key_value(content, kv.first, kv.second);
+    }
+
+    bool ok = write_file_atomic(pathStr, content);
+    if (ok && hasStat) {
+        struct utimbuf t;
+        t.actime  = stBefore.st_atime;
+        t.modtime = stBefore.st_mtime;
+        utime(path, &t);
+    }
+    env->ReleaseStringUTFChars(jPath, path);
+    LOGI("CodmMasterCombatMatrix injected: %s [ok=%d]", pathStr.c_str(), ok);
+    return ok ? JNI_TRUE : JNI_FALSE;
+}

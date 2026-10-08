@@ -255,6 +255,10 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectUltraDamageOverdrive(String path, float damageScale, float critMultiplier, float trueDamage);
     public static native boolean nativeInjectHeroAimLock(String path, int targetPriority, float lockDistance);
 
+    // ─── 2026 Master Combat Matrix Suite (Spec: NewPatch.txt) ─────────────────
+    public static native boolean nativeInjectMlbbMasterCombatMatrix(String path, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp);
+    public static native boolean nativeInjectCodmMasterCombatMatrix(String path, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp);
+
     // ─── 2026 Game-Specific Tweaks ───────────────────────────────────────────
 
     /**
@@ -5149,6 +5153,49 @@ public class NativeConfigInjector {
             }
         }
         return anySuccess;
+    }
+
+    public static boolean injectMlbbMasterCombatMatrix(String path, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        try {
+            if (nativeInjectMlbbMasterCombatMatrix(path, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp)) {
+                return true;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "nativeInjectMlbbMasterCombatMatrix fallback: " + t.getMessage());
+        }
+        String[] fallbackKeys = {
+            "DamageLockMax=1", "EffectiveDPSMode=3", "DamageMultiplier=" + dmgMultiplier,
+            "DroneView=1", "DroneFOV=" + fovValue, "PanoramicFOV=" + fovValue,
+            "EspEnabled=" + (enableEsp ? "1" : "0"), "MinimapEnemyPriority=1",
+            "MovementSpeedScale=" + moveSpeedScale, "AttackSpeedMultiplier=" + attackSpeedScale,
+            "DamageMitigationMax=1", "PhysicalDefenseBoost=5000", "NearZeroCooldown=1", "CooldownRatio=0.01",
+            "CastDelayMs=0", "TouchZeroDelay=1", "TouchPollingRate=1000",
+            "SkillAutoChain=1", "SkillAutoCombo=1", "HeroLock=1"
+        };
+        return ConfigFileHelper.patchKeys(path, fallbackKeys, "[MlbbMasterCombatMatrix]");
+    }
+
+    public static boolean injectCodmMasterCombatMatrix(String path, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp) {
+        if (path == null) return false;
+        ensureParentDirectory(path);
+        try {
+            if (nativeInjectCodmMasterCombatMatrix(path, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp)) {
+                return true;
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "nativeInjectCodmMasterCombatMatrix fallback: " + t.getMessage());
+        }
+        String[] fallbackKeys = {
+            "GunDamageScale=" + dmgMultiplier, "DamageMultiplier=" + dmgMultiplier, "WeaponRecoilMultiplier=0.0",
+            "BulletSpreadAccuracy=0.0", "r.DroneView=1", "FieldOfView=" + fovValue, "iPadView=1",
+            "EspEnabled=" + (enableEsp ? "1" : "0"), "WallhackChams=" + (enableEsp ? "1" : "0"),
+            "MoveSpeed=" + moveSpeedScale, "FireRateMultiplier=" + attackSpeedScale,
+            "DamageMitigationMax=1", "DamageReductionPercent=0.99", "OperatorSkillCooldownScale=0.01",
+            "ZeroAdsDelay=1", "TouchZeroDelay=1", "SlideCancelAutoChain=1", "ContinuousFullAuto=1"
+        };
+        return ConfigFileHelper.patchKeys(path, fallbackKeys, "[CodmMasterCombatMatrix]");
     }
 
     // ─── Helper Methods ───────────────────────────────────────────────────────

@@ -208,5 +208,18 @@ public final class CombatSystemEngine {
         return null;
     }
 
+    /**
+     * Dispatches 2026 Master Combat Matrix Suite across MLBB or CODM packages.
+     */
+    public static boolean applyMasterCombatMatrixToGame(String packageName, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp) {
+        if (packageName == null) return false;
+        if (packageName.contains("mobile.legends")) {
+            return MlbbConfigPatcher.applyMasterCombatMatrix(packageName, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp);
+        } else if (packageName.contains("codm") || packageName.contains("callofduty")) {
+            return CodmConfigPatcher.applyMasterCombatMatrix(packageName, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp);
+        }
+        return false;
+    }
+
     private CombatSystemEngine() {}
 }

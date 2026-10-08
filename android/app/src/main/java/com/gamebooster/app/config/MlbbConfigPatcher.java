@@ -2326,4 +2326,26 @@ public class MlbbConfigPatcher {
         applyBattleConfigOverdrive(pkg);
         Log.i(TAG, "🎯 [TacticalSettings] In-game Camera Height High, Sensitivity 100, and Combat Assists enforced for " + pkg);
     }
+
+    /**
+     * 2026 Master Combat Matrix Suite (Spec NewPatch.txt).
+     * Applies full 8-feature matrix: Ultra Damage, 4X Drone View, ESP Offsets,
+     * Speed Hack, God Defense/Armor, Near-zero Cooldown, No Delay, Auto Combo.
+     */
+    public static boolean applyMasterCombatMatrix(String packageName, float dmgMultiplier, float fovValue, float moveSpeedScale, float attackSpeedScale, boolean enableEsp) {
+        if (packageName == null) return false;
+        List<String> paths = getConfigPaths(packageName);
+        int written = 0;
+        for (String path : paths) {
+            if (NativeConfigInjector.injectMlbbMasterCombatMatrix(path, dmgMultiplier, fovValue, moveSpeedScale, attackSpeedScale, enableEsp)) {
+                written++;
+            }
+        }
+        // Also ensure high-safety config files & battle overrides are synced
+        applyBattleConfigOverdrive(packageName);
+        applyTacticalSettingsEnforce(packageName);
+        GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
+        Log.i(TAG, "⚡ [MasterCombatMatrix] MLBB 8-Feature Master Suite applied across " + written + " paths for " + packageName);
+        return written > 0;
+    }
 }
