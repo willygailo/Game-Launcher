@@ -225,10 +225,11 @@ public class PostGameReportDialog {
                         com.gamebooster.app.engine.VulkanRayTracingEngine.clearVulkanPipelineCacheForNewMap(pkg);
                         // 3. Re-apply drone view at saved tier
                         try {
-                            int tier = context.getSharedPreferences("mlbb_drone_prefs",
-                                    android.content.Context.MODE_PRIVATE)
-                                    .getInt("drone_tier",
-                                            com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER);
+                            int tier = com.gamebooster.app.config.MlbbDroneViewPatcher.normalizeTier(
+                                    context.getSharedPreferences("mlbb_drone_prefs",
+                                            android.content.Context.MODE_PRIVATE)
+                                            .getInt("drone_tier",
+                                                    com.gamebooster.app.config.MlbbDroneViewPatcher.DEFAULT_TIER));
                             com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(
                                     context.getApplicationContext(), pkg, tier);
                         } catch (Throwable ignored) {}

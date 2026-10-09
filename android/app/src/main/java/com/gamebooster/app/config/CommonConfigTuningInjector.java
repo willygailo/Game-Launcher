@@ -436,7 +436,7 @@ public final class CommonConfigTuningInjector {
         }
         if (packageName.toLowerCase().contains("mobile.legends") || packageName.toLowerCase().contains("mobilelegends")) {
             try { MlbbConfigPatcher.applyMlbbUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
-            try { MlbbDroneViewPatcher.applyDroneView(ConfigBackupManager.getAppContext(), packageName, droneTier); } catch (Throwable ignored) {}
+            try { MlbbDroneViewPatcher.applyDroneViewAtomic(ConfigBackupManager.getAppContext(), packageName, droneTier); } catch (Throwable ignored) {}
         } else if (packageName.toLowerCase().contains("pubg") || packageName.toLowerCase().contains("tencent.ig")) {
             try { PubgConfigPatcher.applyPubgUltraDroneViewMaxFov(packageName); } catch (Throwable ignored) {}
         } else if (packageName.toLowerCase().contains("callofduty") || packageName.toLowerCase().contains("codm") || packageName.toLowerCase().contains("tmgp.cod")) {

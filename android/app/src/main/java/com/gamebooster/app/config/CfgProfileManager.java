@@ -235,7 +235,7 @@ public class CfgProfileManager {
         boolean fastCd   = prefs.getBoolean(key + KEY_FAST_CD_SUFFIX, true);
         boolean shield   = prefs.getBoolean(key + KEY_SHIELD_SUFFIX, true);
         boolean drone    = prefs.getBoolean(key + KEY_DRONE_SUFFIX, true);
-        int droneTier    = prefs.getInt(key + KEY_DRONE_TIER_SUFFIX, MlbbDroneViewPatcher.DEFAULT_TIER);
+        int droneTier    = MlbbDroneViewPatcher.normalizeTier(prefs.getInt(key + KEY_DRONE_TIER_SUFFIX, MlbbDroneViewPatcher.DEFAULT_TIER));
         boolean armor    = prefs.getBoolean(key + KEY_ARMOR_SUFFIX, true);
         boolean mask     = prefs.getBoolean(key + KEY_MASK_SUFFIX, false);
         boolean antiLog  = prefs.getBoolean(key + KEY_ANTILOG_SUFFIX, true);

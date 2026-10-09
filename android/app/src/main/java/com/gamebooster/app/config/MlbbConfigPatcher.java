@@ -306,7 +306,7 @@ public class MlbbConfigPatcher {
             if (ctx != null) {
                 android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
                 if (!prefs.getBoolean("drone_enabled", true)) return;
-                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                tier = MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
             }
         } catch (Throwable ignored) {}
         applyMlbbUltraDroneViewMaxFov(packageName, tier);
@@ -318,7 +318,7 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectMlbbUltraDroneViewMaxFov(path);
         }
         try {
-            MlbbDroneViewPatcher.applyDroneView(ConfigBackupManager.getAppContext(), packageName, droneTier);
+            MlbbDroneViewPatcher.applyDroneViewAtomic(ConfigBackupManager.getAppContext(), packageName, droneTier);
         } catch (Throwable ignored) {}
         Log.i(TAG, "MLBB Ultra Drone View Max FOV applied for " + packageName + " [tier=" + droneTier + "]");
     }
@@ -2207,7 +2207,7 @@ public class MlbbConfigPatcher {
             android.content.Context ctx = ConfigBackupManager.getAppContext();
             if (ctx != null) {
                 android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
-                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                tier = MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
             }
         } catch (Throwable ignored) {}
         MlbbDroneViewPatcher.deployV3FixConfig(ConfigBackupManager.getAppContext(), packageName, tier, true);
@@ -2229,7 +2229,7 @@ public class MlbbConfigPatcher {
             android.content.Context ctx = ConfigBackupManager.getAppContext();
             if (ctx != null) {
                 android.content.SharedPreferences prefs = ctx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE);
-                tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                tier = MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
             }
         } catch (Throwable ignored) {}
         boolean droneOk = MlbbDroneViewPatcher.applyNewMapUpdate(

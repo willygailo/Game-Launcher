@@ -355,8 +355,8 @@ public class CompetitiveCfgProfile {
     public boolean isDroneViewUltraEnabled() { return droneViewUltraEnabled; }
     public void setDroneViewUltraEnabled(boolean enabled) { this.droneViewUltraEnabled = enabled; }
 
-    public int getDroneViewTier() { return droneViewTier; }
-    public void setDroneViewTier(int tier) { this.droneViewTier = tier; }
+    public int getDroneViewTier() { return MlbbDroneViewPatcher.normalizeTier(droneViewTier); }
+    public void setDroneViewTier(int tier) { this.droneViewTier = MlbbDroneViewPatcher.normalizeTier(tier); }
 
     public boolean isHardwareMaskEnabled() { return hardwareMaskEnabled; }
     public void setHardwareMaskEnabled(boolean enabled) { this.hardwareMaskEnabled = enabled; }

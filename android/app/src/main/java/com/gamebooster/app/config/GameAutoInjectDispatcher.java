@@ -196,7 +196,7 @@ public final class GameAutoInjectDispatcher {
                                     : null;
                             if (dPrefs != null) {
                                 mlbbDroneEnabled = dPrefs.getBoolean("drone_enabled", true);
-                                mlbbDroneTier = dPrefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                                mlbbDroneTier = MlbbDroneViewPatcher.normalizeTier(dPrefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
                             }
                         } catch (Throwable ignored) {}
                         if (mlbbDroneEnabled) {

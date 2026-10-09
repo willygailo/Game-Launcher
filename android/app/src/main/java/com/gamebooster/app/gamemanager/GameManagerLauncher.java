@@ -157,7 +157,8 @@ public final class GameManagerLauncher {
                         try {
                             android.content.SharedPreferences dronePrefs = appContext.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE);
                             boolean droneEnabled = dronePrefs.getBoolean("drone_enabled", true);
-                            int droneTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+                            int rawTier = dronePrefs.getInt("drone_tier", com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X);
+                            int droneTier = com.gamebooster.app.config.MlbbDroneViewPatcher.normalizeTier(rawTier);
                             if (droneEnabled) {
                                 boolean ok = com.gamebooster.app.config.MlbbDroneViewPatcher.applyDroneViewAtomic(appContext, pkg, droneTier);
                                 if (ok) {

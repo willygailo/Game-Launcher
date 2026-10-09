@@ -166,8 +166,8 @@ public class GameUpdateMonitorService extends Service {
                 MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(pkg);
                 int tier = MlbbDroneViewPatcher.DEFAULT_TIER;
                 try {
-                    tier = context.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE)
-                            .getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                    tier = MlbbDroneViewPatcher.normalizeTier(context.getSharedPreferences("mlbb_drone_prefs", Context.MODE_PRIVATE)
+                            .getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
                 } catch (Throwable ignored) {}
                 MlbbDroneViewPatcher.applyNewMapUpdate(context, pkg, tier);
                 Log.i(TAG, "[Auto] MLBB new-map sync applied after update: " + pkg);

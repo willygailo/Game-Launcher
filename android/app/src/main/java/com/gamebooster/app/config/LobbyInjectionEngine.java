@@ -201,7 +201,7 @@ public final class LobbyInjectionEngine {
                                 ? appCtx.getSharedPreferences("mlbb_drone_prefs", android.content.Context.MODE_PRIVATE)
                                 : null;
                         boolean enabled = (prefs == null) || prefs.getBoolean("drone_enabled", true);
-                        int tier = (prefs != null) ? prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER) : MlbbDroneViewPatcher.DEFAULT_TIER;
+                        int tier = (prefs != null) ? MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER)) : MlbbDroneViewPatcher.DEFAULT_TIER;
                         if (enabled) {
                             boolean ok = MlbbDroneViewPatcher.applyDroneViewAtomic(appCtx, pkg, tier);
                             Log.i(TAG, ok
@@ -296,7 +296,7 @@ public final class LobbyInjectionEngine {
                     if (prefs != null) {
                         enabled = prefs.getBoolean("drone_enabled", true);
                         if (!enabled) return;
-                        tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                        tier = MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
                     }
                 } catch (Throwable ignored) {}
 
@@ -322,7 +322,7 @@ public final class LobbyInjectionEngine {
                     if (prefs != null) {
                         enabled = prefs.getBoolean("drone_enabled", true);
                         if (!enabled) return;
-                        tier = prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER);
+                        tier = MlbbDroneViewPatcher.normalizeTier(prefs.getInt("drone_tier", MlbbDroneViewPatcher.DEFAULT_TIER));
                     }
                 } catch (Throwable ignored) {}
 

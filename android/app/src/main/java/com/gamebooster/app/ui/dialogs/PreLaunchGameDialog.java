@@ -183,10 +183,12 @@ public final class PreLaunchGameDialog {
                 layoutTier.setVisibility(View.VISIBLE);
             }
 
-            if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X && rb15 != null) rb15.setChecked(true);
-            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X && rb20 != null) rb20.setChecked(true);
-            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rb40 != null) rb40.setChecked(true);
-            else if (savedDroneTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
+            int normalizedSavedTier = com.gamebooster.app.config.MlbbDroneViewPatcher.normalizeTier(savedDroneTier);
+            if (normalizedSavedTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_1_5X && rb15 != null) rb15.setChecked(true);
+            else if (normalizedSavedTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_2X && rb20 != null) rb20.setChecked(true);
+            else if (normalizedSavedTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_3X && rb30 != null) rb30.setChecked(true);
+            else if (normalizedSavedTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_4X && rb40 != null) rb40.setChecked(true);
+            else if (normalizedSavedTier == com.gamebooster.app.config.MlbbDroneViewPatcher.TIER_5X && rb50 != null) rb50.setChecked(true);
             else if (rb20 != null) rb20.setChecked(true);
         } else {
             if (layoutDrone != null) layoutDrone.setVisibility(View.GONE);
@@ -294,17 +296,28 @@ public final class PreLaunchGameDialog {
                         .putInt("drone_tier", selectedTier)
                         .apply();
 
+                try {
+                    String gameKey = com.gamebooster.app.config.CfgProfileManager.resolveGameKey(packageName);
+                    com.gamebooster.app.config.CompetitiveCfgProfile p = com.gamebooster.app.config.CfgProfileManager.loadProfile(context, gameKey);
+                    if (p != null) {
+                        p.setDroneViewUltraEnabled(droneEnabled);
+                        p.setDroneViewTier(selectedTier);
+                        com.gamebooster.app.config.CfgProfileManager.saveProfile(context, p);
+                    }
+                } catch (Throwable t) {}
+
                 if (!droneEnabled) {
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
                         com.gamebooster.app.config.MlbbDroneViewPatcher.restoreStockCamera(context, packageName);
                     });
                 } else {
-                    // NEW MAP UPDATE: sync new map camera & minimap config before every MLBB launch
+                    // NEW MAP UPDATE: sync new map camera & minimap config before every MLBB launch with explicit tier
+                    final int finalSelectedTier = selectedTier;
                     com.gamebooster.app.core.AppExecutors.getInstance().executeCommand(() -> {
-                        com.gamebooster.app.config.MlbbConfigPatcher.applyMlbbNewMapUpdateConfig(packageName);
+                        com.gamebooster.app.config.MlbbDroneViewPatcher.applyNewMapUpdate(context, packageName, finalSelectedTier);
                         android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
                         mainHandler.post(() -> Toast.makeText(context,
-                                "\uD83D\uDDFA\uFE0F MLBB New Map Drone & Radar Synced \u2714",
+                                "🗺️ MLBB New Map Drone [" + com.gamebooster.app.config.MlbbDroneViewPatcher.getTierLabel(finalSelectedTier) + "] Synced ✔",
                                 Toast.LENGTH_SHORT).show());
                     });
                 }
