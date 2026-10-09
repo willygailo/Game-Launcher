@@ -18,8 +18,11 @@ daemon/
 *.dex
 *.class
 *.aar
+*.klib
 *.bundle
 *.apk.idsig
+
+*.so
 
 # Native, NDK, C++ & CMake Build Outputs
 .cxx/
@@ -46,13 +49,28 @@ keystore.properties
 signing.properties
 *.keystore
 *.jks
+debug.keystore
+release.keystore
+*.pepk
+*.p8
+*.p12
+*.key
+*.pk8
+*.pem
+*.cer
+*.der
 
-# IDE & Editor files
+# IDE, Editor & OS files
 .idea/
 .vscode/
 *.iml
 .DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
 captures/
+**/captures/
 
 # JaCoCo Code Coverage & ProGuard / R8 Dumps
 *.exec
@@ -67,7 +85,7 @@ seeds.txt
 usage.txt
 dump.txt
 
-# Native libs, assets & runtime exceptions (MUST BE PRESERVED)
+# Runtime Assets & Precompiled JNI Exceptions (MUST BE PRESERVED)
 !**/src/main/jniLibs/**/*.so
 !**/assets/shizuku/*.dex
 !*rish_shizuku.dex
@@ -80,5 +98,34 @@ NewPatch/
 **/.extracted/
 *.dump
 dump*.cs
+dump.cs
 global-metadata.dat
 !**/src/main/assets/**/global-metadata.dat
+!**/src/main/assets/**/global-*-metadata.dat
+!**/src/main/assets/**.dat
+
+# Logs, Diagnostic Dumps, Crash Reports & Assistant Data
+*.log
+hs_err_pid*
+replay_pid*
+core.[0-9]*
+scratch/
+**/scratch/
+.antigravity/
+.gemini/
+.agents/
+.claude/
+.cursor/
+.windsurf/
+.copilot/
+.cache/
+*.patch
+*.diff
+
+# Game Patcher Backup & Restore Snapshots
+**/config_backup/
+**/cfg_snapshots/
+**/patcher_cache/
+*.cfg.bak
+*.bytes.bak
+
