@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <integer name="splash_mode">2</integer>
+  <bool name="useObb">False</bool>
+  <bool name="showSplash">True</bool>
+  <bool name="useVideoSplash">True</bool>
+  <bool name="useAAB">True</bool>
+</settings>
