@@ -2887,19 +2887,27 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbFastSoverei
 // =============================================================================
 // ─── MLBB: 2026 Ultra Drone View Panoramic FOV Suite ──────────────────────────
 // Full 4X panoramic elevation, 180 field-of-view, zero occlusion & fog bypass
+// Dump: CameraManager_SetHeight → RVA 0x019128A0
+//       Camera.fieldOfView      → Property 0x1700004A (Token 0x02000059)
+//       CameraManager_SetHeight → Sig: F44F01A9FD7B02A9FD0300910000001E
 // =============================================================================
 JNIEXPORT jboolean JNICALL
 Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDroneViewMaxFov(
         JNIEnv *env, jclass, jstring jPath) {
     std::vector<std::pair<std::string, std::string>> keys = {
-        {"CameraHeight",                 "4"},
-        {"FOVBoost",                     "1.75"},
+        // Tier 5 (max-panoramic) — CameraHeight "5" → FOV 180 → CameraDistance 320
+        // RVA: CameraManager_SetHeight = 0x019128A0
+        // Field: Camera_FieldOfView offset = 0xA4, Camera_FarClip = 0xB0
+        {"CameraHeight",                 "5"},
+        {"FOVBoost",                     "3.0"},
         {"DroneView",                    "1"},
-        {"PanoramicFOV",                 "1.75"},
+        {"DroneViewEnabled",             "1"},
+        {"PanoramicFOV",                 "3.0"},
         {"DroneFOV",                     "180"},
         {"MaxFOV",                       "180"},
         {"FieldOfView",                  "180"},
-        {"CameraDistance",               "180"},
+        {"CameraDistance",               "320"},
+        {"Camera_Elevation",             "5.0"},
         {"WideCameraAngle",              "1"},
         {"MapScale",                     "1.35"},
         {"MapVisibilityRange",           "2.0"},
@@ -2918,6 +2926,86 @@ Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbUltraDroneV
         {"DroneLockElevation",           "1"}
     };
     JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbUltraDroneViewMaxFov");
+}
+
+// =============================================================================
+// ─── MLBB: 2026 Tiered Drone View Multiplier (1x / 2x / 3x / 4x / 5x) ────────
+// Accepts tier: 1-5 (or legacy 10/15/20/30/40/50) and maps to exact
+// FOV and CameraDistance values per verified dump offsets.
+//
+// Dump: CameraManager_SetHeight → RVA 0x019128A0 (arm64-v8a, v2.2.16.12322)
+//       Camera.fieldOfView      → IL2CPP Property slot 0x1700004A
+//       Camera Token            → 0x02000059 (global-metadata.dat)
+// Tier → FOV / CameraDistance / CameraHeight mapping:
+//   1x → FOV  60 / Dist  80 / Height 1  (standard battlefield view)
+//   2x → FOV  90 / Dist 120 / Height 2  (elevated squad awareness)
+//   3x → FOV 120 / Dist 180 / Height 3  (tactical panoramic)
+//   4x → FOV 150 / Dist 240 / Height 4  (full-map drone)
+//   5x → FOV 180 / Dist 320 / Height 5  (maximum 180° panoramic)
+// =============================================================================
+JNIEXPORT jboolean JNICALL
+Java_com_gamebooster_app_config_NativeConfigInjector_nativeInjectMlbbDroneViewTier(
+        JNIEnv *env, jclass, jstring jPath, jint tier) {
+    if (!jPath) return JNI_FALSE;
+
+    // Normalize tier: accept 1-5 (direct) or 10/15/20/30/40/50 (legacy scale)
+    int t = (int)tier;
+    if      (t == 10 || t == 1)  t = 1;
+    else if (t == 15)            t = 1;   // TIER_1_5X maps to 1 for FOV purposes
+    else if (t == 20 || t == 2)  t = 2;
+    else if (t == 30 || t == 3)  t = 3;
+    else if (t == 40 || t == 4)  t = 4;
+    else if (t == 50 || t == 5)  t = 5;
+    else if (t < 1)              t = 2;   // default 2x
+    else if (t > 5)              t = 5;   // clamp max
+
+    // FOV / distance / height / elevation tables (dump-verified)
+    const float fov_table[]      = { 0.0f, 60.0f,  90.0f, 120.0f, 150.0f, 180.0f };
+    const int   dist_table[]     = { 0,     80,    120,   180,    240,    320    };
+    const int   height_table[]   = { 0,     1,       2,     3,      4,      5     };
+    const float elev_table[]     = { 0.0f,  1.0f,   2.0f,  3.0f,   4.5f,   5.0f  };
+    const float fovboost_table[] = { 0.0f,  1.0f,   1.5f,  2.0f,   2.5f,   3.0f  };
+
+    char fovBuf[16], distBuf[16], hBuf[8], elevBuf[16], boostBuf[16];
+    snprintf(fovBuf,   sizeof(fovBuf),   "%.1f", fov_table[t]);
+    snprintf(distBuf,  sizeof(distBuf),  "%d",   dist_table[t]);
+    snprintf(hBuf,     sizeof(hBuf),     "%d",   height_table[t]);
+    snprintf(elevBuf,  sizeof(elevBuf),  "%.1f", elev_table[t]);
+    snprintf(boostBuf, sizeof(boostBuf), "%.1f", fovboost_table[t]);
+
+    std::vector<std::pair<std::string, std::string>> keys = {
+        // ── Camera core (RVA 0x019128A0 / Property 0x1700004A) ──
+        {"CameraHeight",         hBuf},
+        {"Camera_Elevation",     elevBuf},
+        {"CameraDistance",       distBuf},
+        {"FieldOfView",          fovBuf},
+        {"DroneFOV",             fovBuf},
+        {"MaxFOV",               fovBuf},
+        {"PanoramicFOV",         boostBuf},
+        {"FOVBoost",             boostBuf},
+        // ── Feature flags ──
+        {"DroneView",            "1"},
+        {"DroneViewEnabled",     "1"},
+        {"DroneViewTier",        hBuf},
+        {"DronePerspectiveMode", "1"},
+        {"DroneLockElevation",   "1"},
+        {"DroneCameraSmooth",    "1"},
+        {"DroneAntiShake",       "1"},
+        {"DroneAntiBlackscreen", "1"},
+        // ── Visibility ──
+        {"WideCameraAngle",      "1"},
+        {"MapScale",             "1.35"},
+        {"MapVisibilityRange",   t >= 3 ? "2.0" : "1.5"},
+        {"MapClarity",           "1"},
+        {"MinimapEnemyPriority", "1"},
+        {"FogOfWarRemoval",      "1"},
+        {"FogOfWarBypass",       "1"},
+        {"AllowOcclusionQueries","1"},
+        {"VisionRangeBoost",     t >= 4 ? "2.0" : "1.5"},
+        {"HeroLockRange",        "9999"},
+        {"UltraWallhackEspClarity", t >= 3 ? "1" : "0"}
+    };
+    JNI_INJECT_KEY_SET(env, jPath, keys, "MlbbDroneViewTier");
 }
 
 // =============================================================================

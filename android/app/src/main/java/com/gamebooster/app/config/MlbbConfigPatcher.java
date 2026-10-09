@@ -1522,7 +1522,7 @@ public class MlbbConfigPatcher {
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 
-    private static List<String> getConfigPaths(String pkg) {
+    public static List<String> getConfigPaths(String pkg) {
         List<String> raw = GameConfigPathResolver.getPathsForGame(pkg);
         List<String> filtered = new ArrayList<>(raw.size());
         for (String p : raw) {

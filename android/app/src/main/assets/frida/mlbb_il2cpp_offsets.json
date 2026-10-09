@@ -1,46 +1,99 @@
 {
   "version": "2.2.16.12322",
+  "realversion": "2.2.16.1232.1",
   "arch": "arm64-v8a",
   "target": "libil2cpp.so",
+  "libil2cpp_md5": "eb71177ed155806e3934b0d080baed15",
+
   "tokens": {
-    "World": "0x02000002",
+    "Camera":              "0x02000059",
+    "World":               "0x02000002",
     "MolaBigFileDownloader": "0x02000003",
-    "Camera": "0x02000059",
-    "FrameThreadDriver": "0x02000020"
+    "FrameThreadDriver":   "0x02000020"
   },
+
   "methods": {
-    "HeroDamageCalc_CalculateDamage": "0x0182C4D0",
-    "HeroAttackSpeed_GetMultiplier": "0x01831E20",
-    "SkillManager_GetCooldownTime": "0x0184A100",
-    "FogOfWarManager_IsVisible": "0x019056B0",
-    "CameraManager_SetHeight": "0x019128A0",
-    "MovementComponent_GetSpeed": "0x0187B2C0",
-    "HeroDefense_GetArmor": "0x01859E40"
+    "HeroDamageCalc_CalculateDamage":   "0x0182C4D0",
+    "HeroAttackSpeed_GetMultiplier":    "0x01831E20",
+    "HeroDefense_GetArmor":             "0x01859E40",
+    "SkillManager_GetCooldownTime":     "0x0184A100",
+    "FogOfWarManager_IsVisible":        "0x019056B0",
+    "CameraManager_SetHeight":          "0x019128A0",
+    "MovementComponent_GetSpeed":       "0x0187B2C0",
+    "ManaEnergyRegen_GetRate":          "0x01882350"
   },
+
   "fields": {
-    "Hero_CurrentHp": "0x48",
-    "Hero_MaxHp": "0x4C",
-    "Hero_AttackPower": "0x54",
-    "Hero_AttackSpeed": "0x5C",
-    "Hero_MovementSpeed": "0x68"
+    "Hero_CurrentHp":       "0x48",
+    "Hero_MaxHp":           "0x4C",
+    "Hero_AttackPower":     "0x54",
+    "Hero_AttackSpeed":     "0x5C",
+    "Hero_MovementSpeed":   "0x68",
+    "Hero_PhysDef":         "0x70",
+    "Hero_MagicDef":        "0x74",
+    "Hero_CritRate":        "0x7C",
+    "Hero_CritDmg":         "0x80",
+    "Hero_ManaPool":        "0x88",
+    "Hero_ManaRegen":       "0x8C",
+    "Hero_SpellVamp":       "0x90",
+    "Camera_FieldOfView":   "0xA4",
+    "Camera_OrthSize":      "0xA8",
+    "Camera_NearClip":      "0xAC",
+    "Camera_FarClip":       "0xB0"
   },
+
+  "drone_view": {
+    "1x":  { "fov": 60.0,  "height_key": "1",  "camera_distance": 80  },
+    "2x":  { "fov": 90.0,  "height_key": "2",  "camera_distance": 120 },
+    "3x":  { "fov": 120.0, "height_key": "3",  "camera_distance": 180 },
+    "4x":  { "fov": 150.0, "height_key": "4",  "camera_distance": 240 },
+    "5x":  { "fov": 180.0, "height_key": "5",  "camera_distance": 320 }
+  },
+
+  "combat_floors": {
+    "Fighter":   { "damage": 10000, "armor": 10000, "magic_def": 5000, "speed_mult": 1.45 },
+    "Assassin":  { "damage": 10000, "armor": 5000,  "magic_def": 3000, "speed_mult": 1.65 },
+    "Mage":      { "damage": 10000, "magic_power": 10000, "pen": 10000, "speed_mult": 1.25 },
+    "Marksman":  { "damage": 10000, "crit_rate": 100, "crit_dmg": 10.0, "speed_mult": 1.35 },
+    "Tank":      { "hp": 10000, "armor": 10000, "magic_def": 10000, "speed_mult": 1.15 },
+    "Support":   { "hp": 10000, "armor": 10000, "magic_def": 10000, "regen": 10000, "speed_mult": 1.15 }
+  },
+
   "signatures": {
     "HeroDamageCalc_CalculateDamage": {
       "pattern": "4F000054000000000000000000008052",
-      "mask": "xxxx????????xxxx"
+      "mask":    "xxxx????????xxxx"
     },
     "HeroAttackSpeed_GetMultiplier": {
       "pattern": "1F01086B000000540000000000008052",
-      "mask": "xxxx????xxxx????"
+      "mask":    "xxxx????xxxx????"
     },
     "CameraManager_SetHeight": {
       "pattern": "F44F01A9FD7B02A9FD0300910000001E",
-      "mask": "xxxxxxxxxxxx???x"
+      "mask":    "xxxxxxxxxxxx???x"
+    },
+    "MovementComponent_GetSpeed": {
+      "pattern": "E8031F2AFC6302910000001E00000000",
+      "mask":    "xxxxxxxxxxxx??xx"
+    },
+    "HeroDefense_GetArmor": {
+      "pattern": "F44F3EA9FD7B01A9FD430091E0030091",
+      "mask":    "xxxxxxxxxxxxxxxx"
     },
     "MolaDownloadBypass": {
       "pattern": "080080D2C0035FD6",
-      "mask": "xxxxxxxx"
+      "mask":    "xxxxxxxx"
+    },
+    "SkillCooldownReturn0": {
+      "pattern": "000080520000001E",
+      "mask":    "xxxxxxxx"
     }
+  },
+
+  "binary_patch_md5": {
+    "BattleConfig.unity3d":        "84432b8c9901e630556f077ca9162268",
+    "ResCheckConf.xml":            "1e1818e43b6eb2ebca6786ea5697c1df",
+    "global-metadata.dat":         "092874198c522c4e8e5a58ad85ac5baa",
+    "libil2cpp.so":                "eb71177ed155806e3934b0d080baed15"
   }
 }
-

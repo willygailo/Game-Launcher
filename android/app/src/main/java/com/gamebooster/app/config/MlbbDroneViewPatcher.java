@@ -243,6 +243,20 @@ public final class MlbbDroneViewPatcher {
                 anyApplied = true;
             }
 
+            // 4. Native JNI tier stamp: write CameraHeight/FieldOfView/DroneFOV/etc into
+            //    PlayerPrefs XML and writable config paths so values survive hot-reload.
+            //    RVA: CameraManager_SetHeight = 0x019128A0, Camera.fieldOfView = 0x1700004A.
+            try {
+                List<String> cfgPaths = MlbbConfigPatcher.getConfigPaths(pkg);
+                for (String cfgPath : cfgPaths) {
+                    NativeConfigInjector.nativeInjectMlbbDroneViewTier(cfgPath, normTier);
+                }
+                Log.i(TAG, "✅ [DroneView Tier JNI] Native config stamped tier=" + normTier
+                        + " across " + cfgPaths.size() + " config paths for " + pkg);
+            } catch (Throwable t2) {
+                Log.w(TAG, "nativeInjectMlbbDroneViewTier fallback: " + t2.getMessage());
+            }
+
             return anyApplied;
         } catch (Throwable t) {
             Log.e(TAG, "Error applying Drone View for " + pkg, t);

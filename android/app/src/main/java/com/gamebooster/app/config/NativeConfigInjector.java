@@ -132,6 +132,12 @@ public class NativeConfigInjector {
     public static native boolean nativeInjectMlbbAutoMapGlitch3s(String path);
     public static native boolean nativeInjectMlbbFastSovereignOverdrive(String path);
     public static native boolean nativeInjectMlbbUltraDroneViewMaxFov(String path);
+    /**
+     * Tiered Drone View Multiplier — maps tier (1-5) to calibrated FOV and CameraDistance.
+     * RVA: CameraManager_SetHeight = 0x019128A0, Camera.fieldOfView slot 0x1700004A.
+     * Tier 1=60°/80dist, 2=90°/120dist, 3=120°/180dist, 4=150°/240dist, 5=180°/320dist.
+     */
+    public static native boolean nativeInjectMlbbDroneViewTier(String path, int tier);
     public static native boolean nativeInjectMlbbGodModeFullOverdrive(String path);
     public static native boolean nativeInjectPubgUltraDroneViewMaxFov(String path);
     public static native boolean nativeInjectPubgmGodModeFullOverdrive(String path);

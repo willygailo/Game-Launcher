@@ -197,6 +197,7 @@ public final class GameSecurityBypassEngine {
 
             // 2. Kernel-level Read-Only Bind-Mount on critical battle & camera configs
             if (path.contains("BattleConfig.json") || path.contains("BattleSystemConfig.bytes")
+                    || path.contains("HeroStatConfig.json") || path.contains("DroneViewConfig.json")
                     || path.contains("UserCustom.ini") || path.contains("ResCheckConf.xml")
                     || path.contains("Active.sav")) {
                 sb.append("if [ -f '").append(path).append("' ]; then ")

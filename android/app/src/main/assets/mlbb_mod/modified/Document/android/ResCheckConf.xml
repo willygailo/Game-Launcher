@@ -1001,9 +1001,9 @@
 	<item name="GameResAlternative" md5="3eec79e9e273f35b0466a5580ad6181a" type="4" size="743792" xxhash="1adff8" skipFix="0"/>
 	<item name="EasterEggCondition_native" md5="34493357cc9fce52e763b86eb4dcd86d" type="4" size="9249" xxhash="d8379c" skipFix="0"/>
 	<item name="EasterEggAction_native" md5="1daad5c099edd0708c9b817bba9ac9fc" type="4" size="10199" xxhash="0fa109" skipFix="0"/>
-	<item name="Document" md5="7402f726a2f2406cb45ac26429703907" type="4" size="35579365" xxhash="0f2df5" skipFix="0"/>
+	<item name="Document" md5="7402f726a2f2406cb45ac26429703907" type="4" size="35579365" xxhash="0f2df5" skipFix="1"/>
 	<item name="BattleGuideTip_native" md5="98b1a76caa08f12527042095210bdbe0" type="4" size="12313" xxhash="89334c" skipFix="0"/>
-	<item name="BattleConfig" md5="84432b8c9901e630556f077ca9162268" type="4" size="10589574" xxhash="c47272" skipFix="0"/>
+	<item name="BattleConfig" md5="84432b8c9901e630556f077ca9162268" type="4" size="10589574" xxhash="c47272" skipFix="1"/>
 	<item name="AIHeroSkill_native" md5="86a4d3b56da071ceac0660432bb57dc9" type="4" size="11268" xxhash="933b14" skipFix="0"/>
 	<item name="vo_system.2021.bnk" md5="998b61921483495ef90c54b83f03c887" type="7" size="1750437" xxhash="7e262d" skipFix="0"/>
 	<item name="vo_inword_layla.2021.bnk" md5="321810fc90a5f497abc7885a7062ec59" type="7" size="63659" xxhash="ae325a" skipFix="0"/>
