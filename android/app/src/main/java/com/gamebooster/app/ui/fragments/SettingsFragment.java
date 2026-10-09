@@ -181,6 +181,7 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
     // SAF UI (MT Manager rootless access)
     private TextView tvSafStatusBadge;
+    private TextView tvSafGamesSummary;
     private Button btnGrantSafStorage;
 
     // Precision Aim Controls
@@ -244,12 +245,19 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                         && result.getData() != null) {
                     android.net.Uri treeUri = result.getData().getData();
                     if (treeUri != null && getContext() != null) {
-                        boolean ok = com.gamebooster.app.saf.SafStorageManager
-                            .saveAndPersistUri(getContext(), "com.mobile.legends", treeUri);
+                        String savedPkg = com.gamebooster.app.saf.SafStorageManager
+                            .saveAndPersistUriSmart(getContext(), null, treeUri);
                         refreshSafStatus();
-                        Toast.makeText(getContext(),
-                            ok ? "SAF access granted!" : "Failed to persist SAF URI",
-                            Toast.LENGTH_SHORT).show();
+                        if (savedPkg != null) {
+                            String gameName = com.gamebooster.app.saf.SafStorageManager.getGameDisplayName(savedPkg);
+                            Toast.makeText(getContext(),
+                                "✅ SAF Access Granted: " + gameName + " (" + savedPkg + ")",
+                                Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(),
+                                "⚠️ Folder not recognized as a target game (MLBB, PUBGM, CODM)",
+                                Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
@@ -336,19 +344,10 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
 
         // Card 1.5: SAF Storage Access (MT Manager style)
         tvSafStatusBadge = view.findViewById(R.id.tv_saf_status_badge);
+        tvSafGamesSummary = view.findViewById(R.id.tv_saf_games_summary);
         btnGrantSafStorage = view.findViewById(R.id.btn_grant_saf_storage);
         if (btnGrantSafStorage != null) {
-            btnGrantSafStorage.setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    Intent intent = com.gamebooster.app.saf.SafStorageManager.createOpenDocumentTreeIntent("com.mobile.legends");
-                    try {
-                        safTreeLauncher.launch(intent);
-                        Toast.makeText(getContext(), "Piliin ang 'Use this folder' sa Mobile Legends folder", Toast.LENGTH_LONG).show();
-                    } catch (Throwable t) {
-                        Toast.makeText(getContext(), "Hindi mabuksan ang system folder picker: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+            btnGrantSafStorage.setOnClickListener(v -> showSafGameTargetSelector());
         }
         refreshSafStatus();
 
@@ -2967,13 +2966,42 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
     public void refreshSafStatus() {
         if (getActivity() == null || tvSafStatusBadge == null) return;
         getActivity().runOnUiThread(() -> {
-            boolean hasSaf = com.gamebooster.app.saf.SafStorageManager.hasSafPermission(getContext(), "com.mobile.legends");
-            if (hasSaf) {
-                tvSafStatusBadge.setText("SAF: ACTIVE (ROOTLESS)");
+            Context ctx = getContext();
+            if (ctx == null) return;
+            List<com.gamebooster.app.saf.SafStorageManager.TargetAppInfo> apps =
+                    com.gamebooster.app.saf.SafStorageManager.getTargetApps(ctx);
+
+            int grantedCount = 0;
+            StringBuilder sb = new StringBuilder("🎮 ");
+            for (int i = 0; i < apps.size(); i++) {
+                com.gamebooster.app.saf.SafStorageManager.TargetAppInfo app = apps.get(i);
+                if (app.hasSaf) grantedCount++;
+                String icon = app.hasSaf ? "✅" : "❌";
+                String shortName = app.id.toUpperCase();
+                sb.append(shortName).append(": ").append(icon);
+                if (i < apps.size() - 1) {
+                    sb.append(" | ");
+                }
+            }
+
+            if (tvSafGamesSummary != null) {
+                tvSafGamesSummary.setText(sb.toString());
+            }
+
+            if (grantedCount == apps.size()) {
+                tvSafStatusBadge.setText("SAF: ALL 3 TARGET APPS ACTIVE");
                 tvSafStatusBadge.setTextColor(0xFF00FF66);
                 tvSafStatusBadge.setBackgroundColor(0x2000FF66);
                 if (btnGrantSafStorage != null) {
-                    btnGrantSafStorage.setText("✅ ANDROID/DATA ACCESS GRANTED (PERMANENT)");
+                    btnGrantSafStorage.setText("✅ TARGET APPS GRANTED (MANAGE)");
+                    btnGrantSafStorage.setEnabled(true);
+                }
+            } else if (grantedCount > 0) {
+                tvSafStatusBadge.setText("SAF: " + grantedCount + "/3 TARGET APPS ACTIVE");
+                tvSafStatusBadge.setTextColor(0xFFFFCC00);
+                tvSafStatusBadge.setBackgroundColor(0x20FFCC00);
+                if (btnGrantSafStorage != null) {
+                    btnGrantSafStorage.setText("📂 MANAGE / GRANT TARGET APPS (" + grantedCount + "/3)");
                     btnGrantSafStorage.setEnabled(true);
                 }
             } else {
@@ -2981,11 +3009,47 @@ public class SettingsFragment extends Fragment implements ShizukuManager.Shizuku
                 tvSafStatusBadge.setTextColor(0xFFFF4444);
                 tvSafStatusBadge.setBackgroundColor(0x20FF4444);
                 if (btnGrantSafStorage != null) {
-                    btnGrantSafStorage.setText("📂 GRANT ANDROID/DATA ACCESS (SAF)");
+                    btnGrantSafStorage.setText("📂 GRANT TARGET GAME ACCESS (SAF)");
                     btnGrantSafStorage.setEnabled(true);
                 }
             }
         });
+    }
+
+    private void showSafGameTargetSelector() {
+        if (getContext() == null || getActivity() == null) return;
+        List<com.gamebooster.app.saf.SafStorageManager.TargetAppInfo> apps =
+                com.gamebooster.app.saf.SafStorageManager.getTargetApps(getContext());
+
+        String[] items = new String[apps.size()];
+        for (int i = 0; i < apps.size(); i++) {
+            com.gamebooster.app.saf.SafStorageManager.TargetAppInfo app = apps.get(i);
+            String status = app.hasSaf ? " [✅ GRANTED]" : " [❌ NOT GRANTED]";
+            String installed = app.isInstalled ? "" : " (Not Installed)";
+            items[i] = app.displayName + status + installed;
+        }
+
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("📂 SELECT TARGET GAME FOR SAF")
+            .setItems(items, (dialog, which) -> {
+                if (which >= 0 && which < apps.size()) {
+                    com.gamebooster.app.saf.SafStorageManager.TargetAppInfo selected = apps.get(which);
+                    Intent intent = com.gamebooster.app.saf.SafStorageManager
+                            .createOpenDocumentTreeIntent(getContext(), selected.getEffectivePackage());
+                    try {
+                        safTreeLauncher.launch(intent);
+                        Toast.makeText(getContext(),
+                                "Piliin ang 'Use this folder' sa mismong folder ng " + selected.displayName,
+                                Toast.LENGTH_LONG).show();
+                    } catch (Throwable t) {
+                        Toast.makeText(getContext(),
+                                "Hindi mabuksan ang system folder picker: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            })
+            .setNegativeButton("CANCEL", null)
+            .show();
     }
 }
 

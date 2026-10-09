@@ -101,6 +101,18 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
+                <TextView
+                    android:id="@+id/tv_saf_games_summary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#151A24"
+                    android:padding="8dp"
+                    android:fontFamily="monospace"
+                    android:text="🎮 MLBB: ⚪ | PUBGM: ⚪ | CODM: ⚪"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="10sp" />
+
                 <Button
                     android:id="@+id/btn_grant_saf_storage"
                     android:layout_width="match_parent"

@@ -334,15 +334,16 @@ public class MainActivity extends AppCompatActivity implements ShizukuManager.Sh
         if (requestCode == com.gamebooster.app.saf.SafStorageManager.REQUEST_CODE_SAF_TREE) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 android.net.Uri treeUri = data.getData();
-                boolean persisted = com.gamebooster.app.saf.SafStorageManager.saveAndPersistUri(this, "com.mobile.legends", treeUri);
-                if (persisted) {
-                    Toast.makeText(this, "📂 Storage Access Granted! Permanent SAF Active.", Toast.LENGTH_LONG).show();
+                String savedPkg = com.gamebooster.app.saf.SafStorageManager.saveAndPersistUriSmart(this, null, treeUri);
+                if (savedPkg != null) {
+                    String gameName = com.gamebooster.app.saf.SafStorageManager.getGameDisplayName(savedPkg);
+                    Toast.makeText(this, "📂 Storage Access Granted: " + gameName + " (" + savedPkg + ")", Toast.LENGTH_LONG).show();
                     Fragment settingsFrag = getSupportFragmentManager().findFragmentByTag(TAG_SETTINGS);
                     if (settingsFrag instanceof SettingsFragment && settingsFrag.isAdded()) {
                         ((SettingsFragment) settingsFrag).refreshSafStatus();
                     }
                 } else {
-                    Toast.makeText(this, "⚠️ Failed to persist storage permission", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "⚠️ Failed to persist storage permission for target game", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(this, "Storage access was not selected", Toast.LENGTH_SHORT).show();
