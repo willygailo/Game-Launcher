@@ -150,28 +150,47 @@ public final class BackgroundLimitImmunityEngine {
     }
 
     /**
-     * Sets oom_score_adj to -900 and oom_adj to -17 for all active PIDs of a given package.
+     * Sets oom_score_adj to -900 and oom_adj to -17 for all active PIDs of a given package or process pattern.
      * Prevents Android's Low Memory Killer Daemon (LMKD) from killing the process during heavy games.
      */
     public static void protectProcessOomScore(String packageName) {
         if (packageName == null || packageName.isEmpty()) return;
         try {
-            String pidOut = ShizukuExecutor.executeShizukuCommand("pidof " + packageName + " 2>/dev/null");
+            java.util.Set<Integer> targetPids = new java.util.HashSet<>();
+
+            // If protecting Game Booster itself, always include current process PID
+            if (GAME_BOOSTER_PACKAGE.equals(packageName)) {
+                targetPids.add(android.os.Process.myPid());
+            }
+
+            // Query via pidof and pgrep to catch multi-process daemons (:service, shizuku_server)
+            String cmd = "pidof " + packageName + " 2>/dev/null; pgrep -f " + packageName + " 2>/dev/null";
+            if (SHIZUKU_PACKAGE.equals(packageName)) {
+                cmd += "; pgrep -f shizuku_server 2>/dev/null; pgrep -f rikka.shizuku 2>/dev/null";
+            }
+
+            String pidOut = ShizukuExecutor.executeShizukuCommand(cmd);
             if (pidOut != null && !pidOut.trim().isEmpty() && !pidOut.startsWith("ERROR")) {
-                String[] pids = pidOut.trim().split("\\s+");
-                List<String> oomCmds = new ArrayList<>();
-                for (String pStr : pids) {
+                String[] lines = pidOut.trim().split("[\\s\\n\\r]+");
+                for (String pStr : lines) {
                     try {
                         int pid = Integer.parseInt(pStr.trim());
-                        if (pid <= 0) continue;
-                        oomCmds.add("echo -900 > /proc/" + pid + "/oom_score_adj 2>/dev/null");
-                        oomCmds.add("echo -17 > /proc/" + pid + "/oom_adj 2>/dev/null");
+                        if (pid > 0) {
+                            targetPids.add(pid);
+                        }
                     } catch (NumberFormatException ignored) {}
                 }
-                if (!oomCmds.isEmpty()) {
-                    CommandExecutor.executeBatchCommands(oomCmds);
-                    Log.d(TAG, "Pinned oom_score_adj -900 for " + packageName + " (PIDs=" + pidOut.trim() + ")");
+            }
+
+            if (!targetPids.isEmpty()) {
+                List<String> oomCmds = new ArrayList<>();
+                for (int pid : targetPids) {
+                    oomCmds.add("echo -900 > /proc/" + pid + "/oom_score_adj 2>/dev/null");
+                    oomCmds.add("echo -17 > /proc/" + pid + "/oom_adj 2>/dev/null");
+                    oomCmds.add("renice -n -20 -p " + pid + " 2>/dev/null");
                 }
+                CommandExecutor.executeBatchCommands(oomCmds);
+                Log.d(TAG, "Pinned oom_score_adj -900 & renice -20 for " + packageName + " (PIDs=" + targetPids + ")");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Failed to protect oom score for " + packageName + ": " + t.getMessage());
@@ -188,10 +207,14 @@ public final class BackgroundLimitImmunityEngine {
             if (com.gamebooster.app.engine.ShellExecutor.isRootSuAvailable()) {
                 Log.i(TAG, "Attempting root auto-resurrection of Shizuku daemon without wireless debugging...");
                 String[] candidatePaths = {
-                        "/sdcard/Android/data/moe.shizuku.privileged.api/start.sh",
-                        "/storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh",
+                        "/data/data/moe.shizuku.privileged.api/files/start.sh",
+                        "/data/user/0/moe.shizuku.privileged.api/files/start.sh",
+                        "/sdcard/Android/data/moe.shizuku.privileged.api/files/start.sh",
+                        "/storage/emulated/0/Android/data/moe.shizuku.privileged.api/files/start.sh",
                         "/data/data/moe.shizuku.privileged.api/start.sh",
                         "/data/user/0/moe.shizuku.privileged.api/start.sh",
+                        "/sdcard/Android/data/moe.shizuku.privileged.api/start.sh",
+                        "/storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh",
                         "/data/local/tmp/shizuku/start.sh",
                         "/data/local/tmp/start.sh"
                 };
@@ -207,7 +230,7 @@ public final class BackgroundLimitImmunityEngine {
 
                 // Fallback direct root daemon spawn via app_process / shizuku apk
                 com.gamebooster.app.engine.ShellExecutor.executeSuCommand(
-                        "nohup sh /data/data/moe.shizuku.privileged.api/start.sh >/dev/null 2>&1 &");
+                        "nohup sh /data/data/moe.shizuku.privileged.api/files/start.sh >/dev/null 2>&1 &");
             }
         } catch (Throwable t) {
             Log.w(TAG, "Auto-resurrect Shizuku error: " + t.getMessage());

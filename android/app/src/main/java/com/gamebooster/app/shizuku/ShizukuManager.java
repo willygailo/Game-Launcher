@@ -112,9 +112,14 @@ public class ShizukuManager {
     };
 
     private static final Shizuku.OnBinderDeadListener DEAD_LISTENER = () -> {
-        Log.w(TAG, "Shizuku binder died / service disconnected.");
+        Log.w(TAG, "Shizuku binder died / service disconnected. Initiating debounced verification...");
+        // Delegate to ConnectionManager which performs multi-pass verification before confirming dead
         ShizukuConnectionManager.getInstance().onBinderDead();
-        notifyStateChanged(isShizukuRunningAndGranted());
+    };
+
+    private static final ShizukuConnectionManager.ConnectionListener CONN_MGR_LISTENER = state -> {
+        boolean alive = (state == ShizukuConnectionManager.State.READY);
+        notifyStateChanged(alive);
     };
 
     public static void registerBinderListeners() {
@@ -126,6 +131,7 @@ public class ShizukuManager {
             Shizuku.addBinderReceivedListenerSticky(RECEIVED_LISTENER);
             Shizuku.addBinderDeadListener(DEAD_LISTENER);
             Shizuku.addRequestPermissionResultListener(PERMISSION_RESULT_LISTENER);
+            ShizukuConnectionManager.getInstance().addConnectionListener(CONN_MGR_LISTENER);
             Log.d(TAG, "Shizuku binder listeners registered successfully.");
         } catch (Exception e) {
             Log.e(TAG, "Failed to register Shizuku binder listeners", e);
@@ -141,6 +147,7 @@ public class ShizukuManager {
             Shizuku.removeBinderReceivedListener(RECEIVED_LISTENER);
             Shizuku.removeBinderDeadListener(DEAD_LISTENER);
             Shizuku.removeRequestPermissionResultListener(PERMISSION_RESULT_LISTENER);
+            ShizukuConnectionManager.getInstance().removeConnectionListener(CONN_MGR_LISTENER);
             Log.d(TAG, "Shizuku binder listeners unregistered.");
         } catch (Exception e) {
             Log.e(TAG, "Failed to unregister Shizuku binder listeners", e);

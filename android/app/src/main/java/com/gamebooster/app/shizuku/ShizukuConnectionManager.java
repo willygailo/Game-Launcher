@@ -1,5 +1,9 @@
 package com.gamebooster.app.shizuku;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
@@ -14,8 +18,8 @@ import rikka.shizuku.Shizuku;
 /**
  * ShizukuConnectionManager — lifecycle state machine + auto-reconnection.
  *
- * States: IDLE → BINDING → READY ──binder died──▶ DEAD → RETRY (exponential
- * backoff, 500ms → 8s cap, auto-rebind) → READY.
+ * States: IDLE → BINDING → READY ──binder died──▶ DEAD → RETRY (rapid
+ * backoff, 150ms → 2.5s cap, auto-rebind) → READY.
  *
  * Master state is strictly governed by core Shizuku binder (moe.shizuku.privileged.api).
  * Auxiliary AIDL UserService drops do NOT declare Shizuku dead.
@@ -24,8 +28,8 @@ public class ShizukuConnectionManager {
 
     private static final String TAG = "ShizukuConnMgr";
 
-    private static final long BASE_BACKOFF_MS = 500;
-    private static final long MAX_BACKOFF_MS = 8000;
+    private static final long BASE_BACKOFF_MS = 150;
+    private static final long MAX_BACKOFF_MS = 2500;
     private static final int MAX_RETRY_ATTEMPTS = 60;
     private static final long CONNECT_POLL_STEP_MS = 50;
 
@@ -44,6 +48,8 @@ public class ShizukuConnectionManager {
     private final AtomicBoolean reconnectRunning = new AtomicBoolean(false);
     private final java.util.concurrent.atomic.AtomicInteger currentAttempt = new java.util.concurrent.atomic.AtomicInteger(0);
     private volatile boolean enabled = true;
+    private final AtomicBoolean screenReceiverRegistered = new AtomicBoolean(false);
+    private BroadcastReceiver screenReceiver = null;
 
     private ShizukuConnectionManager() {}
 
@@ -98,11 +104,34 @@ public class ShizukuConnectionManager {
 
     private final AtomicBoolean heartbeatStarted = new AtomicBoolean(false);
 
+    private void registerScreenStateReceiver() {
+        if (!screenReceiverRegistered.compareAndSet(false, true)) return;
+        try {
+            Context ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            if (ctx != null) {
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(Intent.ACTION_SCREEN_ON);
+                filter.addAction(Intent.ACTION_USER_PRESENT);
+                screenReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Log.d(TAG, "Screen on / device unlocked. Executing instant Shizuku pulse check...");
+                        forceReconnectCheck();
+                    }
+                };
+                ctx.registerReceiver(screenReceiver, filter);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Screen receiver registration error: " + t.getMessage());
+        }
+    }
+
     private void ensureHeartbeatRunning() {
         if (!heartbeatStarted.compareAndSet(false, true)) return;
         Thread heartbeatThread = new Thread(() -> {
             while (enabled) {
-                sleepQuietly(8000);
+                long sleepTime = (state == State.READY) ? 4000L : 1200L;
+                sleepQuietly(sleepTime);
                 if (!enabled) break;
                 try {
                     boolean alive = Shizuku.pingBinder();
@@ -128,6 +157,7 @@ public class ShizukuConnectionManager {
     /** Reads the actual binder state and converges the state machine. */
     public void start() {
         enabled = true;
+        registerScreenStateReceiver();
         ensureHeartbeatRunning();
         try {
             boolean alive = Shizuku.pingBinder();
@@ -200,10 +230,13 @@ public class ShizukuConnectionManager {
         // Filter transient network/Wi-Fi switching and process-switching blips
         AppExecutors.getInstance().executeCommand(() -> {
             boolean confirmedDead = true;
-            for (int i = 0; i < 3; i++) {
-                sleepQuietly(200);
+            long[] debounceIntervals = {100L, 200L, 300L};
+            for (long delay : debounceIntervals) {
+                sleepQuietly(delay);
                 try {
-                    if (Shizuku.pingBinder()) {
+                    boolean alive = Shizuku.pingBinder()
+                            || ShizukuUserServiceConnector.getInstance().isServiceConnected();
+                    if (alive) {
                         confirmedDead = false;
                         break;
                     }
@@ -211,11 +244,16 @@ public class ShizukuConnectionManager {
             }
 
             if (confirmedDead) {
+                Log.w(TAG, "Shizuku confirmed dead after 3-stage debounce. Transitioning to DEAD.");
                 setState(State.DEAD);
                 currentAttempt.set(0);
+                com.gamebooster.app.booster.BackgroundLimitImmunityEngine.tryAutoResurrectShizukuDaemon();
                 scheduleReconnect();
             } else {
-                Log.d(TAG, "onBinderDead blip detected, but Shizuku.pingBinder() recovered. Preserving READY state.");
+                Log.i(TAG, "onBinderDead blip absorbed cleanly: Shizuku.pingBinder() recovered. Preserving READY state.");
+                if (state != State.READY) {
+                    setState(State.READY);
+                }
             }
         });
     }
@@ -370,7 +408,7 @@ public class ShizukuConnectionManager {
         });
     }
 
-    /** Background reconnection loop: persistent keepalive, exponential backoff into steady heartbeat. */
+    /** Background reconnection loop: persistent keepalive, rapid pulse into steady heartbeat. */
     private void scheduleReconnect() {
         if (!enabled || !com.gamebooster.app.engine.ShellExecutor.isAndroidEnvironment()) return;
         if (!reconnectRunning.compareAndSet(false, true)) {
@@ -409,8 +447,12 @@ public class ShizukuConnectionManager {
                     }
 
                     int attempt = currentAttempt.getAndIncrement();
-                    if (attempt == 0 || attempt % 10 == 0) {
+                    if (attempt == 0 || attempt % 5 == 0) {
                         Log.d(TAG, "Reconnect attempt " + attempt + ": Shizuku daemon checking (alive=" + alive + ", granted=" + granted + ")");
+                    }
+
+                    if (!alive && (attempt % 4 == 0)) {
+                        com.gamebooster.app.booster.BackgroundLimitImmunityEngine.tryAutoResurrectShizukuDaemon();
                     }
 
                     if (alive) {
@@ -427,8 +469,7 @@ public class ShizukuConnectionManager {
                         }
                     }
 
-                    // Keepalive heartbeat: when attempt reaches maximum backoff, continue polling every 4s
-                    // instead of terminating, ensuring background recovery after long gaming.
+                    // Steady keepalive heartbeat: capped at 2.5s for immediate responsiveness
                     sleepQuietly(backoffMs(attempt));
                 }
             } catch (Throwable t) {
@@ -440,13 +481,11 @@ public class ShizukuConnectionManager {
     }
 
     private static long backoffMs(int attempt) {
-        if (attempt <= 0) return BASE_BACKOFF_MS;
-        if (attempt >= 10) return 4000; // Steady heartbeat after 10 retries
-        long delay = BASE_BACKOFF_MS;
-        for (int i = 1; i < Math.min(attempt, 4); i++) {
-            delay *= 2;
-        }
-        return Math.min(delay, MAX_BACKOFF_MS);
+        if (attempt <= 0) return 150L;
+        if (attempt == 1) return 300L;
+        if (attempt == 2) return 600L;
+        if (attempt == 3) return 1200L;
+        return MAX_BACKOFF_MS; // 2500ms max steady heartbeat
     }
 
     private static void sleepQuietly(long ms) {

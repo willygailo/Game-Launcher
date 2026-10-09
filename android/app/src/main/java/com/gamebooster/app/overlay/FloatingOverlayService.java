@@ -88,6 +88,7 @@ public class FloatingOverlayService extends Service {
     private Handler handler;
     private Runnable telemetryRunnable;
     private Runnable pingRunnable;
+    private Runnable shizukuWatchdogRunnable;
 
     // View References
     private View layoutCollapsedPill;
@@ -821,6 +822,28 @@ public class FloatingOverlayService extends Service {
             }
         };
         handler.post(pingRunnable);
+
+        // 4. Shizuku Immortal Keep-Alive Watchdog (8 sec interval during gaming)
+        shizukuWatchdogRunnable = new Runnable() {
+            @Override
+            public void run() {
+                AppExecutors.getInstance().executeCommand(() -> {
+                    try {
+                        Context ctx = getApplicationContext();
+                        if (com.gamebooster.app.config.ShizukuPreferences.isShizukuEverGranted(ctx)) {
+                            boolean ready = com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().isReady();
+                            if (!ready) {
+                                com.gamebooster.app.shizuku.ShizukuConnectionManager.getInstance().forceReconnectCheck();
+                            }
+                        }
+                    } catch (Throwable ignored) {}
+                });
+                if (handler != null && isRunning) {
+                    handler.postDelayed(this, 8000);
+                }
+            }
+        };
+        handler.postDelayed(shizukuWatchdogRunnable, 4000);
     }
 
     private void executeNetworkPingCheck() {
@@ -1056,6 +1079,7 @@ public class FloatingOverlayService extends Service {
         if (handler != null) {
             if (telemetryRunnable != null) handler.removeCallbacks(telemetryRunnable);
             if (pingRunnable != null) handler.removeCallbacks(pingRunnable);
+            if (shizukuWatchdogRunnable != null) handler.removeCallbacks(shizukuWatchdogRunnable);
             handler.removeCallbacks(autoCollapseRunnable);
         }
         try {

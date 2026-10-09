@@ -75,7 +75,10 @@ public class ShizukuUserServiceConnector {
     }
 
     private long calculateBackoffDelay(int attempt) {
-        double delay = INITIAL_REBIND_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, Math.min(attempt, 5));
+        if (attempt <= 0) return 80L;
+        if (attempt == 1) return 200L;
+        if (attempt == 2) return 500L;
+        double delay = INITIAL_REBIND_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, Math.min(attempt, 4));
         delay = Math.min(delay, MAX_REBIND_DELAY_MS);
         double jitter = (Math.random() * 2.0 - 1.0) * JITTER_RATIO * delay;
         return Math.max(50L, (long) (delay + jitter));
@@ -113,7 +116,7 @@ public class ShizukuUserServiceConnector {
                             }
                         } else if (!Shizuku.pingBinder()) {
                             // If main binder itself is sleeping/dead, back off briefly
-                            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                            try { Thread.sleep(600); } catch (InterruptedException ignored) {}
                         }
                     }
                 } finally {
@@ -289,6 +292,9 @@ public class ShizukuUserServiceConnector {
     }
 
     public List<String> executeBatchCommands(List<String> commands) {
+        if (commands == null || commands.isEmpty()) {
+            return Collections.emptyList();
+        }
         ensureBound();
         IUserService instance = userServiceInstance;
         if (instance != null) {
@@ -298,7 +304,14 @@ public class ShizukuUserServiceConnector {
                 handleRemoteException("execBatchCommands", e);
             }
         }
-        return Collections.emptyList();
+        // Fallback: execute through elevated ShizukuExecutor channel so batch operations never fail silently
+        List<String> results = new java.util.ArrayList<>(commands.size());
+        for (String cmd : commands) {
+            if (cmd != null && !cmd.trim().isEmpty()) {
+                results.add(ShizukuExecutor.executeShizukuCommand(cmd));
+            }
+        }
+        return results;
     }
 
     public List<String> execBatchCommands(List<String> commands) {
