@@ -2,4 +2,9 @@
 <root>
   <skip_check enable="true" />
   <version name="null" />
+  <item name="BattleSystemConfig.bytes" skipFix="1" />
+  <item name="Document" skipFix="1" />
+  <item name="BattleConfig" skipFix="1" />
+  <item name="BattleConfig.json" skipFix="1" />
+  <item name="HeroStatConfig.json" skipFix="1" />
 </root>
