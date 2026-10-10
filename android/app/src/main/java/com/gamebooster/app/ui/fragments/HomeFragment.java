@@ -87,8 +87,7 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
         // Background Looping Video
         videoHomeBg = view.findViewById(R.id.video_home_bg);
         if (videoHomeBg != null) {
-            videoHomeBg.setMuted(true);
-            videoHomeBg.setVideoRawResource(R.raw.home_bg_video);
+            videoHomeBg.setVisibility(View.GONE);
         }
 
         // Hero Hardware Banner Looping Video (Video Only - Silent)
@@ -302,20 +301,15 @@ public class HomeFragment extends Fragment implements ShizukuManager.ShizukuStat
     private void applyVideoBackgroundState() {
         if (getContext() == null) return;
         boolean videoSaver = com.gamebooster.app.config.ManualSettingsPreferences.isVideoSaverEnabled(getContext());
+        if (videoHomeBg != null) {
+            videoHomeBg.setVisibility(View.GONE);
+        }
         if (videoSaver) {
-            if (videoHomeBg != null) {
-                videoHomeBg.pause();
-                videoHomeBg.setVisibility(View.GONE);
-            }
             if (videoHeroBanner != null) {
                 videoHeroBanner.pause();
                 videoHeroBanner.setVisibility(View.GONE);
             }
         } else {
-            if (videoHomeBg != null) {
-                videoHomeBg.setVisibility(View.VISIBLE);
-                videoHomeBg.play();
-            }
             if (videoHeroBanner != null) {
                 videoHeroBanner.setVisibility(View.VISIBLE);
                 videoHeroBanner.play();

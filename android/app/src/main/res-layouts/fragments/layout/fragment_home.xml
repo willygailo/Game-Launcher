@@ -4,11 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Looping Home Background Video (Pinterest 1131670212648065534) -->
+    <!-- Custom Home Background Image (R.jpeg) -->
+    <ImageView
+        android:id="@+id/img_home_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_home" />
+
+    <!-- Optional Looping Video Background View -->
     <com.gamebooster.app.ui.views.LoopingVideoBackgroundView
         android:id="@+id/video_home_bg"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <!-- Translucent crystal glass scrim with deep cyber tint -->
     <View
