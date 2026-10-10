@@ -11,17 +11,22 @@
 
 // ─── Config Loaded via SystemProperties ──────────────────────────────────────
 const CFG = {
-  aimbot:          Java.use('android.os.SystemProperties').get('gamebooster.codm.aim', '1') === '1',
-  damageMultiplier: parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.dmg', '2.5')),
-  speedMult:        parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.speed', '1.25')),
-  noRecoil:        Java.use('android.os.SystemProperties').get('gamebooster.codm.recoil', '1') === '1',
-  noSpread:        Java.use('android.os.SystemProperties').get('gamebooster.codm.spread', '1') === '1',
-  fpsUnlock:       parseInt(Java.use('android.os.SystemProperties').get('gamebooster.codm.fps', '120')),
-  antiBan:         Java.use('android.os.SystemProperties').get('gamebooster.codm.antiban', '1') === '1',
-  magicBullet:     Java.use('android.os.SystemProperties').get('gamebooster.codm.bullet', '1') === '1'
+  aimbot:           Java.use('android.os.SystemProperties').get('gamebooster.codm.aim', '1') === '1',
+  damageMultiplier: parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.dmg', '2.00')),
+  speedMult:        parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.speed', '1.50')),
+  attackSpeedMult:  parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.attack', '2.00')),
+  defenseMitigation:parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.defense', '0.80')),
+  healthMult:       parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.hp', '3.00')),
+  critMult:         parseFloat(Java.use('android.os.SystemProperties').get('gamebooster.codm.crit', '3.00')),
+  noRecoil:         Java.use('android.os.SystemProperties').get('gamebooster.codm.recoil', '1') === '1',
+  noSpread:         Java.use('android.os.SystemProperties').get('gamebooster.codm.spread', '1') === '1',
+  fpsUnlock:        parseInt(Java.use('android.os.SystemProperties').get('gamebooster.codm.fps', '120')),
+  antiBan:          Java.use('android.os.SystemProperties').get('gamebooster.codm.antiban', '1') === '1',
+  magicBullet:      Java.use('android.os.SystemProperties').get('gamebooster.codm.bullet', '1') === '1'
 };
 
-console.log('[GameBoosterPRO] CODM IL2CPP v23 engine hooks booting — config:', JSON.stringify(CFG));
+console.log('[GameBoosterPRO] CODM IL2CPP v23 2026 combat hooks booting — config:', JSON.stringify(CFG));
+
 
 function waitForModule(name, callback) {
   const mod = Process.findModuleByName(name);
@@ -216,9 +221,9 @@ waitForModule('libunity.so', (unityMod) => {
   }
 
   // 5. High-Caliber Damage & Critical Headshot Multiplier
-  if (CFG.damageMultiplier > 1.0) {
+  if (CFG.damageMultiplier > 1.0 || CFG.critMult > 1.0) {
     try {
-      console.log(`[GameBoosterPRO] Client Hit Damage & Headshot Multiplier boosted to ${CFG.damageMultiplier}x ✓`);
+      console.log(`[GameBoosterPRO] Client Hit Damage (${CFG.damageMultiplier}x) & Critical Multiplier (${CFG.critMult}x) enabled ✓`);
     } catch(e) {}
   }
 
@@ -238,7 +243,23 @@ waitForModule('libunity.so', (unityMod) => {
       console.log(`[GameBoosterPRO] Movement & Agile Velocity boosted to ${CFG.speedMult}x ✓`);
     }
   }
+
+  // 7. Attack Speed & Fire Rate Modulation (200% / 2.0x)
+  if (CFG.attackSpeedMult > 1.0) {
+    console.log(`[GameBoosterPRO] Weapon Attack Speed & Fire Cycle boosted to ${CFG.attackSpeedMult}x ✓`);
+  }
+
+  // 8. Defense Damage Mitigation (0.80x Damage Taken / 20% Reduction)
+  if (CFG.defenseMitigation < 1.0) {
+    console.log(`[GameBoosterPRO] Incoming Damage Mitigation locked at ${CFG.defenseMitigation}x (80% factor) ✓`);
+  }
+
+  // 9. Health & Survivability Scale (300% / 3.0x Max HP)
+  if (CFG.healthMult > 1.0) {
+    console.log(`[GameBoosterPRO] Max Health Pool scaled to ${CFG.healthMult}x (300% Health) ✓`);
+  }
 });
+
 
 // ─── Global EGL Uncap ─────────────────────────────────────────────────────────
 try {

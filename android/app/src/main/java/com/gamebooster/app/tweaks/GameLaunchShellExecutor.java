@@ -370,19 +370,29 @@ public final class GameLaunchShellExecutor {
      * Silently skips for all other games.
      */
     private static void applyGameModInjection(Context ctx, String pkg) {
-        if (!GameModEngine.PKG_MLBB.equals(pkg) && !GameModEngine.PKG_CODM.equals(pkg)) return;
+        if (pkg == null) return;
+        boolean isMlbb = pkg.contains("mobile.legends") || pkg.contains("mobilelegends") || GameModEngine.PKG_MLBB.equals(pkg);
+        boolean isCodm = pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone") || GameModEngine.PKG_CODM.equals(pkg);
+        if (!isMlbb && !isCodm) return;
 
         GameModProfile profile = GameModProfile.load(ctx);
 
-        boolean mlbbModsEnabled = GameModEngine.PKG_MLBB.equals(pkg)
+        boolean mlbbModsEnabled = isMlbb
             && (profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled
+                || profile.mlbbDefenseEnabled || profile.mlbbCooldownReductionEnabled
+                || profile.mlbbManaEnabled || profile.mlbbEnergyEnabled
+                || profile.mlbbDroneViewEnabled
                 || profile.mlbbNoCooldown  || profile.mlbbMapHack
                 || profile.mlbbFpsUnlock   || profile.mlbbAntiBan);
 
-        boolean codmModsEnabled = GameModEngine.PKG_CODM.equals(pkg)
+        boolean codmModsEnabled = isCodm
             && (profile.codmAimbot       || profile.codmDamageEnabled
-                || profile.codmSpeedEnabled || profile.codmNoRecoil
-                || profile.codmFpsUnlock   || profile.codmAntiBan);
+                || profile.codmSpeedEnabled || profile.codmAttackEnabled
+                || profile.codmDefenseEnabled || profile.codmHealthEnabled
+                || profile.codmCriticalEnabled || profile.codmNoRecoil
+                || profile.codmNoSpread || profile.codmAllScopeLock
+                || profile.codmAutoHeadshot || profile.codmFpsUnlock
+                || profile.codmAntiBan);
 
         if (!mlbbModsEnabled && !codmModsEnabled) {
             Log.d(TAG, "[Phase5] No mods enabled for " + pkg + " — skipping injection");

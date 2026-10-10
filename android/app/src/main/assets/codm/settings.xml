@@ -5,4 +5,12 @@
   <bool name="showSplash">True</bool>
   <bool name="useVideoSplash">True</bool>
   <bool name="useAAB">True</bool>
+  <float name="player_speed_mult">1.50</float>
+  <float name="player_damage_mult">2.00</float>
+  <float name="attack_speed_mult">2.00</float>
+  <float name="defense_mitigation">0.80</float>
+  <float name="health_mult">3.00</float>
+  <float name="critical_multiplier">3.00</float>
+  <float name="recoil_scale">0.00</float>
+  <float name="spread_scale">0.00</float>
 </settings>

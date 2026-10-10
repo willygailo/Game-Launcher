@@ -48,7 +48,7 @@ public class GameModFragment extends Fragment {
     // ── MLBB views ────────────────────────────────────────────────────────────
     private SwitchCompat swMlbbDamage, swMlbbAspd, swMlbbDef, swMlbbCdr,
                          swMlbbMana, swMlbbEnergy, swMlbbDrone, swMlbbNoCool,
-                         swMlbbMap, swMlbbFps, swMlbbAntiBan;
+                         swMlbbMap, swMlbbSpread, swMlbbFps, swMlbbAntiBan;
     private SeekBar      sbMlbbDamage, sbMlbbAspd, sbMlbbDef, sbMlbbCdr, sbMlbbDrone, sbMlbbFps;
     private TextView     tvMlbbDmgVal, tvMlbbAspdVal, tvMlbbDefVal, tvMlbbCdrVal,
                          tvMlbbManaVal, tvMlbbEnergyVal, tvMlbbDroneVal, tvMlbbFpsVal;
@@ -56,10 +56,14 @@ public class GameModFragment extends Fragment {
 
     // ── CODM views ────────────────────────────────────────────────────────────
     private SwitchCompat swCodmAimbot, swCodmDamage, swCodmSpeed,
-                         swCodmRecoil, swCodmFps, swCodmAntiBan;
-    private SeekBar      sbCodmDamage, sbCodmSpeed, sbCodmFps;
-    private TextView     tvCodmDmgVal, tvCodmSpeedVal, tvCodmFpsVal;
+                         swCodmAttack, swCodmDefense, swCodmHealth, swCodmCrit,
+                         swCodmRecoil, swCodmSpread, swCodmFps, swCodmAntiBan;
+    private SeekBar      sbCodmDamage, sbCodmSpeed, sbCodmAttack, sbCodmDefense,
+                         sbCodmHealth, sbCodmCrit, sbCodmFps;
+    private TextView     tvCodmDmgVal, tvCodmSpeedVal, tvCodmAttackVal, tvCodmDefVal,
+                         tvCodmHpVal, tvCodmCritVal, tvCodmFpsVal;
     private Button       btnCodmPull, btnCodmInject;
+
 
     // ── Common ────────────────────────────────────────────────────────────────
     private TextView tvModStatus, tvFridaStatus;
@@ -116,6 +120,7 @@ public class GameModFragment extends Fragment {
         swMlbbDrone   = v.findViewById(R.id.sw_mlbb_drone);
         swMlbbNoCool  = v.findViewById(R.id.sw_mlbb_nocool);
         swMlbbMap     = v.findViewById(R.id.sw_mlbb_map);
+        swMlbbSpread  = v.findViewById(R.id.sw_mlbb_spread);
         swMlbbFps     = v.findViewById(R.id.sw_mlbb_fps);
         swMlbbAntiBan = v.findViewById(R.id.sw_mlbb_antiban);
 
@@ -142,15 +147,31 @@ public class GameModFragment extends Fragment {
         swCodmAimbot  = v.findViewById(R.id.sw_codm_aimbot);
         swCodmDamage  = v.findViewById(R.id.sw_codm_damage);
         swCodmSpeed   = v.findViewById(R.id.sw_codm_speed);
+        swCodmAttack  = v.findViewById(R.id.sw_codm_attack);
+        swCodmDefense = v.findViewById(R.id.sw_codm_defense);
+        swCodmHealth  = v.findViewById(R.id.sw_codm_health);
+        swCodmCrit    = v.findViewById(R.id.sw_codm_crit);
         swCodmRecoil  = v.findViewById(R.id.sw_codm_recoil);
+        swCodmSpread  = v.findViewById(R.id.sw_codm_spread);
         swCodmFps     = v.findViewById(R.id.sw_codm_fps);
         swCodmAntiBan = v.findViewById(R.id.sw_codm_antiban);
+
         sbCodmDamage  = v.findViewById(R.id.sb_codm_damage);
         sbCodmSpeed   = v.findViewById(R.id.sb_codm_speed);
+        sbCodmAttack  = v.findViewById(R.id.sb_codm_attack);
+        sbCodmDefense = v.findViewById(R.id.sb_codm_defense);
+        sbCodmHealth  = v.findViewById(R.id.sb_codm_health);
+        sbCodmCrit    = v.findViewById(R.id.sb_codm_crit);
         sbCodmFps     = v.findViewById(R.id.sb_codm_fps);
-        tvCodmDmgVal  = v.findViewById(R.id.tv_codm_dmg_value);
-        tvCodmSpeedVal= v.findViewById(R.id.tv_codm_speed_value);
-        tvCodmFpsVal  = v.findViewById(R.id.tv_codm_fps_value);
+
+        tvCodmDmgVal    = v.findViewById(R.id.tv_codm_dmg_value);
+        tvCodmSpeedVal  = v.findViewById(R.id.tv_codm_speed_value);
+        tvCodmAttackVal = v.findViewById(R.id.tv_codm_attack_value);
+        tvCodmDefVal    = v.findViewById(R.id.tv_codm_def_value);
+        tvCodmHpVal     = v.findViewById(R.id.tv_codm_hp_value);
+        tvCodmCritVal   = v.findViewById(R.id.tv_codm_crit_value);
+        tvCodmFpsVal    = v.findViewById(R.id.tv_codm_fps_value);
+
         btnCodmPull   = v.findViewById(R.id.btn_codm_pull);
         btnCodmInject = v.findViewById(R.id.btn_codm_inject);
     }
@@ -168,6 +189,7 @@ public class GameModFragment extends Fragment {
         if (swMlbbDrone != null) swMlbbDrone.setChecked(profile.mlbbDroneViewEnabled);
         swMlbbNoCool.setChecked(profile.mlbbNoCooldown);
         swMlbbMap.setChecked(profile.mlbbMapHack);
+        if (swMlbbSpread != null) swMlbbSpread.setChecked(profile.mlbbNoSpread);
         swMlbbFps.setChecked(profile.mlbbFpsUnlock);
         swMlbbAntiBan.setChecked(profile.mlbbAntiBan);
 
@@ -191,16 +213,32 @@ public class GameModFragment extends Fragment {
         swCodmAimbot.setChecked(profile.codmAimbot);
         swCodmDamage.setChecked(profile.codmDamageEnabled);
         swCodmSpeed.setChecked(profile.codmSpeedEnabled);
+        if (swCodmAttack != null) swCodmAttack.setChecked(profile.codmAttackEnabled);
+        if (swCodmDefense != null) swCodmDefense.setChecked(profile.codmDefenseEnabled);
+        if (swCodmHealth != null) swCodmHealth.setChecked(profile.codmHealthEnabled);
+        if (swCodmCrit != null) swCodmCrit.setChecked(profile.codmCriticalEnabled);
         swCodmRecoil.setChecked(profile.codmNoRecoil);
+        if (swCodmSpread != null) swCodmSpread.setChecked(profile.codmNoSpread);
         swCodmFps.setChecked(profile.codmFpsUnlock);
         swCodmAntiBan.setChecked(profile.codmAntiBan);
+
         sbCodmDamage.setProgress(multToIndex(DMG_VALUES, profile.codmDamageMult));
         sbCodmSpeed.setProgress(multToIndex(SPEED_VALUES, profile.codmSpeedMult));
+        if (sbCodmAttack != null) sbCodmAttack.setProgress(multToIndex(ASPD_VALUES, profile.codmAttackMult));
+        if (sbCodmDefense != null) sbCodmDefense.setProgress(multToIndex(DEF_VALUES, profile.codmDefenseMult));
+        if (sbCodmHealth != null) sbCodmHealth.setProgress(multToIndex(DMG_VALUES, profile.codmHealthMult));
+        if (sbCodmCrit != null) sbCodmCrit.setProgress(multToIndex(DMG_VALUES, profile.codmCriticalMult));
         if (sbCodmFps != null) sbCodmFps.setProgress(fpsToIndex(profile.codmTargetFps));
+
         tvCodmDmgVal.setText(formatMult(profile.codmDamageMult));
         tvCodmSpeedVal.setText(formatMult(profile.codmSpeedMult));
+        if (tvCodmAttackVal != null) tvCodmAttackVal.setText(formatMult(profile.codmAttackMult));
+        if (tvCodmDefVal != null) tvCodmDefVal.setText(formatMult(profile.codmDefenseMult));
+        if (tvCodmHpVal != null) tvCodmHpVal.setText(formatMult(profile.codmHealthMult));
+        if (tvCodmCritVal != null) tvCodmCritVal.setText(formatMult(profile.codmCriticalMult));
         tvCodmFpsVal.setText(profile.codmTargetFps + "fps");
     }
+
 
     // ─── Wire Listeners ───────────────────────────────────────────────────────
 
@@ -253,6 +291,22 @@ public class GameModFragment extends Fragment {
             v -> profile.codmDamageMult = v));
         sbCodmSpeed.setOnSeekBarChangeListener(sliderListener(sbCodmSpeed, SPEED_VALUES, tvCodmSpeedVal,
             v -> profile.codmSpeedMult = v));
+        if (sbCodmAttack != null) {
+            sbCodmAttack.setOnSeekBarChangeListener(sliderListener(sbCodmAttack, ASPD_VALUES, tvCodmAttackVal,
+                v -> profile.codmAttackMult = v));
+        }
+        if (sbCodmDefense != null) {
+            sbCodmDefense.setOnSeekBarChangeListener(sliderListener(sbCodmDefense, DEF_VALUES, tvCodmDefVal,
+                v -> profile.codmDefenseMult = v));
+        }
+        if (sbCodmHealth != null) {
+            sbCodmHealth.setOnSeekBarChangeListener(sliderListener(sbCodmHealth, DMG_VALUES, tvCodmHpVal,
+                v -> profile.codmHealthMult = v));
+        }
+        if (sbCodmCrit != null) {
+            sbCodmCrit.setOnSeekBarChangeListener(sliderListener(sbCodmCrit, DMG_VALUES, tvCodmCritVal,
+                v -> profile.codmCriticalMult = v));
+        }
         if (sbCodmFps != null) {
             sbCodmFps.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
@@ -281,6 +335,7 @@ public class GameModFragment extends Fragment {
         if (swMlbbDrone != null) swMlbbDrone.setOnCheckedChangeListener((b, c) -> profile.mlbbDroneViewEnabled = c);
         swMlbbNoCool.setOnCheckedChangeListener((b, c) -> profile.mlbbNoCooldown = c);
         swMlbbMap.setOnCheckedChangeListener((b, c) -> profile.mlbbMapHack = c);
+        if (swMlbbSpread != null) swMlbbSpread.setOnCheckedChangeListener((b, c) -> profile.mlbbNoSpread = c);
         swMlbbFps.setOnCheckedChangeListener((b, c) -> profile.mlbbFpsUnlock = c);
         swMlbbAntiBan.setOnCheckedChangeListener((b, c) -> profile.mlbbAntiBan = c);
 
@@ -288,7 +343,12 @@ public class GameModFragment extends Fragment {
         swCodmAimbot.setOnCheckedChangeListener((b, c) -> profile.codmAimbot = c);
         swCodmDamage.setOnCheckedChangeListener((b, c) -> profile.codmDamageEnabled = c);
         swCodmSpeed.setOnCheckedChangeListener((b, c) -> profile.codmSpeedEnabled = c);
+        if (swCodmAttack != null) swCodmAttack.setOnCheckedChangeListener((b, c) -> profile.codmAttackEnabled = c);
+        if (swCodmDefense != null) swCodmDefense.setOnCheckedChangeListener((b, c) -> profile.codmDefenseEnabled = c);
+        if (swCodmHealth != null) swCodmHealth.setOnCheckedChangeListener((b, c) -> profile.codmHealthEnabled = c);
+        if (swCodmCrit != null) swCodmCrit.setOnCheckedChangeListener((b, c) -> profile.codmCriticalEnabled = c);
         swCodmRecoil.setOnCheckedChangeListener((b, c) -> profile.codmNoRecoil = c);
+        if (swCodmSpread != null) swCodmSpread.setOnCheckedChangeListener((b, c) -> profile.codmNoSpread = c);
         swCodmFps.setOnCheckedChangeListener((b, c) -> profile.codmFpsUnlock = c);
         swCodmAntiBan.setOnCheckedChangeListener((b, c) -> profile.codmAntiBan = c);
 
@@ -395,11 +455,20 @@ public class GameModFragment extends Fragment {
         profile.codmAimbot        = swCodmAimbot.isChecked();
         profile.codmDamageEnabled = swCodmDamage.isChecked();
         profile.codmSpeedEnabled  = swCodmSpeed.isChecked();
+        if (swCodmAttack != null) profile.codmAttackEnabled = swCodmAttack.isChecked();
+        if (swCodmDefense != null) profile.codmDefenseEnabled = swCodmDefense.isChecked();
+        if (swCodmHealth != null) profile.codmHealthEnabled = swCodmHealth.isChecked();
+        if (swCodmCrit != null) profile.codmCriticalEnabled = swCodmCrit.isChecked();
         profile.codmNoRecoil      = swCodmRecoil.isChecked();
+        if (swCodmSpread != null) profile.codmNoSpread = swCodmSpread.isChecked();
         profile.codmFpsUnlock     = swCodmFps.isChecked();
         profile.codmAntiBan       = swCodmAntiBan.isChecked();
         profile.codmDamageMult    = DMG_VALUES[sbCodmDamage.getProgress()];
         profile.codmSpeedMult     = SPEED_VALUES[sbCodmSpeed.getProgress()];
+        if (sbCodmAttack != null) profile.codmAttackMult = ASPD_VALUES[sbCodmAttack.getProgress()];
+        if (sbCodmDefense != null) profile.codmDefenseMult = DEF_VALUES[sbCodmDefense.getProgress()];
+        if (sbCodmHealth != null) profile.codmHealthMult = DMG_VALUES[sbCodmHealth.getProgress()];
+        if (sbCodmCrit != null) profile.codmCriticalMult = DMG_VALUES[sbCodmCrit.getProgress()];
         if (sbMlbbFps != null) {
             profile.mlbbTargetFps = FPS_VALUES[Math.min(sbMlbbFps.getProgress(), FPS_VALUES.length - 1)];
         }
@@ -407,6 +476,7 @@ public class GameModFragment extends Fragment {
             profile.codmTargetFps = FPS_VALUES[Math.min(sbCodmFps.getProgress(), FPS_VALUES.length - 1)];
         }
     }
+
 
     private static int cdrToIndex(int pct) {
         for (int i = 0; i < CDR_VALUES.length; i++) {

@@ -339,6 +339,16 @@
                 android:textSize="13sp"
                 android:layout_marginBottom="8dp"/>
 
+            <!-- Zero Spread & Skill Aim Lock -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_mlbb_spread"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🎯 Zero Spread &amp; Smart Aim Lock"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
             <!-- FPS Unlock -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -545,15 +555,178 @@
                 android:progressTint="#FFD700"
                 android:thumbTint="#FFD700"/>
 
+            <!-- Attack Speed -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_attack"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="⚡ Attack Speed (200%)"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_attack_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="2.0x"
+                    android:textColor="#FF9F1C"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_attack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="3"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FF9F1C"
+                android:thumbTint="#FF9F1C"/>
+
+            <!-- Defense Mitigation -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_defense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🛡 Defense Armor (80% factor)"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_def_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="0.8x"
+                    android:textColor="#2EC4B6"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_defense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="1"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#2EC4B6"
+                android:thumbTint="#2EC4B6"/>
+
+            <!-- Health Multiplier -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_health"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💖 Health Pool (300%)"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_hp_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="3.0x"
+                    android:textColor="#E71D36"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_health"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="2"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#E71D36"
+                android:thumbTint="#E71D36"/>
+
+            <!-- Critical Multiplier -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_codm_crit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🎯 Critical Headshot (300%)"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_codm_crit_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="3.0x"
+                    android:textColor="#FF0055"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_codm_crit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="2"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FF0055"
+                android:thumbTint="#FF0055"/>
+
             <!-- No Recoil -->
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/sw_codm_recoil"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🔫 No Recoil"
+                android:text="🔫 Zero Recoil (0.00x)"
                 android:textColor="#CCCCCC"
                 android:textSize="13sp"
                 android:layout_marginBottom="8dp"/>
+
+            <!-- No Spread -->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/sw_codm_spread"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🎯 Zero Spread (Laser BSA 0.00x)"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
+
 
             <!-- FPS Unlock -->
             <LinearLayout

@@ -250,6 +250,9 @@ public final class LobbyInjectionEngine {
                     MlbbConfigPatcher.applyBattleConfigOverdrive(finalPkg);
                 } else if (finalPkg.contains("tencent.ig") || finalPkg.contains("pubg")) {
                     PubgConfigPatcher.applyPubgmBattleConfigOverdrive(finalPkg);
+                } else if (finalPkg.contains("cod") || finalPkg.contains("callofduty")) {
+                    CodmConfigPatcher.deployCodmCombatAssets(appCtx, finalPkg);
+                    CodmConfigPatcher.applyCodmMasterSuite(finalPkg);
                 }
                 GameSecurityBypassEngine.postInjectionBypassAndLock(finalPkg);
             } catch (Throwable t) {
@@ -266,6 +269,9 @@ public final class LobbyInjectionEngine {
                     MlbbConfigPatcher.applyBattleConfigOverdrive(finalPkg);
                 } else if (finalPkg.contains("tencent.ig") || finalPkg.contains("pubg")) {
                     PubgConfigPatcher.applyPubgmBattleConfigOverdrive(finalPkg);
+                } else if (finalPkg.contains("cod") || finalPkg.contains("callofduty")) {
+                    CodmConfigPatcher.deployCodmCombatAssets(appCtx, finalPkg);
+                    CodmConfigPatcher.applyCodmMasterSuite(finalPkg);
                 }
                 GameSecurityBypassEngine.postInjectionBypassAndLock(finalPkg);
             } catch (Throwable t) {

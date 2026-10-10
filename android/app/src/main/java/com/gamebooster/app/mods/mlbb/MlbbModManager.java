@@ -66,12 +66,18 @@ public final class MlbbModManager {
                 }
 
                 // Layer 2: Asset deployment, Drone View, and Hero scripts
+                try {
+                    MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
+                } catch (Throwable t) {
+                    Log.w(TAG, "MLBB asset deploy note: " + t.getMessage());
+                }
+
                 if (profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled ||
                     profile.mlbbDefenseEnabled || profile.mlbbCooldownReductionEnabled ||
                     profile.mlbbManaEnabled || profile.mlbbEnergyEnabled ||
-                    profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbDroneViewEnabled) {
+                    profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbDroneViewEnabled ||
+                    profile.mlbbNoSpread) {
                     try {
-                        MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
                         MlbbConfigPatcher.applyBattleConfigOverdrive(pkg);
                         MlbbConfigPatcher.applyRankedCombatFullSuite(pkg);
                         MlbbConfigPatcher.applyClassicCombatFullSuite(pkg);
@@ -103,6 +109,7 @@ public final class MlbbModManager {
                 setprop("gamebooster.mlbb.energy",  profile.mlbbEnergyEnabled ? (profile.mlbbInfiniteEnergy ? "9999" : String.valueOf(profile.mlbbEnergyMult)) : "1.0");
                 setprop("gamebooster.mlbb.nocool",  profile.mlbbNoCooldown ? "1" : "0");
                 setprop("gamebooster.mlbb.map",     profile.mlbbMapHack ? "1" : "0");
+                setprop("gamebooster.mlbb.spread",  profile.mlbbNoSpread ? "1" : "0");
                 setprop("gamebooster.mlbb.drone",   profile.mlbbDroneViewEnabled ? String.valueOf(profile.mlbbDroneTier) : "0");
                 setprop("gamebooster.mlbb.fps",     String.valueOf(profile.mlbbFpsUnlock ? profile.mlbbTargetFps : 60));
                 setprop("gamebooster.mlbb.antiban", profile.mlbbAntiBan ? "1" : "0");
@@ -112,6 +119,7 @@ public final class MlbbModManager {
                         || profile.mlbbDefenseEnabled || profile.mlbbCooldownReductionEnabled
                         || profile.mlbbManaEnabled || profile.mlbbEnergyEnabled
                         || profile.mlbbDroneViewEnabled
+                        || profile.mlbbNoSpread
                         || profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbFpsUnlock || profile.mlbbAntiBan;
 
                 if (anyModActive) {

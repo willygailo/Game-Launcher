@@ -212,6 +212,11 @@ public final class GameAutoInjectDispatcher {
                         // Native inject deferred together with rest of MLBB I/O
                         NativeConfigInjector.injectAllConfigsForPackage(fPkg, 185);
                         MlbbConfigPatcher.cleanLegacyLoadingLocks(fPkg);
+                        try {
+                            com.gamebooster.app.mods.mlbb.MlbbModManager.applyProfile(fCtx, fPkg, com.gamebooster.app.mods.GameModProfile.load(fCtx));
+                        } catch (Throwable modErr) {
+                            Log.w(TAG, "MLBB Mod Profile injection warning: " + modErr.getMessage());
+                        }
                         Log.i(TAG, "✅ [MLBB Deferred Inject] All overrides applied for " + fPkg);
                     } catch (Throwable t) {
                         Log.e(TAG, "Error in MLBB deferred injection for " + fPkg, t);
@@ -243,6 +248,7 @@ public final class GameAutoInjectDispatcher {
                 PubgConfigPatcher.deployPakPatch(pkg);
             } else if (pkg.contains("cod") || pkg.contains("callofduty") || pkg.contains("warzone")) {
                 CodmConfigPatcher.deployCodmAssets(ctx, pkg);
+                CodmConfigPatcher.deployCodmCombatAssets(ctx, pkg);
                 CodmConfigPatcher.patchUltraExtreme185(pkg);
                 CodmConfigPatcher.patch(pkg, 185);
                 CodmConfigPatcher.applyDamage10000AttackSpeedMax(pkg);
@@ -252,6 +258,11 @@ public final class GameAutoInjectDispatcher {
                 CodmConfigPatcher.applyCodmInstantChamberingQuickDraw(pkg);
                 CodmConfigPatcher.applyCodmSlideCancelMobility(pkg);
                 CodmConfigPatcher.applyCodmUltraDroneViewMaxFov(pkg);
+                try {
+                    com.gamebooster.app.mods.codm.CodmModManager.applyProfile(ctx, pkg, com.gamebooster.app.mods.GameModProfile.load(ctx));
+                } catch (Throwable modErr) {
+                    Log.w(TAG, "CODM Mod Profile injection warning: " + modErr.getMessage());
+                }
             } else if (pkg.contains("freefire") || pkg.contains("dts.freefire")) {
                 FreeFireConfigPatcher.patchUltraExtreme185(pkg);
                 FreeFireConfigPatcher.patch(pkg, 185);

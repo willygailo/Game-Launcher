@@ -37,6 +37,14 @@ android/all/
 **/android/all/
 NewPatch/
 **/NewPatch/
+android/NewPatch/
+**/android/NewPatch/
+android/CODM-LATEST-PATCH/
+**/CODM-LATEST-PATCH/
+android/MLBB-LATES-Patch/
+**/MLBB-LATES-Patch/
+CODM-LATEST-PATCH/
+MLBB-LATES-Patch/
 frida-server*
 **/frida-server*
 codm/

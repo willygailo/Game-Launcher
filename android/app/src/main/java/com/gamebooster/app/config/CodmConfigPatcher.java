@@ -216,7 +216,8 @@ public class CodmConfigPatcher {
             "MSDKBuglyConfig.json",
             "encrypt.json",
             "captcha_encrpted",
-            "blit.txt"
+            "blit.txt",
+            "settings.xml"
         };
 
         String[] configCacheFiles = {
@@ -259,10 +260,12 @@ public class CodmConfigPatcher {
                     if (!com.gamebooster.app.shizuku.ShizukuFileManager.fileExists(dest) && !new java.io.File(dest).exists()) {
                         writeAssetWithFallback(dest, data);
                     }
-                } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml")) {
+                } else if (assetName.equals("GameConfig.xml") || assetName.equals("GraphicsSetting.xml") || assetName.equals("UserProfile.xml") || assetName.equals("settings.xml")) {
                     writeAssetWithFallback(prefsDir + "/" + assetName, data);
                     writeAssetWithFallback(sharedPrefsDir + "/" + assetName, data);
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
+                    writeAssetWithFallback(configDir + "/" + assetName, data);
+                    writeAssetWithFallback(configDirLower + "/" + assetName, data);
                     anyDeployed = true;
                 } else {
                     writeAssetWithFallback(filesDir + "/" + assetName, data);
@@ -303,6 +306,52 @@ public class CodmConfigPatcher {
         Log.i(TAG, "📦 [CODM Asset Deployer] Deployed asset templates for " + packageName + " (success=" + anyDeployed + ")");
         return anyDeployed;
     }
+
+    /**
+     * Deploys CODM combat patch assets (boot.config, MSDKConfig.ini, settings.xml)
+     * directly into game storage directories with 2026 combat multipliers.
+     */
+    public static boolean deployCodmCombatAssets(android.content.Context context, String packageName) {
+        if (packageName == null) return false;
+        if (context == null) context = ConfigBackupManager.getAppContext();
+        if (context == null) context = com.gamebooster.app.GameBoosterApp.getInstance();
+        if (context == null) return false;
+
+        android.content.res.AssetManager am = context.getAssets();
+        List<String> roots = resolveRootDirs(packageName);
+        boolean anyDeployed = false;
+
+        String[] combatFiles = {"boot.config", "MSDKConfig.ini", "settings.xml"};
+
+        for (String root : roots) {
+            String filesDir = root + "/files";
+            String configDir = root + "/files/Config";
+            String configDirLower = root + "/files/config";
+            String sharedPrefsDir = root + "/shared_prefs";
+            String prefsDir = root + "/files/prefs";
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(filesDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(configDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(configDirLower);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(sharedPrefsDir);
+            com.gamebooster.app.shizuku.ShizukuFileManager.makeDirectory(prefsDir);
+
+            for (String file : combatFiles) {
+                byte[] data = readAssetBytes(am, "codm/" + file);
+                if (data == null || data.length == 0) continue;
+                writeAssetWithFallback(filesDir + "/" + file, data);
+                writeAssetWithFallback(configDir + "/" + file, data);
+                writeAssetWithFallback(configDirLower + "/" + file, data);
+                if (file.endsWith(".xml")) {
+                    writeAssetWithFallback(sharedPrefsDir + "/" + file, data);
+                    writeAssetWithFallback(prefsDir + "/" + file, data);
+                }
+                anyDeployed = true;
+            }
+        }
+        Log.i(TAG, "⚡ [CODM Combat Deployer] Deployed combat assets (boot.config, MSDKConfig.ini, settings.xml) for " + packageName);
+        return anyDeployed;
+    }
+
 
     /**
      * Deploys modded CODM SO libraries.

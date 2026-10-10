@@ -94,6 +94,10 @@ dump.txt
 # Reverse Engineering, Patch Archives & Temporary Dumps
 NewPatch/
 **/NewPatch/
+CODM-LATEST-PATCH/
+**/CODM-LATEST-PATCH/
+MLBB-LATES-Patch/
+**/MLBB-LATES-Patch/
 *.extracted/
 **/.extracted/
 *.dump

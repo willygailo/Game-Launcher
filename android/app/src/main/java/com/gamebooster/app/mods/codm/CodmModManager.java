@@ -53,8 +53,16 @@ public final class CodmModManager {
                 }
 
                 // Layer 2: In-storage weapon and combat suites
+                try {
+                    CodmConfigPatcher.deployCodmCombatAssets(ctx, pkg);
+                } catch (Throwable t) {
+                    Log.w(TAG, "CODM combat asset deploy error: " + t.getMessage());
+                }
+
                 if (profile.codmAimbot || profile.codmDamageEnabled ||
-                    profile.codmSpeedEnabled || profile.codmNoRecoil || profile.codmAllScopeLock) {
+                    profile.codmSpeedEnabled || profile.codmAttackEnabled || profile.codmDefenseEnabled ||
+                    profile.codmHealthEnabled || profile.codmCriticalEnabled || profile.codmNoRecoil ||
+                    profile.codmNoSpread || profile.codmAllScopeLock) {
                     try {
                         CodmConfigPatcher.applyCodmMasterSuite(pkg);
                         CodmConfigPatcher.applyNoRecoilNoSpread(pkg);
@@ -69,8 +77,8 @@ public final class CodmModManager {
                         }
 
                         // Apply 2026 8-Feature Master Combat Matrix
-                        float dmg = profile.codmDamageEnabled ? profile.codmDamageMult : 1.0f;
-                        float spd = profile.codmSpeedEnabled ? profile.codmSpeedMult : 1.0f;
+                        float dmg = profile.codmDamageEnabled ? profile.codmDamageMult : 2.0f;
+                        float spd = profile.codmSpeedEnabled ? profile.codmSpeedMult : 1.5f;
                         CodmConfigPatcher.applyMasterCombatMatrix(pkg, dmg, 120.0f, spd, 2.0f, true);
                         com.gamebooster.app.config.GameModAutoSyncEngine.applyAntiRedownloadLocks(pkg);
                     } catch (Throwable t) {
@@ -86,15 +94,22 @@ public final class CodmModManager {
                 // Layer 4: SystemProperties for Frida / Native bridge
                 setprop("gamebooster.codm.aim",     profile.codmAimbot ? "1" : "0");
                 setprop("gamebooster.codm.allscope",profile.codmAllScopeLock ? "1" : "0");
-                setprop("gamebooster.codm.dmg",     profile.codmDamageEnabled ? String.valueOf(profile.codmDamageMult) : "1.0");
-                setprop("gamebooster.codm.speed",   profile.codmSpeedEnabled ? String.valueOf(profile.codmSpeedMult) : "1.0");
+                setprop("gamebooster.codm.dmg",     profile.codmDamageEnabled ? String.valueOf(profile.codmDamageMult) : "2.0");
+                setprop("gamebooster.codm.speed",   profile.codmSpeedEnabled ? String.valueOf(profile.codmSpeedMult) : "1.5");
+                setprop("gamebooster.codm.attack",  profile.codmAttackEnabled ? String.valueOf(profile.codmAttackMult) : "2.0");
+                setprop("gamebooster.codm.defense", profile.codmDefenseEnabled ? String.valueOf(profile.codmDefenseMult) : "0.8");
+                setprop("gamebooster.codm.hp",      profile.codmHealthEnabled ? String.valueOf(profile.codmHealthMult) : "3.0");
+                setprop("gamebooster.codm.crit",    profile.codmCriticalEnabled ? String.valueOf(profile.codmCriticalMult) : "3.0");
                 setprop("gamebooster.codm.recoil",  profile.codmNoRecoil ? "1" : "0");
+                setprop("gamebooster.codm.spread",  profile.codmNoSpread ? "1" : "0");
                 setprop("gamebooster.codm.fps",     String.valueOf(profile.codmFpsUnlock ? profile.codmTargetFps : 60));
                 setprop("gamebooster.codm.antiban", profile.codmAntiBan ? "1" : "0");
 
                 // Layer 5: Frida dynamic hooks injection
                 boolean anyModActive = profile.codmAimbot || profile.codmDamageEnabled ||
-                    profile.codmSpeedEnabled || profile.codmNoRecoil || profile.codmFpsUnlock || profile.codmAntiBan;
+                    profile.codmSpeedEnabled || profile.codmAttackEnabled || profile.codmDefenseEnabled ||
+                    profile.codmHealthEnabled || profile.codmCriticalEnabled || profile.codmNoRecoil ||
+                    profile.codmNoSpread || profile.codmFpsUnlock || profile.codmAntiBan;
 
                 if (anyModActive) {
                     String hookScript = readAsset(ctx, "frida/codm_hooks.js");
@@ -103,6 +118,7 @@ public final class CodmModManager {
                         injectFrida(pkg, FRIDA_HOOK_DEVICE_DIR + "codm_hooks.js");
                     }
                 }
+
 
                 Log.i(TAG, "✅ CODM mod pipeline fully deployed for " + pkg);
             } catch (Throwable t) {

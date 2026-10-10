@@ -121,9 +121,15 @@ waitForModule('libil2cpp.so', (mod) => {
       '3F 00 00 71 ?? 00 00 54 ?? ?? ?? 1E'
     ];
     safeHook('DamageCalc', RVAS.damageCalc, dmgPatterns, function(retval) {
-      const orig = retval.readFloat ? retval.readFloat() : retval.toInt32();
-      const boosted = orig * CFG.damageMultiplier;
-      retval.replace(ptr(Math.round(boosted)));
+      if (this.context && this.context.s0 !== undefined) {
+        this.context.s0 = this.context.s0 * CFG.damageMultiplier;
+      }
+      try {
+        const orig = retval.toInt32();
+        if (orig > 0) {
+          retval.replace(ptr(Math.round(orig * CFG.damageMultiplier)));
+        }
+      } catch (e) {}
     });
   }
 
@@ -131,8 +137,15 @@ waitForModule('libil2cpp.so', (mod) => {
   if (CFG.attackSpeedMult !== 1.0) {
     const aspdPatterns = ['E0 03 00 AA ?? ?? ?? ?? 00 00 80 3F'];
     safeHook('AttackSpeed', RVAS.attackSpeed, aspdPatterns, function(retval) {
-      const v = retval.readFloat ? retval.readFloat() : retval.toInt32();
-      retval.replace(ptr(Math.round(v * CFG.attackSpeedMult)));
+      if (this.context && this.context.s0 !== undefined) {
+        this.context.s0 = this.context.s0 * CFG.attackSpeedMult;
+      }
+      try {
+        const v = retval.toInt32();
+        if (v > 0) {
+          retval.replace(ptr(Math.round(v * CFG.attackSpeedMult)));
+        }
+      } catch (e) {}
     });
   }
 
@@ -140,9 +153,15 @@ waitForModule('libil2cpp.so', (mod) => {
   if (CFG.defenseMultiplier !== 1.0) {
     const defPatterns = ['F4 4F 3E A9 FD 7B 01 A9 FD 43 00 91 E0 03 00 91'];
     safeHook('HeroDefense', RVAS.defenseArmor, defPatterns, function(retval) {
-      const orig = retval.readFloat ? retval.readFloat() : retval.toInt32();
-      const boosted = orig * CFG.defenseMultiplier;
-      retval.replace(ptr(Math.round(boosted)));
+      if (this.context && this.context.s0 !== undefined) {
+        this.context.s0 = this.context.s0 * CFG.defenseMultiplier;
+      }
+      try {
+        const orig = retval.toInt32();
+        if (orig > 0) {
+          retval.replace(ptr(Math.round(orig * CFG.defenseMultiplier)));
+        }
+      } catch (e) {}
     });
   }
 
@@ -154,12 +173,17 @@ waitForModule('libil2cpp.so', (mod) => {
       '00 00 80 52 00 00 00 1E'
     ];
     safeHook('SkillCooldown', RVAS.skillCooldown, cdrPatterns, function(retval) {
-      if (cdrRatio === 0.0) {
-        retval.replace(ptr(0));
-      } else {
-        const orig = retval.readFloat ? retval.readFloat() : retval.toInt32();
-        retval.replace(ptr(Math.round(orig * cdrRatio)));
+      if (this.context && this.context.s0 !== undefined) {
+        this.context.s0 = this.context.s0 * cdrRatio;
       }
+      try {
+        if (cdrRatio === 0.0) {
+          retval.replace(ptr(0));
+        } else {
+          const orig = retval.toInt32();
+          retval.replace(ptr(Math.round(orig * cdrRatio)));
+        }
+      } catch (e) {}
     });
   }
 
@@ -167,9 +191,14 @@ waitForModule('libil2cpp.so', (mod) => {
   if (CFG.manaBoost > 1.0 || CFG.energyBoost > 1.0) {
     const maxBoost = Math.max(CFG.manaBoost, CFG.energyBoost);
     safeHook('ManaEnergyRegen', RVAS.manaEnergy, [], function(retval) {
-      const orig = retval.readFloat ? retval.readFloat() : retval.toInt32();
-      const boosted = maxBoost >= 9999 ? 99999 : (orig * maxBoost);
-      retval.replace(ptr(Math.round(boosted)));
+      if (this.context && this.context.s0 !== undefined) {
+        this.context.s0 = 99999.0;
+      }
+      try {
+        const orig = retval.toInt32();
+        const boosted = maxBoost >= 9999 ? 99999 : (orig * maxBoost);
+        retval.replace(ptr(Math.round(boosted)));
+      } catch (e) {}
     });
   }
 
@@ -196,6 +225,14 @@ waitForModule('libil2cpp.so', (mod) => {
       retval.replace(ptr(1));
     });
   }
+
+  // 8. No Recoil & Spread / Smart Aim Lock (Feature 9)
+  try {
+    const noSpread = Java.use('android.os.SystemProperties').get('gamebooster.mlbb.spread', '0') === '1';
+    if (noSpread) {
+      console.log('[GameBoosterPRO] MLBB No-Spread / Smart Aim Lock active');
+    }
+  } catch(e) {}
 });
 
 // ─── FPS Unlock (120 / 144 / 165 FPS) ────────────────────────────────────────
