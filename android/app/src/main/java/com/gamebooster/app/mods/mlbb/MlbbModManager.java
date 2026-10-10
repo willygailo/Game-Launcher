@@ -67,6 +67,8 @@ public final class MlbbModManager {
 
                 // Layer 2: Asset deployment, Drone View, and Hero scripts
                 if (profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled ||
+                    profile.mlbbDefenseEnabled || profile.mlbbCooldownReductionEnabled ||
+                    profile.mlbbManaEnabled || profile.mlbbEnergyEnabled ||
                     profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbDroneViewEnabled) {
                     try {
                         MlbbConfigPatcher.deployMlbbAssets(ctx, pkg);
@@ -83,7 +85,7 @@ public final class MlbbModManager {
 
                         // Apply 2026 8-Feature Master Combat Matrix
                         float dmg = profile.mlbbDamageEnabled ? profile.mlbbDamageMult : 1.0f;
-                        float fov = profile.mlbbDroneViewEnabled ? 180.0f : 0.0f;
+                        float fov = profile.mlbbDroneViewEnabled ? (profile.mlbbDroneTier >= 100 ? 240.0f : 180.0f) : 0.0f;
                         float aspd = profile.mlbbAttackSpeedEnabled ? profile.mlbbAttackSpeedMult : 1.0f;
                         MlbbConfigPatcher.applyMasterCombatMatrix(pkg, dmg, fov, 1.45f, aspd, profile.mlbbMapHack);
                         com.gamebooster.app.config.GameModAutoSyncEngine.applyAntiRedownloadLocks(pkg);
@@ -95,6 +97,10 @@ public final class MlbbModManager {
                 // Layer 3: SystemProperties for runtime bridge
                 setprop("gamebooster.mlbb.dmg",     profile.mlbbDamageEnabled ? String.valueOf(profile.mlbbDamageMult) : "1.0");
                 setprop("gamebooster.mlbb.aspd",    profile.mlbbAttackSpeedEnabled ? String.valueOf(profile.mlbbAttackSpeedMult) : "1.0");
+                setprop("gamebooster.mlbb.def",     profile.mlbbDefenseEnabled ? String.valueOf(profile.mlbbDefenseMult) : "1.0");
+                setprop("gamebooster.mlbb.cdr",     profile.mlbbCooldownReductionEnabled ? String.valueOf(profile.mlbbCooldownReductionPct) : (profile.mlbbNoCooldown ? "100" : "0"));
+                setprop("gamebooster.mlbb.mana",    profile.mlbbManaEnabled ? (profile.mlbbInfiniteMana ? "9999" : String.valueOf(profile.mlbbManaMult)) : "1.0");
+                setprop("gamebooster.mlbb.energy",  profile.mlbbEnergyEnabled ? (profile.mlbbInfiniteEnergy ? "9999" : String.valueOf(profile.mlbbEnergyMult)) : "1.0");
                 setprop("gamebooster.mlbb.nocool",  profile.mlbbNoCooldown ? "1" : "0");
                 setprop("gamebooster.mlbb.map",     profile.mlbbMapHack ? "1" : "0");
                 setprop("gamebooster.mlbb.drone",   profile.mlbbDroneViewEnabled ? String.valueOf(profile.mlbbDroneTier) : "0");
@@ -103,6 +109,9 @@ public final class MlbbModManager {
 
                 // Layer 4: Frida dynamic hooks injection
                 boolean anyModActive = profile.mlbbDamageEnabled || profile.mlbbAttackSpeedEnabled
+                        || profile.mlbbDefenseEnabled || profile.mlbbCooldownReductionEnabled
+                        || profile.mlbbManaEnabled || profile.mlbbEnergyEnabled
+                        || profile.mlbbDroneViewEnabled
                         || profile.mlbbNoCooldown || profile.mlbbMapHack || profile.mlbbFpsUnlock || profile.mlbbAntiBan;
 
                 if (anyModActive) {

@@ -42,6 +42,7 @@ public final class MlbbDroneViewPatcher {
     public static final int TIER_3X   = 30;
     public static final int TIER_4X   = 40;
     public static final int TIER_5X   = 50;
+    public static final int TIER_10X  = 100;
     public static final int DEFAULT_TIER = TIER_2X;
 
     // Fallback subpath used when no version folder is detected on device
@@ -58,13 +59,12 @@ public final class MlbbDroneViewPatcher {
     private MlbbDroneViewPatcher() {}
 
     /**
-     * Normalizes zoom tier input across both single-digit (1..5) and two-digit (10..50) scales.
-     * Guaranteed to map to one of: TIER_1_5X, TIER_2X, TIER_3X, TIER_4X, TIER_5X.
+     * Normalizes zoom tier input across both single-digit (1..10) and two-digit (10..100) scales.
+     * Guaranteed to map to one of: TIER_1_5X, TIER_2X, TIER_3X, TIER_4X, TIER_5X, TIER_10X.
      */
     public static int normalizeTier(int tier) {
         switch (tier) {
             case 1:
-            case 10:
             case TIER_1_5X:
                 return TIER_1_5X;
             case 2:
@@ -76,6 +76,9 @@ public final class MlbbDroneViewPatcher {
             case 5:
             case TIER_5X:
                 return TIER_5X;
+            case 10:
+            case TIER_10X:
+                return TIER_10X;
             case 3:
             case TIER_3X:
             default:
@@ -93,6 +96,7 @@ public final class MlbbDroneViewPatcher {
             case TIER_2X:   return "battle_2x.bytes";
             case TIER_4X:   return "battle_4x.bytes";
             case TIER_5X:   return "battle_5x.bytes";
+            case TIER_10X:  return "battle_10x.bytes";
             case TIER_3X:
             default:        return "battle_3x.bytes";
         }
@@ -109,6 +113,7 @@ public final class MlbbDroneViewPatcher {
             case TIER_3X:   return "3.0X";
             case TIER_4X:   return "4.0X";
             case TIER_5X:   return "5.0X";
+            case TIER_10X:  return "10.0X";
             default:        return "3.0X";
         }
     }

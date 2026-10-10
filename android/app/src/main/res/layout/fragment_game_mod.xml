@@ -148,12 +148,183 @@
                 android:progressTint="#FF6B35"
                 android:thumbTint="#FF6B35"/>
 
+            <!-- Defense Multiplier -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_def"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🛡 Extra Defense"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_def_value"
+                    android:layout_width="45dp"
+                    android:layout_height="wrap_content"
+                    android:text="2x"
+                    android:textColor="#00FFD4"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_def"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9"
+                android:progress="3"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#00FFD4"
+                android:thumbTint="#00FFD4"/>
+
+            <!-- Cooldown Reduction Slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_cdr"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="⏱ Cooldown Reduction"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_cdr_value"
+                    android:layout_width="45dp"
+                    android:layout_height="wrap_content"
+                    android:text="80%"
+                    android:textColor="#FFD700"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_cdr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="10"
+                android:progress="8"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#FFD700"
+                android:thumbTint="#FFD700"/>
+
+            <!-- Extra Mana -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_mana"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💧 Infinite / Extra Mana"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_mana_value"
+                    android:layout_width="55dp"
+                    android:layout_height="wrap_content"
+                    android:text="INFINITE"
+                    android:textColor="#38BDF8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <!-- Extra Energy -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_energy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="⚡ Infinite / Extra Energy"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_energy_value"
+                    android:layout_width="55dp"
+                    android:layout_height="wrap_content"
+                    android:text="INFINITE"
+                    android:textColor="#FACC15"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <!-- Drone View (Free Camera 1.5X - 10X) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_mlbb_drone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="👁 Drone View (1.5x - 10x)"
+                    android:textColor="#CCCCCC"
+                    android:textSize="13sp"
+                    android:checked="true"/>
+
+                <TextView
+                    android:id="@+id/tv_mlbb_drone_value"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:text="2.0X"
+                    android:textColor="#00FFD4"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sb_mlbb_drone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="5"
+                android:progress="1"
+                android:layout_marginBottom="12dp"
+                android:progressTint="#00FFD4"
+                android:thumbTint="#00FFD4"/>
+
             <!-- No Cooldown -->
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/sw_mlbb_nocool"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🔄 No Skill Cooldown"
+                android:text="🔄 No Skill Cooldown (Instant 0s)"
                 android:textColor="#CCCCCC"
                 android:textSize="13sp"
                 android:layout_marginBottom="8dp"/>

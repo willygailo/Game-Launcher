@@ -46,10 +46,12 @@ public class GameModFragment extends Fragment {
     private static final Handler UI = new Handler(Looper.getMainLooper());
 
     // ── MLBB views ────────────────────────────────────────────────────────────
-    private SwitchCompat swMlbbDamage, swMlbbAspd, swMlbbNoCool,
+    private SwitchCompat swMlbbDamage, swMlbbAspd, swMlbbDef, swMlbbCdr,
+                         swMlbbMana, swMlbbEnergy, swMlbbDrone, swMlbbNoCool,
                          swMlbbMap, swMlbbFps, swMlbbAntiBan;
-    private SeekBar      sbMlbbDamage, sbMlbbAspd, sbMlbbFps;
-    private TextView     tvMlbbDmgVal, tvMlbbAspdVal, tvMlbbFpsVal;
+    private SeekBar      sbMlbbDamage, sbMlbbAspd, sbMlbbDef, sbMlbbCdr, sbMlbbDrone, sbMlbbFps;
+    private TextView     tvMlbbDmgVal, tvMlbbAspdVal, tvMlbbDefVal, tvMlbbCdrVal,
+                         tvMlbbManaVal, tvMlbbEnergyVal, tvMlbbDroneVal, tvMlbbFpsVal;
     private Button       btnMlbbPull, btnMlbbInject;
 
     // ── CODM views ────────────────────────────────────────────────────────────
@@ -68,7 +70,11 @@ public class GameModFragment extends Fragment {
 
     // Multiplier mapping for seekbars: index → float value
     private static final float[] DMG_VALUES   = {1f,2f,3f,4f,5f,6f,7f,8f,9f,10f};
-    private static final float[] ASPD_VALUES  = {1f,1.5f,2f,2.5f,3f,3.5f,4f,4.5f,5f,6f};
+    private static final float[] ASPD_VALUES  = {0.5f,1f,1.5f,2f,2.5f,3f,3.5f,4f,4.5f,5f};
+    private static final float[] DEF_VALUES   = {0.5f,1f,1.5f,2f,2.5f,3f,3.5f,4f,4.5f,5f};
+    private static final int[]   CDR_VALUES   = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+    private static final int[]   DRONE_TIERS  = {15, 20, 30, 40, 50, 100};
+    private static final String[] DRONE_LABELS = {"1.5X", "2.0X", "3.0X", "4.0X", "5.0X", "10.0X"};
     private static final float[] SPEED_VALUES = {1f,1.25f,1.5f,1.75f,2f,2.5f,3f,3.5f,4f,5f};
     private static final int[]   FPS_VALUES   = {60, 90, 120, 144, 165};
 
@@ -103,16 +109,32 @@ public class GameModFragment extends Fragment {
         // MLBB
         swMlbbDamage  = v.findViewById(R.id.sw_mlbb_damage);
         swMlbbAspd    = v.findViewById(R.id.sw_mlbb_aspd);
+        swMlbbDef     = v.findViewById(R.id.sw_mlbb_def);
+        swMlbbCdr     = v.findViewById(R.id.sw_mlbb_cdr);
+        swMlbbMana    = v.findViewById(R.id.sw_mlbb_mana);
+        swMlbbEnergy  = v.findViewById(R.id.sw_mlbb_energy);
+        swMlbbDrone   = v.findViewById(R.id.sw_mlbb_drone);
         swMlbbNoCool  = v.findViewById(R.id.sw_mlbb_nocool);
         swMlbbMap     = v.findViewById(R.id.sw_mlbb_map);
         swMlbbFps     = v.findViewById(R.id.sw_mlbb_fps);
         swMlbbAntiBan = v.findViewById(R.id.sw_mlbb_antiban);
+
         sbMlbbDamage  = v.findViewById(R.id.sb_mlbb_damage);
         sbMlbbAspd    = v.findViewById(R.id.sb_mlbb_aspd);
+        sbMlbbDef     = v.findViewById(R.id.sb_mlbb_def);
+        sbMlbbCdr     = v.findViewById(R.id.sb_mlbb_cdr);
+        sbMlbbDrone   = v.findViewById(R.id.sb_mlbb_drone);
         sbMlbbFps     = v.findViewById(R.id.sb_mlbb_fps);
+
         tvMlbbDmgVal  = v.findViewById(R.id.tv_mlbb_dmg_value);
         tvMlbbAspdVal = v.findViewById(R.id.tv_mlbb_aspd_value);
+        tvMlbbDefVal  = v.findViewById(R.id.tv_mlbb_def_value);
+        tvMlbbCdrVal  = v.findViewById(R.id.tv_mlbb_cdr_value);
+        tvMlbbManaVal = v.findViewById(R.id.tv_mlbb_mana_value);
+        tvMlbbEnergyVal = v.findViewById(R.id.tv_mlbb_energy_value);
+        tvMlbbDroneVal = v.findViewById(R.id.tv_mlbb_drone_value);
         tvMlbbFpsVal  = v.findViewById(R.id.tv_mlbb_fps_value);
+
         btnMlbbPull   = v.findViewById(R.id.btn_mlbb_pull);
         btnMlbbInject = v.findViewById(R.id.btn_mlbb_inject);
 
@@ -139,15 +161,30 @@ public class GameModFragment extends Fragment {
         // MLBB
         swMlbbDamage.setChecked(profile.mlbbDamageEnabled);
         swMlbbAspd.setChecked(profile.mlbbAttackSpeedEnabled);
+        if (swMlbbDef != null) swMlbbDef.setChecked(profile.mlbbDefenseEnabled);
+        if (swMlbbCdr != null) swMlbbCdr.setChecked(profile.mlbbCooldownReductionEnabled);
+        if (swMlbbMana != null) swMlbbMana.setChecked(profile.mlbbManaEnabled);
+        if (swMlbbEnergy != null) swMlbbEnergy.setChecked(profile.mlbbEnergyEnabled);
+        if (swMlbbDrone != null) swMlbbDrone.setChecked(profile.mlbbDroneViewEnabled);
         swMlbbNoCool.setChecked(profile.mlbbNoCooldown);
         swMlbbMap.setChecked(profile.mlbbMapHack);
         swMlbbFps.setChecked(profile.mlbbFpsUnlock);
         swMlbbAntiBan.setChecked(profile.mlbbAntiBan);
+
         sbMlbbDamage.setProgress(multToIndex(DMG_VALUES, profile.mlbbDamageMult));
         sbMlbbAspd.setProgress(multToIndex(ASPD_VALUES, profile.mlbbAttackSpeedMult));
+        if (sbMlbbDef != null) sbMlbbDef.setProgress(multToIndex(DEF_VALUES, profile.mlbbDefenseMult));
+        if (sbMlbbCdr != null) sbMlbbCdr.setProgress(cdrToIndex(profile.mlbbCooldownReductionPct));
+        if (sbMlbbDrone != null) sbMlbbDrone.setProgress(droneTierToIndex(profile.mlbbDroneTier));
         if (sbMlbbFps != null) sbMlbbFps.setProgress(fpsToIndex(profile.mlbbTargetFps));
+
         tvMlbbDmgVal.setText(formatMult(profile.mlbbDamageMult));
         tvMlbbAspdVal.setText(formatMult(profile.mlbbAttackSpeedMult));
+        if (tvMlbbDefVal != null) tvMlbbDefVal.setText(formatMult(profile.mlbbDefenseMult));
+        if (tvMlbbCdrVal != null) tvMlbbCdrVal.setText(profile.mlbbCooldownReductionPct + "%");
+        if (tvMlbbManaVal != null) tvMlbbManaVal.setText(profile.mlbbInfiniteMana ? "INFINITE" : "BOOST");
+        if (tvMlbbEnergyVal != null) tvMlbbEnergyVal.setText(profile.mlbbInfiniteEnergy ? "INFINITE" : "BOOST");
+        if (tvMlbbDroneVal != null) tvMlbbDroneVal.setText(droneTierToLabel(profile.mlbbDroneTier));
         tvMlbbFpsVal.setText(profile.mlbbTargetFps + "fps");
 
         // CODM
@@ -173,6 +210,32 @@ public class GameModFragment extends Fragment {
             v -> profile.mlbbDamageMult = v));
         sbMlbbAspd.setOnSeekBarChangeListener(sliderListener(sbMlbbAspd, ASPD_VALUES, tvMlbbAspdVal,
             v -> profile.mlbbAttackSpeedMult = v));
+        if (sbMlbbDef != null) {
+            sbMlbbDef.setOnSeekBarChangeListener(sliderListener(sbMlbbDef, DEF_VALUES, tvMlbbDefVal,
+                v -> profile.mlbbDefenseMult = v));
+        }
+        if (sbMlbbCdr != null) {
+            sbMlbbCdr.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
+                    int cdr = CDR_VALUES[Math.min(p, CDR_VALUES.length - 1)];
+                    profile.mlbbCooldownReductionPct = cdr;
+                    if (tvMlbbCdrVal != null) tvMlbbCdrVal.setText(cdr + "%");
+                }
+                @Override public void onStartTrackingTouch(SeekBar s) {}
+                @Override public void onStopTrackingTouch(SeekBar s) {}
+            });
+        }
+        if (sbMlbbDrone != null) {
+            sbMlbbDrone.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
+                    int tier = DRONE_TIERS[Math.min(p, DRONE_TIERS.length - 1)];
+                    profile.mlbbDroneTier = tier;
+                    if (tvMlbbDroneVal != null) tvMlbbDroneVal.setText(droneTierToLabel(tier));
+                }
+                @Override public void onStartTrackingTouch(SeekBar s) {}
+                @Override public void onStopTrackingTouch(SeekBar s) {}
+            });
+        }
         if (sbMlbbFps != null) {
             sbMlbbFps.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override public void onProgressChanged(SeekBar s, int p, boolean user) {
@@ -205,6 +268,17 @@ public class GameModFragment extends Fragment {
         // MLBB switches
         swMlbbDamage.setOnCheckedChangeListener((b, c) -> profile.mlbbDamageEnabled = c);
         swMlbbAspd.setOnCheckedChangeListener((b, c) -> profile.mlbbAttackSpeedEnabled = c);
+        if (swMlbbDef != null) swMlbbDef.setOnCheckedChangeListener((b, c) -> profile.mlbbDefenseEnabled = c);
+        if (swMlbbCdr != null) swMlbbCdr.setOnCheckedChangeListener((b, c) -> profile.mlbbCooldownReductionEnabled = c);
+        if (swMlbbMana != null) swMlbbMana.setOnCheckedChangeListener((b, c) -> {
+            profile.mlbbManaEnabled = c;
+            if (tvMlbbManaVal != null) tvMlbbManaVal.setText(profile.mlbbInfiniteMana ? "INFINITE" : "BOOST");
+        });
+        if (swMlbbEnergy != null) swMlbbEnergy.setOnCheckedChangeListener((b, c) -> {
+            profile.mlbbEnergyEnabled = c;
+            if (tvMlbbEnergyVal != null) tvMlbbEnergyVal.setText(profile.mlbbInfiniteEnergy ? "INFINITE" : "BOOST");
+        });
+        if (swMlbbDrone != null) swMlbbDrone.setOnCheckedChangeListener((b, c) -> profile.mlbbDroneViewEnabled = c);
         swMlbbNoCool.setOnCheckedChangeListener((b, c) -> profile.mlbbNoCooldown = c);
         swMlbbMap.setOnCheckedChangeListener((b, c) -> profile.mlbbMapHack = c);
         swMlbbFps.setOnCheckedChangeListener((b, c) -> profile.mlbbFpsUnlock = c);
@@ -303,13 +377,20 @@ public class GameModFragment extends Fragment {
     private void collectFromUI() {
         profile.mlbbDamageEnabled     = swMlbbDamage.isChecked();
         profile.mlbbAttackSpeedEnabled = swMlbbAspd.isChecked();
+        if (swMlbbDef != null) profile.mlbbDefenseEnabled = swMlbbDef.isChecked();
+        if (swMlbbCdr != null) profile.mlbbCooldownReductionEnabled = swMlbbCdr.isChecked();
+        if (swMlbbMana != null) profile.mlbbManaEnabled = swMlbbMana.isChecked();
+        if (swMlbbEnergy != null) profile.mlbbEnergyEnabled = swMlbbEnergy.isChecked();
+        if (swMlbbDrone != null) profile.mlbbDroneViewEnabled = swMlbbDrone.isChecked();
         profile.mlbbNoCooldown         = swMlbbNoCool.isChecked();
         profile.mlbbMapHack            = swMlbbMap.isChecked();
         profile.mlbbFpsUnlock          = swMlbbFps.isChecked();
         profile.mlbbAntiBan            = swMlbbAntiBan.isChecked();
         profile.mlbbDamageMult         = DMG_VALUES[sbMlbbDamage.getProgress()];
         profile.mlbbAttackSpeedMult    = ASPD_VALUES[sbMlbbAspd.getProgress()];
-
+        if (sbMlbbDef != null) profile.mlbbDefenseMult = DEF_VALUES[sbMlbbDef.getProgress()];
+        if (sbMlbbCdr != null) profile.mlbbCooldownReductionPct = CDR_VALUES[sbMlbbCdr.getProgress()];
+        if (sbMlbbDrone != null) profile.mlbbDroneTier = DRONE_TIERS[sbMlbbDrone.getProgress()];
 
         profile.codmAimbot        = swCodmAimbot.isChecked();
         profile.codmDamageEnabled = swCodmDamage.isChecked();
@@ -325,6 +406,26 @@ public class GameModFragment extends Fragment {
         if (sbCodmFps != null) {
             profile.codmTargetFps = FPS_VALUES[Math.min(sbCodmFps.getProgress(), FPS_VALUES.length - 1)];
         }
+    }
+
+    private static int cdrToIndex(int pct) {
+        for (int i = 0; i < CDR_VALUES.length; i++) {
+            if (CDR_VALUES[i] == pct) return i;
+        }
+        return 0;
+    }
+
+    private static int droneTierToIndex(int tier) {
+        for (int i = 0; i < DRONE_TIERS.length; i++) {
+            if (DRONE_TIERS[i] == tier) return i;
+        }
+        return 1; // default 20 (2.0X)
+    }
+
+    private static String droneTierToLabel(int tier) {
+        int idx = droneTierToIndex(tier);
+        if (idx >= 0 && idx < DRONE_LABELS.length) return DRONE_LABELS[idx];
+        return "2.0X";
     }
 
     private static int fpsToIndex(int fps) {

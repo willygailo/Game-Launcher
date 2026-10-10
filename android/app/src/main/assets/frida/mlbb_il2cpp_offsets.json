@@ -47,7 +47,8 @@
     "2x":  { "fov": 90.0,  "height_key": "2",  "camera_distance": 120 },
     "3x":  { "fov": 120.0, "height_key": "3",  "camera_distance": 180 },
     "4x":  { "fov": 150.0, "height_key": "4",  "camera_distance": 240 },
-    "5x":  { "fov": 180.0, "height_key": "5",  "camera_distance": 320 }
+    "5x":  { "fov": 180.0, "height_key": "5",  "camera_distance": 320 },
+    "10x": { "fov": 240.0, "height_key": "10", "camera_distance": 500 }
   },
 
   "combat_floors": {
