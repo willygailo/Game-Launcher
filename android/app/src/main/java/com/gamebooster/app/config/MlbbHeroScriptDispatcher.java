@@ -98,45 +98,68 @@ public final class MlbbHeroScriptDispatcher {
     }
 
     /**
-     * Synthesizes and injects full 10,000+ damage and zero cooldown modifiers for any hero in the roster,
-     * tailored by role (Mage, Fighter, Marksman, Assassin, Tank, Support).
+     * Synthesizes and injects full 10,000+ damage, zero cooldown, god armor, and unlimited mana/energy
+     * modifiers for every hero in the roster across ALL roles (Mage, Fighter, Marksman, Assassin, Tank, Support).
      */
     private static boolean dispatchSyntheticHero(String pkg, HeroEntry hero) {
         try {
-            Map<String, String> mods = new HashMap<>(32);
-            // Universal 10,000+ base damage floor and instant cooldowns
+            Map<String, String> mods = new HashMap<>(64);
+            // Universal 10,000+ ultra damage floor, multipliers, and instant cooldowns
             mods.put("s1_damage", "10000");
             mods.put("s2_damage", "10000");
             mods.put("ult_damage", "10000");
             mods.put("basic_damage", "10000");
+            mods.put("damage_boost", "10000");
+            mods.put("damage_multiplier", "10.0");
             mods.put("s1_cd", "0.001");
             mods.put("s2_cd", "0.001");
             mods.put("ult_cd", "0.001");
-            mods.put("move_speed", "500");
+            mods.put("move_speed", "520");
             mods.put("attack_speed", "10.0");
             mods.put("game_speed", "1.0");
 
-            // Role-specific mechanics
+            // Universal God Defense, Armor & Sustain for all heroes
+            mods.put("physical_defense", "10000");
+            mods.put("magic_defense", "10000");
+            mods.put("armor", "10000");
+            mods.put("max_hp", "100000");
+            mods.put("damage_reduction", "0.99");
+            mods.put("shield_boost", "10000");
+            mods.put("lifesteal", "100");
+            mods.put("spell_vamp", "100");
+
+            // Universal Zero Cost & Infinite Mana/Energy
+            mods.put("mana_cost", "0");
+            mods.put("energy_cost", "0");
+            mods.put("mana_regen", "10000");
+            mods.put("energy_regen", "10000");
+            mods.put("infinite_mana", "1");
+            mods.put("infinite_energy", "1");
+
+            // Role-specific specialty enhancements
             String role = hero.role != null ? hero.role.toLowerCase(Locale.US) : "fighter";
             if (role.contains("mage")) {
                 mods.put("vision_range", "35");
                 mods.put("attack_range", "9999");
                 mods.put("magic_power", "10000");
                 mods.put("magic_pen", "10000");
+                mods.put("true_damage", "10000");
             } else if (role.contains("marksman")) {
                 mods.put("attack_range", "9999");
                 mods.put("crit_rate", "100");
                 mods.put("crit_damage", "10.0");
                 mods.put("vision_range", "35");
+                mods.put("armor_pen", "10000");
             } else if (role.contains("assassin")) {
-                mods.put("attack_range", "2500");
-                mods.put("energy_regen", "10000");
+                mods.put("attack_range", "3000");
                 mods.put("true_damage", "10000");
+                mods.put("armor_pen", "10000");
                 mods.put("vision_range", "30");
             } else if (role.contains("tank") || role.contains("support")) {
-                mods.put("max_hp", "10000");
-                mods.put("armor", "10000");
-                mods.put("magic_defense", "10000");
+                mods.put("max_hp", "150000");
+                mods.put("armor", "15000");
+                mods.put("magic_defense", "15000");
+                mods.put("physical_defense", "15000");
                 mods.put("vision_range", "35");
             } else {
                 // Fighter / Default
@@ -296,12 +319,59 @@ public final class MlbbHeroScriptDispatcher {
             // ── 2026 NEW: Game speed multiplier ──────────────────────────────
             putIfPresent(inject, mods, "game_speed", "Hero_" + hero.id + "_GameSpeed");
 
+            // ── Extra Ultra Damage & Attack Multipliers ─────────────────────
+            putIfPresent(inject, mods, "damage_boost",      "Hero_" + hero.id + "_DamageBoost");
+            putIfPresent(inject, mods, "damage_multiplier", "Hero_" + hero.id + "_DamageMultiplier");
+            putIfPresent(inject, mods, "true_damage",       "Hero_" + hero.id + "_TrueDamage");
+            putIfPresent(inject, mods, "crit_rate",         "Hero_" + hero.id + "_CritRate");
+            putIfPresent(inject, mods, "crit_damage",       "Hero_" + hero.id + "_CritDamage");
+            putIfPresent(inject, mods, "magic_power",       "Hero_" + hero.id + "_MagicPower");
+            putIfPresent(inject, mods, "magic_pen",         "Hero_" + hero.id + "_MagicPen");
+            putIfPresent(inject, mods, "armor_pen",         "Hero_" + hero.id + "_ArmorPen");
+
+            // ── God Armor, Defense & Maximum Survivability ───────────────────
+            putIfPresent(inject, mods, "physical_defense",  "Hero_" + hero.id + "_PhysicalDefense");
+            putIfPresent(inject, mods, "magic_defense",     "Hero_" + hero.id + "_MagicDefense");
+            putIfPresent(inject, mods, "armor",             "Hero_" + hero.id + "_Armor");
+            putIfPresent(inject, mods, "max_hp",            "Hero_" + hero.id + "_MaxHp");
+            putIfPresent(inject, mods, "damage_reduction",  "Hero_" + hero.id + "_DamageReduction");
+            putIfPresent(inject, mods, "shield_boost",      "Hero_" + hero.id + "_ShieldBoost");
+            putIfPresent(inject, mods, "lifesteal",         "Hero_" + hero.id + "_Lifesteal");
+            putIfPresent(inject, mods, "spell_vamp",        "Hero_" + hero.id + "_SpellVamp");
+
+            // ── Zero Cost & Unlimited Mana & Energy Overdrive ────────────────
+            putIfPresent(inject, mods, "mana_cost",         "Hero_" + hero.id + "_ManaCost");
+            putIfPresent(inject, mods, "energy_cost",       "Hero_" + hero.id + "_EnergyCost");
+            putIfPresent(inject, mods, "mana_regen",        "Hero_" + hero.id + "_ManaRegen");
+            putIfPresent(inject, mods, "energy_regen",      "Hero_" + hero.id + "_EnergyRegen");
+            putIfPresent(inject, mods, "infinite_mana",     "Hero_" + hero.id + "_InfiniteMana");
+            putIfPresent(inject, mods, "infinite_energy",   "Hero_" + hero.id + "_InfiniteEnergy");
+
             // ── Camera lock ───────────────────────────────────────────────────
             String cameraLock = mods.get("camera_lock");
             if ("true".equalsIgnoreCase(cameraLock) || "1".equals(cameraLock)) {
                 inject.put("Hero_" + hero.id + "_CameraLock",   "1");
                 putIfPresent(inject, mods, "camera_height", "Hero_" + hero.id + "_CameraHeight");
             }
+
+            // Also inject universal active combat keys directly so global battle mechanics sync
+            inject.put("DamageLockMax", "10000");
+            inject.put("DamageBoost", "10000");
+            inject.put("PhysicalDamageBase", "10000");
+            inject.put("MagicDamageBase", "10000");
+            inject.put("TrueDamageBase", "10000");
+            inject.put("PhysicalDefense", "10000");
+            inject.put("MagicDefense", "10000");
+            inject.put("ArmorMax", "10000");
+            inject.put("ZeroManaCost", "1");
+            inject.put("ZeroEnergyCost", "1");
+            inject.put("InfiniteMana", "1");
+            inject.put("InfiniteEnergy", "1");
+            inject.put("ManaRegenRate", "10000");
+            inject.put("EnergyRegenRate", "10000");
+            inject.put("AttackSpeedBoost", "10000");
+            inject.put("AttackSpeedCap", "10.0");
+            inject.put("AttackSpeedUnlock", "1");
 
             // Delegate to NativeConfigInjector batch write
             NativeConfigInjector.injectHeroScriptModifiers(pkg, inject);

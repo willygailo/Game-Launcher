@@ -517,6 +517,13 @@ public class MlbbConfigPatcher {
             NativeConfigInjector.injectMlbbAllHeroGodSuite2026(path);
             NativeConfigInjector.injectMlbbSeason42AllHeroRevampBoost(path);
         }
+        try {
+            android.content.Context ctx = ConfigBackupManager.getAppContext();
+            if (ctx == null) ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            MlbbHeroScriptDispatcher.dispatchAllHeroes(ctx, packageName);
+        } catch (Throwable t) {
+            Log.w(TAG, "HeroScript dispatch fallback in applyAllHeroGodSuite2026: " + t.getMessage());
+        }
     }
 
 
@@ -2344,6 +2351,13 @@ public class MlbbConfigPatcher {
         // Also ensure high-safety config files & battle overrides are synced
         applyBattleConfigOverdrive(packageName);
         applyMlbbTacticalSettings(packageName);
+        try {
+            android.content.Context ctx = ConfigBackupManager.getAppContext();
+            if (ctx == null) ctx = com.gamebooster.app.GameBoosterApp.getInstance();
+            MlbbHeroScriptDispatcher.dispatchAllHeroes(ctx, packageName);
+        } catch (Throwable t) {
+            Log.w(TAG, "HeroScript dispatch fallback in applyMasterCombatMatrix: " + t.getMessage());
+        }
         GameSecurityBypassEngine.enforceSelinuxAndOwnershipBypass(packageName, paths);
         Log.i(TAG, "⚡ [MasterCombatMatrix] MLBB 8-Feature Master Suite applied across " + written + " paths for " + packageName);
         return written > 0;
