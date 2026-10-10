@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <SOInformation>
+  <item name="UnityData/Managed/Metadata/global-csharp-metadata.dat" md5="a9be9ac271d30fa6b10c5808c23e5296" priority="0" xxhash="a7cd56"/>
+  <item name="UnityData/Managed/Metadata/global-first-metadata.dat" md5="97c9aadc99492e6c7de51134b4087239" priority="0" xxhash="1db87a"/>
+  <item name="UnityData/Managed/Metadata/global-metadata.dat" md5="092874198c522c4e8e5a58ad85ac5baa" priority="0" xxhash="22fe34"/>
+  <item so="lib_burst_generated.so" name="comlibs/arm64-v8a/lib_burst_generated.bytes" md5="6e2eb795f0a54d7b20d1807b77f5aa87" priority="0" xxhash="428286"/>
+  <item so="libcsharp.so" name="comlibs/arm64-v8a/libcsharp.bytes" md5="30da67db497f35000c8c18b3e2afbdd8" priority="1" xxhash="3aca0d"/>
+  <item so="libfirst.so" name="comlibs/arm64-v8a/libfirst.bytes" md5="a1753425254bab4389385ae7fb5818f6" priority="2" xxhash="cd5c9e"/>
+  <item so="liblogic.so" name="comlibs/arm64-v8a/liblogic.bytes" md5="0d853f86ad542f820a17cad591a20a4c" priority="3" xxhash="2291cf"/>
+  <item so="lib_burst_generated.so" name="comlibs/armeabi-v7a/lib_burst_generated.bytes" md5="d72b5807bfa3794af48f0fb9b5b99f9b" priority="0" xxhash="763eb9"/>
+  <item so="libcsharp.so" name="comlibs/armeabi-v7a/libcsharp.bytes" md5="e352dcfae2c66537efd0416718b722ca" priority="1" xxhash="08ef8f"/>
+  <item so="libfirst.so" name="comlibs/armeabi-v7a/libfirst.bytes" md5="8e6f835015502a1f35cb70c8b07adc71" priority="2" xxhash="bfeef3"/>
+  <item so="liblogic.so" name="comlibs/armeabi-v7a/liblogic.bytes" md5="0c01d3310a6d76ffa7fb5be31fc6a0bb" priority="3" xxhash="2c6aca"/>
+  <item so="libcsharp.so" name="comlibs/x86/libcsharp.bytes" md5="4291d652124ae6a04bd5321927ec3181" priority="1" xxhash="fe3575"/>
+  <item so="libfirst.so" name="comlibs/x86/libfirst.bytes" md5="ea38d664d790d470ca074f3a513146aa" priority="2" xxhash="208907"/>
+  <item so="liblogic.so" name="comlibs/x86/liblogic.bytes" md5="0bc124fef9ffb93b25e44fa1b45f2b02" priority="3" xxhash="edc9d9"/>
+  </SOInformation>
