@@ -129,3 +129,9 @@ scratch/
 *.cfg.bak
 *.bytes.bak
 
+# Assistant & Superpowers Plans
+docs/superpowers/plans/
+**/docs/superpowers/plans/
+docs/plans/
+**/docs/plans/
+

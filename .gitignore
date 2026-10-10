@@ -273,3 +273,13 @@ htmlcov/
 **/patcher_cache/
 *.cfg.bak
 *.bytes.bak
+
+# ====================================================================
+# Assistant & Superpowers Implementation Plans
+# ====================================================================
+docs/superpowers/plans/
+**/docs/superpowers/plans/
+docs/plans/
+**/docs/plans/
+docs/superpowers/
+**/docs/superpowers/
