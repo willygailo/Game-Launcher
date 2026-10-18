@@ -209,7 +209,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     testImplementation 'junit:junit:4.13.2'
     // Real org.json for JVM unit tests (android.jar stubs return defaults)
-    testImplementation 'org.json:json:20240303'
+    testImplementation 'org.json:json:20260814'
 }
 
 if (!isJdk22Plus) {
