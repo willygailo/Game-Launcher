@@ -206,7 +206,7 @@ dependencies {
     implementation "dev.rikka.shizuku:api:${shizuku_version}"
     implementation "dev.rikka.shizuku:provider:${shizuku_version}"
     implementation 'androidx.documentfile:documentfile:1.0.1'
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.github.bumptech.glide:glide:5.0.9'
     testImplementation 'junit:junit:4.13.2'
     // Real org.json for JVM unit tests (android.jar stubs return defaults)
     testImplementation 'org.json:json:20240303'
